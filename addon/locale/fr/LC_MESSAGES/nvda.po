@@ -1,0 +1,342 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: open ai\n"
+"Report-Msgid-Bugs-To: 'nvda-translations@groups.io'\n"
+"POT-Creation-Date: 2023-11-23 21:16+0100\n"
+"PO-Revision-Date: 2023-11-23 21:31+0100\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Generator: Poedit 3.3.2\n"
+"X-Poedit-Basepath: C:/Users/Nael Sayegh/AppData/Roaming/nvda/addons/openAI/"
+"globalPlugins\n"
+"X-Poedit-SearchPath-0: .\n"
+
+#: addon\globalPlugins\openai\__init__.py:52
+msgid ""
+"No authentication key provided. Please set it in the Preferences dialog."
+msgstr ""
+"Aucune clé d'authentification fournie. Veuillez la définir dans la boîte de "
+"dialogue des préférences."
+
+#: addon\globalPlugins\openai\__init__.py:70
+msgid "API Key:"
+msgstr "Clé API :"
+
+#: addon\globalPlugins\openai\__init__.py:75
+msgid "Organization"
+msgstr "Organisation"
+
+#: addon\globalPlugins\openai\__init__.py:83
+msgid "Use or&ganization"
+msgstr "Utiliser une or&ganisation"
+
+#: addon\globalPlugins\openai\__init__.py:94
+msgid "Organization &name:"
+msgstr "&Nom de l'organisation :"
+
+#: addon\globalPlugins\openai\__init__.py:100
+msgid "&Organization key:"
+msgstr "Clé de l'&organisation :"
+
+#: addon\globalPlugins\openai\__init__.py:107
+msgid "Main dialog"
+msgstr "Dialogue principal"
+
+#: addon\globalPlugins\openai\__init__.py:116
+msgid "Block the closing using the &escape key"
+msgstr ""
+"Bloquer la fermeture de la fenêtre principale en utilisant la touche échap"
+
+#: addon\globalPlugins\openai\__init__.py:124
+msgid "Remember the content of the S&ystem field between sessions"
+msgstr "Se souvenir du contenu du champ S&ystem entre les sessions"
+
+#: addon\globalPlugins\openai\__init__.py:132
+msgid "Enable &advanced settings (including temperature and probability mass)"
+msgstr ""
+"Activer les paramètres avancés (inclu la température et la masse de "
+"probabilité)"
+
+#: addon\globalPlugins\openai\__init__.py:142
+msgid "Text To Speech"
+msgstr "Text To Speech"
+
+#: addon\globalPlugins\openai\__init__.py:148
+msgid "&Voice:"
+msgstr "&Voice:"
+
+#: addon\globalPlugins\openai\__init__.py:158
+#: addon\globalPlugins\openai\maindialog.py:506
+msgid "&Model:"
+msgstr "&Modèle :"
+
+#: addon\globalPlugins\openai\__init__.py:236
+msgid "Show Open AI dialog"
+msgstr "Affiche le dialogue Open AI"
+
+#: addon\globalPlugins\openai\__init__.py:250
+msgid "Take a screenshot and describe it"
+msgstr "Prendre une capture d'écran et la décrire"
+
+#: addon\globalPlugins\openai\__init__.py:268
+msgid "Grab the current navigator object and describe it"
+msgstr "Prendre l'objet navigateur courant et le décrire"
+
+#: addon\globalPlugins\openai\maindialog.py:38
+msgid "Describe the images in as much detail as possible."
+msgstr "Décris les images avec autant de détails que possible."
+
+#: addon\globalPlugins\openai\maindialog.py:99
+msgid "Invalid temperature"
+msgstr "Température invalide"
+
+#: addon\globalPlugins\openai\maindialog.py:102
+msgid "Invalid top P"
+msgstr "Top P invalide"
+
+#: addon\globalPlugins\openai\maindialog.py:135
+msgid "Ready"
+msgstr "Prêt"
+
+#: addon\globalPlugins\openai\maindialog.py:225
+msgid "Transcribing..."
+msgstr "Transcrir..."
+
+#: addon\globalPlugins\openai\maindialog.py:438
+msgid ""
+"4096 tokens max. Most capable GPT-3.5 model and optimized for chat at 1/10th "
+"the cost of text-davinci-003"
+msgstr ""
+"4096 tokens maximum. Modèle GPT-3.5 le plus performant et optimisé pour le "
+"chat à un dixième du coût de text-davinci-003"
+
+#: addon\globalPlugins\openai\maindialog.py:439
+msgid ""
+"16384 tokens max. Same capabilities as the standard gpt-3.5-turbo model but "
+"with 4 times the context"
+msgstr ""
+"16384 tokens maximum. Mêmes capacités que le modèle standard gpt-3.5-turbo, "
+"mais avec 4 fois plus de contexte"
+
+#: addon\globalPlugins\openai\maindialog.py:440
+msgid ""
+"8192 tokens max. More capable than any GPT-3.5 model, able to do more "
+"complex tasks, and optimized for chat"
+msgstr ""
+"8192 tokens max. Plus performant que n'importe quel modèle GPT-3.5, capable "
+"de réaliser des tâches plus complexes, et optimisé pour la conversation"
+
+#: addon\globalPlugins\openai\maindialog.py:441
+msgid "GPT-4 Turbo with vision"
+msgstr "GPT-4 Turbo avec vision"
+
+#: addon\globalPlugins\openai\maindialog.py:442
+msgid "GPT-4 Turbo, 128K context, maximum of 4096 output tokens."
+msgstr "GPT-4 Turbo, contexte de 128K, maximum de 4096 tokens de sortie."
+
+#: addon\globalPlugins\openai\maindialog.py:443
+msgid ""
+"32768 tokens max. Same capabilities as the standard gpt-4 mode but with 4x "
+"the context length."
+msgstr ""
+"32768 tokens au maximum. Mêmes capacités que le mode standard GPT-4 mais "
+"avec une longueur de contexte 4 fois supérieure."
+
+#: addon\globalPlugins\openai\maindialog.py:466
+msgid "organization"
+msgstr "organisation"
+
+#: addon\globalPlugins\openai\maindialog.py:466
+msgid "personal"
+msgstr "personnel"
+
+#: addon\globalPlugins\openai\maindialog.py:472
+msgid "S&ystem:"
+msgstr "S&ystème :"
+
+#: addon\globalPlugins\openai\maindialog.py:484
+msgid "&History:"
+msgstr "&Historique :"
+
+#: addon\globalPlugins\openai\maindialog.py:494
+msgid "&Prompt:"
+msgstr "&Prompt :"
+
+#: addon\globalPlugins\openai\maindialog.py:520
+msgid "Maximum to&kens for the completion:"
+msgstr "To&kens maximum pour la complétion :"
+
+#: addon\globalPlugins\openai\maindialog.py:532
+msgid "&Temperature:"
+msgstr "&Température :"
+
+#: addon\globalPlugins\openai\maindialog.py:543
+msgid "Probability &mass (Top P):"
+msgstr "&Masse de probalilité (Top P) :"
+
+#: addon\globalPlugins\openai\maindialog.py:554
+msgid "Stream mode"
+msgstr "Mode stream"
+
+#: addon\globalPlugins\openai\maindialog.py:560
+msgid "&Debug mode"
+msgstr "Mode &débugage"
+
+#: addon\globalPlugins\openai\maindialog.py:585
+#: addon\globalPlugins\openai\maindialog.py:1027
+msgid "Start &recording"
+msgstr "Démarrer l'&enregistrement"
+
+#: addon\globalPlugins\openai\maindialog.py:588
+msgid "Record audio from microphone"
+msgstr "Enregistrer l'audio à partir du microphone"
+
+#: addon\globalPlugins\openai\maindialog.py:592
+msgid "Transcribe from &audio file"
+msgstr "Transcrire depuis un fichier &audio"
+
+#: addon\globalPlugins\openai\maindialog.py:595
+msgid "Transcribe audio from a file path"
+msgstr "Transcrire un fichier audio à partir d'un chemin"
+
+#: addon\globalPlugins\openai\maindialog.py:599
+msgid "&Image description"
+msgstr "Description d'&image"
+
+#: addon\globalPlugins\openai\maindialog.py:602
+msgid "Describe an image from a file path or an URL"
+msgstr "Décrivez une image à partir d'un fichier ou d'une URL"
+
+#: addon\globalPlugins\openai\maindialog.py:606
+msgid "&Vocalize the prompt"
+msgstr "&Vocaliser le prompt"
+
+#: addon\globalPlugins\openai\maindialog.py:680
+msgid ""
+"No image provided. Please use the Image Description button and select one or "
+"more images. Otherwise, please select another model."
+msgstr ""
+"Aucune image fournie. Veuillez utiliser le bouton Description de l'image et "
+"sélectionnez une ou plusieurs images. Sinon, veuillez sélectionner un autre "
+"modèle."
+
+#: addon\globalPlugins\openai\maindialog.py:681
+#: addon\globalPlugins\openai\maindialog.py:688
+#: addon\globalPlugins\openai\maindialog.py:1010
+msgid "Open AI"
+msgstr "Open AI"
+
+#: addon\globalPlugins\openai\maindialog.py:687
+#, python-format
+msgid ""
+"This model does not support image description. Please select the %s model."
+msgstr ""
+"Ce modèle ne prend pas en charge la description d'image. Veuillez "
+"sélectionner le modèle %s."
+
+#: addon\globalPlugins\openai\maindialog.py:699
+#: addon\globalPlugins\openai\maindialog.py:999
+#: addon\globalPlugins\openai\maindialog.py:1015
+msgid "Processing, please wait..."
+msgstr "Traitement en cours, veuillez patienter..."
+
+#: addon\globalPlugins\openai\maindialog.py:758
+#, python-format
+msgid "Insertion of: %s"
+msgstr "Insertion de: %s"
+
+#: addon\globalPlugins\openai\maindialog.py:769
+msgid "Open AI error"
+msgstr "Erreur open AI"
+
+#: addon\globalPlugins\openai\maindialog.py:779
+msgid "Press alt+f4 to close the dialog"
+msgstr "Pressez alt+f4 pour fermer le dialogue"
+
+#: addon\globalPlugins\openai\maindialog.py:789
+msgid "User:"
+msgstr "Utilisateur :"
+
+#: addon\globalPlugins\openai\maindialog.py:791
+msgid "Assistant:"
+msgstr "Assistant :"
+
+#: addon\globalPlugins\openai\maindialog.py:853
+msgid "Begin"
+msgstr "Début"
+
+#: addon\globalPlugins\openai\maindialog.py:873
+msgid "End"
+msgstr "Fin"
+
+#: addon\globalPlugins\openai\maindialog.py:901
+#, python-format
+msgid "Response copied to system: %s"
+msgstr "Réponse copiée vers le système : %s"
+
+#: addon\globalPlugins\openai\maindialog.py:910
+msgid "Compied to prompt"
+msgstr "Copié vers le prompt"
+
+#: addon\globalPlugins\openai\maindialog.py:914
+msgid "Copy"
+msgstr "Copié"
+
+#: addon\globalPlugins\openai\maindialog.py:922
+msgid "Copy prompt"
+msgstr "Prompt copié"
+
+#: addon\globalPlugins\openai\maindialog.py:925
+msgid "Copy response"
+msgstr "Réponse copié"
+
+#: addon\globalPlugins\openai\maindialog.py:950
+msgid "Block deleted"
+msgstr "Block supprimé"
+
+#: addon\globalPlugins\openai\maindialog.py:960
+msgid "Select image files"
+msgstr "Sélectionnez un fichier image"
+
+#: addon\globalPlugins\openai\maindialog.py:962
+msgid "Image files"
+msgstr "Fichiers image"
+
+#: addon\globalPlugins\openai\maindialog.py:982
+msgid "Stop &recording"
+msgstr "&Arrêter l'enregistrement"
+
+#: addon\globalPlugins\openai\maindialog.py:991
+msgid "Select audio file"
+msgstr "Sélectionnez un fichier audio"
+
+#: addon\globalPlugins\openai\maindialog.py:993
+msgid ""
+"Audio files (*.mp3;*.mp4;*.mpeg;*.mpga;*.m4a;*.wav;*.webm)|*.mp3;*.mp4;*."
+"mpeg;*.mpga;*.m4a;*.wav;*.webm"
+msgstr ""
+"Fichiers audio (*.mp3;*.mp4;*.mpeg;*.mpga;*.m4a;*.wav;*.webm)|*.mp3;*.mp4;*."
+"mpeg;*.mpga;*.m4a;*.wav;*.webm"
+
+#: addon\globalPlugins\openai\maindialog.py:1009
+msgid "Please enter some text in the prompt field first."
+msgstr "Veuillez saisir d'abord du texte dans le champ de saisie."
+
+#: buildVars.py:42
+msgid ""
+"Open AI is an NVDA add-on designed to seamlessly integrate the capabilities "
+"of the Open AI API into your workflow. Whether you're looking to craft "
+"comprehensive text, translate passages with precision, concisely summarize "
+"documents, or even interpret and describe visual content, this add-on does "
+"it all with ease."
+msgstr ""
+"Open AI est une extension NVDA conçue pour intégrer de manière transparente "
+"les fonctionnalités de l'API d'Open AI dans votre flux de travail. Que vous "
+"souhaitiez rédiger un texte complet, traduire des passages avec précision, "
+"résumer de manière concise des documents ou même interpréter et décrire du "
+"contenu visuel, cette extension fait tout cela facilement."
