@@ -733,8 +733,12 @@ class OpenAIDlg(wx.Dialog):
 					historyBlock.userPrompt += f"\n  + <image: \"{path}\">"
 			self.pathList = None
 			historyBlock.model = list(self.models.keys())[self.modelListBox.GetSelection()]
-			historyBlock.temperature = self.temperature.GetValue() / 100
-			historyBlock.topP = self.topP.GetValue() / 100
+			if self.conf["advancedMode"]:
+				historyBlock.temperature = self.temperature.GetValue() / 100
+				historyBlock.topP = self.topP.GetValue() / 100
+			else:
+				historyBlock.temperature = self.conf["temperature"] / 100
+				historyBlock.topP = self.conf["topP"] / 100
 			historyBlock.maxTokens = self.maxTokens.GetValue()
 			historyBlock.n = 1 # self.n.GetValue()
 			historyBlock.response = event.data
