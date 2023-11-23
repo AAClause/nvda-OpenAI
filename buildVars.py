@@ -31,7 +31,7 @@ if outBranchName.strip():
 # Add-on information variables
 addon_info = {
 	# add-on Name/identifier, internal for NVDA
-	"addon_name": "openAI",
+	"addon_name": "OpenAI",
 	# Add-on summary, usually the user visible name of the addon.
 	# Translators: Summary for this add-on
 	# to be shown on installation and add-on information found in Add-ons Manager.
@@ -58,7 +58,7 @@ addon_info = {
 	# Add-on update channel (default is None, denoting stable releases,
 	# and for development releases, use "dev".)
 	# Do not change unless you know what you are doing!
-	"addon_updateChannel": updateChannel,
+	"addon_updateChannel": "dev", # updateChannel,
 	# Add-on license such as GPL 2
 	"addon_license": "GPL v2",
 	# URL for the license document the ad-on is licensed under
