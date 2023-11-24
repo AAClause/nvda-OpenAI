@@ -252,6 +252,8 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 	def script_recognizeScreen(self, gesture):
 		if not self.getClient():
 			return ui.message(NO_AUTHENTICATION_KEY_PROVIDED_MSG)
+		if self.checkScreenCurtain():
+			return
 		with mss.mss() as sct:
 			tmpPath = os.path.join(DATA_DIR, "screen.png")
 			sct.shot(output=tmpPath)
@@ -270,6 +272,8 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 	def script_recognizeObject(self, gesture):
 		if not self.getClient():
 			return ui.message(NO_AUTHENTICATION_KEY_PROVIDED_MSG)
+		if self.checkScreenCurtain():
+			return
 		with mss.mss() as sct:
 			tmpPath = os.path.join(DATA_DIR, "object.png")
 			nav = api.getNavigatorObject()
@@ -292,3 +296,13 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 				conf=conf,
 				pathList=[tmpPath]
 			)
+	
+	def checkScreenCurtain(self):
+		from visionEnhancementProviders.screenCurtain import ScreenCurtainProvider
+		import vision
+		screenCurtainId = ScreenCurtainProvider.getSettings().getId()
+		screenCurtainProviderInfo = vision.handler.getProviderInfo(screenCurtainId)
+		isScreenCurtainRunning = bool(vision.handler.getProviderInstance(screenCurtainProviderInfo))
+		if isScreenCurtainRunning:
+			ui.message(_("Please disable the screen curtain before taking a screenshot"))
+		return isScreenCurtainRunning
