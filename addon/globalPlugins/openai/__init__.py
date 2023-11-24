@@ -252,10 +252,8 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 	def script_recognizeScreen(self, gesture):
 		if not self.getClient():
 			return ui.message(NO_AUTHENTICATION_KEY_PROVIDED_MSG)
-		self.checkScreenCurtain()
-		if self.isScreenCurtainRunning:
-			# Translators: Reported when screen curtain is enabled.
-			return ui.message(_("Please disable the screen curtain before taking a screenshot"))
+		if self.checkScreenCurtain():
+			return
 		with mss.mss() as sct:
 			tmpPath = os.path.join(DATA_DIR, "screen.png")
 			sct.shot(output=tmpPath)
@@ -269,14 +267,13 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 
 	@script(
 		gesture="kb:nvda+o",
-		description=_("Grab object and describe it")
+		description=_("Grab the current navigator object and describe it")
 	)
 	def script_recognizeObject(self, gesture):
 		if not self.getClient():
 			return ui.message(NO_AUTHENTICATION_KEY_PROVIDED_MSG)
-		self.checkScreenCurtain()
-		if self.isScreenCurtainRunning:
-			return ui.message(_("Please disable the screen curtain before taking a screenshot"))
+		if self.checkScreenCurtain():
+			return
 		with mss.mss() as sct:
 			tmpPath = os.path.join(DATA_DIR, "object.png")
 			nav = api.getNavigatorObject()
@@ -305,4 +302,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		import vision
 		screenCurtainId = ScreenCurtainProvider.getSettings().getId()
 		screenCurtainProviderInfo = vision.handler.getProviderInfo(screenCurtainId)
-		self.isScreenCurtainRunning = bool(vision.handler.getProviderInstance(screenCurtainProviderInfo))
+		isScreenCurtainRunning = bool(vision.handler.getProviderInstance(screenCurtainProviderInfo))
+		if isScreenCurtainRunning:
+			ui.message(_("Please disable the screen curtain before taking a screenshot"))
+		return isScreenCurtainRunning
