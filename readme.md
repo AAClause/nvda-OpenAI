@@ -12,7 +12,7 @@ This add-on designed to seamlessly integrate the capabilities of the Open AI API
 
 In order to utilize the full functionality of the OpenAI NVDA add-on, an API key from OpenAI is required. Follow these steps to set it up:
 
-1. Acquire an API key by registering for an OpenAI account at [https://openai.com/](https://openai.com/).
+1. Acquire an API key by registering for an OpenAI account at [https://platform.openai.com/api-keys](https://platform.openai.com/api-keys).
 2. With the API key ready, you have two options for configuration:
    - Through the NVDA settings dialog:
      1. Access the NVDA menu and navigate to the "Preferences" submenu.
@@ -39,7 +39,23 @@ The functionality of the add-on is housed within a central dialog that can be op
 - Transscribe spoken content from audio files.
 - Use the text-to-speech feature to vocalize written text in the prompt.
 
+#### Quick Commands from main dialog
+
+Some commands are available in the main dialog for different elements.
+
+In the prompt: ctrl+enter sends the entered text.
+
+##### In the history
+
+  * alt+right arrow: Copy the user's text to the prompt.
+  * alt+left arrow: Copy the assistant's response to the system.
+  * ctrl+C: Copy the assistant's response or the user's text depending on the cursor's position.
+  * ctrl+shift+up arrow: Move to the text block of the user or assistant above the current block.
+  * ctrl+shift+down arrow: Move to the text block of the user or assistant below the current block.
+
 ### Quick Commands
+
+These commands can be used to execute actions from anywhere on your computer.
 
 - `NVDA+e`: Take a screenshot and describe it.
 - `NVDA+o`: Grab the current navigator object and describe it.
