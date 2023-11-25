@@ -47,11 +47,11 @@ In the prompt: ctrl+enter sends the entered text.
 
 ##### In the history
 
-  * alt+right arrow: Copies the user's text to the prompt
-  * alt+left arrow: Copies the assistant's response to the system
-  * ctrl+C: Copies the assistant's response or the user's text depending on the cursor's position
-  * ctrl+shift+up arrow: Moves to the text block of the user or assistant above the current block
-  * ctrl+shift+down arrow: Moves to the text block of the user or assistant below the current block
+  * alt+right arrow: Copy the user's text to the prompt.
+  * alt+left arrow: Copy the assistant's response to the system.
+  * ctrl+C: Copy the assistant's response or the user's text depending on the cursor's position.
+  * ctrl+shift+up arrow: Move to the text block of the user or assistant above the current block.
+  * ctrl+shift+down arrow: Move to the text block of the user or assistant below the current block.
 
 ### Quick Commands
 
