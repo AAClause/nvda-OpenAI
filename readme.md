@@ -60,4 +60,10 @@ These commands can be used to execute actions from anywhere on your computer.
 - `NVDA+e`: Take a screenshot and describe it.
 - `NVDA+o`: Grab the current navigator object and describe it.
 
-TO BE CONTINUED
+# Included Dependencies
+
+The add-on comes bundled with the following essential dependencies:
+
+- [OpenAI](https://pypi.org/project/openai/): The official Python library for the openai API.
+- [MSS](https://pypi.org/project/mss/): An ultra fast cross-platform multiple screenshots module in pure python using ctypes.
+- [sounddevice](https://pypi.org/project/sounddevice/): Play and Record Sound with Python.
