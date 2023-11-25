@@ -474,7 +474,7 @@ class OpenAIDlg(wx.Dialog):
 		self.systemText = wx.TextCtrl(
 			parent=self,
 			size=(550, -1),
-			style=wx.TE_MULTILINE|wx.TE_READONLY,
+			style=wx.TE_MULTILINE,
 		)
 		if conf["saveSystem"] and self._lastSystem:
 			self.systemText.SetValue(self._lastSystem)
