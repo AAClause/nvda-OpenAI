@@ -35,32 +35,32 @@ You are now equipped to explore the features of the OpenAI NVDA add-on!
 The functionality of the add-on is housed within a central dialog that can be opened using the shortcut `NVDA+g`. This dialog provides access to the majority of the add-on's features, enabling you to:
 
 - Engage in conversation with the AI model.
-- Obtain descriptions of images from image files.
-- Transscribe spoken content from audio files.
+- Get descriptions of images from image files.
+- Transcribe spoken content from audio files or through a microphone.
 - Use the text-to-speech feature to vocalize written text in the prompt.
 
-#### Quick Commands from main dialog
+#### Commands from main dialog
 
 Some commands are available in the main dialog for different elements.
 
-In the prompt: ctrl+enter sends the entered text.
+- When the Prompt Field is focused:
+	- `Ctrl+Enter`: Submit the text you've entered.
+	- `Ctrl+Up Arrow`: Retrieve and place the most recently entered prompt into the current field for review or re-use.
+- When the History Field is focused:
+	- `Alt+Right Arrow`: Copy the user's text to the prompt.
+	- `Alt+Left Arrow`: Copy the assistant's response to the system.
+	- `Ctrl+C`: Copy the assistant's response or the user's text depending on the cursor's position.
+	- `Ctrl+Shift+Up Arrow`: Move to the text block of the user or assistant above the current block.
+	- `Ctrl+Shift+Down Arrow`: Move to the text block of the user or assistant below the current block.
 
-##### In the history
+### Global Commands
 
-  * alt+right arrow: Copy the user's text to the prompt.
-  * alt+left arrow: Copy the assistant's response to the system.
-  * ctrl+C: Copy the assistant's response or the user's text depending on the cursor's position.
-  * ctrl+shift+up arrow: Move to the text block of the user or assistant above the current block.
-  * ctrl+shift+down arrow: Move to the text block of the user or assistant below the current block.
-
-### Quick Commands
-
-These commands can be used to execute actions from anywhere on your computer.
+These commands can be used to trigger actions from anywhere on your computer. It is possible to reassign them from *Input Gestures* dialog under *Open AI* category.
 
 - `NVDA+e`: Take a screenshot and describe it.
 - `NVDA+o`: Grab the current navigator object and describe it.
 
-# Included Dependencies
+## Included Dependencies
 
 The add-on comes bundled with the following essential dependencies:
 
