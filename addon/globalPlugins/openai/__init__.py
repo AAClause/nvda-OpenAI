@@ -14,10 +14,8 @@ from scriptHandler import script, getLastScriptRepeatCount
 from .apikeymanager import APIKeyManager
 from .consts import (
 	ADDON_DIR, DATA_DIR,
-	DEFAULT_MODEL, DEFAULT_TEMPERATURE, DEFAULT_TOP_P, DEFAULT_MAX_TOKENS, DEFAULT_N,
-	TEMPERATURE_MIN, TEMPERATURE_MAX,
+	DEFAULT_MODEL, DEFAULT_TOP_P, DEFAULT_N,
 	TOP_P_MIN, TOP_P_MAX,
-	MAX_TOKENS_MIN, MAX_TOKENS_MAX,
 	N_MIN, N_MAX,
 	TTS_VOICES, TTS_MODELS, TTS_DEFAULT_VOICE, TTS_DEFAULT_MODEL
 )
@@ -32,10 +30,8 @@ addonHandler.initTranslation()
 
 confSpecs = {
 	"use_org": "boolean(default=False)",
-	"model": f"string(default={DEFAULT_MODEL})",
-	"temperature": f"integer(min={TEMPERATURE_MIN}, max={TEMPERATURE_MAX}, default={DEFAULT_TEMPERATURE})",
+	"model": f"string(default={DEFAULT_MODEL.name})",
 	"topP": f"integer(min={TOP_P_MIN}, max={TOP_P_MAX}, default={DEFAULT_TOP_P})",
-	"maxTokens": f"integer(min={MAX_TOKENS_MIN}, max={MAX_TOKENS_MAX}, default={DEFAULT_MAX_TOKENS})",
 	"n": f"integer(min={N_MIN}, max={N_MAX}, default={DEFAULT_N})",
 	"stream": "boolean(default=True)",
 	"TTSModel": f"option({', '.join(TTS_MODELS)}, default={TTS_DEFAULT_MODEL})",
@@ -296,7 +292,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 				conf=conf,
 				pathList=[tmpPath]
 			)
-	
+
 	def checkScreenCurtain(self):
 		from visionEnhancementProviders.screenCurtain import ScreenCurtainProvider
 		import vision
