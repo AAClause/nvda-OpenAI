@@ -4,7 +4,7 @@ Ce module est conçu pour intégrer parfaitement les capacités de l'API Open AI
 
 ## Installation
 
-1. Allez àsur la page de [versions](https://github.com/aaclause/nvda-OpenAI/releases) pour trouver la dernière version du module.
+1. Allez sur la page des [versions](https://github.com/aaclause/nvda-OpenAI/releases) pour trouver la dernière version de l'extension.
 2. Téléchargez la dernière version à partir du lien fourni.
 3. Exécutez le programme d'installation pour ajouter le module complémentaire à votre environnement NVDA.
 
