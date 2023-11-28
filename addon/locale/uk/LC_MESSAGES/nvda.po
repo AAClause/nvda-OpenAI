@@ -1,0 +1,320 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: 2023-11-25 13:26+0200\n"
+"PO-Revision-Date: 2023-11-27 17:51+0200\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: uk\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.4.1\n"
+"X-Poedit-Basepath: nvda-OpenAI-master/addon/globalPlugins\n"
+"X-Poedit-SearchPath-0: .\n"
+
+#: openai/__init__.py:52
+msgid ""
+"No authentication key provided. Please set it in the Preferences dialog."
+msgstr ""
+"Ключ автентифікації не надано. Будь ласка, встановіть його в діалозі "
+"Налаштування."
+
+#: openai/__init__.py:70
+msgid "API Key:"
+msgstr "Ключ API:"
+
+#: openai/__init__.py:75
+msgid "Organization"
+msgstr "Організація"
+
+#: openai/__init__.py:83
+msgid "Use or&ganization"
+msgstr "Використовувати &організацію"
+
+#: openai/__init__.py:94
+msgid "Organization &name:"
+msgstr "&Назва організації:"
+
+#: openai/__init__.py:100
+msgid "&Organization key:"
+msgstr "&Ключ організації:"
+
+#: openai/__init__.py:107
+msgid "Main dialog"
+msgstr "Головний діалог"
+
+#: openai/__init__.py:116
+msgid "Block the closing using the &escape key"
+msgstr "Заблокувати закриття за допомогою клавіші &escape"
+
+#: openai/__init__.py:124
+msgid "Remember the content of the S&ystem field between sessions"
+msgstr "Запам’ятовувати вміст поля S&ystem між сеансами"
+
+#: openai/__init__.py:132
+msgid "Enable &advanced settings (including temperature and probability mass)"
+msgstr ""
+"Увімкнути &розширені параметри (зокрема температуру та маси ймовірності)"
+
+#: openai/__init__.py:142
+msgid "Text To Speech"
+msgstr "Перетворення тексту в мовлення"
+
+#: openai/__init__.py:148
+msgid "&Voice:"
+msgstr "&Голос:"
+
+#: openai/__init__.py:158 openai/maindialog.py:506
+msgid "&Model:"
+msgstr "&Модель:"
+
+#: openai/__init__.py:236
+msgid "Show Open AI dialog"
+msgstr "Показати діалог Open AI"
+
+#: openai/__init__.py:250
+msgid "Take a screenshot and describe it"
+msgstr "Зробити скріншот і описати його"
+
+#: openai/__init__.py:270
+msgid "Grab the current navigator object and describe it"
+msgstr "Описати поточний об’єкт навігатора"
+
+#: openai/__init__.py:307
+msgid "Please disable the screen curtain before taking a screenshot"
+msgstr "Перш ніж робити знімок екрана, вимкніть екранну завісу"
+
+#: openai/maindialog.py:38
+msgid "Describe the images in as much detail as possible."
+msgstr "Описати зображення якомога детальніше."
+
+#: openai/maindialog.py:99
+msgid "Invalid temperature"
+msgstr "Неправильна температура"
+
+#: openai/maindialog.py:102
+msgid "Invalid top P"
+msgstr "Неправильна вершина P"
+
+#: openai/maindialog.py:135
+msgid "Ready"
+msgstr "Готово"
+
+#: openai/maindialog.py:225
+msgid "Transcribing..."
+msgstr "Транскрипція..."
+
+#: openai/maindialog.py:438
+msgid ""
+"4096 tokens max. Most capable GPT-3.5 model and optimized for chat at 1/10th "
+"the cost of text-davinci-003"
+msgstr ""
+"Максимум 4096 токенів. потужна модель GPT-3.5 та оптимізована для чату за "
+"1/10 вартості text-davinci-003"
+
+#: openai/maindialog.py:439
+msgid ""
+"16384 tokens max. Same capabilities as the standard gpt-3.5-turbo model but "
+"with 4 times the context"
+msgstr ""
+"Максимум 16384 токени. Ті ж можливості, що і у стандартної моделі gpt-3.5-"
+"turbo, але в 4 рази більше контексту"
+
+#: openai/maindialog.py:440
+msgid ""
+"8192 tokens max. More capable than any GPT-3.5 model, able to do more "
+"complex tasks, and optimized for chat"
+msgstr ""
+"Максимум 8192 токени. Більш потужна, ніж будь-яка модель GPT-3.5, здатна "
+"виконувати складніші завдання та оптимізована для чату"
+
+#: openai/maindialog.py:441
+msgid "GPT-4 Turbo with vision"
+msgstr "GPT-4 Turbo з баченням"
+
+#: openai/maindialog.py:442
+msgid "GPT-4 Turbo, 128K context, maximum of 4096 output tokens."
+msgstr "GPT-4 Turbo, 128K контекст, максимум 4096 вихідних токенів."
+
+#: openai/maindialog.py:443
+msgid ""
+"32768 tokens max. Same capabilities as the standard gpt-4 mode but with 4x "
+"the context length."
+msgstr ""
+"Максимум 32768 токенів. Ті ж можливості, що й у стандартному режимі gpt-4, "
+"але в 4 рази більше контексту."
+
+#: openai/maindialog.py:466
+msgid "organization"
+msgstr "організація"
+
+#: openai/maindialog.py:466
+msgid "personal"
+msgstr "особистий"
+
+#: openai/maindialog.py:472
+msgid "S&ystem:"
+msgstr "S&ystem:"
+
+#: openai/maindialog.py:484
+msgid "&History:"
+msgstr "&Історія:"
+
+#: openai/maindialog.py:494
+msgid "&Prompt:"
+msgstr "&Запит:"
+
+#: openai/maindialog.py:520
+msgid "Maximum to&kens for the completion:"
+msgstr "Максимальна кількість то&кенів для завершення:"
+
+#: openai/maindialog.py:532
+msgid "&Temperature:"
+msgstr "&Температура:"
+
+#: openai/maindialog.py:543
+msgid "Probability &mass (Top P):"
+msgstr "&Маса ймовірності (Верхнє P):"
+
+#: openai/maindialog.py:554
+msgid "Stream mode"
+msgstr "Потоковий режим"
+
+#: openai/maindialog.py:560
+msgid "&Debug mode"
+msgstr "&Режим налагодження"
+
+#: openai/maindialog.py:585 openai/maindialog.py:1031
+msgid "Start &recording"
+msgstr "&Почати запис"
+
+#: openai/maindialog.py:588
+msgid "Record audio from microphone"
+msgstr "Запис звуку з мікрофона"
+
+#: openai/maindialog.py:592
+msgid "Transcribe from &audio file"
+msgstr "Транскрибувати з &аудіофайлу"
+
+#: openai/maindialog.py:595
+msgid "Transcribe audio from a file path"
+msgstr "Транскрибувати аудіо за допомогою шляху до файлу"
+
+#: openai/maindialog.py:599
+msgid "&Image description"
+msgstr "&Опис зображення"
+
+#: openai/maindialog.py:602
+msgid "Describe an image from a file path or an URL"
+msgstr "Описати зображення за допомогою шляху до файлу або URL-адреси"
+
+#: openai/maindialog.py:606
+msgid "&Vocalize the prompt"
+msgstr "&Промовити запит"
+
+#: openai/maindialog.py:680
+msgid ""
+"No image provided. Please use the Image Description button and select one or "
+"more images. Otherwise, please select another model."
+msgstr ""
+"Зображення не надано. Будь ласка, скористайтеся кнопкою \"Опис зображення\" "
+"і виберіть одне або декілька зображень. В іншому випадку, будь ласка, "
+"виберіть іншу модель."
+
+#: openai/maindialog.py:681 openai/maindialog.py:688 openai/maindialog.py:1014
+msgid "Open AI"
+msgstr "Open AI"
+
+#: openai/maindialog.py:687
+#, python-format
+msgid ""
+"This model does not support image description. Please select the %s model."
+msgstr ""
+"Ця модель не підтримує опис зображення. Будь ласка, виберіть модель %s."
+
+#: openai/maindialog.py:699 openai/maindialog.py:1003 openai/maindialog.py:1019
+msgid "Processing, please wait..."
+msgstr "Обробка, зачекайте..."
+
+#: openai/maindialog.py:762
+#, python-format
+msgid "Insertion of: %s"
+msgstr "Вставка з: %s"
+
+#: openai/maindialog.py:773
+msgid "Open AI error"
+msgstr "Помилка Open AI"
+
+#: openai/maindialog.py:783
+msgid "Press alt+f4 to close the dialog"
+msgstr "Натисніть клавіші Alt+F4, щоб закрити діалог"
+
+#: openai/maindialog.py:793
+msgid "User:"
+msgstr "Користувач:"
+
+#: openai/maindialog.py:795
+msgid "Assistant:"
+msgstr "Помічник:"
+
+#: openai/maindialog.py:857
+msgid "Begin"
+msgstr "Початок"
+
+#: openai/maindialog.py:877
+msgid "End"
+msgstr "Кінець"
+
+#: openai/maindialog.py:905
+#, python-format
+msgid "Response copied to system: %s"
+msgstr "Відповідь скопійовано до system: %s"
+
+#: openai/maindialog.py:914
+msgid "Compied to prompt"
+msgstr "Запит скопійовано"
+
+#: openai/maindialog.py:918
+msgid "Copy"
+msgstr "Копія"
+
+#: openai/maindialog.py:926
+msgid "Copy prompt"
+msgstr "Копіювати запит"
+
+#: openai/maindialog.py:929
+msgid "Copy response"
+msgstr "Копіювати відповідь"
+
+#: openai/maindialog.py:954
+msgid "Block deleted"
+msgstr "Блокування видалено"
+
+#: openai/maindialog.py:964
+msgid "Select image files"
+msgstr "Вибрати файли зображень"
+
+#: openai/maindialog.py:966
+msgid "Image files"
+msgstr "Файли зображень"
+
+#: openai/maindialog.py:986
+msgid "Stop &recording"
+msgstr "Зупинити &запис"
+
+#: openai/maindialog.py:995
+msgid "Select audio file"
+msgstr "Вибрати аудіофайл"
+
+#: openai/maindialog.py:997
+msgid ""
+"Audio files (*.mp3;*.mp4;*.mpeg;*.mpga;*.m4a;*.wav;*.webm)|*.mp3;*.mp4;*."
+"mpeg;*.mpga;*.m4a;*.wav;*.webm"
+msgstr ""
+"Аудіофайли (*.mp3;*.mp4;*.mpeg;*.mpga;*.m4a;*.wav;*.webm)|*.mp3;*.mp4;*.mpeg;"
+"*.mpga;*. m4a;*.wav;*.webm"
+
+#: openai/maindialog.py:1013
+msgid "Please enter some text in the prompt field first."
+msgstr "Спочатку введіть текст у поле запиту."
