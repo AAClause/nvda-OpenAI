@@ -4,30 +4,35 @@ class Model:
 		self,
 		name: str,
 		description: str,
-		maxInputToken: int,
-		maxOutputToken: int,
+		contextWindow: int,
+		maxOutputToken: int=-1,
 		maxTemperature: float=2.0,
 		defaultTemperature: float=1.0
 	):
 		self.name = name
 		self.description = description
-		self.maxInputToken = maxInputToken
+		self.contextWindow = contextWindow
 		self.maxOutputToken = maxOutputToken
 		self.maxTemperature = maxTemperature
 		self.defaultTemperature = defaultTemperature
 
 	def __repr__(self):
-		return f"Model(name={self.name}, description={self.description}, maxInputToken={self.maxInputToken}, maxOutputToken={self.maxOutputToken}, maxTemperature={self.maxTemperature}, defaultTemperature={self.defaultTemperature})"
+		return f"Model(name={self.name}, description={self.description}, contextWindow={self.contextWindow}, maxOutputToken={self.maxOutputToken}, maxTemperature={self.maxTemperature}, defaultTemperature={self.defaultTemperature})"
 
 	def __str__(self):
 		name = self.name
 		description = self.description.rstrip('.')
-		maxInputToken = self.maxInputToken
+		contextWindow = self.contextWindow
 		maxOutputToken = self.maxOutputToken
-		return f"{name} ({description}. " + _("Maximum of {maxInputToken} input tokens. Maximum of {maxOutputToken} output tokens.)").format(
-			maxInputToken=maxInputToken,
-			maxOutputToken=maxOutputToken
-		)
+		s = f"{name} ({description}"
+		if contextWindow > 0:
+			label = _("Context window:")
+			s += f". {label} {contextWindow}"
+		if maxOutputToken > 0:
+			label = _("max output token:")
+			s += f", {label} {maxOutputToken}"
+		s += ')'
+		return s
 
 	def __hash__(self):
-		return hash((self.name, self.maxInputToken, self.maxOutputToken, self.maxTemperature, self.defaultTemperature))
+		return hash((self.name, self.contextWindow, self.maxOutputToken, self.maxTemperature, self.defaultTemperature))

@@ -62,21 +62,27 @@ class CompletionThread(threading.Thread):
 		wnd = self._notifyWindow
 		client = wnd.client
 		conf = wnd.conf
+		data = wnd.data
 		block = HistoryBlock()
 		system = wnd.systemText.GetValue().strip()
 		block.system = system
 		prompt = wnd.promptText.GetValue().strip()
-		block.userPrompt = prompt
+		block.prompt = prompt
 		model = wnd.getCurrentModel()
 		block.model = model.name
 		conf["model"] = model.name
-		temperature = int(conf["temperature"]) / 100
-		topP = conf["topP"] / 100
 		stream = conf["stream"]
 		debug = conf["debug"]
+		maxTokens = wnd.maxTokens.GetValue()
+		block.maxTokens = maxTokens
+		key_maxTokens = "maxTokens_%s" % model.name
+		data[key_maxTokens] = maxTokens
+		temperature = 1
+		topP = 1
 		if conf["advancedMode"]:
 			temperature = wnd.temperature.GetValue() / 100
-			#conf["temperature"] = wnd.temperature.GetValue()
+			key_temperature = "temperature_%s" % model.name
+			data[key_temperature] = wnd.temperature.GetValue()
 
 			topP = wnd.topP.GetValue() / 100
 			conf["topP"] = wnd.topP.GetValue()
@@ -90,9 +96,6 @@ class CompletionThread(threading.Thread):
 		block.temperature = temperature
 		block.topP = topP
 
-		maxTokens = wnd.maxTokens.GetValue()
-		#conf["maxTokens"] = maxTokens
-		n = 1 # wnd.n.GetValue()
 		if not 0 <= temperature <= model.maxTemperature * 100:
 			wx.PostEvent(self._notifyWindow, ResultEvent(_("Invalid temperature")))
 			return
@@ -108,7 +111,6 @@ class CompletionThread(threading.Thread):
 			"temperature": temperature,
 			"max_tokens": maxTokens,
 			"top_p": topP,
-			#"n": n,
 			"stream": stream
 		}
 		try:
@@ -413,7 +415,7 @@ class HistoryBlock():
 	previous = None
 	next = None
 	contextPromp = ""
-	userPrompt = ""
+	prompt = ""
 	response = {}
 	responseText = ""
 	segmentBreakLine = None
@@ -444,13 +446,15 @@ class OpenAIDlg(wx.Dialog):
 			return
 		self.client = client
 		self.conf = conf
+		self.data = self.loadData()
+		self._orig_data = self.data.copy() if isinstance(self.data, dict) else None
 		self.blocks = []
 		self.pathList = pathList
 		self.previousPrompt = None
 		self._lastSystem = None
 		self._model_names = [model.name for model in MODELS]
 		if self.conf["saveSystem"]:
-			self._lastSystem = self.getLastSystem()
+			self._lastSystem = self.data.get("system", "")
 		if not title:
 			title = "Open AI - %s" % (
 				_("organization") if conf["use_org"] else _("personal")
@@ -521,8 +525,7 @@ class OpenAIDlg(wx.Dialog):
 				label=_("&Temperature:")
 			)
 			self.temperature = wx.SpinCtrl(
-				parent=self,
-				min=TEMPERATURE_MIN,
+				parent=self
 			)
 
 			topPLabel = wx.StaticText(
@@ -643,29 +646,52 @@ class OpenAIDlg(wx.Dialog):
 		self.Bind(wx.EVT_CHAR_HOOK, self.onCharHook)
 		self.Bind(wx.EVT_CLOSE, self.onCancel)
 
-	def getLastSystem(self):
+	def loadData(self):
 		if not os.path.exists(DATA_JSON_FP):
 			return
-		f = open(DATA_JSON_FP, "r")
 		try:
-			data = json.loads(f.read())
+			with open(DATA_JSON_FP, 'r') as f :
+				return json.loads(f.read())
 		except BaseException as err:
-			log.error(f"Error while reading data.json: {err}")
-			f.close()
+			log.error(err)
+
+	def saveData(self, force=False):
+		if not force and self.data == self._orig_data:
 			return
-		f.close()
-		return data.get("system")
+		with open(DATA_JSON_FP, "w") as f:
+			f.write(json.dumps(self.data))
 
 	def getCurrentModel(self):
 		return MODELS[self.modelListBox.GetSelection()]
 
 	def onModelChange(self, evt):
 		model = self.getCurrentModel()
-		self.maxTokens.SetRange(0, model.maxOutputToken)
-		self.maxTokens.SetValue(model.maxOutputToken // 2)
+		self.maxTokens.SetRange(
+			0,
+			model.maxOutputToken if model.maxOutputToken > 1 else model.contextWindow
+		)
+		defaultMaxOutputToken = 512
+		key_maxTokens = "maxTokens_%s" % model.name
+		if (
+			key_maxTokens in self.data
+			and isinstance(self.data[key_maxTokens], int)
+			and self.data[key_maxTokens] > 0
+		):
+			defaultMaxOutputToken = self.data[key_maxTokens]
+		else:
+			defaultMaxOutputToken = model.maxOutputToken // 2
+			if defaultMaxOutputToken < 1:
+				defaultMaxOutputToken  = model.contextWindow // 2
+		if defaultMaxOutputToken < 1:
+			defaultMaxOutputToken = 1024
+		self.maxTokens.SetValue(defaultMaxOutputToken)
 		if self.conf["advancedMode"]:
-			self.temperature.SetRange(TEMPERATURE_MIN, model.maxTemperature * 100)
-			self.temperature.SetValue(int(model.defaultTemperature * 100))
+			self.temperature.SetRange(0, model.maxTemperature * 100)
+			key_temperature = "temperature_%s" % model.name
+			if key_temperature in self.data:
+				self.temperature.SetValue(self.data[key_temperature])
+			else:
+				self.temperature.SetValue(model.defaultTemperature * 100) 
 
 	def onOk(self, evt):
 		if not self.promptText.GetValue().strip():
@@ -697,10 +723,7 @@ class OpenAIDlg(wx.Dialog):
 			return
 		system = self.systemText.GetValue().strip()
 		if self.conf["saveSystem"] and system != self._lastSystem and system:
-			f = open(os.path.join(DATA_DIR, "data.json"), "w")
-			data = {"system": system}
-			f.write(json.dumps(data, indent=2, ensure_ascii=False))
-			f.close()
+			self.data["system"] = system
 			self._lastSystem = system
 		self.message(_("Processing, please wait..."))
 		winsound.PlaySound(f"{ADDON_DIR}/sounds/progress.wav", winsound.SND_ASYNC|winsound.SND_LOOP)
@@ -717,6 +740,7 @@ class OpenAIDlg(wx.Dialog):
 		self.worker.start()
 
 	def onCancel(self, evt):
+		self.saveData()
 		if self.worker:
 			self.worker.abort()
 			self.worker = None
@@ -733,10 +757,10 @@ class OpenAIDlg(wx.Dialog):
 		if isinstance(event.data, openai.types.chat.chat_completion.Choice):
 			historyBlock = HistoryBlock()
 			historyBlock.system = self.systemText.GetValue().strip()
-			historyBlock.userPrompt = self.promptText.GetValue().strip()
+			historyBlock.prompt = self.promptText.GetValue().strip()
 			if self.pathList:
 				for path in self.pathList:
-					historyBlock.userPrompt += f"\n  + <image: \"{path}\">"
+					historyBlock.prompt += f"\n  + <image: \"{path}\">"
 			self.pathList = None
 			historyBlock.model = self.getCurrentModel().name
 			if self.conf["advancedMode"]:
@@ -797,7 +821,7 @@ class OpenAIDlg(wx.Dialog):
 				if block != self.firstBlock:
 					block.previous.segmentBreakLine = TextSegment(self.historyText, "\n", block)
 				block.segmentPromptLabel = TextSegment(self.historyText, _("User:") + ' ', block)
-				block.segmentPrompt = TextSegment(self.historyText, block.userPrompt + "\n", block)
+				block.segmentPrompt = TextSegment(self.historyText, block.prompt + "\n", block)
 				block.segmentResponseLabel = TextSegment(self.historyText, _("Assistant:") + ' ', block)
 				block.displayHeader = False
 			l = len(block.responseText)
