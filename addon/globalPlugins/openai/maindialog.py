@@ -95,6 +95,8 @@ class CompletionThread(threading.Thread):
 
 		block.temperature = temperature
 		block.topP = topP
+		conversationMode = conf["conversationMode"]
+		conf["conversationMode"] = wnd.conversationCheckBox.IsChecked()
 
 		if not 0 <= temperature <= model.maxTemperature * 100:
 			wx.PostEvent(self._notifyWindow, ResultEvent(_("Invalid temperature")))
@@ -102,12 +104,23 @@ class CompletionThread(threading.Thread):
 		if not TOP_P_MIN <= topP <= TOP_P_MAX:
 			wx.PostEvent(self._notifyWindow, ResultEvent(_("Invalid top P")))
 			return
+		messages = []
+		if system:
+			messages.append({"role": "system", "content": system})
+		if conversationMode:
+			block_ = wnd.firstBlock
+			while block_ is not None:
+				if block_.prompt:
+					messages.append({"role": "user", "content": block_.prompt})
+				if block_.responseText:
+					messages.append({"role": "system", "content": block_.responseText})
+				block_ = block_.next
+		if prompt:
+			messages.append({"role": "user", "content": prompt})
+		log.info(messages)
 		params = {
 			"model": model.name,
-			"messages": [
-				{"role": "system", "content": system},
-				{"role": "user", "content": prompt}
-			],
+			"messages": messages,
 			"temperature": temperature,
 			"max_tokens": maxTokens,
 			"top_p": topP,
@@ -461,6 +474,11 @@ class OpenAIDlg(wx.Dialog):
 			)
 		super().__init__(parent, title=title)
 
+		self.conversationCheckBox = wx.CheckBox(
+			parent=self,
+			label=_("Conversati&on mode")
+		)
+		self.conversationCheckBox.SetValue(conf["conversationMode"])
 		systemLabel = wx.StaticText(
 			parent=self,
 			label=_("S&ystem:")
@@ -967,11 +985,11 @@ class OpenAIDlg(wx.Dialog):
 		block = segment.owner
 
 		if block.segmentBreakLine  is not None:
-			block.segmentBreakLine.delete ()
-		block.segmentPromptLabel.delete ()
+			block.segmentBreakLine.delete()
+		block.segmentPromptLabel.delete()
 		block.segmentPrompt.delete()
-		block.segmentResponseLabel.delete ()
-		block.segmentResponse.delete ()
+		block.segmentResponseLabel.delete()
+		block.segmentResponse.delete()
 
 		if block.previous is not None:
 			block.previous.next = block.next
