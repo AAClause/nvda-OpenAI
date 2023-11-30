@@ -1,3 +1,7 @@
+import addonHandler
+
+addonHandler.initTranslation()
+
 class Model:
 
 	def __init__(
