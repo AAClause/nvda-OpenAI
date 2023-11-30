@@ -688,7 +688,7 @@ class OpenAIDlg(wx.Dialog):
 
 	def loadData(self):
 		if not os.path.exists(DATA_JSON_FP):
-			return
+			return {}
 		try:
 			with open(DATA_JSON_FP, 'r') as f :
 				return json.loads(f.read())
