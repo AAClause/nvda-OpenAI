@@ -208,7 +208,9 @@ class ImageDescriptionThread(threading.Thread):
 						continue
 					if content["type"] == "image_url":
 						nbImages += 1
-		if nbImages:
+		if nbImages == 1:
+			wnd.message(_("One image to analyze..."))
+		elif nbImages > 1:
 			wnd.message(_("%d images to analyze...") % nbImages)
 		max_tokens = wnd.maxTokens.GetValue()
 		try:
@@ -613,14 +615,14 @@ class OpenAIDlg(wx.Dialog):
 
 		self.recordBtn = wx.Button(
 			parent=self,
-			label=_("Start &recording")
+			label=_("Start &recording") + " (ctrl+r)"
 		)
 		self.recordBtn.Bind(wx.EVT_BUTTON, self.onRecord)
 		self.recordBtn.SetToolTip(_("Record audio from microphone"))
 
 		self.transcribeFromFileBtn = wx.Button(
 			parent=self,
-			label=_("Transcribe from &audio file")
+			label=_("Transcribe from &audio file") + " (ctrl+shift+r)"
 		)
 		self.transcribeFromFileBtn.Bind(wx.EVT_BUTTON, self.onRecordFromFilePath)
 		self.transcribeFromFileBtn.SetToolTip(_("Transcribe audio from a file path"))
@@ -634,7 +636,7 @@ class OpenAIDlg(wx.Dialog):
 
 		self.TTSBtn = wx.Button(
 			parent=self,
-			label=_("&Vocalize the prompt")
+			label=_("&Vocalize the prompt") + " (ctrl+t)"
 		)
 		self.TTSBtn.Bind(wx.EVT_BUTTON, self.onTextToSpeech)
 
@@ -917,8 +919,9 @@ class OpenAIDlg(wx.Dialog):
 
 		accelEntries  = []
 		self.addEntry(accelEntries, wx.ACCEL_CTRL, ord("r"), self.onRecord)
-		self.addEntry(accelEntries, wx.ACCEL_CTRL, ord("f"), self.onRecordFromFilePath)
-		self.addEntry(accelEntries, wx.ACCEL_CTRL, ord("i"), self.onImageDescription)
+		self.addEntry(accelEntries, wx.ACCEL_CTRL | wx.ACCEL_SHIFT, ord("r"), self.onRecordFromFilePath)
+		self.addEntry(accelEntries, wx.ACCEL_CTRL, ord("i"), self.onImageDescriptionFromFilePath)
+		self.addEntry(accelEntries, wx.ACCEL_CTRL, ord("u"), self.onImageDescriptionFromURL)
 		self.addEntry(accelEntries, wx.ACCEL_CTRL, ord("t"), self.onTextToSpeech)
 		accelTable = wx.AcceleratorTable(accelEntries)
 		self.SetAcceleratorTable(accelTable)
@@ -1091,19 +1094,86 @@ class OpenAIDlg(wx.Dialog):
 		queueHandler.queueFunction(queueHandler.eventQueue, func, msg)
 
 	def onImageDescription(self, evt):
+		"""
+		Display a menu to select the source of the image.
+		"""
+		menu = wx.Menu()
+		item_id = wx.NewIdRef()
+		menu.Append(item_id, _("From f&ile path...") + " (Ctrl+i)")
+		self.Bind(wx.EVT_MENU, self.onImageDescriptionFromFilePath, id=item_id)
+		item_id = wx.NewIdRef()
+		menu.Append(item_id, _("From &URL...") + " (Ctrl+u)")
+		self.Bind(wx.EVT_MENU, self.onImageDescriptionFromURL, id=item_id)
+		self.PopupMenu(menu)
+		menu.Destroy()
+
+	def onImageDescriptionFromFilePath(self, evt):
+		"""
+		Open a file dialog to select one or more images.
+		"""
 		if not self.pathList:
-			dlg = wx.FileDialog(
-				None,
-				message=_("Select image files"),
-				defaultFile="",
-				wildcard=_("Image files") + " (*.png;*.jpeg;*.jpg;*.gif)|*.png;*.jpeg;*.jpg;*.gif",
-				style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST | wx.FD_MULTIPLE
+			self.pathList = []
+		dlg = wx.FileDialog(
+			None,
+			message=_("Select image files"),
+			defaultFile="",
+			wildcard=_("Image files") + " (*.png;*.jpeg;*.jpg;*.gif)|*.png;*.jpeg;*.jpg;*.gif",
+			style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST | wx.FD_MULTIPLE
+		)
+		if dlg.ShowModal() != wx.ID_OK:
+			return
+		paths = dlg.GetPaths()
+		if not paths:
+			return
+		self.pathList.extend(paths)
+		model_name = self.getCurrentModel().name
+		if model_name != MODEL_VISION:
+			self.modelListBox.SetSelection(
+				self._model_names.index(MODEL_VISION)
 			)
-			if dlg.ShowModal() != wx.ID_OK:
-				return
-			self.pathList = dlg.GetPaths()
-			if not self.pathList:
-				return
+		if not self.promptText.GetValue().strip():
+			self.promptText.SetValue(DEFAULT_PROMPT_IMAGE_DESCRIPTION)
+		self.promptText.SetFocus()
+
+	def onImageDescriptionFromURL(self, evt):
+		"""
+		Open a dialog to enter an image URL.
+		"""
+		dlg = wx.TextEntryDialog(
+			None,
+			message=_("Enter image URL"),
+			caption=_("Open AI"),
+			style=wx.OK|wx.CANCEL
+		)
+		if dlg.ShowModal() != wx.ID_OK:
+			return
+		url = dlg.GetValue().strip()
+		if not url:
+			return
+		url_pattern = re.compile(
+			r"^(?:http)s?://(?:[A-Z0-9-]+\.)+[A-Z]{2,6}(?::\d+)?(?:/?|[/?]\S+)$",
+			re.IGNORECASE
+		)
+		if re.match(url_pattern, url) is None:
+			gui.messageBox(
+				_("Invalid URL, bad format."),
+				_("Open AI"),
+				wx.OK|wx.ICON_ERROR
+			)
+			return
+		try:
+			import urllib.request
+			r = urllib.request.urlopen(url)
+		except urllib.error.HTTPError as err:
+			gui.messageBox(
+				_("Invalid URL, HTTP error: %s.") % err,
+				_("Open AI"),
+				wx.OK|wx.ICON_ERROR
+			)
+			return
+		if not self.pathList:
+			self.pathList = []
+		self.pathList.append(url)
 		self.modelListBox.SetSelection(
 			self._model_names.index(MODEL_VISION)
 		)
@@ -1161,7 +1231,9 @@ class OpenAIDlg(wx.Dialog):
 			self.worker.stop()
 			self.worker = None
 			winsound.PlaySound(None, winsound.SND_ASYNC)
-		self.recordBtn.SetLabel(_("Start &recording"))
+		self.recordBtn.SetLabel(
+			_("Start &recording") + " (Ctrl+R)"
+		)
 		self.recordBtn.Bind(wx.EVT_BUTTON, self.onRecord)
 		self.enableButtons()
 
