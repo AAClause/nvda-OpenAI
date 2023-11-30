@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import sys
 import threading
 import winsound
@@ -15,7 +16,7 @@ import tones
 import ui
 from logHandler import log
 from .consts import ADDON_DIR, DATA_DIR
-from .imagehelper import describeFromImageFileList
+from .imagehelper import describeFromImageFileList, encode_image
 additionalLibsPath = os.path.join(ADDON_DIR, "lib")
 sys.path.insert(0, additionalLibsPath)
 import openai
@@ -95,6 +96,9 @@ class CompletionThread(threading.Thread):
 
 		block.temperature = temperature
 		block.topP = topP
+		conversationMode = conf["conversationMode"]
+		conf["conversationMode"] = wnd.conversationCheckBox.IsChecked()
+		block.pathList = wnd.pathList
 
 		if not 0 <= temperature <= model.maxTemperature * 100:
 			wx.PostEvent(self._notifyWindow, ResultEvent(_("Invalid temperature")))
@@ -102,12 +106,15 @@ class CompletionThread(threading.Thread):
 		if not TOP_P_MIN <= topP <= TOP_P_MAX:
 			wx.PostEvent(self._notifyWindow, ResultEvent(_("Invalid top P")))
 			return
+		messages = []
+		if system:
+			messages.append({"role": "system", "content": system})
+		wnd.getMessages(messages)
+		if prompt:
+			messages.append({"role": "user", "content": prompt})
 		params = {
 			"model": model.name,
-			"messages": [
-				{"role": "system", "content": system},
-				{"role": "user", "content": prompt}
-			],
+			"messages": messages,
 			"temperature": temperature,
 			"max_tokens": maxTokens,
 			"top_p": topP,
@@ -175,15 +182,41 @@ class ImageDescriptionThread(threading.Thread):
 	def __init__(self, notifyWindow):
 		threading.Thread.__init__(self)
 		self._notifyWindow = notifyWindow
-		self._pathList = notifyWindow.pathList
 
 	def run(self):
 		wnd = self._notifyWindow
-		prompt = wnd.promptText.GetValue()
-		max_tokens = wnd.maxTokens.GetValue()
 		client = wnd.client
+		prompt = wnd.promptText.GetValue().strip()
+		messages = []
+		wnd.getMessages(messages)
+		if wnd.pathList:
+			content = [
+				{"type": "text", "text": prompt}
+			]
+			content.extend(wnd.getImages())
+			messages.append({
+				"role": "user",
+				"content": content
+			})
+		else:
+			messages.append({"role": "user", "content": prompt})
+		nbImages = 0
+		for message in messages:
+			if message["role"] == "user":
+				for content in message["content"]:
+					if not isinstance(content, dict):
+						continue
+					if content["type"] == "image_url":
+						nbImages += 1
+		if nbImages:
+			wnd.message(_("%d images to analyze...") % nbImages)
+		max_tokens = wnd.maxTokens.GetValue()
 		try:
-			description = describeFromImageFileList(client, self._pathList, prompt=prompt, max_tokens=max_tokens)
+			description = describeFromImageFileList(
+				client,
+				messages=messages,
+				max_tokens=max_tokens
+			)
 		except BaseException as err:
 			wx.PostEvent(self._notifyWindow, ResultEvent(repr(err)))
 			return
@@ -430,6 +463,7 @@ class HistoryBlock():
 	displayHeader = True
 	focused = False
 	responseTerminated = False
+	pathList = None
 
 
 class OpenAIDlg(wx.Dialog):
@@ -461,6 +495,11 @@ class OpenAIDlg(wx.Dialog):
 			)
 		super().__init__(parent, title=title)
 
+		self.conversationCheckBox = wx.CheckBox(
+			parent=self,
+			label=_("Conversati&on mode")
+		)
+		self.conversationCheckBox.SetValue(conf["conversationMode"])
 		systemLabel = wx.StaticText(
 			parent=self,
 			label=_("S&ystem:")
@@ -553,6 +592,7 @@ class OpenAIDlg(wx.Dialog):
 
 		self.onModelChange(None)
 		sizer1 = wx.BoxSizer(wx.VERTICAL)
+		sizer1.Add(self.conversationCheckBox, 0, wx.ALL, 5)
 		sizer1.Add(systemLabel, 0, wx.ALL, 5)
 		sizer1.Add(self.systemText, 0, wx.ALL, 5)
 		sizer1.Add(historyLabel, 0, wx.ALL, 5)
@@ -648,7 +688,7 @@ class OpenAIDlg(wx.Dialog):
 
 	def loadData(self):
 		if not os.path.exists(DATA_JSON_FP):
-			return
+			return {}
 		try:
 			with open(DATA_JSON_FP, 'r') as f :
 				return json.loads(f.read())
@@ -707,7 +747,11 @@ class OpenAIDlg(wx.Dialog):
 				wx.OK|wx.ICON_ERROR
 			)
 			return
-		if model.name == MODEL_VISION and not self.pathList:
+		if (
+			model.name == MODEL_VISION
+			and not self.conversationCheckBox.IsChecked()
+			and not self.pathList
+		):
 			gui.messageBox(
 				_("No image provided. Please use the Image Description button and select one or more images. Otherwise, please select another model."),
 				_("Open AI"),
@@ -754,14 +798,18 @@ class OpenAIDlg(wx.Dialog):
 		winsound.PlaySound(None, winsound.SND_ASYNC)
 		if not event.data:
 			return
+
 		if isinstance(event.data, openai.types.chat.chat_completion.Choice):
 			historyBlock = HistoryBlock()
 			historyBlock.system = self.systemText.GetValue().strip()
 			historyBlock.prompt = self.promptText.GetValue().strip()
+			"""
+			# TODO: Create a special history block for attached images and additional information
 			if self.pathList:
+				historyBlock.prompt += "\n\n" + _("Attached images:")
 				for path in self.pathList:
-					historyBlock.prompt += f"\n  + <image: \"{path}\">"
-			self.pathList = None
+					historyBlock.prompt += f"\n- \"{path}\""
+			"""
 			historyBlock.model = self.getCurrentModel().name
 			if self.conf["advancedMode"]:
 				historyBlock.temperature = self.temperature.GetValue() / 100
@@ -774,6 +822,8 @@ class OpenAIDlg(wx.Dialog):
 			historyBlock.response = event.data
 			historyBlock.responseText = event.data.message.content
 			historyBlock.responseTerminated = True
+			historyBlock.pathList = self.pathList
+			self.pathList = None
 			if self.lastBlock is None:
 				self.firstBlock = self.lastBlock = historyBlock
 			else:
@@ -784,6 +834,7 @@ class OpenAIDlg(wx.Dialog):
 			self.promptText.Clear()
 			self.promptText.SetFocus()
 			return
+
 		if isinstance(event.data, openai.types.audio.transcription.Transcription):
 			self.promptText.AppendText(event.data.text)
 			self.promptText.SetFocus()
@@ -793,6 +844,7 @@ class OpenAIDlg(wx.Dialog):
 				True
 			)
 			return
+
 		if isinstance(event.data, openai._base_client.HttpxBinaryResponseContent):
 			if os.path.exists(TTS_FILE_NAME):
 				os.startfile(TTS_FILE_NAME)
@@ -870,6 +922,57 @@ class OpenAIDlg(wx.Dialog):
 		self.addEntry(accelEntries, wx.ACCEL_CTRL, ord("t"), self.onTextToSpeech)
 		accelTable = wx.AcceleratorTable(accelEntries)
 		self.SetAcceleratorTable(accelTable)
+
+	def getImages(
+		self,
+		pathList: list = None
+	) -> list:
+		if not pathList:
+			pathList = self.pathList
+		images = []
+		for path in pathList:
+			url_re = re.compile(r"^https?://")
+			if url_re.match(path):
+				images.append({"type": "image_url", "image_url": {"url": path}})
+			elif os.path.isfile(path):
+				base64_image = encode_image(path)
+				format = path.split(".")[-1]
+				mime_type = f"image/{format}"
+				images.append({
+					"type": "image_url",
+					"image_url": {
+						"url": f"data:{mime_type};base64,{base64_image}"
+					}
+				})
+			else:
+				raise ValueError(f"Invalid path: {path}")
+				break
+		return images
+
+	def getMessages(
+		self,
+		messages: list
+	) -> list:
+		model = self.getCurrentModel()
+		if not self.conversationCheckBox.IsChecked():
+			return messages
+		block = self.firstBlock
+		while block is not None:
+			if block.prompt:
+				if block.pathList:
+					content = [
+						{"type": "text", "text": block.prompt}
+					]
+					content.extend(self.getImages(block.pathList))
+					messages.append({
+						"role": "user",
+						"content": content
+					})
+				else:
+					messages.append({"role": "user", "content": block.prompt})
+			if block.responseText:
+				messages.append({"role": "system", "content": block.responseText})
+			block = block.next
 
 	def onPreviousPrompt(self, event):
 		value = self.previousPrompt
@@ -967,11 +1070,11 @@ class OpenAIDlg(wx.Dialog):
 		block = segment.owner
 
 		if block.segmentBreakLine  is not None:
-			block.segmentBreakLine.delete ()
-		block.segmentPromptLabel.delete ()
+			block.segmentBreakLine.delete()
+		block.segmentPromptLabel.delete()
 		block.segmentPrompt.delete()
-		block.segmentResponseLabel.delete ()
-		block.segmentResponse.delete ()
+		block.segmentResponseLabel.delete()
+		block.segmentResponse.delete()
 
 		if block.previous is not None:
 			block.previous.next = block.next

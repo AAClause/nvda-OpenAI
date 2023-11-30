@@ -37,6 +37,7 @@ confSpecs = {
 	"TTSModel": f"option({', '.join(TTS_MODELS)}, default={TTS_DEFAULT_MODEL})",
 	"TTSVoice": f"option({', '.join(TTS_VOICES)}, default={TTS_DEFAULT_VOICE})",
 	"blockEscapeKey": "boolean(default=False)",
+	"conversationMode": "boolean(default=True)",
 	"saveSystem": "boolean(default=False)",
 	"advancedMode": "boolean(default=False)",
 	"renewClient": "boolean(default=False)",
