@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: open ai\n"
 "Report-Msgid-Bugs-To: nvda-translations@groups.io\n"
-"POT-Creation-Date: 2023-11-29 19:11+0100\n"
-"PO-Revision-Date: 2023-11-29 19:26+0100\n"
+"POT-Creation-Date: 2023-11-30 22:00+0100\n"
+"PO-Revision-Date: 2023-11-30 22:24+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: fr\n"
@@ -16,78 +16,78 @@ msgstr ""
 "globalPlugins\n"
 "X-Poedit-SearchPath-0: .\n"
 
-#: addon\globalPlugins\openai\__init__.py:48
+#: addon\globalPlugins\openai\__init__.py:49
 msgid ""
 "No authentication key provided. Please set it in the Preferences dialog."
 msgstr ""
 "Aucune clé d’authentification fournie. Veuillez la définir dans la boîte de "
 "dialogue des préférences."
 
-#: addon\globalPlugins\openai\__init__.py:66
+#: addon\globalPlugins\openai\__init__.py:67
 msgid "API Key:"
 msgstr "Clé API :"
 
-#: addon\globalPlugins\openai\__init__.py:71
+#: addon\globalPlugins\openai\__init__.py:72
 msgid "Organization"
 msgstr "Organisation"
 
-#: addon\globalPlugins\openai\__init__.py:79
+#: addon\globalPlugins\openai\__init__.py:80
 msgid "Use or&ganization"
 msgstr "Utiliser une or&ganisation"
 
-#: addon\globalPlugins\openai\__init__.py:90
+#: addon\globalPlugins\openai\__init__.py:91
 msgid "Organization &name:"
 msgstr "&Nom de l’organisation :"
 
-#: addon\globalPlugins\openai\__init__.py:96
+#: addon\globalPlugins\openai\__init__.py:97
 msgid "&Organization key:"
 msgstr "Clé de l’&organisation :"
 
-#: addon\globalPlugins\openai\__init__.py:103
+#: addon\globalPlugins\openai\__init__.py:104
 msgid "Main dialog"
 msgstr "Dialogue principal"
 
-#: addon\globalPlugins\openai\__init__.py:112
+#: addon\globalPlugins\openai\__init__.py:113
 msgid "Block the closing using the &escape key"
 msgstr ""
 "Bloquer la fermeture de la fenêtre principale en utilisant la touche échap"
 
-#: addon\globalPlugins\openai\__init__.py:120
+#: addon\globalPlugins\openai\__init__.py:121
 msgid "Remember the content of the S&ystem field between sessions"
 msgstr "Se souvenir du contenu du champ S&ystème entre les sessions"
 
-#: addon\globalPlugins\openai\__init__.py:128
+#: addon\globalPlugins\openai\__init__.py:129
 msgid "Enable &advanced settings (including temperature and probability mass)"
 msgstr ""
 "Activer les paramètres avancés (inclu la température et la masse de "
 "probabilité)"
 
-#: addon\globalPlugins\openai\__init__.py:138
+#: addon\globalPlugins\openai\__init__.py:139
 msgid "Text To Speech"
 msgstr "Text To Speech"
 
-#: addon\globalPlugins\openai\__init__.py:144
+#: addon\globalPlugins\openai\__init__.py:145
 msgid "&Voice:"
 msgstr "&Voix :"
 
-#: addon\globalPlugins\openai\__init__.py:154
-#: addon\globalPlugins\openai\maindialog.py:500
+#: addon\globalPlugins\openai\__init__.py:155
+#: addon\globalPlugins\openai\maindialog.py:541
 msgid "&Model:"
 msgstr "&Modèle :"
 
-#: addon\globalPlugins\openai\__init__.py:232
+#: addon\globalPlugins\openai\__init__.py:233
 msgid "Show Open AI dialog"
 msgstr "Affiche le dialogue Open AI"
 
-#: addon\globalPlugins\openai\__init__.py:246
+#: addon\globalPlugins\openai\__init__.py:247
 msgid "Take a screenshot and describe it"
 msgstr "Prendre une capture d’écran et la décrire"
 
-#: addon\globalPlugins\openai\__init__.py:266
+#: addon\globalPlugins\openai\__init__.py:267
 msgid "Grab the current navigator object and describe it"
 msgstr "Capturer l’objet navigateur courant et le décrire"
 
-#: addon\globalPlugins\openai\__init__.py:303
+#: addon\globalPlugins\openai\__init__.py:304
 msgid "Please disable the screen curtain before taking a screenshot"
 msgstr ""
 "Veuillez désactiver le rideau d’écran avant de prendre une capture d’écran"
@@ -128,107 +128,123 @@ msgid ""
 "Same capabilities as the standard gpt-4 mode but with 4x the context length."
 msgstr ""
 
-#: addon\globalPlugins\openai\maindialog.py:37
+#: addon\globalPlugins\openai\maindialog.py:38
 msgid "Describe the images in as much detail as possible."
 msgstr "Décris les images avec autant de détails que possible."
 
-#: addon\globalPlugins\openai\maindialog.py:100
+#: addon\globalPlugins\openai\maindialog.py:104
 msgid "Invalid temperature"
 msgstr "Température invalide"
 
-#: addon\globalPlugins\openai\maindialog.py:103
+#: addon\globalPlugins\openai\maindialog.py:107
 msgid "Invalid top P"
 msgstr "Top P invalide"
 
-#: addon\globalPlugins\openai\maindialog.py:135
+#: addon\globalPlugins\openai\maindialog.py:142
 msgid "Ready"
 msgstr "Prêt"
 
-#: addon\globalPlugins\openai\maindialog.py:225
+#: addon\globalPlugins\openai\maindialog.py:212
+msgid "One image to analyze..."
+msgstr "Une image à analyser..."
+
+#: addon\globalPlugins\openai\maindialog.py:214
+#, python-format
+msgid "%d images to analyze..."
+msgstr "%d images à analyser..."
+
+#: addon\globalPlugins\openai\maindialog.py:260
 msgid "Transcribing..."
 msgstr "Transcrir..."
 
-#: addon\globalPlugins\openai\maindialog.py:460
+#: addon\globalPlugins\openai\maindialog.py:496
 msgid "organization"
 msgstr "organisation"
 
-#: addon\globalPlugins\openai\maindialog.py:460
+#: addon\globalPlugins\openai\maindialog.py:496
 msgid "personal"
 msgstr "personnel"
 
-#: addon\globalPlugins\openai\maindialog.py:466
+#: addon\globalPlugins\openai\maindialog.py:502
+msgid "Conversati&on mode"
+msgstr "Mode conversati&on"
+
+#: addon\globalPlugins\openai\maindialog.py:507
 msgid "S&ystem:"
 msgstr "S&ystème :"
 
-#: addon\globalPlugins\openai\maindialog.py:478
+#: addon\globalPlugins\openai\maindialog.py:519
 msgid "&History:"
 msgstr "&Historique :"
 
-#: addon\globalPlugins\openai\maindialog.py:488
+#: addon\globalPlugins\openai\maindialog.py:529
 msgid "&Prompt:"
 msgstr "&Prompt :"
 
-#: addon\globalPlugins\openai\maindialog.py:515
+#: addon\globalPlugins\openai\maindialog.py:556
 msgid "Maximum to&kens for the completion:"
 msgstr "To&kens maximum pour la complétion :"
 
-#: addon\globalPlugins\openai\maindialog.py:525
+#: addon\globalPlugins\openai\maindialog.py:566
 msgid "&Temperature:"
 msgstr "&Température :"
 
-#: addon\globalPlugins\openai\maindialog.py:533
+#: addon\globalPlugins\openai\maindialog.py:574
 msgid "Probability &mass (Top P):"
 msgstr "&Masse de probabilité (Top P) :"
 
-#: addon\globalPlugins\openai\maindialog.py:544
+#: addon\globalPlugins\openai\maindialog.py:585
 msgid "Stream mode"
 msgstr "Mode stream"
 
-#: addon\globalPlugins\openai\maindialog.py:550
+#: addon\globalPlugins\openai\maindialog.py:591
 msgid "&Debug mode"
 msgstr "Mode &débogage"
 
-#: addon\globalPlugins\openai\maindialog.py:576
-#: addon\globalPlugins\openai\maindialog.py:1061
+#: addon\globalPlugins\openai\maindialog.py:618
+#: addon\globalPlugins\openai\maindialog.py:1235
 msgid "Start &recording"
 msgstr "Démarrer l’&enregistrement"
 
-#: addon\globalPlugins\openai\maindialog.py:579
+#: addon\globalPlugins\openai\maindialog.py:621
 msgid "Record audio from microphone"
 msgstr "Enregistrer l’audio à partir du microphone"
 
-#: addon\globalPlugins\openai\maindialog.py:583
+#: addon\globalPlugins\openai\maindialog.py:625
 msgid "Transcribe from &audio file"
 msgstr "Transcrire depuis un fichier &audio"
 
-#: addon\globalPlugins\openai\maindialog.py:586
+#: addon\globalPlugins\openai\maindialog.py:628
 msgid "Transcribe audio from a file path"
 msgstr "Transcrire un fichier audio à partir d’un chemin"
 
-#: addon\globalPlugins\openai\maindialog.py:590
+#: addon\globalPlugins\openai\maindialog.py:632
 msgid "&Image description"
 msgstr "Description d’&image"
 
-#: addon\globalPlugins\openai\maindialog.py:593
+#: addon\globalPlugins\openai\maindialog.py:635
 msgid "Describe an image from a file path or an URL"
 msgstr "Décrivez une image à partir d’un fichier ou d’une URL"
 
-#: addon\globalPlugins\openai\maindialog.py:597
+#: addon\globalPlugins\openai\maindialog.py:639
 msgid "&Vocalize the prompt"
 msgstr "&Vocaliser le prompt"
 
-#: addon\globalPlugins\openai\maindialog.py:705
+#: addon\globalPlugins\openai\maindialog.py:747
 msgid "Please select a model."
 msgstr "Veuillez sélectionner un modèle."
 
-#: addon\globalPlugins\openai\maindialog.py:706
-#: addon\globalPlugins\openai\maindialog.py:713
-#: addon\globalPlugins\openai\maindialog.py:720
-#: addon\globalPlugins\openai\maindialog.py:1044
+#: addon\globalPlugins\openai\maindialog.py:748
+#: addon\globalPlugins\openai\maindialog.py:759
+#: addon\globalPlugins\openai\maindialog.py:766
+#: addon\globalPlugins\openai\maindialog.py:1145
+#: addon\globalPlugins\openai\maindialog.py:1160
+#: addon\globalPlugins\openai\maindialog.py:1170
+#: addon\globalPlugins\openai\maindialog.py:1217
 msgid "Open AI"
 msgstr "Open AI"
 
-#: addon\globalPlugins\openai\maindialog.py:712
+#: addon\globalPlugins\openai\maindialog.py:758
 msgid ""
 "No image provided. Please use the Image Description button and select one or "
 "more images. Otherwise, please select another model."
@@ -237,7 +253,7 @@ msgstr ""
 "sélectionnez une ou plusieurs images. Sinon, veuillez sélectionner un autre "
 "modèle."
 
-#: addon\globalPlugins\openai\maindialog.py:719
+#: addon\globalPlugins\openai\maindialog.py:765
 #, python-format
 msgid ""
 "This model does not support image description. Please select the %s model."
@@ -245,83 +261,104 @@ msgstr ""
 "Ce modèle ne prend pas en charge la description d’image. Veuillez "
 "sélectionner le modèle %s."
 
-#: addon\globalPlugins\openai\maindialog.py:728
-#: addon\globalPlugins\openai\maindialog.py:1033
-#: addon\globalPlugins\openai\maindialog.py:1049
+#: addon\globalPlugins\openai\maindialog.py:774
+#: addon\globalPlugins\openai\maindialog.py:1206
+#: addon\globalPlugins\openai\maindialog.py:1222
 msgid "Processing, please wait..."
 msgstr "Traitement en cours, veuillez patienter..."
 
-#: addon\globalPlugins\openai\maindialog.py:792
+#: addon\globalPlugins\openai\maindialog.py:845
 #, python-format
 msgid "Insertion of: %s"
 msgstr "Insertion de: %s"
 
-#: addon\globalPlugins\openai\maindialog.py:803
+#: addon\globalPlugins\openai\maindialog.py:857
 msgid "Open AI error"
 msgstr "Erreur open AI"
 
-#: addon\globalPlugins\openai\maindialog.py:813
+#: addon\globalPlugins\openai\maindialog.py:867
 msgid "Press alt+f4 to close the dialog"
 msgstr "Pressez alt+f4 pour fermer le dialogue"
 
-#: addon\globalPlugins\openai\maindialog.py:823
+#: addon\globalPlugins\openai\maindialog.py:877
 msgid "User:"
 msgstr "Utilisateur :"
 
-#: addon\globalPlugins\openai\maindialog.py:825
+#: addon\globalPlugins\openai\maindialog.py:879
 msgid "Assistant:"
 msgstr "Assistant :"
 
-#: addon\globalPlugins\openai\maindialog.py:887
+#: addon\globalPlugins\openai\maindialog.py:993
 msgid "Begin"
 msgstr "Début"
 
-#: addon\globalPlugins\openai\maindialog.py:907
+#: addon\globalPlugins\openai\maindialog.py:1013
 msgid "End"
 msgstr "Fin"
 
-#: addon\globalPlugins\openai\maindialog.py:935
+#: addon\globalPlugins\openai\maindialog.py:1041
 #, python-format
 msgid "Response copied to system: %s"
 msgstr "Réponse copiée vers le système : %s"
 
-#: addon\globalPlugins\openai\maindialog.py:944
+#: addon\globalPlugins\openai\maindialog.py:1050
 msgid "Compied to prompt"
 msgstr "Copié vers le prompt"
 
-#: addon\globalPlugins\openai\maindialog.py:948
+#: addon\globalPlugins\openai\maindialog.py:1054
 msgid "Copy"
 msgstr "Copié"
 
-#: addon\globalPlugins\openai\maindialog.py:956
+#: addon\globalPlugins\openai\maindialog.py:1062
 msgid "Copy prompt"
 msgstr "Prompt copié"
 
-#: addon\globalPlugins\openai\maindialog.py:959
+#: addon\globalPlugins\openai\maindialog.py:1065
 msgid "Copy response"
 msgstr "Réponse copié"
 
-#: addon\globalPlugins\openai\maindialog.py:984
+#: addon\globalPlugins\openai\maindialog.py:1090
 msgid "Block deleted"
 msgstr "Block supprimé"
 
-#: addon\globalPlugins\openai\maindialog.py:994
+#: addon\globalPlugins\openai\maindialog.py:1102
+msgid "From f&ile path..."
+msgstr "Depuis un f&ichier…"
+
+#: addon\globalPlugins\openai\maindialog.py:1105
+msgid "From &URL..."
+msgstr "Depuis une &URL..."
+
+#: addon\globalPlugins\openai\maindialog.py:1118
 msgid "Select image files"
 msgstr "Sélectionnez un fichier image"
 
-#: addon\globalPlugins\openai\maindialog.py:996
+#: addon\globalPlugins\openai\maindialog.py:1120
 msgid "Image files"
 msgstr "Fichiers image"
 
-#: addon\globalPlugins\openai\maindialog.py:1016
+#: addon\globalPlugins\openai\maindialog.py:1144
+msgid "Enter image URL"
+msgstr "Entrer l'URL de l'image"
+
+#: addon\globalPlugins\openai\maindialog.py:1159
+msgid "Invalid URL, bad format."
+msgstr "URL invalide, mauvais format."
+
+#: addon\globalPlugins\openai\maindialog.py:1169
+#, python-format
+msgid "Invalid URL, HTTP error: %s."
+msgstr "URL invalide, erreur HTTP : %s."
+
+#: addon\globalPlugins\openai\maindialog.py:1189
 msgid "Stop &recording"
 msgstr "&Arrêter l’enregistrement"
 
-#: addon\globalPlugins\openai\maindialog.py:1025
+#: addon\globalPlugins\openai\maindialog.py:1198
 msgid "Select audio file"
 msgstr "Sélectionnez un fichier audio"
 
-#: addon\globalPlugins\openai\maindialog.py:1027
+#: addon\globalPlugins\openai\maindialog.py:1200
 msgid ""
 "Audio files (*.mp3;*.mp4;*.mpeg;*.mpga;*.m4a;*.wav;*.webm)|*.mp3;*.mp4;*."
 "mpeg;*.mpga;*.m4a;*.wav;*.webm"
@@ -329,15 +366,15 @@ msgstr ""
 "Fichiers audio (*.mp3;*.mp4;*.mpeg;*.mpga;*.m4a;*.wav;*.webm)|*.mp3;*.mp4;*."
 "mpeg;*.mpga;*.m4a;*.wav;*.webm"
 
-#: addon\globalPlugins\openai\maindialog.py:1043
+#: addon\globalPlugins\openai\maindialog.py:1216
 msgid "Please enter some text in the prompt field first."
 msgstr "Veuillez saisir d’abord du texte dans le champ de saisie."
 
-#: addon\globalPlugins\openai\model.py:29
+#: addon\globalPlugins\openai\model.py:33
 msgid "Context window:"
 msgstr ""
 
-#: addon\globalPlugins\openai\model.py:32
+#: addon\globalPlugins\openai\model.py:36
 msgid "max output token:"
 msgstr "token maximum en sortie :"
 
