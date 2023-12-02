@@ -30,7 +30,7 @@ class Model:
 		maxOutputToken = self.maxOutputToken
 		s = f"{name} ({description}"
 		if contextWindow > 0:
-			label = _("Context window:")
+			label = _("Maximum input tokens")
 			s += f". {label} {contextWindow}"
 		if maxOutputToken > 0:
 			label = _("max output token:")
