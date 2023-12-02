@@ -28,6 +28,11 @@ sys.path.remove(additionalLibsPath)
 
 addonHandler.initTranslation()
 
+ROOT_ADDON_DIR = "\\".join(ADDON_DIR.split(os.sep)[:-2])
+ADDON_INFO = addonHandler.Addon(
+	ROOT_ADDON_DIR
+).manifest
+
 confSpecs = {
 	"use_org": "boolean(default=False)",
 	"model": f"string(default={DEFAULT_MODEL.name})",
@@ -202,9 +207,79 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		APIKey = api_key_manager.get_api_key()
 		gui.settingsDialogs.NVDASettingsDialog.categoryClasses.append(SettingsDlg)
 		self.client = None
+		self.createMenu()
+
+	def createMenu(self):
+		self.submenu = wx.Menu()
+		item = self.submenu.Append(
+			wx.ID_ANY,
+			_("Docu&mentation"),
+			_("Open the documentation of this addon")
+		)
+		gui.mainFrame.sysTrayIcon.Bind(wx.EVT_MENU, self.onDocumentation, item)
+		item = self.submenu.Append(
+			wx.ID_ANY,
+			_("Main d&ialog..."),
+			_("Show the Open AI dialog")
+		)
+		gui.mainFrame.sysTrayIcon.Bind(wx.EVT_MENU, self.onShowMainDialog, item)
+		item = self.submenu.Append(
+			wx.ID_ANY,
+			_("API &keys"),
+			_("Manage the API keys")
+		)
+		gui.mainFrame.sysTrayIcon.Bind(wx.EVT_MENU, self.onAPIKeys, item)
+		item = self.submenu.Append(
+			wx.ID_ANY,
+			_("API &usage"),
+			_("Open the API usage webpage")
+		)
+		gui.mainFrame.sysTrayIcon.Bind(wx.EVT_MENU, self.onAPIUsage, item)
+		item = self.submenu.Append(
+			wx.ID_ANY,
+			_("Git&Hub repository"),
+			_("Open the GitHub repository of this addon")
+		)
+		gui.mainFrame.sysTrayIcon.Bind(wx.EVT_MENU, self.onGitRepo, item)
+
+		addon_name = ADDON_INFO["name"]
+		addon_version = ADDON_INFO["version"]
+		self.submenu_item = gui.mainFrame.sysTrayIcon.menu.InsertMenu(
+			2,
+			wx.ID_ANY,
+			_("Open A&I {addon_version}".format(
+				addon_version=addon_version)
+			),
+			self.submenu
+		)
+
+	def onAPIKeys(self, evt):
+		url = "https://platform.openai.com/api-keys"
+		os.startfile(url)
+
+	def onAPIUsage(self, evt):
+		url = "https://platform.openai.com/usage"
+		os.startfile(url)
+
+	def onGitRepo(self, evt):
+		url = "https://github.com/aaclause/nvda-OpenAI/"
+		os.startfile(url)
+
+	def onDocumentation(self, evt):
+		import languageHandler
+		languages = ["en"]
+		language = languageHandler.getLanguage()
+		if '_' in language:
+			languages.insert(0, language.split('_')[0])
+		languages.insert(0, language)
+		for lang in languages:
+			fp = os.path.join(ROOT_ADDON_DIR, "doc", lang, "readme.html")
+			if os.path.exists(fp):
+				os.startfile(fp)
 
 	def terminate(self):
 		gui.settingsDialogs.NVDASettingsDialog.categoryClasses.remove(SettingsDlg)
+		gui.mainFrame.sysTrayIcon.menu.DestroyItem(self.submenu_item)
 		super().terminate()
 
 	def getClient(self):
@@ -228,11 +303,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			self.client = OpenAI(api_key=api_key)
 		return self.client
 
-	@script(
-		gesture="kb:nvda+g",
-		description=_("Show Open AI dialog")
-	)
-	def script_showMainDialog(self, gesture):
+	def onShowMainDialog(self, evt):
 		if not self.getClient():
 			return ui.message(NO_AUTHENTICATION_KEY_PROVIDED_MSG)
 		from . import maindialog
@@ -241,6 +312,13 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			client=self.getClient(),
 			conf=conf
 		)
+
+	@script(
+		gesture="kb:nvda+g",
+		description=_("Show Open AI dialog")
+	)
+	def script_showMainDialog(self, gesture):
+		self.onShowMainDialog(None)
 
 	@script(
 		gesture="kb:nvda+e",
