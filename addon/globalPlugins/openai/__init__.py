@@ -45,6 +45,13 @@ confSpecs = {
 	"conversationMode": "boolean(default=True)",
 	"saveSystem": "boolean(default=False)",
 	"advancedMode": "boolean(default=False)",
+	"images": {
+		"maxHeight": "integer(min=0, default=720)",
+		"maxWidth": "integer(min=0, default=0)",
+		"quality": "integer(min=0, max=100, default=85)",
+		"resize": "boolean(default=False)",
+		"resizeInfoDisplayed": "boolean(default=False)"
+	},
 	"renewClient": "boolean(default=False)",
 	"debug": "boolean(default=False)"
 }
@@ -106,14 +113,10 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 
 		sHelper.addItem(orgSizer)
 
-		mainDialogGroup = _("Main dialog")
-		mainDialogSizer = wx.StaticBoxSizer(wx.VERTICAL, self, label=mainDialogGroup)
+		mainDialogGroupLabel = _("Main dialog")
+		mainDialogSizer = wx.StaticBoxSizer(wx.VERTICAL, self, label=mainDialogGroupLabel)
 		mainDialogBox = mainDialogSizer.GetStaticBox()
-		mainDialog = gui.guiHelper.BoxSizerHelper(self, sizer=mainDialogSizer)
-
-		if not conf["use_org"]:
-			self.org_name.Disable()
-			self.org_key.Disable()
+		mainDialogGroup = gui.guiHelper.BoxSizerHelper(self, sizer=mainDialogSizer)
 
 		label = _("Block the closing using the &escape key")
 		self.blockEscape = wx.CheckBox(
@@ -121,7 +124,7 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 			label=label,
 		)
 		self.blockEscape.SetValue(conf["blockEscapeKey"])
-		mainDialog.addItem(self.blockEscape)
+		mainDialogGroup.addItem(self.blockEscape)
 
 		label = _("Remember the content of the S&ystem field between sessions")
 		self.saveSystem = wx.CheckBox(
@@ -129,7 +132,7 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 			label=label,
 		)
 		self.saveSystem.SetValue(conf["saveSystem"])
-		mainDialog.addItem(self.saveSystem)
+		mainDialogGroup.addItem(self.saveSystem)
 
 		label = _("Enable &advanced settings (including temperature and probability mass)")
 		self.advancedMode = wx.CheckBox(
@@ -137,16 +140,14 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 			label=label,
 		)
 		self.advancedMode.SetValue(conf["advancedMode"])
-		mainDialog.addItem(self.advancedMode)
+		mainDialogGroup.addItem(self.advancedMode)
 
-		sHelper.addItem(mainDialogSizer)
-
-		TTSGroup = _("Text To Speech")
-		TTSSizer = wx.StaticBoxSizer(wx.VERTICAL, self, label=TTSGroup)
+		TTSGroupLabel = _("Text To Speech")
+		TTSSizer = wx.StaticBoxSizer(wx.VERTICAL, self, label=TTSGroupLabel)
 		TTSBox = TTSSizer.GetStaticBox()
-		TTS = gui.guiHelper.BoxSizerHelper(self, sizer=TTSSizer)
+		TTSGroup = gui.guiHelper.BoxSizerHelper(self, sizer=TTSSizer)
 
-		self.voiceList = TTS.addLabeledControl(
+		self.voiceList = TTSGroup.addLabeledControl(
 			_("&Voice:"),
 			wx.Choice,
 			choices=TTS_VOICES,
@@ -156,7 +157,7 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 			itemToSelect = TTS_VOICES.index(conf["TTSVoice"])
 		self.voiceList.SetSelection(itemToSelect)
 
-		self.modelList = TTS.addLabeledControl(
+		self.modelList = TTSGroup.addLabeledControl(
 			_("&Model:"),
 			wx.Choice,
 			choices=TTS_MODELS,
@@ -168,9 +169,66 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 
 		sHelper.addItem(TTSSizer)
 
+		imageGroupLabel = _("Images")
+		imageSizer = wx.StaticBoxSizer(wx.VERTICAL, self, label=imageGroupLabel)
+		imageBox = imageSizer.GetStaticBox()
+		imageGroup = gui.guiHelper.BoxSizerHelper(self, sizer=imageSizer)
+
+		label = _("&Resize images before sending them to the API")
+		self.resize = imageGroup.addItem(
+			wx.CheckBox(
+				imageBox,
+				label=label,
+			)
+		)
+		self.resize.SetValue(conf["images"]["resize"])
+		self.resize.Bind(
+			wx.EVT_CHECKBOX,
+			self.onResize
+		)
+
+		label = _("Maximum &width (0 to resize proportionally to the height):")
+		self.maxWidth = imageGroup.addLabeledControl(
+			label,
+			wx.SpinCtrl,
+			min=0,
+			max=2000
+		)
+		self.maxWidth.SetValue(conf["images"]["maxWidth"])
+
+		label = _("Maximum &height (0 to resize proportionally to the width):")
+		self.maxHeight = imageGroup.addLabeledControl(
+			label,
+			wx.SpinCtrl,
+			min=0,
+			max=2000
+		)
+		self.maxHeight.SetValue(conf["images"]["maxHeight"])
+
+		label = _("&Quality for JPEG images (0 [worst] to 95 [best], values above 95 should be avoided):")
+		self.quality = imageGroup.addLabeledControl(
+			label,
+			wx.SpinCtrl,
+			min=1,
+			max=100
+		)
+		self.quality.SetValue(conf["images"]["quality"])
+
+		sHelper.addItem(imageSizer)
+
+		sHelper.addItem(mainDialogSizer)
+
+		self.onUseOrg(None)
+		self.onResize(None)
+
 	def onUseOrg(self, evt):
 		self.org_name.Enable(self.use_org.GetValue())
 		self.org_key.Enable(self.use_org.GetValue())
+
+	def onResize(self, evt):
+		self.maxWidth.Enable(self.resize.GetValue())
+		self.maxHeight.Enable(self.resize.GetValue())
+		self.quality.Enable(self.resize.GetValue())
 
 	def onSave(self):
 		api_key = self.APIKey.GetValue().strip()
@@ -194,8 +252,14 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 		conf["renewClient"] = True
 		conf["saveSystem"] = self.saveSystem.GetValue()
 		conf["advancedMode"] = self.advancedMode.GetValue()
+
 		conf["TTSVoice"] = self.voiceList.GetString(self.voiceList.GetSelection())
 		conf["TTSModel"] = self.modelList.GetString(self.modelList.GetSelection())
+
+		conf["images"]["resize"] = self.resize.GetValue()
+		conf["images"]["maxWidth"] = self.maxWidth.GetValue()
+		conf["images"]["maxHeight"] = self.maxHeight.GetValue()
+		conf["images"]["quality"] = self.quality.GetValue()
 
 
 class GlobalPlugin(globalPluginHandler.GlobalPlugin):
