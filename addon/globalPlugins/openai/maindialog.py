@@ -16,7 +16,7 @@ import tones
 import ui
 from logHandler import log
 from .consts import ADDON_DIR, DATA_DIR
-from .imagehelper import describeFromImageFileList, encode_image
+from .imagehelper import resize_image, describeFromImageFileList, encode_image
 additionalLibsPath = os.path.join(ADDON_DIR, "lib")
 sys.path.insert(0, additionalLibsPath)
 import openai
@@ -767,6 +767,18 @@ class OpenAIDlg(wx.Dialog):
 				wx.OK|wx.ICON_ERROR
 			)
 			return
+		if (
+			model.name == MODEL_VISION
+			and not self.conf["images"]["resize"]
+			and not self.conf["images"]["resizeInfoDisplayed"]
+		):
+			msg = _("Be aware that the add-on may auto-resize images before API submission to lower request sizes and costs. Adjust this feature in the Open AI settings if needed. This message won't show again.")
+			gui.messageBox(
+				msg,
+				_("Open AI"),
+				wx.OK|wx.ICON_INFORMATION
+			)
+			self.conf["images"]["resizeInfoDisplayed"] = True
 		system = self.systemText.GetValue().strip()
 		if self.conf["saveSystem"] and system != self._lastSystem and system:
 			self.data["system"] = system
@@ -930,6 +942,7 @@ class OpenAIDlg(wx.Dialog):
 		self,
 		pathList: list = None
 	) -> list:
+		conf = self.conf
 		if not pathList:
 			pathList = self.pathList
 		images = []
@@ -938,6 +951,16 @@ class OpenAIDlg(wx.Dialog):
 			if url_re.match(path):
 				images.append({"type": "image_url", "image_url": {"url": path}})
 			elif os.path.isfile(path):
+				if conf["images"]["resize"]:
+					path_ = os.path.join(DATA_DIR, "last_resized.jpg")
+					resize_image(
+						path,
+						max_width=conf["images"]["maxWidth"],
+						max_height=conf["images"]["maxHeight"],
+						quality=conf["images"]["quality"],
+						target=path_
+					)
+					path = path_
 				base64_image = encode_image(path)
 				format = path.split(".")[-1]
 				mime_type = f"image/{format}"
