@@ -19,7 +19,8 @@ from .consts import (
 	N_MIN, N_MAX,
 	TTS_VOICES, TTS_MODELS, TTS_DEFAULT_VOICE, TTS_DEFAULT_MODEL
 )
-from .imagehelper import describeFromImageFileList
+from .recordthread import RecordThread
+
 additionalLibsPath = os.path.join(ADDON_DIR, "lib")
 sys.path.insert(0, additionalLibsPath)
 import mss
@@ -271,6 +272,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		APIKey = api_key_manager.get_api_key()
 		gui.settingsDialogs.NVDASettingsDialog.categoryClasses.append(SettingsDlg)
 		self.client = None
+		self.recordtThread = None
 		self.createMenu()
 
 	def createMenu(self):
@@ -367,6 +369,16 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			self.client = OpenAI(api_key=api_key)
 		return self.client
 
+	def checkScreenCurtain(self):
+		from visionEnhancementProviders.screenCurtain import ScreenCurtainProvider
+		import vision
+		screenCurtainId = ScreenCurtainProvider.getSettings().getId()
+		screenCurtainProviderInfo = vision.handler.getProviderInfo(screenCurtainId)
+		isScreenCurtainRunning = bool(vision.handler.getProviderInstance(screenCurtainProviderInfo))
+		if isScreenCurtainRunning:
+			ui.message(_("Please disable the screen curtain before taking a screenshot"))
+		return isScreenCurtainRunning
+
 	def onShowMainDialog(self, evt):
 		if not self.getClient():
 			return ui.message(NO_AUTHENTICATION_KEY_PROVIDED_MSG)
@@ -436,12 +448,18 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 				pathList=[tmpPath]
 			)
 
-	def checkScreenCurtain(self):
-		from visionEnhancementProviders.screenCurtain import ScreenCurtainProvider
-		import vision
-		screenCurtainId = ScreenCurtainProvider.getSettings().getId()
-		screenCurtainProviderInfo = vision.handler.getProviderInfo(screenCurtainId)
-		isScreenCurtainRunning = bool(vision.handler.getProviderInstance(screenCurtainProviderInfo))
-		if isScreenCurtainRunning:
-			ui.message(_("Please disable the screen curtain before taking a screenshot"))
-		return isScreenCurtainRunning
+	@script(
+		gesture="kb:nvda+:",
+		description=_("Toggle the microphone recording and transcribe the audio from anywhere")
+	)
+	def script_toggleRecording(self, gesture):
+		if not self.getClient():
+			return ui.message(NO_AUTHENTICATION_KEY_PROVIDED_MSG)
+		if self.checkScreenCurtain():
+			return
+		if self.recordtThread:
+			self.recordtThread.stop()
+			self.recordtThread = None
+		else:
+			self.recordtThread = RecordThread(self.getClient())
+			self.recordtThread.start()

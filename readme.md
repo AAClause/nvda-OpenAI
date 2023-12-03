@@ -59,6 +59,7 @@ These commands can be used to trigger actions from anywhere on your computer. It
 
 - `NVDA+e`: Take a screenshot and describe it.
 - `NVDA+o`: Grab the current navigator object and describe it.
+- `NVDA+:`: Toggle the microphone recording and transcribe the audio from anywhere.
 
 ## Included Dependencies
 

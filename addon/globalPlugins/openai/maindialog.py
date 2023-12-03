@@ -15,41 +15,29 @@ import speech
 import tones
 import ui
 from logHandler import log
-from .consts import ADDON_DIR, DATA_DIR
-from .imagehelper import resize_image, describeFromImageFileList, encode_image
-additionalLibsPath = os.path.join(ADDON_DIR, "lib")
-sys.path.insert(0, additionalLibsPath)
-import openai
-import sounddevice as sd
-import numpy as np
-import wave
-
-sys.path.remove(additionalLibsPath)
-
 from .consts import (
 	ADDON_DIR, DATA_DIR,
 	MODELS, MODEL_VISION,
 	TOP_P_MIN, TOP_P_MAX,
 	N_MIN, N_MAX
 )
+from .imagehelper import resize_image, describeFromImageFileList, encode_image
+from .recordthread import RecordThread
+from .resultevent import ResultEvent, EVT_RESULT_ID
+
+additionalLibsPath = os.path.join(ADDON_DIR, "lib")
+sys.path.insert(0, additionalLibsPath)
+import openai
+sys.path.remove(additionalLibsPath)
 
 addonHandler.initTranslation()
 
 DEFAULT_PROMPT_IMAGE_DESCRIPTION = _("Describe the images in as much detail as possible.")
 TTS_FILE_NAME = os.path.join(DATA_DIR, "tts.wav")
-EVT_RESULT_ID = wx.NewId()
 DATA_JSON_FP = os.path.join(DATA_DIR, "data.json")
 
 def EVT_RESULT(win, func):
 	win.Connect(-1, -1, EVT_RESULT_ID, func)
-
-
-class ResultEvent(wx.PyEvent):
-
-	def __init__(self, data=None):
-		wx.PyEvent.__init__(self)
-		self.SetEventType(EVT_RESULT_ID)
-		self.data = data
 
 
 class CompletionThread(threading.Thread):
@@ -226,94 +214,6 @@ class ImageDescriptionThread(threading.Thread):
 
 	def abort(self):
 		pass
-
-
-class RecordThread(threading.Thread):
-
-	def __init__(self, notifyWindow, pathList):
-		super(RecordThread, self).__init__()
-		self._notifyWindow = notifyWindow
-		self.pathList = pathList
-		self.stop_record = False
-		self._wantAbort = 0
-		self._recording = False
-		self.audio_data = np.array([], dtype='int16')
-
-	def run(self):
-		if self.pathList:
-			self.process_transcription(self.pathList)
-			return
-		framerate = 44100
-		filename = self.get_filename()
-		tones.beep(200, 100)
-		self.record_audio(framerate)
-		tones.beep(200, 200)
-		winsound.PlaySound(f"{ADDON_DIR}/sounds/progress.wav", winsound.SND_ASYNC|winsound.SND_LOOP)
-
-		if self._wantAbort:
-			return
-		self.save_wav(
-			filename,
-			self.audio_data,
-			framerate
-		)
-		self._notifyWindow.message(_("Transcribing..."))
-		self.process_transcription(filename)
-
-	def record_audio(self, framerate):
-		chunk_size = 1024  # Vous pouvez ajuster la taille du bloc selon vos besoins
-		channels = 2
-		dtype = 'int16'
-		self._recording = True
-
-		with sd.InputStream(samplerate=framerate, channels=channels, dtype=dtype) as stream:
-			while not self.stop_record and self._recording:
-				frame, overflowed = stream.read(chunk_size)
-				if overflowed:
-					print("Warning: audio buffer has overflowed.")
-				self.audio_data = np.append(self.audio_data, frame)
-				if self._wantAbort:
-					break
-
-		self._recording = False
-
-	def save_wav(self, filename, data, framerate):
-		if self._wantAbort:
-			return
-		wavefile = wave.open(filename, "wb")
-		wavefile.setnchannels(2)
-		wavefile.setsampwidth(2)
-		wavefile.setframerate(framerate)
-		wavefile.writeframes(data.tobytes())
-		wavefile.close()
-
-	def stop(self):
-		self.stop_record = True
-		self._recording = False
-
-	def get_filename(self):
-		return os.path.join(DATA_DIR, "tmp.wav")
-
-	def process_transcription(self, filename):
-		if self._wantAbort:
-			return
-		wnd = self._notifyWindow
-		prompt = wnd.promptText.GetValue()
-		client = wnd.client
-		try:
-			audio_file = open(filename, "rb")
-			transcription = client.audio.transcriptions.create(
-				model="whisper-1", 
-				file=audio_file
-			)
-		except BaseException as err:
-			wx.PostEvent(self._notifyWindow, ResultEvent(repr(err)))
-			return
-		wx.PostEvent(self._notifyWindow, ResultEvent(transcription))
-
-	def abort(self):
-		self.stop_record = 1
-		self._wantAbort = 1
 
 
 class TextToSpeechThread(threading.Thread):
@@ -1212,7 +1112,7 @@ class OpenAIDlg(wx.Dialog):
 		self.recordBtn.SetLabel(_("Stop &recording") + " (Ctrl+R)")
 		self.recordBtn.Bind(wx.EVT_BUTTON, self.onStopRecord)
 		self.recordBtn.Enable()
-		self.worker = RecordThread(self, None)
+		self.worker = RecordThread(self.client, self)
 		self.worker.start()
 
 	def onRecordFromFilePath(self, evt):
@@ -1230,7 +1130,7 @@ class OpenAIDlg(wx.Dialog):
 		winsound.PlaySound(f"{ADDON_DIR}/sounds/progress.wav", winsound.SND_ASYNC|winsound.SND_LOOP)
 		self.disableButtons()
 		self.historyText.SetFocus()
-		self.worker = RecordThread(self, filename)
+		self.worker = RecordThread(self.client, self, filename)
 		self.worker.start()
 
 	def onTextToSpeech(self, evt):
