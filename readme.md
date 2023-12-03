@@ -67,4 +67,5 @@ The add-on comes bundled with the following essential dependencies:
 
 - [OpenAI](https://pypi.org/project/openai/): The official Python library for the openai API.
 - [MSS](https://pypi.org/project/mss/): An ultra fast cross-platform multiple screenshots module in pure python using ctypes.
+- [Pillow](https://pypi.org/project/Pillow/): The user-friendly fork of the Python Imaging Library, used for image resizing.
 - [sounddevice](https://pypi.org/project/sounddevice/): Play and Record Sound with Python.
