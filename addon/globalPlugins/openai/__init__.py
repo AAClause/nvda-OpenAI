@@ -217,21 +217,16 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 		)
 		self.quality.SetValue(conf["images"]["quality"])
 
-		defaultPromptGroupLabel = _("Default prompt for image description")
-		defaultPromptSizer = wx.StaticBoxSizer(wx.VERTICAL, self, label=defaultPromptGroupLabel)
-		defaultPromptBox = defaultPromptSizer.GetStaticBox()
-		defaultPromptGroup = gui.guiHelper.BoxSizerHelper(self, sizer=defaultPromptSizer)
-
-		self.default_prompt = defaultPromptGroup.addItem(
+		self.default_prompt = imageGroup.addItem(
 			wx.CheckBox(
-				defaultPromptBox, 
+				imageBox, 
 				label=_("Use a default custom text in the prompt to describe images")
 			)
 			)
 		self.default_prompt.Bind(wx.EVT_CHECKBOX, self.on_default_prompt)
 		self.default_prompt.SetValue(config.conf["OpenAI"]["images"]["default_prompt"])
 		
-		self.default_prompt_text = defaultPromptGroup.addLabeledControl(
+		self.default_prompt_text = imageGroup.addLabeledControl(
 			_("Custom text"),
 			wxCtrlClass=wx.TextCtrl,
 			style=wx.TE_MULTILINE
@@ -242,8 +237,6 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 			self.default_prompt.SetValue(True)
 			self.default_prompt_text.SetValue(config.conf["OpenAI"]["images"]["default_prompt_text"])
 			self.default_prompt_text.Enable()
-
-		defaultPromptGroup.addItem(defaultPromptSizer)
 
 		sHelper.addItem(imageSizer)
 
