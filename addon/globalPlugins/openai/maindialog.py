@@ -32,7 +32,6 @@ sys.path.remove(additionalLibsPath)
 
 addonHandler.initTranslation()
 
-DEFAULT_PROMPT_IMAGE_DESCRIPTION = _("Describe the images in as much detail as possible.")
 TTS_FILE_NAME = os.path.join(DATA_DIR, "tts.wav")
 DATA_JSON_FP = os.path.join(DATA_DIR, "data.json")
 
@@ -380,6 +379,10 @@ class OpenAIDlg(wx.Dialog):
 	):
 		if not client or not conf:
 			return
+		if config.conf["OpenAI"]["images"]["default_prompt"]:
+			DEFAULT_PROMPT_IMAGE_DESCRIPTION = config.conf["OpenAI"]["images"]["default_prompt_text"]
+		else:
+			DEFAULT_PROMPT_IMAGE_DESCRIPTION = _("Describe the images in as much detail as possible.")
 		self.client = client
 		self.conf = conf
 		self.data = self.loadData()

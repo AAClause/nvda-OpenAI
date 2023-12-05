@@ -51,7 +51,9 @@ confSpecs = {
 		"maxWidth": "integer(min=0, default=0)",
 		"quality": "integer(min=0, max=100, default=85)",
 		"resize": "boolean(default=False)",
-		"resizeInfoDisplayed": "boolean(default=False)"
+		"resizeInfoDisplayed": "boolean(default=False)",
+		"default_prompt": "boolean(default=False)",
+		"default_prompt_text": ""
 	},
 	"renewClient": "boolean(default=False)",
 	"debug": "boolean(default=False)"
@@ -215,6 +217,34 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 		)
 		self.quality.SetValue(conf["images"]["quality"])
 
+		defaultPromptGroupLabel = _("Default prompt for image description")
+		defaultPromptSizer = wx.StaticBoxSizer(wx.VERTICAL, self, label=defaultPromptGroupLabel)
+		defaultPromptBox = defaultPromptSizer.GetStaticBox()
+		defaultPromptGroup = gui.guiHelper.BoxSizerHelper(self, sizer=defaultPromptSizer)
+
+		self.default_prompt = defaultPromptGroup.addItem(
+			wx.CheckBox(
+				defaultPromptBox, 
+				label=_("Use a default custom text in the prompt to describe images")
+			)
+			)
+		self.default_prompt.Bind(wx.EVT_CHECKBOX, self.on_default_prompt)
+		self.default_prompt.SetValue(config.conf["OpenAI"]["images"]["default_prompt"])
+		
+		self.default_prompt_text = defaultPromptGroup.addLabeledControl(
+			_("Custom text"),
+			wxCtrlClass=wx.TextCtrl,
+			style=wx.TE_MULTILINE
+		)
+		self.default_prompt_text.SetMinSize((250, -1))
+		self.default_prompt_text.Enable(False)
+		if config.conf["OpenAI"]["images"]["default_prompt"]:
+			self.default_prompt.SetValue(True)
+			self.default_prompt_text.SetValue(config.conf["OpenAI"]["images"]["default_prompt_text"])
+			self.default_prompt_text.Enable()
+
+		defaultPromptGroup.addItem(defaultPromptSizer)
+
 		sHelper.addItem(imageSizer)
 
 		sHelper.addItem(mainDialogSizer)
@@ -230,6 +260,13 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 		self.maxWidth.Enable(self.resize.GetValue())
 		self.maxHeight.Enable(self.resize.GetValue())
 		self.quality.Enable(self.resize.GetValue())
+	
+	def on_default_prompt(self, evt):
+		if self.default_prompt.GetValue():
+			self.default_prompt_text.Enable()
+			self.default_prompt_text.SetValue(config.conf["OpenAI"]["images"]["default_prompt_text"])
+		else:
+			self.default_prompt_text.Enable(False)
 
 	def onSave(self):
 		api_key = self.APIKey.GetValue().strip()
@@ -261,7 +298,11 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 		conf["images"]["maxWidth"] = self.maxWidth.GetValue()
 		conf["images"]["maxHeight"] = self.maxHeight.GetValue()
 		conf["images"]["quality"] = self.quality.GetValue()
-
+		if self.default_prompt.GetValue():
+			config.conf["OpenAI"]["images"]["default_prompt"] = True
+			config.conf["OpenAI"]["images"]["default_prompt_text"] = self.default_prompt_text.GetValue()
+		else:
+			config.conf["OpenAI"]["images"]["default_prompt"] = False
 
 class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 
