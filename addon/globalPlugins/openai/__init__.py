@@ -172,7 +172,7 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 
 		sHelper.addItem(TTSSizer)
 
-		imageGroupLabel = _("Images")
+		imageGroupLabel = _("Image description")
 		imageSizer = wx.StaticBoxSizer(wx.VERTICAL, self, label=imageGroupLabel)
 		imageBox = imageSizer.GetStaticBox()
 		imageGroup = gui.guiHelper.BoxSizerHelper(self, sizer=imageSizer)
@@ -217,26 +217,26 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 		)
 		self.quality.SetValue(conf["images"]["quality"])
 
-		self.default_prompt = imageGroup.addItem(
+		self.use_custom_prompt = imageGroup.addItem(
 			wx.CheckBox(
 				imageBox, 
-				label=_("Use a default custom text in the prompt to describe images")
+				label=_("Customize default text &prompt")
 			)
 			)
-		self.default_prompt.Bind(wx.EVT_CHECKBOX, self.on_default_prompt)
-		self.default_prompt.SetValue(conf["images"]["default_prompt"])
+		self.use_custom_prompt.Bind(wx.EVT_CHECKBOX, self.on_default_prompt)
+		self.use_custom_prompt.SetValue(conf["images"]["default_prompt"])
 		
-		self.default_prompt_text = imageGroup.addLabeledControl(
-			_("Custom text"),
+		self.custom_prompt_text = imageGroup.addLabeledControl(
+			_("Default &text prompt:"),
 			wxCtrlClass=wx.TextCtrl,
 			style=wx.TE_MULTILINE
 		)
-		self.default_prompt_text.SetMinSize((250, -1))
-		self.default_prompt_text.Enable(False)
+		self.custom_prompt_text.SetMinSize((250, -1))
+		self.custom_prompt_text.Enable(False)
 		if conf["images"]["default_prompt"]:
-			self.default_prompt.SetValue(True)
-			self.default_prompt_text.SetValue(conf["images"]["default_prompt_text"])
-			self.default_prompt_text.Enable()
+			self.use_custom_prompt.SetValue(True)
+			self.custom_prompt_text.SetValue(conf["images"]["custom_prompt_text"])
+			self.custom_prompt_text.Enable()
 
 		sHelper.addItem(imageSizer)
 
@@ -255,11 +255,11 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 		self.quality.Enable(self.resize.GetValue())
 	
 	def on_default_prompt(self, evt):
-		if self.default_prompt.GetValue():
-			self.default_prompt_text.Enable()
-			self.default_prompt_text.SetValue(conf["images"]["default_prompt_text"])
+		if self.use_custom_prompt.GetValue():
+			self.custom_prompt_text.Enable()
+			self.custom_prompt_text.SetValue(conf["images"]["custom_prompt_text"])
 		else:
-			self.default_prompt_text.Enable(False)
+			self.custom_prompt_text.Enable(False)
 
 	def onSave(self):
 		api_key = self.APIKey.GetValue().strip()
@@ -291,11 +291,11 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 		conf["images"]["maxWidth"] = self.maxWidth.GetValue()
 		conf["images"]["maxHeight"] = self.maxHeight.GetValue()
 		conf["images"]["quality"] = self.quality.GetValue()
-		if self.default_prompt.GetValue():
-			conf["images"]["default_prompt"] = True
-			conf["images"]["default_prompt_text"] = self.default_prompt_text.GetValue()
+		if self.use_custom_prompt.GetValue():
+			conf["images"]["use_custom_prompt"] = True
+			conf["images"]["custom_prompt_text"] = self.custom_prompt_text.GetValue()
 		else:
-			conf["images"]["default_prompt"] = False
+			conf["images"]["use_custom_prompt"] = False
 
 class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 

@@ -379,8 +379,8 @@ class OpenAIDlg(wx.Dialog):
 	):
 		if not client or not conf:
 			return
-		if conf["images"]["default_prompt"]:
-			DEFAULT_PROMPT_IMAGE_DESCRIPTION = conf["images"]["default_prompt_text"]
+		if conf["images"]["use_custom_prompt"]:
+			DEFAULT_PROMPT_IMAGE_DESCRIPTION = conf["images"]["custom_prompt_text"]
 		else:
 			DEFAULT_PROMPT_IMAGE_DESCRIPTION = _("Describe the images in as much detail as possible.")
 		self.client = client
