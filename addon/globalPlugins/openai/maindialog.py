@@ -724,12 +724,13 @@ class OpenAIDlg(wx.Dialog):
 				for path in self.pathList:
 					historyBlock.prompt += f"\n- \"{path}\""
 			"""
-			historyBlock.model = self.getCurrentModel().name
+			model = self.getCurrentModel()
+			historyBlock.model = model.name
 			if self.conf["advancedMode"]:
 				historyBlock.temperature = self.temperature.GetValue() / 100
 				historyBlock.topP = self.topP.GetValue() / 100
 			else:
-				historyBlock.temperature = int(self.conf["temperature"]) / 100
+				historyBlock.temperature = model.defaultTemperature
 				historyBlock.topP = self.conf["topP"] / 100
 			historyBlock.maxTokens = self.maxTokens.GetValue()
 			historyBlock.n = 1 # self.n.GetValue()
