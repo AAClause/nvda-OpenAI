@@ -52,8 +52,8 @@ confSpecs = {
 		"quality": "integer(min=0, max=100, default=85)",
 		"resize": "boolean(default=False)",
 		"resizeInfoDisplayed": "boolean(default=False)",
-		"default_prompt": "boolean(default=False)",
-		"default_prompt_text": ""
+		"use_custom_prompt": "boolean(default=False)",
+		"custom_prompt_text": ""
 	},
 	"renewClient": "boolean(default=False)",
 	"debug": "boolean(default=False)"
