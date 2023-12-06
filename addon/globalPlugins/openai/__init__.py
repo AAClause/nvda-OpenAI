@@ -224,7 +224,7 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 			)
 			)
 		self.default_prompt.Bind(wx.EVT_CHECKBOX, self.on_default_prompt)
-		self.default_prompt.SetValue(config.conf["OpenAI"]["images"]["default_prompt"])
+		self.default_prompt.SetValue(conf["images"]["default_prompt"])
 		
 		self.default_prompt_text = imageGroup.addLabeledControl(
 			_("Custom text"),
@@ -233,9 +233,9 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 		)
 		self.default_prompt_text.SetMinSize((250, -1))
 		self.default_prompt_text.Enable(False)
-		if config.conf["OpenAI"]["images"]["default_prompt"]:
+		if conf["images"]["default_prompt"]:
 			self.default_prompt.SetValue(True)
-			self.default_prompt_text.SetValue(config.conf["OpenAI"]["images"]["default_prompt_text"])
+			self.default_prompt_text.SetValue(conf["images"]["default_prompt_text"])
 			self.default_prompt_text.Enable()
 
 		sHelper.addItem(imageSizer)
@@ -257,7 +257,7 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 	def on_default_prompt(self, evt):
 		if self.default_prompt.GetValue():
 			self.default_prompt_text.Enable()
-			self.default_prompt_text.SetValue(config.conf["OpenAI"]["images"]["default_prompt_text"])
+			self.default_prompt_text.SetValue(conf["images"]["default_prompt_text"])
 		else:
 			self.default_prompt_text.Enable(False)
 
@@ -292,10 +292,10 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 		conf["images"]["maxHeight"] = self.maxHeight.GetValue()
 		conf["images"]["quality"] = self.quality.GetValue()
 		if self.default_prompt.GetValue():
-			config.conf["OpenAI"]["images"]["default_prompt"] = True
-			config.conf["OpenAI"]["images"]["default_prompt_text"] = self.default_prompt_text.GetValue()
+			conf["images"]["default_prompt"] = True
+			conf["images"]["default_prompt_text"] = self.default_prompt_text.GetValue()
 		else:
-			config.conf["OpenAI"]["images"]["default_prompt"] = False
+			conf["images"]["default_prompt"] = False
 
 class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 
