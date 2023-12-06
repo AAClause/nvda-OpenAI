@@ -44,14 +44,15 @@ The functionality of the add-on is housed within a central dialog that can be op
 Some commands are available in the main dialog for different elements.
 
 - When the Prompt Field is focused:
-	- `Ctrl+Enter`: Submit the text you've entered.
-	- `Ctrl+Up Arrow`: Retrieve and place the most recently entered prompt into the current field for review or re-use.
+  - `Ctrl+Enter`: Submit the text you've entered.
+  - `Ctrl+Up Arrow`: Retrieve and place the most recently entered prompt into the current field for review or re-use.
 - When the History Field is focused:
-	- `Alt+Right Arrow`: Copy the user's text to the prompt.
-	- `Alt+Left Arrow`: Copy the assistant's response to the system.
-	- `Ctrl+C`: Copy the assistant's response or the user's text depending on the cursor's position.
-	- `Ctrl+Shift+Up Arrow`: Move to the text block of the user or assistant above the current block.
-	- `Ctrl+Shift+Down Arrow`: Move to the text block of the user or assistant below the current block.
+  - `Alt+Right Arrow`: Copy the user's text to the prompt.
+  - `Alt+Left Arrow`: Copy the assistant's response to the system.
+  - `Ctrl+c`: Copy the assistant's response or the user's text depending on the cursor's position.
+  - `Ctrl+d`: Delete the current block  (user input and assistant's response).
+  - `Ctrl+Shift+Up Arrow`: Move to the text block of the user or assistant above the current block.
+  - `Ctrl+Shift+Down Arrow`: Move to the text block of the user or assistant below the current block.
 
 ### Global Commands
 
@@ -59,7 +60,8 @@ These commands can be used to trigger actions from anywhere on your computer. It
 
 - `NVDA+e`: Take a screenshot and describe it.
 - `NVDA+o`: Grab the current navigator object and describe it.
-- `NVDA+:`: Toggle the microphone recording and transcribe the audio from anywhere.
+- Commands not assigned to any gesture by default:
+  - Toggle the microphone recording and transcribe the audio from anywhere.
 
 ## Included Dependencies
 

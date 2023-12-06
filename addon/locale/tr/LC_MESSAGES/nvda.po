@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Open AI\n"
 "Report-Msgid-Bugs-To: nvda-translations@groups.io\n"
-"POT-Creation-Date: 2023-11-30 08:49+0100\n"
-"PO-Revision-Date: 2023-11-30 13:25+0300\n"
+"POT-Creation-Date: 2023-12-03 22:57+0300\n"
+"PO-Revision-Date: 2023-12-03 23:17+0300\n"
 "Last-Translator: Umut KORKMAZ <umutkork@gmail.com>\n"
 "Language-Team: Umut KORKMAZ <umutkork@gmail.com>\n"
 "Language: tr_TR\n"
@@ -14,80 +14,158 @@ msgstr ""
 "X-Generator: Poedit 3.4.1\n"
 "X-Poedit-Basepath: ../../../globalPlugins\n"
 "X-Poedit-SearchPath-0: .\n"
+"X-Poedit-SearchPath-1: .\n"
 
-#: addon\globalPlugins\openai\__init__.py:49
+#: openai/__init__.py:62
 msgid ""
 "No authentication key provided. Please set it in the Preferences dialog."
 msgstr ""
 "Kimlik doğrulama anahtarı mevcut değil. Lütfen Tercihler/Ayarlar iletişim "
 "kutusunda ekleyin."
 
-#: addon\globalPlugins\openai\__init__.py:67
+#: openai/__init__.py:80
 msgid "API Key:"
 msgstr "API anahtarı:"
 
-#: addon\globalPlugins\openai\__init__.py:72
+#: openai/__init__.py:85
 msgid "Organization"
 msgstr "Organizasyon"
 
-#: addon\globalPlugins\openai\__init__.py:80
+#: openai/__init__.py:93
 msgid "Use or&ganization"
 msgstr "&Organizasyon kullan"
 
-#: addon\globalPlugins\openai\__init__.py:91
+#: openai/__init__.py:104
 msgid "Organization &name:"
 msgstr "Organizasyon &Adı:"
 
-#: addon\globalPlugins\openai\__init__.py:97
+#: openai/__init__.py:110
 msgid "&Organization key:"
 msgstr "&Organizasyon anahtarı:"
 
-#: addon\globalPlugins\openai\__init__.py:104
+#: openai/__init__.py:117
 msgid "Main dialog"
 msgstr "Ana diyalog"
 
-#: addon\globalPlugins\openai\__init__.py:113
+#: openai/__init__.py:122
 msgid "Block the closing using the &escape key"
 msgstr "Bloğun &Escape Tuşu İle Kapanmasını Engelle"
 
-#: addon\globalPlugins\openai\__init__.py:121
+#: openai/__init__.py:130
 msgid "Remember the content of the S&ystem field between sessions"
 msgstr "Oturumlar arasında Sistem alanının içeri&ğini hatırla"
 
-#: addon\globalPlugins\openai\__init__.py:129
+#: openai/__init__.py:138
 msgid "Enable &advanced settings (including temperature and probability mass)"
 msgstr "Gelişmiş &ayarları etkinleştir (sıcaklık ve olasılık kütlesi dahil)"
 
-#: addon\globalPlugins\openai\__init__.py:139
+#: openai/__init__.py:146
 msgid "Text To Speech"
 msgstr "Metinden Konuşmaya"
 
-#: addon\globalPlugins\openai\__init__.py:145
+#: openai/__init__.py:152
 msgid "&Voice:"
 msgstr "&Ses:"
 
-#: addon\globalPlugins\openai\__init__.py:155
-#: addon\globalPlugins\openai\maindialog.py:539
+#: openai/__init__.py:162 openai/maindialog.py:441
 msgid "&Model:"
 msgstr "&Modèl:"
 
-#: addon\globalPlugins\openai\__init__.py:233
-msgid "Show Open AI dialog"
-msgstr "Open AI İletişim kutusunu gösterir"
+#: openai/__init__.py:173
+msgid "Images"
+msgstr "Görüntü dosyaları"
 
-#: addon\globalPlugins\openai\__init__.py:247
-msgid "Take a screenshot and describe it"
-msgstr "Ekran görüntüsü al ve betimle"
+#: openai/__init__.py:178
+msgid "&Resize images before sending them to the API"
+msgstr "Görüntüleri API'ye göndermeden önce yeniden boyutlandı&r"
 
-#: addon\globalPlugins\openai\__init__.py:267
-msgid "Grab the current navigator object and describe it"
-msgstr "Geçerli gezgin nesnesini al ve betimle"
+#: openai/__init__.py:191
+msgid "Maximum &width (0 to resize proportionally to the height):"
+msgstr ""
+"Maksimum geni&şlik (yüksekliğe orantılı olarak yeniden boyutlandırmak için "
+"0):"
 
-#: addon\globalPlugins\openai\__init__.py:304
+#: openai/__init__.py:200
+msgid "Maximum &height (0 to resize proportionally to the width):"
+msgstr ""
+"Maksimum y&ükseklik (genişliğe orantılı olarak yeniden boyutlandırmak için "
+"0):"
+
+#: openai/__init__.py:209
+msgid ""
+"&Quality for JPEG images (0 [worst] to 95 [best], values above 95 should be "
+"avoided):"
+msgstr ""
+"&JPEG görüntülerin kalitesi (0 [en kötü] ila 95 [en iyi], 95'in üzerindeki "
+"değerlerden kaçınılmalıdır):"
+
+#: openai/__init__.py:282
+msgid "Docu&mentation"
+msgstr "&Yardım"
+
+#: openai/__init__.py:283
+msgid "Open the documentation of this addon"
+msgstr "Bu eklentinin yardım belgelerini aç"
+
+#: openai/__init__.py:288
+msgid "Main d&ialog..."
+msgstr "&Ana diyalog..."
+
+#: openai/__init__.py:289
+#| msgid "Show Open AI dialog"
+msgid "Show the Open AI dialog"
+msgstr "Open AI iletişim kutusunu göster"
+
+#: openai/__init__.py:294
+msgid "API &keys"
+msgstr "&API anahtarı"
+
+#: openai/__init__.py:295
+msgid "Manage the API keys"
+msgstr "API anahtarlarını yönet"
+
+#: openai/__init__.py:300
+msgid "API &usage"
+msgstr "API k&ullan"
+
+#: openai/__init__.py:301
+msgid "Open the API usage webpage"
+msgstr "API kullanım web sayfasını aç"
+
+#: openai/__init__.py:306
+msgid "Git&Hub repository"
+msgstr "Git&Hub deposu"
+
+#: openai/__init__.py:307
+msgid "Open the GitHub repository of this addon"
+msgstr "Bu eklentinin GitHub deposunu aç"
+
+#: openai/__init__.py:316
+#, python-brace-format
+msgid "Open A&I {addon_version}"
+msgstr "Open A&I {addon_version}"
+
+#: openai/__init__.py:379
 msgid "Please disable the screen curtain before taking a screenshot"
 msgstr "Ekran görüntüsü almadan önce lütfen ekran perdesini devre dışı bırakın"
 
-#: addon\globalPlugins\openai\consts.py:23
+#: openai/__init__.py:394
+msgid "Show Open AI dialog"
+msgstr "Open AI İletişim kutusunu gösterir"
+
+#: openai/__init__.py:401
+msgid "Take a screenshot and describe it"
+msgstr "Ekran görüntüsü alır ve betimler"
+
+#: openai/__init__.py:421
+msgid "Grab the current navigator object and describe it"
+msgstr "Geçerli gezgin nesnesini alır ve betimler"
+
+#: openai/__init__.py:453
+msgid "Toggle the microphone recording and transcribe the audio from anywhere"
+msgstr "İstediğiniz yerden mikrofonu açar ve sesi yazıya aktarır"
+
+#: openai/consts.py:23
 msgid ""
 "Updated GPT 3.5 Turbo. The latest GPT-3.5 Turbo model with improved "
 "instruction following, JSON mode, reproducible outputs, parallel function "
@@ -97,10 +175,7 @@ msgstr ""
 "tekrarlanabilir çıktılar, paralel işlev çağrısı ve daha fazlasına sahip en "
 "yeni GPT-3.5 Turbo modeli."
 
-#: addon\globalPlugins\openai\consts.py:24
-#| msgid ""
-#| "16384 tokens max. Same capabilities as the standard gpt-3.5-turbo model "
-#| "but with 4 times the context"
+#: openai/consts.py:24
 msgid ""
 "Same capabilities as the standard gpt-3.5-turbo model but with 4 times the "
 "context"
@@ -108,10 +183,7 @@ msgstr ""
 "Standart gpt-3.5-turbo modeliyle aynı yeteneklere sahiptir ancak 4 kat daha "
 "fazla içeriğe sahiptir"
 
-#: addon\globalPlugins\openai\consts.py:25
-#| msgid ""
-#| "8192 tokens max. More capable than any GPT-3.5 model, able to do more "
-#| "complex tasks, and optimized for chat"
+#: openai/consts.py:25
 msgid ""
 "More capable than any GPT-3.5 model, able to do more complex tasks, and "
 "optimized for chat"
@@ -119,7 +191,7 @@ msgstr ""
 "Tüm GPT-3.5 modellerinden daha yetenekli, daha karmaşık görevleri yerine "
 "getirebilen ve sohbet için optimize edilmiş"
 
-#: addon\globalPlugins\openai\consts.py:26
+#: openai/consts.py:26
 msgid ""
 "The latest GPT-4 model with improved instruction following, JSON mode, "
 "reproducible outputs, parallel function calling, and more."
@@ -127,7 +199,7 @@ msgstr ""
 "Geliştirilmiş talimat takibi, JSON modu, tekrarlanabilir çıktılar, paralel "
 "işlev çağrısı ve daha fazlasına sahip en yeni GPT-4 modeli."
 
-#: addon\globalPlugins\openai\consts.py:27
+#: openai/consts.py:27
 msgid ""
 "GPT-4 Turbo with vision. Ability to understand images, in addition to all "
 "other GPT-4 Turbo capabilities."
@@ -135,126 +207,121 @@ msgstr ""
 "Vizyon ile GPT-4 Turbo. Diğer tüm GPT-4 Turbo özelliklerine ek olarak "
 "görüntüleri anlama yeteneği."
 
-#: addon\globalPlugins\openai\consts.py:28
-#| msgid ""
-#| "32768 tokens max. Same capabilities as the standard gpt-4 mode but with "
-#| "4x the context length."
+#: openai/consts.py:28
 msgid ""
 "Same capabilities as the standard gpt-4 mode but with 4x the context length."
 msgstr ""
 "Standart gpt-4 modu ile aynı özelliklere sahiptir ancak bağlam uzunluğu 4 "
 "kat daha fazladır."
 
-#: addon\globalPlugins\openai\maindialog.py:38
+#: openai/maindialog.py:35
 msgid "Describe the images in as much detail as possible."
 msgstr "Görselleri mümkün olduğunca ayrıntılı bir şekilde betimle."
 
-#: addon\globalPlugins\openai\maindialog.py:104
+#: openai/maindialog.py:92
 msgid "Invalid temperature"
 msgstr "Geçersiz sıcaklık"
 
-#: addon\globalPlugins\openai\maindialog.py:107
+#: openai/maindialog.py:95
 msgid "Invalid top P"
 msgstr "Geçersiz üst P"
 
-#: addon\globalPlugins\openai\maindialog.py:142
+#: openai/maindialog.py:130
 msgid "Ready"
 msgstr "Hazır"
 
-#: addon\globalPlugins\openai\maindialog.py:212
+#: openai/maindialog.py:200
+msgid "One image to analyze..."
+msgstr "Analiz edilecek bir resim..."
+
+#: openai/maindialog.py:202
 #, python-format
 msgid "%d images to analyze..."
 msgstr "Analiz edilecek %d resim..."
 
-#: addon\globalPlugins\openai\maindialog.py:258
-msgid "Transcribing..."
-msgstr "Metne dönüştürülüyor..."
-
-#: addon\globalPlugins\openai\maindialog.py:494
+#: openai/maindialog.py:396
 msgid "organization"
 msgstr "organizasyon"
 
-#: addon\globalPlugins\openai\maindialog.py:494
+#: openai/maindialog.py:396
 msgid "personal"
 msgstr "kişisel"
 
-#: addon\globalPlugins\openai\maindialog.py:500
+#: openai/maindialog.py:402
 msgid "Conversati&on mode"
 msgstr "K&onuşma modu"
 
-#: addon\globalPlugins\openai\maindialog.py:505
+#: openai/maindialog.py:407
 msgid "S&ystem:"
 msgstr "&Sistem:"
 
-#: addon\globalPlugins\openai\maindialog.py:517
+#: openai/maindialog.py:419
 msgid "&History:"
 msgstr "&Geçmiş:"
 
-#: addon\globalPlugins\openai\maindialog.py:527
+#: openai/maindialog.py:429
 msgid "&Prompt:"
 msgstr "İs&tem:"
 
-#: addon\globalPlugins\openai\maindialog.py:554
+#: openai/maindialog.py:456
 msgid "Maximum to&kens for the completion:"
 msgstr "Tamamlama için ma&ksimum Jetonlar:"
 
-#: addon\globalPlugins\openai\maindialog.py:564
+#: openai/maindialog.py:466
 msgid "&Temperature:"
 msgstr "&Sıcaklık :"
 
-#: addon\globalPlugins\openai\maindialog.py:572
+#: openai/maindialog.py:474
 msgid "Probability &mass (Top P):"
 msgstr "&Olasılık kütlesi (Üst P):"
 
-#: addon\globalPlugins\openai\maindialog.py:583
+#: openai/maindialog.py:485
 msgid "Stream mode"
 msgstr "Akış modu"
 
-#: addon\globalPlugins\openai\maindialog.py:589
+#: openai/maindialog.py:491
 msgid "&Debug mode"
 msgstr "&Hata ayıklama modu"
 
-#: addon\globalPlugins\openai\maindialog.py:616
-#: addon\globalPlugins\openai\maindialog.py:1164
+#: openai/maindialog.py:518 openai/maindialog.py:1158
 msgid "Start &recording"
 msgstr "&Kayda başla"
 
-#: addon\globalPlugins\openai\maindialog.py:619
+#: openai/maindialog.py:521
 msgid "Record audio from microphone"
 msgstr "Mikrofondan ses kaydet"
 
-#: addon\globalPlugins\openai\maindialog.py:623
+#: openai/maindialog.py:525
 msgid "Transcribe from &audio file"
 msgstr "Ses dosy&asından metne dönüştür"
 
-#: addon\globalPlugins\openai\maindialog.py:626
+#: openai/maindialog.py:528
 msgid "Transcribe audio from a file path"
 msgstr "Bir konumdaki Ses dosyasını Metne Dönüştür"
 
-#: addon\globalPlugins\openai\maindialog.py:630
+#: openai/maindialog.py:532
 msgid "&Image description"
 msgstr "Görsel&i Betimle"
 
-#: addon\globalPlugins\openai\maindialog.py:633
+#: openai/maindialog.py:535
 msgid "Describe an image from a file path or an URL"
 msgstr "Bir Görseli, dosya konumundan veya bağlantıdan betimle"
 
-#: addon\globalPlugins\openai\maindialog.py:637
+#: openai/maindialog.py:539
 msgid "&Vocalize the prompt"
 msgstr "İstemi seslendi&r"
 
-#: addon\globalPlugins\openai\maindialog.py:745
+#: openai/maindialog.py:647
 msgid "Please select a model."
 msgstr "Lütfen bir model seçin."
 
-#: addon\globalPlugins\openai\maindialog.py:746
-#: addon\globalPlugins\openai\maindialog.py:757
-#: addon\globalPlugins\openai\maindialog.py:764
-#: addon\globalPlugins\openai\maindialog.py:1147
+#: openai/maindialog.py:648 openai/maindialog.py:659 openai/maindialog.py:666
+#: openai/maindialog.py:678 openai/maindialog.py:1068 openai/maindialog.py:1083
+#: openai/maindialog.py:1093 openai/maindialog.py:1140
 msgid "Open AI"
 msgstr "Open AI"
 
-#: addon\globalPlugins\openai\maindialog.py:756
+#: openai/maindialog.py:658
 msgid ""
 "No image provided. Please use the Image Description button and select one or "
 "more images. Otherwise, please select another model."
@@ -262,89 +329,119 @@ msgstr ""
 "Görüntü sağlanmadı. Lütfen Görüntüyü Betimle düğmesini kullanın ve bir veya "
 "daha fazla resim ekleyin. Aksi takdirde lütfen başka bir model seçin."
 
-#: addon\globalPlugins\openai\maindialog.py:763
+#: openai/maindialog.py:665
 #, python-format
 msgid ""
 "This model does not support image description. Please select the %s model."
 msgstr "Bu model görüntü betimlemeyi desteklemiyor. Lütfen %s modelini seçin."
 
-#: addon\globalPlugins\openai\maindialog.py:772
-#: addon\globalPlugins\openai\maindialog.py:1136
-#: addon\globalPlugins\openai\maindialog.py:1152
+#: openai/maindialog.py:675
+msgid ""
+"Be aware that the add-on may auto-resize images before API submission to "
+"lower request sizes and costs. Adjust this feature in the Open AI settings "
+"if needed. This message won't show again."
+msgstr ""
+"Eklentinin, istek boyutlarını ve maliyetleri düşürmek için API gönderilmeden "
+"önce görselleri otomatik olarak yeniden boyutlandırabileceğini unutmayın. "
+"Gerekirse bu özelliği Open AI ayarlarında ayarlayın. Bu mesaj bir daha "
+"gösterilmeyecek."
+
+#: openai/maindialog.py:686 openai/maindialog.py:1129 openai/maindialog.py:1145
 msgid "Processing, please wait..."
 msgstr "İşlem devam ediyor, lütfen bekleyin..."
 
-#: addon\globalPlugins\openai\maindialog.py:843
+#: openai/maindialog.py:757
 #, python-format
 msgid "Insertion of: %s"
 msgstr "Eklenen: %s"
 
-#: addon\globalPlugins\openai\maindialog.py:855
+#: openai/maindialog.py:769
 msgid "Open AI error"
 msgstr "Open AI Hata"
 
-#: addon\globalPlugins\openai\maindialog.py:865
+#: openai/maindialog.py:779
 msgid "Press alt+f4 to close the dialog"
 msgstr "İletişim kutusunu kapatmak için alt+f4 tuşlarına basın"
 
-#: addon\globalPlugins\openai\maindialog.py:875
+#: openai/maindialog.py:789
 msgid "User:"
 msgstr "Kullanıcı:"
 
-#: addon\globalPlugins\openai\maindialog.py:877
+#: openai/maindialog.py:791
 msgid "Assistant:"
 msgstr "Asistan:"
 
-#: addon\globalPlugins\openai\maindialog.py:990
+#: openai/maindialog.py:916
 msgid "Begin"
 msgstr "Baş"
 
-#: addon\globalPlugins\openai\maindialog.py:1010
+#: openai/maindialog.py:936
 msgid "End"
 msgstr "Son"
 
-#: addon\globalPlugins\openai\maindialog.py:1038
+#: openai/maindialog.py:964
 #, python-format
 msgid "Response copied to system: %s"
 msgstr "Yanıt sisteme kopyalandı: %s"
 
-#: addon\globalPlugins\openai\maindialog.py:1047
+#: openai/maindialog.py:973
 msgid "Compied to prompt"
 msgstr "İstemle Uyumlu"
 
-#: addon\globalPlugins\openai\maindialog.py:1051
+#: openai/maindialog.py:977
 msgid "Copy"
 msgstr "Kopyala"
 
-#: addon\globalPlugins\openai\maindialog.py:1059
+#: openai/maindialog.py:985
 msgid "Copy prompt"
 msgstr "İstem kopyalandı"
 
-#: addon\globalPlugins\openai\maindialog.py:1062
+#: openai/maindialog.py:988
 msgid "Copy response"
 msgstr "Yanıtı kopyala"
 
-#: addon\globalPlugins\openai\maindialog.py:1087
+#: openai/maindialog.py:1013
 msgid "Block deleted"
 msgstr "Blok silindi"
 
-#: addon\globalPlugins\openai\maindialog.py:1097
+#: openai/maindialog.py:1025
+msgid "From f&ile path..."
+msgstr "D&osya Konumundan..."
+
+#: openai/maindialog.py:1028
+msgid "From &URL..."
+msgstr "&URL'den..."
+
+#: openai/maindialog.py:1041
 msgid "Select image files"
 msgstr "Bir görüntü dosyası seçin"
 
-#: addon\globalPlugins\openai\maindialog.py:1099
+#: openai/maindialog.py:1043
 msgid "Image files"
 msgstr "Görüntü dosyaları"
 
-#: addon\globalPlugins\openai\maindialog.py:1119
+#: openai/maindialog.py:1067
+msgid "Enter image URL"
+msgstr "Resim URL'sini girin"
+
+#: openai/maindialog.py:1082
+msgid "Invalid URL, bad format."
+msgstr "Geçersiz URL, hatalı biçim."
+
+#: openai/maindialog.py:1092
+#, python-format
+msgid "Invalid URL, HTTP error: %s."
+msgstr "Geçersiz URL, HTTP hatası: %s."
+
+#: openai/maindialog.py:1112
 msgid "Stop &recording"
 msgstr "Kaydı &durdur"
 
-#: addon\globalPlugins\openai\maindialog.py:1128
+#: openai/maindialog.py:1121
 msgid "Select audio file"
 msgstr "Bir ses dosyası seçin"
 
-#: addon\globalPlugins\openai\maindialog.py:1130
+#: openai/maindialog.py:1123
 msgid ""
 "Audio files (*.mp3;*.mp4;*.mpeg;*.mpga;*.m4a;*.wav;*.webm)|*.mp3;*.mp4;*."
 "mpeg;*.mpga;*.m4a;*.wav;*.webm"
@@ -352,41 +449,39 @@ msgstr ""
 "Ses dosyaları (*.mp3;*.mp4;*.mpeg;*.mpga;*.m4a;*.wav;*.webm)|*.mp3;*.mp4;*."
 "mpeg;*.mpga;*.m4a;*.wav;*.webm"
 
-#: addon\globalPlugins\openai\maindialog.py:1146
+#: openai/maindialog.py:1139
 msgid "Please enter some text in the prompt field first."
 msgstr "Lütfen önce istem alanına bir miktar metin girin."
 
-#: addon\globalPlugins\openai\model.py:33
+#: openai/model.py:33
 msgid "Context window:"
 msgstr "Bağlam penceresi:"
 
-#: addon\globalPlugins\openai\model.py:36
+#: openai/model.py:36
 msgid "max output token:"
 msgstr "maksimum çıkış jetonu:"
 
-#: buildVars.py:42
+#: openai/recordthread.py:44
+msgid "Transcription copied to clipboard"
+msgstr "Betimleme panoya kopyalandı"
+
+#: openai/recordthread.py:78
+msgid "Transcribing..."
+msgstr "Metne dönüştürülüyor..."
+
+#: openai/recordthread.py:129
+msgid "Error!"
+msgstr "Hata!"
+
 msgid ""
-"Open AI is an NVDA add-on designed to seamlessly integrate the capabilities "
-"of the Open AI API into your workflow. Whether you're looking to craft "
-"comprehensive text, translate passages with precision, concisely summarize "
-"documents, or even interpret and describe visual content, this add-on does "
-"it all with ease."
+"Open AI is an NVDA add-on designed to seamlessly integrate the "
+"capabilities of the Open AI API into your workflow. Whether you're "
+"looking to craft comprehensive text, translate passages with precision, "
+"concisely summarize documents, or even interpret and describe visual "
+"content, this add-on does it all with ease."
 msgstr ""
-"Open AI, Open AI API özelliklerini iş akışınıza sorunsuz bir şekilde entegre "
-"etmek için tasarlanmış bir NVDA eklentisidir. Metnin tamamını yazmak, "
-"metinleri doğru bir şekilde çevirmek, belgeleri kısaca özetlemek ve hatta "
-"görsel içeriği yorumlayıp betimlemek istiyorsanız, bu eklenti hepsini "
-"kolaylıkla yapar."
-
-#~ msgid ""
-#~ "4096 tokens max. Most capable GPT-3.5 model and optimized for chat at "
-#~ "1/10th the cost of text-davinci-003"
-#~ msgstr ""
-#~ "Maksimum 4096 jeton. En yetenekli GPT-3.5 modeli ve text-davinci-003 "
-#~ "maliyetinin 1/10'u kadar sohbet için optimize edilmiş"
-
-#~ msgid "GPT-4 Turbo with vision"
-#~ msgstr "Vizyonlu GPT-4 Turbo"
-
-#~ msgid "GPT-4 Turbo, 128K context, maximum of 4096 output tokens."
-#~ msgstr "GPT-4 Turbo, 128K bağlam, maksimum 4096 çıkış jetonu."
+"Open AI, Open AI API özelliklerini iş akışınıza sorunsuz bir şekilde "
+"entegre etmek için tasarlanmış bir NVDA eklentisidir. Metnin tamamını "
+"yazmak, metinleri doğru bir şekilde çevirmek, belgeleri kısaca özetlemek "
+"ve hatta görsel içeriği yorumlayıp betimlemek istiyorsanız, bu eklenti "
+"hepsini kolaylıkla yapar."

@@ -483,14 +483,11 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			)
 
 	@script(
-		gesture="kb:nvda+:",
 		description=_("Toggle the microphone recording and transcribe the audio from anywhere")
 	)
 	def script_toggleRecording(self, gesture):
 		if not self.getClient():
 			return ui.message(NO_AUTHENTICATION_KEY_PROVIDED_MSG)
-		if self.checkScreenCurtain():
-			return
 		if self.recordtThread:
 			self.recordtThread.stop()
 			self.recordtThread = None
