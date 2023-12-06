@@ -449,7 +449,6 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			)
 
 	@script(
-		gesture="kb:nvda+:",
 		description=_("Toggle the microphone recording and transcribe the audio from anywhere")
 	)
 	def script_toggleRecording(self, gesture):
