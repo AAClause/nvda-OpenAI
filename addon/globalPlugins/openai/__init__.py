@@ -52,8 +52,8 @@ confSpecs = {
 		"quality": "integer(min=0, max=100, default=85)",
 		"resize": "boolean(default=False)",
 		"resizeInfoDisplayed": "boolean(default=False)",
-		"use_custom_prompt": "boolean(default=False)",
-		"custom_prompt_text": ""
+		"useCustomPrompt": "boolean(default=False)",
+		"customPromptText": ""
 	},
 	"renewClient": "boolean(default=False)",
 	"debug": "boolean(default=False)"
@@ -217,26 +217,26 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 		)
 		self.quality.SetValue(conf["images"]["quality"])
 
-		self.use_custom_prompt = imageGroup.addItem(
+		self.useCustomPrompt = imageGroup.addItem(
 			wx.CheckBox(
 				imageBox, 
 				label=_("Customize default text &prompt")
 			)
 			)
-		self.use_custom_prompt.Bind(wx.EVT_CHECKBOX, self.on_default_prompt)
-		self.use_custom_prompt.SetValue(conf["images"]["default_prompt"])
+		self.useCustomPrompt.Bind(wx.EVT_CHECKBOX, self.onDefaultPrompt)
+		self.useCustomPrompt.SetValue(conf["images"]["useCustomPrompt"])
 		
-		self.custom_prompt_text = imageGroup.addLabeledControl(
+		self.customPromptText = imageGroup.addLabeledControl(
 			_("Default &text prompt:"),
 			wxCtrlClass=wx.TextCtrl,
 			style=wx.TE_MULTILINE
 		)
-		self.custom_prompt_text.SetMinSize((250, -1))
-		self.custom_prompt_text.Enable(False)
-		if conf["images"]["default_prompt"]:
-			self.use_custom_prompt.SetValue(True)
-			self.custom_prompt_text.SetValue(conf["images"]["custom_prompt_text"])
-			self.custom_prompt_text.Enable()
+		self.customPromptText.SetMinSize((250, -1))
+		self.customPromptText.Enable(False)
+		if conf["images"]["useCustomPrompt"]:
+			self.useCustomPrompt.SetValue(True)
+			self.customPromptText.SetValue(conf["images"]["customPromptText"])
+			self.customPromptText.Enable()
 
 		sHelper.addItem(imageSizer)
 
@@ -254,12 +254,12 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 		self.maxHeight.Enable(self.resize.GetValue())
 		self.quality.Enable(self.resize.GetValue())
 	
-	def on_default_prompt(self, evt):
-		if self.use_custom_prompt.GetValue():
-			self.custom_prompt_text.Enable()
-			self.custom_prompt_text.SetValue(conf["images"]["custom_prompt_text"])
+	def onDefaultPrompt(self, evt):
+		if self.useCustomPrompt.GetValue():
+			self.customPromptText.Enable()
+			self.customPromptText.SetValue(conf["images"]["customPromptText"])
 		else:
-			self.custom_prompt_text.Enable(False)
+			self.customPromptText.Enable(False)
 
 	def onSave(self):
 		api_key = self.APIKey.GetValue().strip()
@@ -291,11 +291,11 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 		conf["images"]["maxWidth"] = self.maxWidth.GetValue()
 		conf["images"]["maxHeight"] = self.maxHeight.GetValue()
 		conf["images"]["quality"] = self.quality.GetValue()
-		if self.use_custom_prompt.GetValue():
-			conf["images"]["use_custom_prompt"] = True
-			conf["images"]["custom_prompt_text"] = self.custom_prompt_text.GetValue()
+		if self.useCustomPrompt.GetValue():
+			conf["images"]["useCustomPrompt"] = True
+			conf["images"]["customPromptText"] = self.customPromptText.GetValue()
 		else:
-			conf["images"]["use_custom_prompt"] = False
+			conf["images"]["useCustomPrompt"] = False
 
 class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 
