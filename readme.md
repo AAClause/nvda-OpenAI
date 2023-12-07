@@ -14,11 +14,11 @@ In order to utilize the full functionality of the OpenAI NVDA add-on, an API key
 
 1. Acquire an API key by registering for an OpenAI account at [https://platform.openai.com/api-keys](https://platform.openai.com/api-keys).
 2. With the API key ready, you have two options for configuration:
-   - Through the NVDA settings dialog:
+ 	- Through the NVDA settings dialog:
      1. Access the NVDA menu and navigate to the "Preferences" submenu.
      2. Open the "Settings" dialog and select the "Open AI" category.
      3. Input your API key in the provided field and click "OK" to confirm.
-   - Using environment variables:
+ 	- Using environment variables:
      1. Press `Windows+Pause` to open System Properties.
      2. Click on "Advanced system settings" and select "Environment Variables".
      3. Create a new variable under "User variables":
@@ -49,7 +49,8 @@ Some commands are available in the main dialog for different elements.
 - When the History Field is focused:
 	- `Alt+Right Arrow`: Copy the user's text to the prompt.
 	- `Alt+Left Arrow`: Copy the assistant's response to the system.
-	- `Ctrl+C`: Copy the assistant's response or the user's text depending on the cursor's position.
+	- `Ctrl+c`: Copy the assistant's response or the user's text depending on the cursor's position.
+	- `Ctrl+d`: Delete the current block  (user input and assistant's response).
 	- `Ctrl+Shift+Up Arrow`: Move to the text block of the user or assistant above the current block.
 	- `Ctrl+Shift+Down Arrow`: Move to the text block of the user or assistant below the current block.
 
@@ -59,7 +60,8 @@ These commands can be used to trigger actions from anywhere on your computer. It
 
 - `NVDA+e`: Take a screenshot and describe it.
 - `NVDA+o`: Grab the current navigator object and describe it.
-- `NVDA+:`: Toggle the microphone recording and transcribe the audio from anywhere.
+- Commands not assigned to any gesture by default:
+	- Toggle the microphone recording and transcribe the audio from anywhere.
 
 ## Included Dependencies
 
