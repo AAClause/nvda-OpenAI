@@ -47,12 +47,12 @@ Farklı öğeler için ana iletişim kutusunda bazı komutlar mevcuttur.
 	- `Ctrl+Enter`: Girilen metin gönderilir.
 	- 'Ctrl+Yukarı Ok': En son girilen istemi alıp gözden geçirmek veya yeniden kullanmak için geçerli alana yerleştir.
 - Geçmiş Alanına odaklandığında:
-  - `Alt+Sağ Ok`: Kullanıcı metnini isteme kopyala.
-  - `Alt+Sol Ok`: Asistanın yanıtını sisteme kopyala.
-  - 'Ctrl+c': İmlecin konumuna bağlı olarak asistanın yanıtını veya kullanıcının metnini kopyala.
-  - `Ctrl+d`: Geçerli bloğu sil (kullanıcı girişi ve asistanın yanıtı).
-  - `Ctrl+Shift+Yukarı Ok`: Geçerli bloğun üzerindeki kullanıcının veya asistanın metin bloğuna git.
-  - `Ctrl+Shift+Aşağı Ok`: Geçerli bloğun altındaki kullanıcının veya asistanın metin bloğuna git.
+	- `Alt+Sağ Ok`: Kullanıcı metnini isteme kopyala.
+	- `Alt+Sol Ok`: Asistanın yanıtını sisteme kopyala.
+	- 'Ctrl+c': İmlecin konumuna bağlı olarak asistanın yanıtını veya kullanıcının metnini kopyala.
+	- `Ctrl+d`: Geçerli bloğu sil (kullanıcı girişi ve asistanın yanıtı).
+	- `Ctrl+Shift+Yukarı Ok`: Geçerli bloğun üzerindeki kullanıcının veya asistanın metin bloğuna git.
+	- `Ctrl+Shift+Aşağı Ok`: Geçerli bloğun altındaki kullanıcının veya asistanın metin bloğuna git.
 
 ### Genel Komutlar
 
@@ -61,7 +61,7 @@ Bu komutlar, bilgisayarınızın herhangi bir yerinden eylemleri yürütmek içi
 - `NVDA+e`: Ekran görüntüsünü al ve betimle.
 - `NVDA+o`: Geçerli gezgin nesnesini al ve onu betimle.
 - Varsayılan olarak hiçbir hareket atanmayan komutlar:
-  - Mikrofon sesini aç ve sesi metne çevir.
+	- Mikrofon sesini aç ve sesi metne çevir.
 
 # Dahil Edilen Bağımlılıklar
 

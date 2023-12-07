@@ -47,12 +47,12 @@ Certaines commandes sont disponibles dans la boîte de dialogue principale pour 
 	- `Ctrl+Entrée` : Soumettre le texte que vous avez entré.
 	- `Ctrl+Flèche haut` : Récupérez et placez le prompt le plus récent dans le champ actuel pour relecture ou réutilisation.
 - Lorsque le champ de l'historique est sélectionné :
-  - `Alt+Flèche droite` : Copier le texte de l'utilisateur dans le prompt.
-  - `Alt+Flèche gauche` : Copier la réponse de l'assistant dans le système.
-  - `Ctrl+c` : Copier la réponse de l'assistant ou le texte de l'utilisateur en fonction de la position du curseur.
-  - `Ctrl+d` : Supprime le bloc actuel (entrée de l'utilisateur et réponse de l'assistant).
-  - `Ctrl+Maj+Flèche haut` : Passer au bloc de texte de l'utilisateur ou de l'assistant au-dessus du bloc actuel.
-  - `Ctrl+Maj+Flèche bas` : Passez au bloc de texte de l'utilisateur ou de l'assistant en dessous du bloc actuel.
+	- `Alt+Flèche droite` : Copier le texte de l'utilisateur dans le prompt.
+	- `Alt+Flèche gauche` : Copier la réponse de l'assistant dans le système.
+	- `Ctrl+c` : Copier la réponse de l'assistant ou le texte de l'utilisateur en fonction de la position du curseur.
+	- `Ctrl+d` : Supprime le bloc actuel (entrée de l'utilisateur et réponse de l'assistant).
+	- `Ctrl+Maj+Flèche haut` : Passer au bloc de texte de l'utilisateur ou de l'assistant au-dessus du bloc actuel.
+	- `Ctrl+Maj+Flèche bas` : Passez au bloc de texte de l'utilisateur ou de l'assistant en dessous du bloc actuel.
 
 ### Commandes globales
 
@@ -61,7 +61,7 @@ Ces commandes peuvent être utilisées pour déclencher des actions à partir de
 - `NVDA+e` : Faire une capture d'écran et la décrire.
 - `NVDA+o` : Saisissir l'objet de navigateur actuel et le décrire.
 - Commandes assignées à aucun geste par défaut :
-  - Basculer l'enregistrement du microphone et transcrire l'audio de n'importe où.
+	- Basculer l'enregistrement du microphone et transcrire l'audio de n'importe où.
 
 ## Dépendances incluses
 
