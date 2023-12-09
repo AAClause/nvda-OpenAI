@@ -639,7 +639,7 @@ class OpenAIDlg(wx.Dialog):
 				self.temperature.SetValue(model.defaultTemperature * 100) 
 
 	def onOk(self, evt):
-		if not self.promptText.GetValue().strip():
+		if not self.promptText.GetValue().strip() and not self.pathList:
 			self.promptText.SetFocus()
 			return
 		if self.worker:
