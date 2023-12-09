@@ -253,7 +253,6 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 		self.maxWidth.Enable(self.resize.GetValue())
 		self.maxHeight.Enable(self.resize.GetValue())
 		self.quality.Enable(self.resize.GetValue())
-	
 	def onDefaultPrompt(self, evt):
 		if self.useCustomPrompt.GetValue():
 			self.customPromptText.Enable()
