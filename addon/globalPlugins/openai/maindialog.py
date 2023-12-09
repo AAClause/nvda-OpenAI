@@ -379,10 +379,6 @@ class OpenAIDlg(wx.Dialog):
 	):
 		if not client or not conf:
 			return
-		if conf["images"]["useCustomPrompt"]:
-			DEFAULT_PROMPT_IMAGE_DESCRIPTION = conf["images"]["customPromptText"]
-		else:
-			DEFAULT_PROMPT_IMAGE_DESCRIPTION = _("Describe the images in as much detail as possible.")
 		self.client = client
 		self.conf = conf
 		self.data = self.loadData()
@@ -436,8 +432,29 @@ class OpenAIDlg(wx.Dialog):
 			size=(550, -1),
 			style=wx.TE_MULTILINE,
 		)
+
+		self.imageListLabel = wx.StaticText(
+			parent=self,
+			label=_("Image &list:")
+		)
+		self.imageListListBox = wx.ListBox(
+			parent=self,
+			style=wx.LB_MULTIPLE | wx.LB_HSCROLL | wx.LB_NEEDED_SB
+		)
+		self.imageListListBox.Bind(wx.EVT_KEY_DOWN, self.onImageListKeyDown)
+		self.imageListListBox.Bind(wx.EVT_CONTEXT_MENU, self.onImageListContextMenu)
+		self.imageListListBox.Bind(wx.EVT_RIGHT_UP, self.onImageListContextMenu)
+
 		if self.pathList:
-			self.promptText.SetValue(DEFAULT_PROMPT_IMAGE_DESCRIPTION)
+			self.promptText.SetValue(
+				self.getDefaultImageDescriptionsPrompt()
+			)
+			self.imageListListBox.Set(self.pathList)
+			self.imageListListBox.Show()
+			self.imageListLabel.Show()
+		else:
+			self.imageListListBox.Hide()
+			self.imageListLabel.Hide()
 
 		modelsLabel = wx.StaticText(
 			parent=self,
@@ -447,7 +464,7 @@ class OpenAIDlg(wx.Dialog):
 		self.modelListBox = wx.ListBox(
 			parent=self,
 			choices=models,
-			style=wx.LB_SINGLE
+			style=wx.LB_SINGLE | wx.LB_HSCROLL | wx.LB_NEEDED_SB
 		)
 		model = MODEL_VISION if self.pathList else conf["model"]
 		idx = list(self._model_names).index(model) if model in self._model_names else 0
@@ -504,6 +521,8 @@ class OpenAIDlg(wx.Dialog):
 		sizer1.Add(self.historyText, 0, wx.ALL, 5)
 		sizer1.Add(promptLabel, 0, wx.ALL, 5)
 		sizer1.Add(self.promptText, 0, wx.ALL, 5)
+		sizer1.Add(self.imageListLabel, 0, wx.ALL, 5)
+		sizer1.Add(self.imageListListBox, 0, wx.ALL, 5)
 		sizer1.Add(modelsLabel, 0, wx.ALL, 5)
 		sizer1.Add(self.modelListBox, 0, wx.ALL, 5)
 		sizer1.Add(maxTokensLabel, 0, wx.ALL, 5)
@@ -590,6 +609,11 @@ class OpenAIDlg(wx.Dialog):
 		self.timer.Start (100)
 		self.Bind(wx.EVT_CHAR_HOOK, self.onCharHook)
 		self.Bind(wx.EVT_CLOSE, self.onCancel)
+
+	def getDefaultImageDescriptionsPrompt(self):
+		if self.conf["images"]["useCustomPrompt"]:
+			return self.conf["images"]["customPromptText"]
+		return _("Describe the images in as much detail as possible.")
 
 	def loadData(self):
 		if not os.path.exists(DATA_JSON_FP):
@@ -1034,6 +1058,63 @@ class OpenAIDlg(wx.Dialog):
 		self.PopupMenu(menu)
 		menu.Destroy()
 
+	def onImageListKeyDown(self, evt):
+		if evt.GetKeyCode() == wx.WXK_DELETE:
+			self.onRemoveSelectedImages(evt)
+		else:
+			evt.Skip()
+
+	def onImageListContextMenu(self, evt):
+		"""
+		Display a menu to manage the image list.
+		"""
+		menu = wx.Menu()
+		if self.pathList:
+			if self.imageListListBox.GetSelections():
+				item_id = wx.NewIdRef()
+				menu.Append(item_id, _("&Remove selected images") + " (Del)")
+				self.Bind(wx.EVT_MENU, self.onRemoveSelectedImages, id=item_id)
+			item_id = wx.NewIdRef()
+			menu.Append(item_id, _("Remove &all images"))
+			self.Bind(wx.EVT_MENU, self.onRemoveAllImages, id=item_id)
+			menu.AppendSeparator()
+		item_id = wx.NewIdRef()
+		menu.Append(item_id, _("Add from f&ile path...") + " (Ctrl+i)")
+		self.Bind(wx.EVT_MENU, self.onImageDescriptionFromFilePath, id=item_id)
+		item_id = wx.NewIdRef()
+		menu.Append(item_id, _("Add from &URL...") + " (Ctrl+u)")
+		self.Bind(wx.EVT_MENU, self.onImageDescriptionFromURL, id=item_id)
+		self.PopupMenu(menu)
+		menu.Destroy()
+
+	def onRemoveSelectedImages(self, evt):
+		if not self.pathList:
+			return
+		selections = self.imageListListBox.GetSelections()
+		if selections:
+			self.pathList = [
+				path for i, path in enumerate(self.pathList)
+				if i not in selections
+			]
+		self.updateImageList()
+
+	def onRemoveAllImages(self, evt):
+		self.pathList = []
+		self.updateImageList()
+
+	def updateImageList(self):
+		if not self.pathList:
+			self.imageListListBox.Hide()
+			self.imageListLabel.Hide()
+			self.Layout()
+			self.promptText.SetFocus()
+			return
+		self.imageListListBox.Set(self.pathList)
+		self.imageListLabel.Show()
+		self.imageListListBox.Show()
+		self.Layout()
+		self.imageListListBox.SetFocus()
+
 	def onImageDescriptionFromFilePath(self, evt):
 		"""
 		Open a file dialog to select one or more images.
@@ -1059,8 +1140,10 @@ class OpenAIDlg(wx.Dialog):
 				self._model_names.index(MODEL_VISION)
 			)
 		if not self.promptText.GetValue().strip():
-			self.promptText.SetValue(DEFAULT_PROMPT_IMAGE_DESCRIPTION)
-		self.promptText.SetFocus()
+			self.promptText.SetValue(
+				self.getDefaultImageDescriptionsPrompt()
+			)
+		self.updateImageList()
 
 	def onImageDescriptionFromURL(self, evt):
 		"""
@@ -1105,8 +1188,10 @@ class OpenAIDlg(wx.Dialog):
 			self._model_names.index(MODEL_VISION)
 		)
 		if not self.promptText.GetValue().strip():
-			self.promptText.SetValue(DEFAULT_PROMPT_IMAGE_DESCRIPTION)
-		self.promptText.SetFocus()
+			self.promptText.SetValue(
+				self.getDefaultImageDescriptionsPrompt()
+			)
+		self.updateImageList()
 
 	def onRecord(self, evt):
 		if self.worker:
@@ -1171,6 +1256,17 @@ class OpenAIDlg(wx.Dialog):
 		self.transcribeFromFileBtn.Disable()
 		self.imageDescriptionBtn.Disable()
 		self.TTSBtn.Disable()
+		self.modelListBox.Disable()
+		self.maxTokens.Disable()
+		self.conversationCheckBox.Disable()
+		self.promptText.SetEditable(False)
+		self.systemText.SetEditable(False)
+		self.imageListListBox.Disable()
+		if self.conf["advancedMode"]:
+			self.temperature.Disable()
+			self.topP.Disable()
+			self.streamModeCheckBox.Disable()
+			self.debugModeCheckBox.Disable()
 
 	def enableButtons(self):
 		self.okBtn.Enable()
@@ -1179,3 +1275,14 @@ class OpenAIDlg(wx.Dialog):
 		self.transcribeFromFileBtn.Enable()
 		self.imageDescriptionBtn.Enable()
 		self.TTSBtn.Enable()
+		self.modelListBox.Enable()
+		self.maxTokens.Enable()
+		self.conversationCheckBox.Enable()
+		self.promptText.SetEditable(True)
+		self.systemText.SetEditable(True)
+		if self.conf["advancedMode"]:
+			self.temperature.Enable()
+			self.topP.Enable()
+			self.streamModeCheckBox.Enable()
+			self.debugModeCheckBox.Enable()
+		self.updateImageList()
