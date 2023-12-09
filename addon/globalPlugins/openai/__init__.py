@@ -53,7 +53,7 @@ confSpecs = {
 		"resize": "boolean(default=False)",
 		"resizeInfoDisplayed": "boolean(default=False)",
 		"useCustomPrompt": "boolean(default=False)",
-		"customPromptText": ""
+		"customPromptText": 'string(default="")'
 	},
 	"renewClient": "boolean(default=False)",
 	"debug": "boolean(default=False)"
