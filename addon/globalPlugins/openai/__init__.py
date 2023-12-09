@@ -51,7 +51,9 @@ confSpecs = {
 		"maxWidth": "integer(min=0, default=0)",
 		"quality": "integer(min=0, max=100, default=85)",
 		"resize": "boolean(default=False)",
-		"resizeInfoDisplayed": "boolean(default=False)"
+		"resizeInfoDisplayed": "boolean(default=False)",
+		"useCustomPrompt": "boolean(default=False)",
+		"customPromptText": 'string(default="")'
 	},
 	"renewClient": "boolean(default=False)",
 	"debug": "boolean(default=False)"
@@ -170,7 +172,7 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 
 		sHelper.addItem(TTSSizer)
 
-		imageGroupLabel = _("Images")
+		imageGroupLabel = _("Image description")
 		imageSizer = wx.StaticBoxSizer(wx.VERTICAL, self, label=imageGroupLabel)
 		imageBox = imageSizer.GetStaticBox()
 		imageGroup = gui.guiHelper.BoxSizerHelper(self, sizer=imageSizer)
@@ -215,6 +217,26 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 		)
 		self.quality.SetValue(conf["images"]["quality"])
 
+		self.useCustomPrompt = imageGroup.addItem(
+			wx.CheckBox(
+				imageBox, 
+				label=_("Customize default text &prompt")
+			)
+		)
+		self.useCustomPrompt.Bind(wx.EVT_CHECKBOX, self.onDefaultPrompt)
+		self.useCustomPrompt.SetValue(conf["images"]["useCustomPrompt"])
+		self.customPromptText = imageGroup.addLabeledControl(
+			_("Default &text prompt:"),
+			wxCtrlClass=wx.TextCtrl,
+			style=wx.TE_MULTILINE
+		)
+		self.customPromptText.SetMinSize((250, -1))
+		self.customPromptText.Enable(False)
+		if conf["images"]["useCustomPrompt"]:
+			self.useCustomPrompt.SetValue(True)
+			self.customPromptText.SetValue(conf["images"]["customPromptText"])
+			self.customPromptText.Enable()
+
 		sHelper.addItem(imageSizer)
 
 		sHelper.addItem(mainDialogSizer)
@@ -230,6 +252,12 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 		self.maxWidth.Enable(self.resize.GetValue())
 		self.maxHeight.Enable(self.resize.GetValue())
 		self.quality.Enable(self.resize.GetValue())
+	def onDefaultPrompt(self, evt):
+		if self.useCustomPrompt.GetValue():
+			self.customPromptText.Enable()
+			self.customPromptText.SetValue(conf["images"]["customPromptText"])
+		else:
+			self.customPromptText.Enable(False)
 
 	def onSave(self):
 		api_key = self.APIKey.GetValue().strip()
@@ -261,7 +289,11 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 		conf["images"]["maxWidth"] = self.maxWidth.GetValue()
 		conf["images"]["maxHeight"] = self.maxHeight.GetValue()
 		conf["images"]["quality"] = self.quality.GetValue()
-
+		if self.useCustomPrompt.GetValue():
+			conf["images"]["useCustomPrompt"] = True
+			conf["images"]["customPromptText"] = self.customPromptText.GetValue()
+		else:
+			conf["images"]["useCustomPrompt"] = False
 
 class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 
