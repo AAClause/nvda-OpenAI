@@ -225,7 +225,6 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 		)
 		self.useCustomPrompt.Bind(wx.EVT_CHECKBOX, self.onDefaultPrompt)
 		self.useCustomPrompt.SetValue(conf["images"]["useCustomPrompt"])
-		
 		self.customPromptText = imageGroup.addLabeledControl(
 			_("Default &text prompt:"),
 			wxCtrlClass=wx.TextCtrl,
