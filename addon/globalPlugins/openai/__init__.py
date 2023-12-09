@@ -222,7 +222,7 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 				imageBox, 
 				label=_("Customize default text &prompt")
 			)
-			)
+		)
 		self.useCustomPrompt.Bind(wx.EVT_CHECKBOX, self.onDefaultPrompt)
 		self.useCustomPrompt.SetValue(conf["images"]["useCustomPrompt"])
 		
