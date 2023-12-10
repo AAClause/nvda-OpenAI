@@ -7,6 +7,7 @@ import threading
 import winsound
 import gui
 import wx
+from enum import Enum
 
 import addonHandler
 import api
@@ -23,7 +24,12 @@ from .consts import (
 	N_MIN, N_MAX,
 	DEFAULT_SYSTEM_PROMPT
 )
-from .imagehelper import resize_image, describeFromImageFileList, encode_image
+from .imagehelper import (
+	describeFromImageFileList,
+	encode_image,
+	get_image_dimensions,
+	resize_image,
+)
 from .recordthread import RecordThread
 from .resultevent import ResultEvent, EVT_RESULT_ID
 
@@ -41,6 +47,7 @@ DATA_JSON_FP = os.path.join(DATA_DIR, "data.json")
 def EVT_RESULT(win, func):
 	win.Connect(-1, -1, EVT_RESULT_ID, func)
 
+
 def copyToClipAsHTML(html_content):
 	html_data_object = wx.HTMLDataObject()
 	html_data_object.SetHTML(html_content)
@@ -50,6 +57,63 @@ def copyToClipAsHTML(html_content):
 		wx.TheClipboard.Close()
 	else:
 		raise RuntimeError("Unable to open the clipboard")
+
+
+class ImageFileTypes(Enum):
+	UNKNOWN = 0
+	IMAGE_LOCAL = 1
+	IMAGE_URL = 2
+
+
+class ImageFile:
+
+	def __init__(
+		self,
+		path: str,
+		name: str=None,
+		description: str=None
+	):
+		if not isinstance(path, str):
+			raise TypeError("path must be a string")
+		self.path = path
+		self.type = self._get_type()
+		self.name = name or self._get_name()
+		self.description = description
+		self.size = self._get_size()
+		self.dimension = self._get_dimension()
+
+	def _get_type(self):
+		if os.path.exists(self.path):
+			return ImageFileTypes.IMAGE_LOCAL
+		if re.match(r"^https?://", self.path):
+			return ImageFileTypes.IMAGE_URL
+		return ImageFileTypes.UNKNOWN
+
+	def _get_name(self):
+		if self.type == ImageFileTypes.IMAGE_LOCAL:
+			return os.path.basename(self.path)
+		if self.type == ImageFileTypes.IMAGE_URL:
+			return self.path.split("/")[-1]
+		return "N/A"
+
+	def _get_size(self):
+		if self.type == ImageFileTypes.IMAGE_LOCAL:
+			size = os.path.getsize(self.path)
+			if size < 1024:
+				return f"{size} B"
+			if size < 1024 * 1024:
+				return f"{size / 1024:.2f} KB"
+			else:
+				return f"{size / 1024 / 1024:.2f} MB"
+		return -1
+
+	def _get_dimension(self):
+		if self.type == ImageFileTypes.IMAGE_LOCAL:
+			return get_image_dimensions(self.path)
+		return None
+
+	def __str__(self):
+		return f"{self.name} ({self.path}, {self.size}, {self.dimension}, {self.description})"
 
 
 class CompletionThread(threading.Thread):
@@ -98,7 +162,7 @@ class CompletionThread(threading.Thread):
 		block.topP = topP
 		conversationMode = conf["conversationMode"]
 		conf["conversationMode"] = wnd.conversationCheckBox.IsChecked()
-		block.pathList = wnd.pathList
+		block.pathList = wnd.pathList.copy()
 
 		if not 0 <= temperature <= model.maxTemperature * 100:
 			wx.PostEvent(self._notifyWindow, ResultEvent(_("Invalid temperature")))
@@ -110,8 +174,31 @@ class CompletionThread(threading.Thread):
 		if system:
 			messages.append({"role": "system", "content": system})
 		wnd.getMessages(messages)
+		if wnd.pathList:
+			images = wnd.getImages()
+			if images:
+				messages.append({"role": "user", "content": images})
 		if prompt:
 			messages.append({"role": "user", "content": prompt})
+		nbImages = 0
+		for message in messages:
+			if (
+				message["role"] == "user"
+				and not isinstance(message["content"], str)
+			):
+				for content in message["content"]:
+					if content["type"] == "image_url":
+						nbImages += 1
+		if nbImages == 1:
+			wnd.message(_("Uploading one image, please wait..."))
+		elif nbImages > 1:
+			wnd.message(_("Uploading %d images, please wait...") % nbImages)
+		else:
+			wnd.message(_("Processing, please wait..."))
+		if debug:
+			if nbImages:
+				log.info(f"{nbImages} images")
+			log.info(f"{json.dumps(messages, indent=2, ensure_ascii=False)}")
 		params = {
 			"model": model.name,
 			"messages": messages,
@@ -139,7 +226,6 @@ class CompletionThread(threading.Thread):
 		else:
 			self._responseWithoutStream(response, block, debug)
 		wx.PostEvent(self._notifyWindow, ResultEvent())
-		wnd.message(_("Ready"))
 
 	def abort(self):
 		self._wantAbort = True
@@ -154,78 +240,18 @@ class CompletionThread(threading.Thread):
 			finish = event.choices[0].finish_reason
 			text = ""
 			if delta.content:
-				text = "%s" % delta.content
-
+				text = delta.content
 			block.responseText += text
 		block.responseTerminated = True
 
 	def _responseWithoutStream(self, response, block, debug=False):
 		wnd = self._notifyWindow
 		text = ""
-		n = 1 # len(response.choices)
-		if n > 1:
-			text += f"# {n} completions"
 		for i, choice in enumerate(response.choices):
 			if self._wantAbort: break
-			if debug:
-				text = f"{json.dumps(response, indent=2, ensure_ascii=False)}"
-				break
-			if n > 1:
-				text += f"\n\n## completion {i+1}\n\n"
 			text += choice.message.content
 		block.responseText += text
 		block.responseTerminated = True
-
-
-class ImageDescriptionThread(threading.Thread):
-
-	def __init__(self, notifyWindow):
-		threading.Thread.__init__(self)
-		self._notifyWindow = notifyWindow
-
-	def run(self):
-		wnd = self._notifyWindow
-		client = wnd.client
-		prompt = wnd.promptText.GetValue().strip()
-		messages = []
-		wnd.getMessages(messages)
-		if wnd.pathList:
-			content = [
-				{"type": "text", "text": prompt}
-			]
-			content.extend(wnd.getImages())
-			messages.append({
-				"role": "user",
-				"content": content
-			})
-		else:
-			messages.append({"role": "user", "content": prompt})
-		nbImages = 0
-		for message in messages:
-			if message["role"] == "user":
-				for content in message["content"]:
-					if not isinstance(content, dict):
-						continue
-					if content["type"] == "image_url":
-						nbImages += 1
-		if nbImages == 1:
-			wnd.message(_("One image to analyze..."))
-		elif nbImages > 1:
-			wnd.message(_("%d images to analyze...") % nbImages)
-		max_tokens = wnd.maxTokens.GetValue()
-		try:
-			description = describeFromImageFileList(
-				client,
-				messages=messages,
-				max_tokens=max_tokens
-			)
-		except BaseException as err:
-			wx.PostEvent(self._notifyWindow, ResultEvent(repr(err)))
-			return
-		wx.PostEvent(self._notifyWindow, ResultEvent(description))
-
-	def abort(self):
-		pass
 
 
 class TextToSpeechThread(threading.Thread):
@@ -398,7 +424,12 @@ class OpenAIDlg(wx.Dialog):
 		self._orig_data = self.data.copy() if isinstance(self.data, dict) else None
 		self._historyPath = None
 		self.blocks = []
-		self.pathList = pathList
+		self.pathList = []
+		if pathList:
+			for path in pathList:
+				if not os.path.exists(path):
+					continue
+				self.pathList.append(ImageFile(path))
 		self.previousPrompt = None
 		self._lastSystem = None
 		self._model_names = [model.name for model in MODELS]
@@ -463,24 +494,43 @@ class OpenAIDlg(wx.Dialog):
 
 		self.imageListLabel = wx.StaticText(
 			parent=self,
-			label=_("Image &list:")
+			label=_("Attached ima&ges:")
 		)
-		self.imageListListBox = wx.ListBox(
+		self.imageListCtrl = wx.ListCtrl(
 			parent=self,
-			style=wx.LB_MULTIPLE | wx.LB_HSCROLL | wx.LB_NEEDED_SB
+			style=wx.LC_REPORT | wx.LC_HRULES | wx.LC_VRULES
 		)
-		self.imageListListBox.Bind(wx.EVT_KEY_DOWN, self.onImageListKeyDown)
-		self.imageListListBox.Bind(wx.EVT_CONTEXT_MENU, self.onImageListContextMenu)
+		self.imageListCtrl.InsertColumn(0, _("name"))
+		self.imageListCtrl.InsertColumn(1, _("path"))
+		self.imageListCtrl.InsertColumn(2, _("size"))
+		self.imageListCtrl.InsertColumn(3, _("Dimensions"))
+		self.imageListCtrl.InsertColumn(4, _("description"))
+		self.imageListCtrl.SetColumnWidth(0, 100)
+		self.imageListCtrl.SetColumnWidth(1, 200)
+		self.imageListCtrl.SetColumnWidth(2, 100)
+		self.imageListCtrl.SetColumnWidth(3, 100)
+		self.imageListCtrl.SetColumnWidth(4, 200)
+		self.imageListCtrl.Bind(wx.EVT_LIST_ITEM_RIGHT_CLICK, self.onImageListContextMenu)
+		self.imageListCtrl.Bind(wx.EVT_KEY_DOWN, self.onImageListKeyDown)
+		self.imageListCtrl.Bind(wx.EVT_CONTEXT_MENU, self.onImageListContextMenu)
+		self.imageListCtrl.Bind(wx.EVT_RIGHT_UP, self.onImageListContextMenu)
 
 		if self.pathList:
 			self.promptText.SetValue(
 				self.getDefaultImageDescriptionsPrompt()
 			)
-			self.imageListListBox.Set(self.pathList)
-			self.imageListListBox.Show()
+			for path in self.pathList:
+				self.imageListCtrl.Append([
+					path.name,
+					path.path,
+					path.size,
+					f"{path.dimension[0]}x{path.dimension[1]}" if isinstance(path.dimension, tuple) else "N/A",
+					path.description or "N/A"
+				])
+			self.imageListCtrl.Show()
 			self.imageListLabel.Show()
 		else:
-			self.imageListListBox.Hide()
+			self.imageListCtrl.Hide()
 			self.imageListLabel.Hide()
 
 		modelsLabel = wx.StaticText(
@@ -549,7 +599,7 @@ class OpenAIDlg(wx.Dialog):
 		sizer1.Add(promptLabel, 0, wx.ALL, 5)
 		sizer1.Add(self.promptText, 0, wx.ALL, 5)
 		sizer1.Add(self.imageListLabel, 0, wx.ALL, 5)
-		sizer1.Add(self.imageListListBox, 0, wx.ALL, 5)
+		sizer1.Add(self.imageListCtrl, 0, wx.ALL, 5)
 		sizer1.Add(modelsLabel, 0, wx.ALL, 5)
 		sizer1.Add(self.modelListBox, 0, wx.ALL, 5)
 		sizer1.Add(maxTokensLabel, 0, wx.ALL, 5)
@@ -763,18 +813,11 @@ class OpenAIDlg(wx.Dialog):
 		if self.conf["saveSystem"] and system != self._lastSystem:
 			self.data["system"] = system
 			self._lastSystem = system
-		self.message(_("Processing, please wait..."))
 		winsound.PlaySound(f"{ADDON_DIR}/sounds/progress.wav", winsound.SND_ASYNC|winsound.SND_LOOP)
 		self.disableButtons()
 		self.historyText.SetFocus()
 		self.stopRequest = threading.Event()
-		if self.pathList:
-			self.modelListBox.SetSelection(
-				self._model_names.index(MODEL_VISION)
-			)
-			self.worker = ImageDescriptionThread(self)
-		else:
-			self.worker = CompletionThread(self)
+		self.worker = CompletionThread(self)
 		self.worker.start()
 
 	def onCancel(self, evt):
@@ -787,9 +830,9 @@ class OpenAIDlg(wx.Dialog):
 		self.Destroy()
 
 	def OnResult(self, event):
+		winsound.PlaySound(None, winsound.SND_ASYNC)
 		self.enableButtons()
 		self.worker = None
-		winsound.PlaySound(None, winsound.SND_ASYNC)
 		if not event.data:
 			return
 
@@ -797,13 +840,6 @@ class OpenAIDlg(wx.Dialog):
 			historyBlock = HistoryBlock()
 			historyBlock.system = self.systemText.GetValue().strip()
 			historyBlock.prompt = self.promptText.GetValue().strip()
-			"""
-			# TODO: Create a special history block for attached images and additional information
-			if self.pathList:
-				historyBlock.prompt += "\n\n" + _("Attached images:")
-				for path in self.pathList:
-					historyBlock.prompt += f"\n- \"{path}\""
-			"""
 			model = self.getCurrentModel()
 			historyBlock.model = model.name
 			if self.conf["advancedMode"]:
@@ -817,8 +853,6 @@ class OpenAIDlg(wx.Dialog):
 			historyBlock.response = event.data
 			historyBlock.responseText = event.data.message.content
 			historyBlock.responseTerminated = True
-			historyBlock.pathList = self.pathList
-			self.pathList = None
 			if self.lastBlock is None:
 				self.firstBlock = self.lastBlock = historyBlock
 			else:
@@ -827,7 +861,6 @@ class OpenAIDlg(wx.Dialog):
 				self.lastBlock = historyBlock
 			self.previousPrompt = self.promptText.GetValue()
 			self.promptText.Clear()
-			self.promptText.SetFocus()
 			return
 
 		if isinstance(event.data, openai.types.audio.transcription.Transcription):
@@ -934,21 +967,23 @@ class OpenAIDlg(wx.Dialog):
 		if not pathList:
 			pathList = self.pathList
 		images = []
-		for path in pathList:
-			url_re = re.compile(r"^https?://")
-			if url_re.match(path):
+		log.info("-------")
+		for imageFile in pathList:
+			path = imageFile.path
+			log.info(f"Processing {path}")
+			if imageFile.type == ImageFileTypes.IMAGE_URL:
 				images.append({"type": "image_url", "image_url": {"url": path}})
-			elif os.path.isfile(path):
+			elif imageFile.type == ImageFileTypes.IMAGE_LOCAL:
 				if conf["images"]["resize"]:
-					path_ = os.path.join(DATA_DIR, "last_resized.jpg")
+					path_resized_image = os.path.join(DATA_DIR, "last_resized.jpg")
 					resize_image(
 						path,
 						max_width=conf["images"]["maxWidth"],
 						max_height=conf["images"]["maxHeight"],
 						quality=conf["images"]["quality"],
-						target=path_
+						target=path_resized_image
 					)
-					path = path_
+					path = path_resized_image
 				base64_image = encode_image(path)
 				format = path.split(".")[-1]
 				mime_type = f"image/{format}"
@@ -959,7 +994,7 @@ class OpenAIDlg(wx.Dialog):
 					}
 				})
 			else:
-				raise ValueError(f"Invalid path: {path}")
+				raise ValueError(f"Invalid image type for {path}")
 				break
 		return images
 
@@ -972,18 +1007,19 @@ class OpenAIDlg(wx.Dialog):
 			return messages
 		block = self.firstBlock
 		while block is not None:
+			content = []
+			if block.pathList:
+				content.extend(self.getImages(block.pathList))
 			if block.prompt:
-				if block.pathList:
-					content = [
-						{"type": "text", "text": block.prompt}
-					]
-					content.extend(self.getImages(block.pathList))
-					messages.append({
-						"role": "user",
-						"content": content
-					})
-				else:
-					messages.append({"role": "user", "content": block.prompt})
+				content.append({
+					"type": "text",
+					"text": block.prompt
+				})
+			if content:
+				messages.append({
+					"role": "user",
+					"content": content
+				})
 			if block.responseText:
 				messages.append({"role": "system", "content": block.responseText})
 			block = block.next
@@ -1235,10 +1271,12 @@ class OpenAIDlg(wx.Dialog):
 		menu.Destroy()
 
 	def onImageListKeyDown(self, evt):
-		if evt.GetKeyCode() == wx.WXK_DELETE:
+		key_code = evt.GetKeyCode()
+		if key_code == wx.WXK_DELETE:
 			self.onRemoveSelectedImages(evt)
-		else:
-			evt.Skip()
+		elif key_code == ord('A') and evt.ControlDown():
+			self.onImageListSelectAll(evt)
+		evt.Skip()
 
 	def onImageListContextMenu(self, evt):
 		"""
@@ -1246,7 +1284,7 @@ class OpenAIDlg(wx.Dialog):
 		"""
 		menu = wx.Menu()
 		if self.pathList:
-			if self.imageListListBox.GetSelections():
+			if self.imageListCtrl.GetItemCount() > 0 and self.imageListCtrl.GetSelectedItemCount() > 0:
 				item_id = wx.NewIdRef()
 				menu.Append(item_id, _("&Remove selected images") + " (Del)")
 				self.Bind(wx.EVT_MENU, self.onRemoveSelectedImages, id=item_id)
@@ -1263,33 +1301,83 @@ class OpenAIDlg(wx.Dialog):
 		self.PopupMenu(menu)
 		menu.Destroy()
 
+	def onImageListSelectAll(self, evt):
+		for i in range(self.imageListCtrl.GetItemCount()):
+			self.imageListCtrl.Select(i)
+
+	def onImageListChange(self, evt):
+		"""
+		Select the model for image description.
+		"""
+		self.modelListBox.SetSelection(
+			self._model_names.index(MODEL_VISION)
+		)
+		self.imageListCtrl.SetSelection(evt.GetSelection())
+		evt.Skip()
+
 	def onRemoveSelectedImages(self, evt):
 		if not self.pathList:
 			return
-		selections = self.imageListListBox.GetSelections()
-		if selections:
-			self.pathList = [
-				path for i, path in enumerate(self.pathList)
-				if i not in selections
-			]
+		focused_item = self.imageListCtrl.GetFocusedItem()
+		items_to_remove = []
+		selectedItem = self.imageListCtrl.GetFirstSelected()
+		while selectedItem != wx.NOT_FOUND:
+			items_to_remove.append(selectedItem)
+			selectedItem = self.imageListCtrl.GetNextSelected(selectedItem)
+
+		if not items_to_remove:
+			return
+		self.pathList = [
+			path for i, path in enumerate(self.pathList)
+			if i not in items_to_remove
+		]
 		self.updateImageList()
+		if focused_item == wx.NOT_FOUND:
+			return
+		if focused_item > self.imageListCtrl.GetItemCount() - 1:
+			focused_item -= 1
+		self.imageListCtrl.Focus(focused_item)
+		self.imageListCtrl.Select(focused_item)
 
 	def onRemoveAllImages(self, evt):
-		self.pathList = []
+		self.pathList.clear()
 		self.updateImageList()
 
-	def updateImageList(self):
+	def imageExists(self, path, pathList=None):
+		if not pathList:
+			pathList = self.pathList
+		for imageFile in pathList:
+			if imageFile.path.lower() == path.lower():
+				return True
+		block = self.firstBlock
+		while block is not None:
+			if block.pathList:
+				for imageFile in block.pathList:
+					if imageFile.path.lower() == path.lower():
+						return True
+			block = block.next
+		return False
+
+	def updateImageList(self, focusPrompt=True):
 		if not self.pathList:
-			self.imageListListBox.Hide()
+			self.imageListCtrl.Hide()
 			self.imageListLabel.Hide()
 			self.Layout()
-			self.promptText.SetFocus()
+			if focusPrompt:
+				self.promptText.SetFocus()
 			return
-		self.imageListListBox.Set(self.pathList)
+		self.imageListCtrl.DeleteAllItems()
+		for path in self.pathList:
+			self.imageListCtrl.Append([
+				path.name,
+				path.path,
+				path.size,
+				f"{path.dimension[0]}x{path.dimension[1]}" if isinstance(path.dimension, tuple) else "N/A",
+				path.description or "N/A"
+			])
 		self.imageListLabel.Show()
-		self.imageListListBox.Show()
+		self.imageListCtrl.Show()
 		self.Layout()
-		self.imageListListBox.SetFocus()
 
 	def onImageDescriptionFromFilePath(self, evt):
 		"""
@@ -1309,7 +1397,17 @@ class OpenAIDlg(wx.Dialog):
 		paths = dlg.GetPaths()
 		if not paths:
 			return
-		self.pathList.extend(paths)
+		for path in paths:
+			if not self.imageExists(path):
+				self.pathList.append(
+					ImageFile(path)
+				)
+			else:
+				gui.messageBox(
+					_("The following image has already been added and will be ignored:\n%s") % path,
+					_("Open AI"),
+					wx.OK|wx.ICON_ERROR
+				)
 		model_name = self.getCurrentModel().name
 		if model_name != MODEL_VISION:
 			self.modelListBox.SetSelection(
@@ -1359,7 +1457,12 @@ class OpenAIDlg(wx.Dialog):
 			return
 		if not self.pathList:
 			self.pathList = []
-		self.pathList.append(url)
+		self.pathList.append(
+			ImageFile(
+				url,
+				description=r.headers.get_content_type() or "N/A"
+			)
+		)
 		self.modelListBox.SetSelection(
 			self._model_names.index(MODEL_VISION)
 		)
@@ -1445,7 +1548,7 @@ class OpenAIDlg(wx.Dialog):
 		self.conversationCheckBox.Disable()
 		self.promptText.SetEditable(False)
 		self.systemText.SetEditable(False)
-		self.imageListListBox.Disable()
+		self.imageListCtrl.Disable()
 		if self.conf["advancedMode"]:
 			self.temperature.Disable()
 			self.topP.Disable()
@@ -1464,9 +1567,11 @@ class OpenAIDlg(wx.Dialog):
 		self.conversationCheckBox.Enable()
 		self.promptText.SetEditable(True)
 		self.systemText.SetEditable(True)
+		self.imageListCtrl.Enable()
 		if self.conf["advancedMode"]:
 			self.temperature.Enable()
 			self.topP.Enable()
 			self.streamModeCheckBox.Enable()
 			self.debugModeCheckBox.Enable()
-		self.updateImageList()
+		self.pathList.clear()
+		self.updateImageList(False)
