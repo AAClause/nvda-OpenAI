@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Open AI\n"
 "Report-Msgid-Bugs-To: nvda-translations@groups.io\n"
-"POT-Creation-Date: 2023-12-03 22:57+0300\n"
-"PO-Revision-Date: 2023-12-03 23:17+0300\n"
+"POT-Creation-Date: 2023-12-10 20:36+0300\n"
+"PO-Revision-Date: 2023-12-10 20:48+0300\n"
 "Last-Translator: Umut KORKMAZ <umutkork@gmail.com>\n"
 "Language-Team: Umut KORKMAZ <umutkork@gmail.com>\n"
 "Language: tr_TR\n"
@@ -16,82 +16,83 @@ msgstr ""
 "X-Poedit-SearchPath-0: .\n"
 "X-Poedit-SearchPath-1: .\n"
 
-#: openai/__init__.py:62
+#: openai/__init__.py:64
 msgid ""
 "No authentication key provided. Please set it in the Preferences dialog."
 msgstr ""
 "Kimlik doğrulama anahtarı mevcut değil. Lütfen Tercihler/Ayarlar iletişim "
 "kutusunda ekleyin."
 
-#: openai/__init__.py:80
+#: openai/__init__.py:82
 msgid "API Key:"
 msgstr "API anahtarı:"
 
-#: openai/__init__.py:85
+#: openai/__init__.py:87
 msgid "Organization"
 msgstr "Organizasyon"
 
-#: openai/__init__.py:93
+#: openai/__init__.py:95
 msgid "Use or&ganization"
 msgstr "&Organizasyon kullan"
 
-#: openai/__init__.py:104
+#: openai/__init__.py:106
 msgid "Organization &name:"
 msgstr "Organizasyon &Adı:"
 
-#: openai/__init__.py:110
+#: openai/__init__.py:112
 msgid "&Organization key:"
 msgstr "&Organizasyon anahtarı:"
 
-#: openai/__init__.py:117
+#: openai/__init__.py:119
 msgid "Main dialog"
 msgstr "Ana diyalog"
 
-#: openai/__init__.py:122
+#: openai/__init__.py:124
 msgid "Block the closing using the &escape key"
 msgstr "Bloğun &Escape Tuşu İle Kapanmasını Engelle"
 
-#: openai/__init__.py:130
+#: openai/__init__.py:132
 msgid "Remember the content of the S&ystem field between sessions"
 msgstr "Oturumlar arasında Sistem alanının içeri&ğini hatırla"
 
-#: openai/__init__.py:138
+#: openai/__init__.py:140
 msgid "Enable &advanced settings (including temperature and probability mass)"
 msgstr "Gelişmiş &ayarları etkinleştir (sıcaklık ve olasılık kütlesi dahil)"
 
-#: openai/__init__.py:146
+#: openai/__init__.py:148
 msgid "Text To Speech"
 msgstr "Metinden Konuşmaya"
 
-#: openai/__init__.py:152
+#: openai/__init__.py:154
 msgid "&Voice:"
 msgstr "&Ses:"
 
-#: openai/__init__.py:162 openai/maindialog.py:441
+#: openai/__init__.py:164 openai/maindialog.py:508
 msgid "&Model:"
 msgstr "&Modèl:"
 
-#: openai/__init__.py:173
-msgid "Images"
-msgstr "Görüntü dosyaları"
+#: openai/__init__.py:175
+#| msgid "&Image description"
+msgid "Image description"
+msgstr "Görsel Betimleme"
 
-#: openai/__init__.py:178
+#: openai/__init__.py:180
 msgid "&Resize images before sending them to the API"
 msgstr "Görüntüleri API'ye göndermeden önce yeniden boyutlandı&r"
 
-#: openai/__init__.py:191
+#: openai/__init__.py:193
 msgid "Maximum &width (0 to resize proportionally to the height):"
 msgstr ""
 "Maksimum geni&şlik (yüksekliğe orantılı olarak yeniden boyutlandırmak için "
 "0):"
 
-#: openai/__init__.py:200
+#: openai/__init__.py:202
 msgid "Maximum &height (0 to resize proportionally to the width):"
 msgstr ""
 "Maksimum y&ükseklik (genişliğe orantılı olarak yeniden boyutlandırmak için "
 "0):"
 
-#: openai/__init__.py:209
+#: openai/__init__.py:211
 msgid ""
 "&Quality for JPEG images (0 [worst] to 95 [best], values above 95 should be "
 "avoided):"
@@ -99,71 +100,79 @@ msgstr ""
 "&JPEG görüntülerin kalitesi (0 [en kötü] ila 95 [en iyi], 95'in üzerindeki "
 "değerlerden kaçınılmalıdır):"
 
-#: openai/__init__.py:282
+#: openai/__init__.py:223
+#| msgid "Compied to prompt"
+msgid "Customize default text &prompt"
+msgstr "&Varsayılan metin istemini özelleştir"
+
+#: openai/__init__.py:229
+msgid "Default &text prompt:"
+msgstr "&Varsayılan metin istemi:"
+
+#: openai/__init__.py:314
 msgid "Docu&mentation"
 msgstr "&Yardım"
 
-#: openai/__init__.py:283
+#: openai/__init__.py:315
 msgid "Open the documentation of this addon"
 msgstr "Bu eklentinin yardım belgelerini aç"
 
-#: openai/__init__.py:288
+#: openai/__init__.py:320
 msgid "Main d&ialog..."
 msgstr "&Ana diyalog..."
 
-#: openai/__init__.py:289
-#| msgid "Show Open AI dialog"
+#: openai/__init__.py:321
 msgid "Show the Open AI dialog"
 msgstr "Open AI iletişim kutusunu göster"
 
-#: openai/__init__.py:294
+#: openai/__init__.py:326
 msgid "API &keys"
 msgstr "&API anahtarı"
 
-#: openai/__init__.py:295
+#: openai/__init__.py:327
 msgid "Manage the API keys"
 msgstr "API anahtarlarını yönet"
 
-#: openai/__init__.py:300
+#: openai/__init__.py:332
 msgid "API &usage"
 msgstr "API k&ullan"
 
-#: openai/__init__.py:301
+#: openai/__init__.py:333
 msgid "Open the API usage webpage"
-msgstr "API kullanım web sayfasını aç"
+msgstr "API kullanııcı web sayfasını aç"
 
-#: openai/__init__.py:306
+#: openai/__init__.py:338
 msgid "Git&Hub repository"
 msgstr "Git&Hub deposu"
 
-#: openai/__init__.py:307
+#: openai/__init__.py:339
 msgid "Open the GitHub repository of this addon"
 msgstr "Bu eklentinin GitHub deposunu aç"
 
-#: openai/__init__.py:316
+#: openai/__init__.py:348
 #, python-brace-format
 msgid "Open A&I {addon_version}"
 msgstr "Open A&I {addon_version}"
 
-#: openai/__init__.py:379
+#: openai/__init__.py:411
 msgid "Please disable the screen curtain before taking a screenshot"
 msgstr "Ekran görüntüsü almadan önce lütfen ekran perdesini devre dışı bırakın"
 
-#: openai/__init__.py:394
+#: openai/__init__.py:426
 msgid "Show Open AI dialog"
 msgstr "Open AI İletişim kutusunu gösterir"
 
-#: openai/__init__.py:401
+#: openai/__init__.py:433
 msgid "Take a screenshot and describe it"
 msgstr "Ekran görüntüsü alır ve betimler"
 
-#: openai/__init__.py:421
+#: openai/__init__.py:453
 msgid "Grab the current navigator object and describe it"
 msgstr "Geçerli gezgin nesnesini alır ve betimler"
 
-#: openai/__init__.py:453
+#: openai/__init__.py:484
 msgid "Toggle the microphone recording and transcribe the audio from anywhere"
-msgstr "İstediğiniz yerden mikrofonu açar ve sesi yazıya aktarır"
+msgstr "İstenen yerden mikrofonu açar ve sesi yazıya aktarır"
 
 #: openai/consts.py:23
 msgid ""
@@ -214,114 +223,142 @@ msgstr ""
 "Standart gpt-4 modu ile aynı özelliklere sahiptir ancak bağlam uzunluğu 4 "
 "kat daha fazladır."
 
-#: openai/maindialog.py:35
-msgid "Describe the images in as much detail as possible."
-msgstr "Görselleri mümkün olduğunca ayrıntılı bir şekilde betimle."
-
-#: openai/maindialog.py:92
+#: openai/maindialog.py:153
 msgid "Invalid temperature"
 msgstr "Geçersiz sıcaklık"
 
-#: openai/maindialog.py:95
+#: openai/maindialog.py:156
 msgid "Invalid top P"
 msgstr "Geçersiz üst P"
 
-#: openai/maindialog.py:130
-msgid "Ready"
-msgstr "Hazır"
+#: openai/maindialog.py:178
+#| msgid "Processing, please wait..."
+msgid "Uploading one image, please wait..."
+msgstr "Bir görsel yükleniyor, lütfen bekleyin..."
 
-#: openai/maindialog.py:200
-msgid "One image to analyze..."
-msgstr "Analiz edilecek bir resim..."
-
-#: openai/maindialog.py:202
+#: openai/maindialog.py:180
 #, python-format
-msgid "%d images to analyze..."
-msgstr "Analiz edilecek %d resim..."
+#| msgid "Processing, please wait..."
+msgid "Uploading %d images, please wait..."
+msgstr "%d görsel yükleniyor, lütfen bekleyin..."
 
-#: openai/maindialog.py:396
+#: openai/maindialog.py:182 openai/maindialog.py:1318 openai/maindialog.py:1334
+msgid "Processing, please wait..."
+msgstr "İşlem devam ediyor, lütfen bekleyin..."
+
+#: openai/maindialog.py:424
 msgid "organization"
 msgstr "organizasyon"
 
-#: openai/maindialog.py:396
+#: openai/maindialog.py:424
 msgid "personal"
 msgstr "kişisel"
 
-#: openai/maindialog.py:402
+#: openai/maindialog.py:430
 msgid "Conversati&on mode"
 msgstr "K&onuşma modu"
 
-#: openai/maindialog.py:407
+#: openai/maindialog.py:435
 msgid "S&ystem:"
 msgstr "&Sistem:"
 
-#: openai/maindialog.py:419
+#: openai/maindialog.py:447
 msgid "&History:"
 msgstr "&Geçmiş:"
 
-#: openai/maindialog.py:429
+#: openai/maindialog.py:457
 msgid "&Prompt:"
 msgstr "İs&tem:"
 
-#: openai/maindialog.py:456
+#: openai/maindialog.py:467
+msgid "Attached ima&ges:"
+msgstr "Eklenmi&ş Görüntü Dosyaları:"
+
+#: openai/maindialog.py:473
+msgid "name"
+msgstr "ad"
+
+#: openai/maindialog.py:474
+msgid "path"
+msgstr "konum"
+
+#: openai/maindialog.py:475
+msgid "size"
+msgstr "boyut"
+
+#: openai/maindialog.py:476
+msgid "Dimensions"
+msgstr "Boyutlar"
+
+#: openai/maindialog.py:477
+#| msgid "&Image description"
+msgid "description"
+msgstr "betimle"
+
+#: openai/maindialog.py:523
 msgid "Maximum to&kens for the completion:"
 msgstr "Tamamlama için ma&ksimum Jetonlar:"
 
-#: openai/maindialog.py:466
+#: openai/maindialog.py:533
 msgid "&Temperature:"
 msgstr "&Sıcaklık :"
 
-#: openai/maindialog.py:474
+#: openai/maindialog.py:541
 msgid "Probability &mass (Top P):"
 msgstr "&Olasılık kütlesi (Üst P):"
 
-#: openai/maindialog.py:485
+#: openai/maindialog.py:552
 msgid "Stream mode"
 msgstr "Akış modu"
 
-#: openai/maindialog.py:491
+#: openai/maindialog.py:558
 msgid "&Debug mode"
 msgstr "&Hata ayıklama modu"
 
-#: openai/maindialog.py:518 openai/maindialog.py:1158
+#: openai/maindialog.py:587 openai/maindialog.py:1347
 msgid "Start &recording"
 msgstr "&Kayda başla"
 
-#: openai/maindialog.py:521
+#: openai/maindialog.py:590
 msgid "Record audio from microphone"
 msgstr "Mikrofondan ses kaydet"
 
-#: openai/maindialog.py:525
+#: openai/maindialog.py:594
 msgid "Transcribe from &audio file"
 msgstr "Ses dosy&asından metne dönüştür"
 
-#: openai/maindialog.py:528
+#: openai/maindialog.py:597
 msgid "Transcribe audio from a file path"
 msgstr "Bir konumdaki Ses dosyasını Metne Dönüştür"
 
-#: openai/maindialog.py:532
+#: openai/maindialog.py:601
 msgid "&Image description"
 msgstr "Görsel&i Betimle"
 
-#: openai/maindialog.py:535
+#: openai/maindialog.py:604
 msgid "Describe an image from a file path or an URL"
 msgstr "Bir Görseli, dosya konumundan veya bağlantıdan betimle"
 
-#: openai/maindialog.py:539
+#: openai/maindialog.py:608
 msgid "&Vocalize the prompt"
 msgstr "İstemi seslendi&r"
 
-#: openai/maindialog.py:647
+#: openai/maindialog.py:663
+msgid "Describe the images in as much detail as possible."
+msgstr "Görselleri mümkün olduğunca ayrıntılı bir şekilde betimle."
+
+#: openai/maindialog.py:721
 msgid "Please select a model."
 msgstr "Lütfen bir model seçin."
 
-#: openai/maindialog.py:648 openai/maindialog.py:659 openai/maindialog.py:666
-#: openai/maindialog.py:678 openai/maindialog.py:1068 openai/maindialog.py:1083
-#: openai/maindialog.py:1093 openai/maindialog.py:1140
+#: openai/maindialog.py:722 openai/maindialog.py:733 openai/maindialog.py:740
+#: openai/maindialog.py:752 openai/maindialog.py:1229 openai/maindialog.py:1250
+#: openai/maindialog.py:1265 openai/maindialog.py:1275
+#: openai/maindialog.py:1329
 msgid "Open AI"
 msgstr "Open AI"
 
-#: openai/maindialog.py:658
+#: openai/maindialog.py:732
 msgid ""
 "No image provided. Please use the Image Description button and select one or "
 "more images. Otherwise, please select another model."
@@ -329,13 +366,13 @@ msgstr ""
 "Görüntü sağlanmadı. Lütfen Görüntüyü Betimle düğmesini kullanın ve bir veya "
 "daha fazla resim ekleyin. Aksi takdirde lütfen başka bir model seçin."
 
-#: openai/maindialog.py:665
+#: openai/maindialog.py:739
 #, python-format
 msgid ""
 "This model does not support image description. Please select the %s model."
 msgstr "Bu model görüntü betimlemeyi desteklemiyor. Lütfen %s modelini seçin."
 
-#: openai/maindialog.py:675
+#: openai/maindialog.py:749
 msgid ""
 "Be aware that the add-on may auto-resize images before API submission to "
 "lower request sizes and costs. Adjust this feature in the Open AI settings "
@@ -346,102 +383,125 @@ msgstr ""
 "Gerekirse bu özelliği Open AI ayarlarında ayarlayın. Bu mesaj bir daha "
 "gösterilmeyecek."
 
-#: openai/maindialog.py:686 openai/maindialog.py:1129 openai/maindialog.py:1145
-msgid "Processing, please wait..."
-msgstr "İşlem devam ediyor, lütfen bekleyin..."
-
-#: openai/maindialog.py:757
+#: openai/maindialog.py:815
 #, python-format
 msgid "Insertion of: %s"
 msgstr "Eklenen: %s"
 
-#: openai/maindialog.py:769
+#: openai/maindialog.py:827
 msgid "Open AI error"
 msgstr "Open AI Hata"
 
-#: openai/maindialog.py:779
+#: openai/maindialog.py:837
 msgid "Press alt+f4 to close the dialog"
 msgstr "İletişim kutusunu kapatmak için alt+f4 tuşlarına basın"
 
-#: openai/maindialog.py:789
+#: openai/maindialog.py:847
 msgid "User:"
 msgstr "Kullanıcı:"
 
-#: openai/maindialog.py:791
+#: openai/maindialog.py:849
 msgid "Assistant:"
 msgstr "Asistan:"
 
-#: openai/maindialog.py:916
+#: openai/maindialog.py:977
 msgid "Begin"
 msgstr "Baş"
 
-#: openai/maindialog.py:936
+#: openai/maindialog.py:997
 msgid "End"
 msgstr "Son"
 
-#: openai/maindialog.py:964
+#: openai/maindialog.py:1025
 #, python-format
 msgid "Response copied to system: %s"
 msgstr "Yanıt sisteme kopyalandı: %s"
 
-#: openai/maindialog.py:973
+#: openai/maindialog.py:1034
 msgid "Compied to prompt"
 msgstr "İstemle Uyumlu"
 
-#: openai/maindialog.py:977
+#: openai/maindialog.py:1038
 msgid "Copy"
 msgstr "Kopyala"
 
-#: openai/maindialog.py:985
+#: openai/maindialog.py:1046
 msgid "Copy prompt"
 msgstr "İstem kopyalandı"
 
-#: openai/maindialog.py:988
+#: openai/maindialog.py:1049
 msgid "Copy response"
 msgstr "Yanıtı kopyala"
 
-#: openai/maindialog.py:1013
+#: openai/maindialog.py:1074
 msgid "Block deleted"
 msgstr "Blok silindi"
 
-#: openai/maindialog.py:1025
+#: openai/maindialog.py:1086
 msgid "From f&ile path..."
 msgstr "D&osya Konumundan..."
 
-#: openai/maindialog.py:1028
+#: openai/maindialog.py:1089
 msgid "From &URL..."
 msgstr "&URL'den..."
 
-#: openai/maindialog.py:1041
+#: openai/maindialog.py:1110
+msgid "&Remove selected images"
+msgstr "Seçili gö&rselleri kaldır"
+
+#: openai/maindialog.py:1113
+msgid "Remove &all images"
+msgstr "&Tüm Görüntü dosyalarını kaldır"
+
+#: openai/maindialog.py:1117
+#| msgid "From f&ile path..."
+msgid "Add from f&ile path..."
+msgstr "Konumdan dosya &Ekle..."
+
+#: openai/maindialog.py:1120
+#| msgid "From &URL..."
+msgid "Add from &URL..."
+msgstr "&URL'den ekle..."
+
+#: openai/maindialog.py:1211
 msgid "Select image files"
 msgstr "Bir görüntü dosyası seçin"
 
-#: openai/maindialog.py:1043
+#: openai/maindialog.py:1213
 msgid "Image files"
 msgstr "Görüntü dosyaları"
 
-#: openai/maindialog.py:1067
+#: openai/maindialog.py:1228
+#, python-format
+msgid ""
+"The following image has already been added and will be ignored:\n"
+"%s"
+msgstr ""
+"Aşağıdaki görüntü dosyası zaten eklenmiş ve göz ardı edilecek:\n"
+"%s"
+
+#: openai/maindialog.py:1249
 msgid "Enter image URL"
 msgstr "Resim URL'sini girin"
 
-#: openai/maindialog.py:1082
+#: openai/maindialog.py:1264
 msgid "Invalid URL, bad format."
 msgstr "Geçersiz URL, hatalı biçim."
 
-#: openai/maindialog.py:1092
+#: openai/maindialog.py:1274
 #, python-format
 msgid "Invalid URL, HTTP error: %s."
 msgstr "Geçersiz URL, HTTP hatası: %s."
 
-#: openai/maindialog.py:1112
+#: openai/maindialog.py:1301
 msgid "Stop &recording"
 msgstr "Kaydı &durdur"
 
-#: openai/maindialog.py:1121
+#: openai/maindialog.py:1310
 msgid "Select audio file"
 msgstr "Bir ses dosyası seçin"
 
-#: openai/maindialog.py:1123
+#: openai/maindialog.py:1312
 msgid ""
 "Audio files (*.mp3;*.mp4;*.mpeg;*.mpga;*.m4a;*.wav;*.webm)|*.mp3;*.mp4;*."
 "mpeg;*.mpga;*.m4a;*.wav;*.webm"
@@ -449,7 +509,7 @@ msgstr ""
 "Ses dosyaları (*.mp3;*.mp4;*.mpeg;*.mpga;*.m4a;*.wav;*.webm)|*.mp3;*.mp4;*."
 "mpeg;*.mpga;*.m4a;*.wav;*.webm"
 
-#: openai/maindialog.py:1139
+#: openai/maindialog.py:1328
 msgid "Please enter some text in the prompt field first."
 msgstr "Lütfen önce istem alanına bir miktar metin girin."
 
@@ -472,6 +532,19 @@ msgstr "Metne dönüştürülüyor..."
 #: openai/recordthread.py:129
 msgid "Error!"
 msgstr "Hata!"
+
+#~ msgid "Images"
+#~ msgstr "Görüntü dosyaları"
+
+#~ msgid "Ready"
+#~ msgstr "Hazır"
+
+#~ msgid "One image to analyze..."
+#~ msgstr "Analiz edilecek bir resim..."
+
+#, python-format
+#~ msgid "%d images to analyze..."
+#~ msgstr "Analiz edilecek %d resim..."
 
 msgid ""
 "Open AI is an NVDA add-on designed to seamlessly integrate the "
