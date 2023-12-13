@@ -46,24 +46,30 @@ def retrieveTranscription(transcription):
 
 class RecordThread(threading.Thread):
 
-	def __init__(self, client, notifyWindow=None, pathList=None):
+	def __init__(self, client, notifyWindow=None, pathList=None, conf=None):
 		super(RecordThread, self).__init__()
-		self._notifyWindow = notifyWindow
 		self.client = client
 		self.pathList = pathList
-		self.stop_record = False
+		self.conf = conf
+		self._stopRecord = False
+		self._notifyWindow = notifyWindow
 		self._wantAbort = 0
 		self._recording = False
-		self.audio_data = np.array([], dtype='int16')
 
 	def run(self):
 		if self.pathList:
 			self.process_transcription(self.pathList)
 			return
-		framerate = 44100
+		if not self.conf:
+			self.conf = {
+				"channels": 1,
+				"sampleRate": 16000,
+				"dtype": "int16",
+			}
+		self.audioData = np.array([], dtype=self.conf["dtype"])
 		filename = self.get_filename()
 		tones.beep(200, 100)
-		self.record_audio(framerate)
+		self.record_audio(self.conf["sampleRate"])
 		tones.beep(200, 200)
 		winsound.PlaySound(f"{ADDON_DIR}/sounds/progress.wav", winsound.SND_ASYNC|winsound.SND_LOOP)
 
@@ -71,42 +77,42 @@ class RecordThread(threading.Thread):
 			return
 		self.save_wav(
 			filename,
-			self.audio_data,
-			framerate
+			self.audioData,
+			self.conf["sampleRate"]
 		)
 		if self._notifyWindow:
 			self._notifyWindow.message(_("Transcribing..."))
 		self.process_transcription(filename)
 
-	def record_audio(self, framerate):
-		chunk_size = 1024  # Vous pouvez ajuster la taille du bloc selon vos besoins
-		channels = 2
-		dtype = 'int16'
+	def record_audio(self, sampleRate):
+		chunk_size = 1024
 		self._recording = True
-
-		with sd.InputStream(samplerate=framerate, channels=channels, dtype=dtype) as stream:
-			while not self.stop_record and self._recording:
+		with sd.InputStream(
+			samplerate=sampleRate,
+			channels=self.conf["channels"],
+			dtype=self.conf["dtype"],
+		) as stream:
+			while not self._stopRecord and self._recording:
 				frame, overflowed = stream.read(chunk_size)
 				if overflowed:
-					print("Warning: audio buffer has overflowed.")
-				self.audio_data = np.append(self.audio_data, frame)
+					log.error("Audio buffer has overflowed.")
+				self.audioData = np.append(self.audioData, frame)
 				if self._wantAbort:
 					break
-
 		self._recording = False
 
-	def save_wav(self, filename, data, framerate):
+	def save_wav(self, filename, data, sampleRate):
 		if self._wantAbort:
 			return
 		wavefile = wave.open(filename, "wb")
-		wavefile.setnchannels(2)
-		wavefile.setsampwidth(2)
-		wavefile.setframerate(framerate)
+		wavefile.setnchannels(self.conf["channels"])
+		wavefile.setsampwidth(2) # 16 bits
+		wavefile.setframerate(sampleRate)
 		wavefile.writeframes(data.tobytes())
 		wavefile.close()
 
 	def stop(self):
-		self.stop_record = True
+		self._stopRecord = True
 		self._recording = False
 
 	def get_filename(self):
@@ -135,6 +141,5 @@ class RecordThread(threading.Thread):
 			core.callLater(200, retrieveTranscription, transcription)
 
 	def abort(self):
-		self.stop_record = 1
+		self._stopRecord = 1
 		self._wantAbort = 1
-
