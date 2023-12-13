@@ -15,13 +15,8 @@ def get_image_dimensions(path):
 	"""
 	Get the dimensions of an image.
 	"""
-	try:
-		import PIL.Image
-		img = PIL.Image.open(path)
-		return img.size
-	except BaseException as err:
-		log.error(err)
-		return None
+	img = Image.open(path)
+	return img.size
 
 
 def resize_image(
