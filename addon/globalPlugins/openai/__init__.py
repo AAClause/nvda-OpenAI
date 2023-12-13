@@ -445,7 +445,9 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 				maindialog.OpenAIDlg,
 				client=self.getClient(),
 				conf=conf,
-				pathList=[tmpPath]
+				pathList=[
+					(tmpPath, _("Screenshot"))
+				]
 			)
 
 	@script(
@@ -460,6 +462,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		with mss.mss() as sct:
 			tmpPath = os.path.join(DATA_DIR, "object.png")
 			nav = api.getNavigatorObject()
+			name = nav.name
 			nav.scrollIntoView()
 			if (
 				nav.role == controlTypes.ROLE_LINK
@@ -473,11 +476,24 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 				sct_img = sct.grab(monitor)
 				mss.tools.to_png(sct_img.rgb, sct_img.size, output=tmpPath)
 			from . import maindialog
+			default_name = _("Navigator Object")
+			name = nav.name
+			if (
+				not name
+				or not name.strip()
+				or '\n' in name
+				or len(name) > 80
+			):
+				name = default_name
+			else:
+				name = "%s (%s)" % (name.strip(), default_name)
 			gui.mainFrame.popupSettingsDialog(
 				maindialog.OpenAIDlg,
 				client=self.getClient(),
 				conf=conf,
-				pathList=[tmpPath]
+				pathList=[
+					(tmpPath, name)
+				]
 			)
 
 	@script(
