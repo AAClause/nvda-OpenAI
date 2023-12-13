@@ -374,6 +374,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			fp = os.path.join(ROOT_ADDON_DIR, "doc", lang, "readme.html")
 			if os.path.exists(fp):
 				os.startfile(fp)
+				break
 
 	def terminate(self):
 		gui.settingsDialogs.NVDASettingsDialog.categoryClasses.remove(SettingsDlg)
