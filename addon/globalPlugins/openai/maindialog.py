@@ -43,6 +43,7 @@ addonHandler.initTranslation()
 
 TTS_FILE_NAME = os.path.join(DATA_DIR, "tts.wav")
 DATA_JSON_FP = os.path.join(DATA_DIR, "data.json")
+URL_PATTERN = re.compile(r"^(?:http)s?://(?:[A-Z0-9-]+\.)+[A-Z]{2,6}(?::\d+)?(?:/?|[/?]\S+)$", re.IGNORECASE)
 
 def EVT_RESULT(win, func):
 	win.Connect(-1, -1, EVT_RESULT_ID, func)
@@ -59,7 +60,16 @@ def copyToClipAsHTML(html_content):
 		raise RuntimeError("Unable to open the clipboard")
 
 
+def get_display_size(size):
+	if size < 1024:
+		return f"{size} B"
+	if size < 1024 * 1024:
+		return f"{size / 1024:.2f} KB"
+	return f"{size / 1024 / 1024:.2f} MB"
+
+
 class ImageFileTypes(Enum):
+
 	UNKNOWN = 0
 	IMAGE_LOCAL = 1
 	IMAGE_URL = 2
@@ -71,7 +81,9 @@ class ImageFile:
 		self,
 		path: str,
 		name: str=None,
-		description: str=None
+		description: str=None,
+		size: int=-1,
+		dimension: tuple=None
 	):
 		if not isinstance(path, str):
 			raise TypeError("path must be a string")
@@ -79,13 +91,19 @@ class ImageFile:
 		self.type = self._get_type()
 		self.name = name or self._get_name()
 		self.description = description
-		self.size = self._get_size()
-		self.dimension = self._get_dimension()
+		if size and size > 0:
+			self.size = get_display_size(size)
+		else:
+			self.size = self._get_size()
+		self.dimension = dimension or self._get_dimension()
 
 	def _get_type(self):
 		if os.path.exists(self.path):
 			return ImageFileTypes.IMAGE_LOCAL
-		if re.match(r"^https?://", self.path):
+		if re.match(
+			URL_PATTERN,
+			self.path
+		):
 			return ImageFileTypes.IMAGE_URL
 		return ImageFileTypes.UNKNOWN
 
@@ -99,13 +117,8 @@ class ImageFile:
 	def _get_size(self):
 		if self.type == ImageFileTypes.IMAGE_LOCAL:
 			size = os.path.getsize(self.path)
-			if size < 1024:
-				return f"{size} B"
-			if size < 1024 * 1024:
-				return f"{size / 1024:.2f} KB"
-			else:
-				return f"{size / 1024 / 1024:.2f} MB"
-		return -1
+			return get_display_size(size)
+		return "N/A"
 
 	def _get_dimension(self):
 		if self.type == ImageFileTypes.IMAGE_LOCAL:
@@ -427,9 +440,24 @@ class OpenAIDlg(wx.Dialog):
 		self.pathList = []
 		if pathList:
 			for path in pathList:
-				if not os.path.exists(path):
-					continue
-				self.pathList.append(ImageFile(path))
+				if isinstance(path, ImageFile):
+					self.pathList.append(path)
+				elif isinstance(path, str):
+					if not os.path.exists(path):
+						continue
+					self.pathList.append(ImageFile(path))
+				elif isinstance(path, tuple) and len(path) == 2:
+					location, name = path
+					if not os.path.exists(location):
+						continue
+					self.pathList.append(
+						ImageFile(
+							location,
+							name=name
+						)
+					)
+				else:
+					raise ValueError(f"Invalid path: {path}")
 		self.previousPrompt = None
 		self._lastSystem = None
 		self._model_names = [model.name for model in MODELS]
@@ -519,20 +547,7 @@ class OpenAIDlg(wx.Dialog):
 			self.promptText.SetValue(
 				self.getDefaultImageDescriptionsPrompt()
 			)
-			for path in self.pathList:
-				self.imageListCtrl.Append([
-					path.name,
-					path.path,
-					path.size,
-					f"{path.dimension[0]}x{path.dimension[1]}" if isinstance(path.dimension, tuple) else "N/A",
-					path.description or "N/A"
-				])
-			self.imageListCtrl.Show()
-			self.imageListLabel.Show()
-		else:
-			self.imageListCtrl.Hide()
-			self.imageListLabel.Hide()
-
+		self.updateImageList()
 		modelsLabel = wx.StaticText(
 			parent=self,
 			label=_("&Model:")
@@ -1376,6 +1391,11 @@ class OpenAIDlg(wx.Dialog):
 				path.description or "N/A"
 			])
 		self.imageListLabel.Show()
+		self.imageListCtrl.SetItemState(
+			0,
+			wx.LIST_STATE_FOCUSED,
+			wx.LIST_STATE_FOCUSED
+		)
 		self.imageListCtrl.Show()
 		self.Layout()
 
@@ -1405,7 +1425,7 @@ class OpenAIDlg(wx.Dialog):
 			else:
 				gui.messageBox(
 					_("The following image has already been added and will be ignored:\n%s") % path,
-					_("Open AI"),
+					"Open AI",
 					wx.OK|wx.ICON_ERROR
 				)
 		model_name = self.getCurrentModel().name
@@ -1435,8 +1455,7 @@ class OpenAIDlg(wx.Dialog):
 		if not url:
 			return
 		url_pattern = re.compile(
-			r"^(?:http)s?://(?:[A-Z0-9-]+\.)+[A-Z]{2,6}(?::\d+)?(?:/?|[/?]\S+)$",
-			re.IGNORECASE
+			URL_PATTERN
 		)
 		if re.match(url_pattern, url) is None:
 			gui.messageBox(
@@ -1450,17 +1469,46 @@ class OpenAIDlg(wx.Dialog):
 			r = urllib.request.urlopen(url)
 		except urllib.error.HTTPError as err:
 			gui.messageBox(
-				_("Invalid URL, HTTP error: %s.") % err,
+				_("HTTP error %s.") % err,
 				"Open AI",
-				wx.OK|wx.ICON_ERROR
+				wx.OK | wx.ICON_ERROR
+			)
+			return
+		if not r.headers.get_content_type().startswith("image/"):
+			gui.messageBox(
+				_("The URL does not point to an image."),
+				"Open AI",
+				wx.OK | wx.ICON_ERROR
 			)
 			return
 		if not self.pathList:
 			self.pathList = []
+		description = []
+		content_type = r.headers.get_content_type()
+		if content_type:
+			description.append(content_type)
+		size = r.headers.get("Content-Length")
+		if size and size.isdigit():
+			size = int(size)
+		if description:
+			description = ", ".join(description)
+		try:
+			dimension = get_image_dimensions(r)
+		except BaseException as err:
+			log.error(err)
+			dimension = None
+			gui.messageBox(
+				_("Failed to get image dimensions. %s") % err,
+				"Open AI",
+				wx.OK | wx.ICON_ERROR
+			)
+			return
 		self.pathList.append(
 			ImageFile(
 				url,
-				description=r.headers.get_content_type() or "N/A"
+				description=description,
+				size=size or -1,
+				dimension=dimension
 			)
 		)
 		self.modelListBox.SetSelection(
