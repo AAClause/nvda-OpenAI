@@ -56,6 +56,10 @@ confSpecs = {
 		"customPromptText": 'string(default="")'
 	},
 	"audio": {
+		"whisper.cpp": {
+			"enabled": "boolean(default=False)",
+			"host": "string(default='http://127.0.01:8081')"
+		},
 		"sampleRate": "integer(min=8000, max=48000, default=16000)",
 		"channels": "integer(min=1, max=2, default=1)",
 		"dtype": "string(default=int16)"
@@ -244,6 +248,29 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 
 		sHelper.addItem(imageSizer)
 
+		whisperGroupLabel = _("Whisper through whisper.cpp")
+		whisperSizer = wx.StaticBoxSizer(wx.VERTICAL, self, label=whisperGroupLabel)
+		whisperBox = whisperSizer.GetStaticBox()
+		whisperGroup = gui.guiHelper.BoxSizerHelper(self, sizer=whisperSizer)
+
+		label = _("Use &whisper.cpp")
+		self.whisperEnabled = whisperGroup.addItem(
+			wx.CheckBox(
+				whisperBox,
+				label=label,
+			)
+		)
+		self.whisperEnabled.SetValue(conf["audio"]["whisper.cpp"]["enabled"])
+
+		label = _("&Host:")
+		self.whisperHost = whisperGroup.addLabeledControl(
+			label,
+			wx.TextCtrl,
+			value=conf["audio"]["whisper.cpp"]["host"]
+		)
+
+		sHelper.addItem(whisperSizer)
+
 		sHelper.addItem(mainDialogSizer)
 
 		self.onUseOrg(None)
@@ -299,6 +326,9 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 			conf["images"]["customPromptText"] = self.customPromptText.GetValue()
 		else:
 			conf["images"]["useCustomPrompt"] = False
+		conf["audio"]["whisper.cpp"]["enabled"] = self.whisperEnabled.GetValue()
+		conf["audio"]["whisper.cpp"]["host"] = self.whisperHost.GetValue()
+
 
 class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 
