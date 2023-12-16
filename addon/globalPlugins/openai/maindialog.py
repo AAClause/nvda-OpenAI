@@ -28,7 +28,7 @@ from .imagehelper import (
 	get_image_dimensions,
 	resize_image,
 )
-from .recordthread import RecordThread
+from .recordthread import RecordThread, WhisperTranscription
 from .resultevent import ResultEvent, EVT_RESULT_ID
 
 additionalLibsPath = os.path.join(ADDON_DIR, "lib")
@@ -825,8 +825,13 @@ class OpenAIDlg(wx.Dialog):
 			self.promptText.Clear()
 			return
 
-		if isinstance(event.data, openai.types.audio.transcription.Transcription):
-			self.promptText.AppendText(event.data.text)
+		if isinstance(event.data, (
+			openai.types.audio.transcription.Transcription,
+			WhisperTranscription
+		)):
+			self.promptText.AppendText(
+				event.data.text if event.data.text else ""
+			)
 			self.promptText.SetFocus()
 			self.promptText.SetInsertionPointEnd()
 			self.message(
@@ -1397,7 +1402,8 @@ class OpenAIDlg(wx.Dialog):
 		self.worker = RecordThread(
 			self.client,
 			self,
-			fileName
+			fileName,
+			conf=self.conf["audio"]
 		)
 		self.worker.start()
 
