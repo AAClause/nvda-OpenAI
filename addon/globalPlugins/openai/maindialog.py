@@ -28,6 +28,7 @@ from .resultevent import ResultEvent, EVT_RESULT_ID
 additionalLibsPath = os.path.join(ADDON_DIR, "lib")
 sys.path.insert(0, additionalLibsPath)
 import openai
+import markdown2
 sys.path.remove(additionalLibsPath)
 
 addonHandler.initTranslation()
@@ -823,6 +824,8 @@ class OpenAIDlg(wx.Dialog):
 		self.addEntry(accelEntries, wx.ACCEL_CTRL + wx.ACCEL_SHIFT, wx.WXK_UP, self.onPreviousSegment)
 		self.addEntry(accelEntries, wx.ACCEL_CTRL, ord("E"), self.onEditBlock)
 		self.addEntry(accelEntries, wx.ACCEL_CTRL, ord("D"), self.onDeleteBlock)
+		self.addEntry(accelEntries, wx.ACCEL_CTRL, ord("H"), lambda evt: self.onBrowseableSegment(evt, False))
+		self.addEntry(accelEntries, wx.ACCEL_CTRL, ord("K"), lambda evt: self.onBrowseableSegment(evt, True))
 		self.addEntry(accelEntries, wx.ACCEL_ALT, wx.WXK_LEFT, self.onCopyResponseToContext)
 		self.addEntry(accelEntries, wx.ACCEL_ALT, wx.WXK_RIGHT, self.onCopyPromptToPrompt)
 		accelTable = wx.AcceleratorTable(accelEntries)
@@ -1015,6 +1018,24 @@ class OpenAIDlg(wx.Dialog):
 		else:
 			self.lastBlock = block.previous
 		self.message(_("Block deleted"))
+
+	def onBrowseableSegment(self, evt, isHtml=False):
+		segment = TextSegment.getCurrentSegment (self.historyText)
+		if segment is None:
+			return
+		block = segment.owner
+		if segment == block.segmentPromptLabel or segment == block.segmentPrompt:
+			text = block.segmentPrompt.getText ()
+		elif segment == block.segmentResponseLabel or segment == block.segmentResponse:
+			text = block.segmentResponse.getText ()
+		ui.browseableMessage(
+			markdown2.markdown(
+				text,
+				extras=["fenced-code-blocks", "footnotes", "header-ids", "spoiler", "strike", "tables", "task_list", "underline", "wiki-tables"]
+			),
+			title=_("Open AI"),
+			isHtml=isHtml
+		)
 
 	def message(self, msg, onlySpeech=False):
 		func = ui.message if not onlySpeech else speech.speakMessage
