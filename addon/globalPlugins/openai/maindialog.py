@@ -46,6 +46,18 @@ URL_PATTERN = re.compile(r"^(?:http)s?://(?:[A-Z0-9-]+\.)+[A-Z]{2,6}(?::\d+)?(?:
 def EVT_RESULT(win, func):
 	win.Connect(-1, -1, EVT_RESULT_ID, func)
 
+
+def copyToClipAsHTML(html_content):
+	html_data_object = wx.HTMLDataObject()
+	html_data_object.SetHTML(html_content)
+	if wx.TheClipboard.Open():
+		wx.TheClipboard.Clear()
+		wx.TheClipboard.SetData(html_data_object)
+		wx.TheClipboard.Close()
+	else:
+		raise RuntimeError("Unable to open the clipboard")
+
+
 def get_display_size(size):
 	if size < 1024:
 		return f"{size} B"
@@ -898,6 +910,7 @@ class OpenAIDlg(wx.Dialog):
 		accelEntries  = []
 		self.addEntry(accelEntries, wx.ACCEL_CTRL + wx.ACCEL_SHIFT, wx.WXK_DOWN, self.onNextSegment)
 		self.addEntry(accelEntries, wx.ACCEL_CTRL + wx.ACCEL_SHIFT, wx.WXK_UP, self.onPreviousSegment)
+		self.addEntry(accelEntries, wx.ACCEL_CTRL + wx.ACCEL_SHIFT, ord("C"), lambda evt: self.onCopySegment(evt, True))
 		self.addEntry(accelEntries, wx.ACCEL_CTRL, ord("E"), self.onEditBlock)
 		self.addEntry(accelEntries, wx.ACCEL_CTRL, ord("D"), self.onDeleteBlock)
 		self.addEntry(accelEntries, wx.ACCEL_CTRL, ord("H"), lambda evt: self.onBrowseableSegment(evt, False))
@@ -1058,7 +1071,7 @@ class OpenAIDlg(wx.Dialog):
 		self.promptText.SetFocus ()
 		self.message(_("Compied to prompt"))
 
-	def onCopySegment (self, evt):
+	def onCopySegment(self, evt, isHtml=False):
 		text = self.historyText.GetStringSelection()
 		msg = _("Copy")
 		if not text:
@@ -1072,7 +1085,15 @@ class OpenAIDlg(wx.Dialog):
 			elif segment == block.segmentResponseLabel or segment == block.segmentResponse:
 				text = block.segmentResponse.getText()
 				msg = _("Copy response")
-		api.copyToClip(text)
+		if isHtml:
+			text = markdown2.markdown(
+				text,
+				extras=["fenced-code-blocks", "footnotes", "header-ids", "spoiler", "strike", "tables", "task_list", "underline", "wiki-tables"]
+			)
+			copyToClipAsHTML(text)
+			msg += ' ' + _("as formatted HTML")
+		else:
+			api.copyToClip(text)
 		self.message(msg)
 
 	def onDeleteBlock(self, evt):
