@@ -39,6 +39,16 @@ DATA_JSON_FP = os.path.join(DATA_DIR, "data.json")
 def EVT_RESULT(win, func):
 	win.Connect(-1, -1, EVT_RESULT_ID, func)
 
+def copyToClipAsHTML(html_content):
+	html_data_object = wx.HTMLDataObject()
+	html_data_object.SetHTML(html_content)
+	if wx.TheClipboard.Open():
+		wx.TheClipboard.Clear()
+		wx.TheClipboard.SetData(html_data_object)
+		wx.TheClipboard.Close()
+	else:
+		raise RuntimeError("Unable to open the clipboard")
+
 
 class CompletionThread(threading.Thread):
 
@@ -822,6 +832,7 @@ class OpenAIDlg(wx.Dialog):
 		accelEntries  = []
 		self.addEntry(accelEntries, wx.ACCEL_CTRL + wx.ACCEL_SHIFT, wx.WXK_DOWN, self.onNextSegment)
 		self.addEntry(accelEntries, wx.ACCEL_CTRL + wx.ACCEL_SHIFT, wx.WXK_UP, self.onPreviousSegment)
+		self.addEntry(accelEntries, wx.ACCEL_CTRL + wx.ACCEL_SHIFT, ord("C"), lambda evt: self.onCopySegment(evt, True))
 		self.addEntry(accelEntries, wx.ACCEL_CTRL, ord("E"), self.onEditBlock)
 		self.addEntry(accelEntries, wx.ACCEL_CTRL, ord("D"), self.onDeleteBlock)
 		self.addEntry(accelEntries, wx.ACCEL_CTRL, ord("H"), lambda evt: self.onBrowseableSegment(evt, False))
@@ -979,7 +990,7 @@ class OpenAIDlg(wx.Dialog):
 		self.promptText.SetFocus ()
 		self.message(_("Compied to prompt"))
 
-	def onCopySegment (self, evt):
+	def onCopySegment(self, evt, isHtml=False):
 		text = self.historyText.GetStringSelection()
 		msg = _("Copy")
 		if not text:
@@ -993,7 +1004,15 @@ class OpenAIDlg(wx.Dialog):
 			elif segment == block.segmentResponseLabel or segment == block.segmentResponse:
 				text = block.segmentResponse.getText()
 				msg = _("Copy response")
-		api.copyToClip(text)
+		if isHtml:
+			text = markdown2.markdown(
+				text,
+				extras=["fenced-code-blocks", "footnotes", "header-ids", "spoiler", "strike", "tables", "task_list", "underline", "wiki-tables"]
+			)
+			copyToClipAsHTML(text)
+			msg += ' ' + _("as formatted HTML")
+		else:
+			api.copyToClip(text)
 		self.message(msg)
 
 	def onDeleteBlock(self, evt):
