@@ -1,3 +1,4 @@
+import datetime
 import json
 import os
 import re
@@ -399,6 +400,7 @@ class OpenAIDlg(wx.Dialog):
 		self.conf = conf
 		self.data = self.loadData()
 		self._orig_data = self.data.copy() if isinstance(self.data, dict) else None
+		self._historyPath = None
 		self.blocks = []
 		self.pathList = pathList
 		self.previousPrompt = None
@@ -450,6 +452,7 @@ class OpenAIDlg(wx.Dialog):
 			style=wx.TE_MULTILINE|wx.TE_READONLY,
 			size=(550, -1)
 		)
+		self.historyText.Bind(wx.EVT_CONTEXT_MENU, self.onHistoryContextMenu)
 
 		promptLabel = wx.StaticText(
 			parent=self,
@@ -460,6 +463,7 @@ class OpenAIDlg(wx.Dialog):
 			size=(550, -1),
 			style=wx.TE_MULTILINE,
 		)
+		self.promptText.Bind(wx.EVT_CONTEXT_MENU, self.onPromptContextMenu)
 		if self.pathList:
 			self.promptText.SetValue(DEFAULT_PROMPT_IMAGE_DESCRIPTION)
 
@@ -864,17 +868,21 @@ class OpenAIDlg(wx.Dialog):
 		accelEntries.append ( (modifiers, key, id_))
 
 	def addShortcuts(self):
-		self.historyText.Bind(wx.EVT_TEXT_COPY, self.onCopySegment)
+		self.historyText.Bind(wx.EVT_TEXT_COPY, self.onCopyMessage)
 
 		accelEntries  = []
-		self.addEntry(accelEntries, wx.ACCEL_CTRL + wx.ACCEL_SHIFT, wx.WXK_DOWN, self.onNextSegment)
-		self.addEntry(accelEntries, wx.ACCEL_CTRL + wx.ACCEL_SHIFT, wx.WXK_UP, self.onPreviousSegment)
-		self.addEntry(accelEntries, wx.ACCEL_CTRL + wx.ACCEL_SHIFT, ord("C"), lambda evt: self.onCopySegment(evt, True))
+		self.addEntry(accelEntries, wx.ACCEL_NORMAL, ord("M"), self.onCurrentMessage)
+		self.addEntry(accelEntries, wx.ACCEL_NORMAL, ord("J"), self.onPreviousMessage)
+		self.addEntry(accelEntries, wx.ACCEL_CTRL + wx.ACCEL_SHIFT, wx.WXK_UP, self.onPreviousMessage)
+		self.addEntry(accelEntries, wx.ACCEL_NORMAL, ord("K"), self.onNextMessage)
+		self.addEntry(accelEntries, wx.ACCEL_CTRL + wx.ACCEL_SHIFT, wx.WXK_DOWN, self.onNextMessage)
+		self.addEntry(accelEntries, wx.ACCEL_CTRL + wx.ACCEL_SHIFT, ord("C"), lambda evt: self.onCopyMessage(evt, True))
 		self.addEntry(accelEntries, wx.ACCEL_CTRL, ord("E"), self.onEditBlock)
 		self.addEntry(accelEntries, wx.ACCEL_CTRL, ord("D"), self.onDeleteBlock)
-		self.addEntry(accelEntries, wx.ACCEL_CTRL, ord("H"), lambda evt: self.onBrowseableSegment(evt, False))
-		self.addEntry(accelEntries, wx.ACCEL_CTRL, ord("K"), lambda evt: self.onBrowseableSegment(evt, True))
-		self.addEntry(accelEntries, wx.ACCEL_ALT, wx.WXK_LEFT, self.onCopyResponseToContext)
+		self.addEntry(accelEntries, wx.ACCEL_CTRL, ord("S"), self.onSaveHistory)
+		self.addEntry(accelEntries, wx.ACCEL_NORMAL, wx.WXK_SPACE, lambda evt: self.onWebviewMessage(evt, True))
+		self.addEntry(accelEntries, wx.ACCEL_SHIFT, wx.WXK_SPACE, lambda evt: self.onWebviewMessage(evt, False))
+		self.addEntry(accelEntries, wx.ACCEL_ALT, wx.WXK_LEFT, self.onCopyResponseToSystem)
 		self.addEntry(accelEntries, wx.ACCEL_ALT, wx.WXK_RIGHT, self.onCopyPromptToPrompt)
 		accelTable = wx.AcceleratorTable(accelEntries)
 		self.historyText.SetAcceleratorTable(accelTable)
@@ -960,7 +968,7 @@ class OpenAIDlg(wx.Dialog):
 		if value:
 			self.promptText.SetValue(value)
 
-	def onPreviousSegment(self, evt):
+	def onPreviousMessage(self, evt):
 		segment = TextSegment.getCurrentSegment(self.historyText)
 		if segment is None:
 			return
@@ -980,7 +988,7 @@ class OpenAIDlg(wx.Dialog):
 		self.historyText.SetInsertionPoint(start)
 		self.message(label + text)
 
-	def onNextSegment(self, evt):
+	def onNextMessage(self, evt):
 		segment = TextSegment.getCurrentSegment (self.historyText)
 		if segment is None:
 			return
@@ -1000,6 +1008,19 @@ class OpenAIDlg(wx.Dialog):
 		self.historyText.SetInsertionPoint(start)
 		self.message(label + text)
 
+	def onCurrentMessage(self, evt):
+		"""Say the current message"""
+		segment = TextSegment.getCurrentSegment (self.historyText)
+		if segment is None:
+			return
+		block = segment.owner
+		if segment == block.segmentPromptLabel or segment == block.segmentPrompt:
+			text = block.segmentPrompt.getText ()
+		elif segment == block.segmentResponseLabel or segment == block.segmentResponse:
+			text = block.segmentResponse.getText ()
+		self.message(text)
+
+
 	def onEditBlock (self, evt):
 		segment = TextSegment.getCurrentSegment (self.historyText)
 		if segment is None:
@@ -1009,7 +1030,7 @@ class OpenAIDlg(wx.Dialog):
 		self.promptText.SetValue (block.userPrompt)
 		self.promptText.SetFocus ()
 
-	def onCopyResponseToContext (self, evt):
+	def onCopyResponseToSystem (self, evt):
 		segment = TextSegment.getCurrentSegment(self.historyText)
 		if segment is None:
 			return
@@ -1027,7 +1048,7 @@ class OpenAIDlg(wx.Dialog):
 		self.promptText.SetFocus ()
 		self.message(_("Compied to prompt"))
 
-	def onCopySegment(self, evt, isHtml=False):
+	def onCopyMessage(self, evt, isHtml=False):
 		text = self.historyText.GetStringSelection()
 		msg = _("Copy")
 		if not text:
@@ -1075,7 +1096,7 @@ class OpenAIDlg(wx.Dialog):
 			self.lastBlock = block.previous
 		self.message(_("Block deleted"))
 
-	def onBrowseableSegment(self, evt, isHtml=False):
+	def onWebviewMessage(self, evt, isHtml=False):
 		segment = TextSegment.getCurrentSegment (self.historyText)
 		if segment is None:
 			return
@@ -1092,6 +1113,82 @@ class OpenAIDlg(wx.Dialog):
 			title=_("Open AI"),
 			isHtml=isHtml
 		)
+
+	def onSaveHistory(self, evt):
+		"""
+		Save the history to a file.
+		"""
+		path = None
+		if self._historyPath and os.path.exists(self._historyPath):
+			path = self._historyPath
+		else:
+			now = datetime.datetime.now()
+			now_str = now.strftime("%Y-%m-%d_%H-%M-%S")
+			defaultFile = "openai_history_%s.txt" % now_str
+			dlg = wx.FileDialog(
+				None,
+				message=_("Save history"),
+				defaultFile=defaultFile,
+				wildcard=_("Text file") + " (*.txt)|*.txt",
+				style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT
+			)
+			if dlg.ShowModal() != wx.ID_OK:
+				return
+			path = dlg.GetPath()
+		if not path:
+			return
+		self._historyPath = path
+		with open(path, "w", encoding="utf-8") as f:
+			f.write(self.historyText.GetValue())
+		self.message(_("History saved"))
+
+	def onHistoryContextMenu(self, evt):
+		menu = wx.Menu()
+		item_id = wx.NewIdRef()
+		menu.Append(item_id, _("Show message in web browser as formatted HTML") + " (Space)")
+		self.Bind(wx.EVT_MENU, lambda evt: self.onWebviewMessage(evt, True), id=item_id)
+		item_id = wx.NewIdRef()
+		menu.Append(item_id, _("Show message in web browser as HTML source") + " (Shift+Space)")
+		self.Bind(wx.EVT_MENU, lambda evt: self.onWebviewMessage(evt, False), id=item_id)
+		item_id = wx.NewIdRef()
+		menu.Append(item_id, _("Copy message as plain text") + " (Ctrl+C)")
+		self.Bind(wx.EVT_MENU, lambda evt: self.onCopyMessage(evt, False), id=item_id)
+		item_id = wx.NewIdRef()
+		menu.Append(item_id, _("Copy message as formatted HTML") + " (Ctrl+Shift+C)")
+		self.Bind(wx.EVT_MENU, lambda evt: self.onCopyMessage(evt, True), id=item_id)
+		item_id = wx.NewIdRef()
+		menu.Append(item_id, _("Copy response to system") + " (Alt+Left)")
+		self.Bind(wx.EVT_MENU, self.onCopyResponseToSystem, id=item_id)
+		item_id = wx.NewIdRef()
+		menu.Append(item_id, _("Copy prompt to prompt") + " (Alt+Right)")
+		self.Bind(wx.EVT_MENU, self.onCopyPromptToPrompt, id=item_id)
+		item_id = wx.NewIdRef()
+		menu.Append(item_id, _("Delete block") + " (Ctrl+D)")
+		self.Bind(wx.EVT_MENU, self.onDeleteBlock, id=item_id)
+		item_id = wx.NewIdRef()
+		menu.Append(item_id, _("Save history as text file") + " (Ctrl+S)")
+		self.Bind(wx.EVT_MENU, self.onSaveHistory, id=item_id)
+		item_id = wx.NewIdRef()
+		menu.Append(item_id, _("Say message") + " (M)")
+		self.Bind(wx.EVT_MENU, self.onCurrentMessage, id=item_id)
+		item_id = wx.NewIdRef()
+		menu.Append(item_id, _("Move to previous message") + " (J)")
+		self.Bind(wx.EVT_MENU, self.onPreviousMessage, id=item_id)
+		item_id = wx.NewIdRef()
+		menu.Append(item_id, _("Move to next message") + " (K)")
+		self.Bind(wx.EVT_MENU, self.onNextMessage, id=item_id)
+		self.PopupMenu(menu)
+		menu.Destroy()
+
+	def onPromptContextMenu(self, evt):
+		if not self.previousPrompt:
+			return
+		menu = wx.Menu()
+		item_id = wx.NewIdRef()
+		menu.Append(item_id, _("Insert previous prompt") + " (Ctrl+Up)")
+		self.Bind(wx.EVT_MENU, self.onPreviousPrompt, id=item_id)
+		self.PopupMenu(menu)
+		menu.Destroy()
 
 	def message(self, msg, onlySpeech=False):
 		func = ui.message if not onlySpeech else speech.speakMessage
