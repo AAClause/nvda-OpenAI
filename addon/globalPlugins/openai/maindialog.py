@@ -508,8 +508,6 @@ class OpenAIDlg(wx.Dialog):
 			style=wx.TE_MULTILINE,
 		)
 		self.promptText.Bind(wx.EVT_CONTEXT_MENU, self.onPromptContextMenu)
-		if self.pathList:
-			self.promptText.SetValue(DEFAULT_PROMPT_IMAGE_DESCRIPTION)
 
 		self.imageListLabel = wx.StaticText(
 			parent=self,
