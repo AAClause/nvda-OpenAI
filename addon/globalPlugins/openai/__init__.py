@@ -36,6 +36,7 @@ ADDON_INFO = addonHandler.Addon(
 
 confSpecs = {
 	"use_org": "boolean(default=False)",
+	"orgName": 'string(default="")',
 	"model": f"string(default={DEFAULT_MODEL.name})",
 	"topP": f"integer(min={TOP_P_MIN}, max={TOP_P_MAX}, default={DEFAULT_TOP_P})",
 	"n": f"integer(min={N_MIN}, max={N_MAX}, default={DEFAULT_N})",
@@ -272,6 +273,7 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 			if not org_name:
 				self.org_name.SetFocus()
 				return
+			conf["orgName"] = org_name
 		api_key_manager.save_api_key(
 			api_key_org,
 			org=True,

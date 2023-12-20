@@ -396,7 +396,7 @@ class OpenAIDlg(wx.Dialog):
 			self._lastSystem = self.data.get("system", "")
 		if not title:
 			title = "Open AI - %s" % (
-				_("organization") if conf["use_org"] else _("personal")
+				conf["orgName"] if conf["use_org"] else _("personal")
 			)
 		super().__init__(parent, title=title)
 
