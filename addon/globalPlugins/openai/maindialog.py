@@ -417,7 +417,7 @@ class OpenAIDlg(wx.Dialog):
 			style=wx.TE_MULTILINE,
 		)
 		# If the system prompt has been defined by the user, use it as the default value, otherwise use the default system prompt.
-		if conf["saveSystem"] and self._lastSystem:
+		if conf["saveSystem"]:
 			self.systemText.SetValue(self._lastSystem)
 		else:
 			self.systemText.SetValue(DEFAULT_SYSTEM_PROMPT)
@@ -688,7 +688,7 @@ class OpenAIDlg(wx.Dialog):
 			)
 			self.conf["images"]["resizeInfoDisplayed"] = True
 		system = self.systemText.GetValue().strip()
-		if self.conf["saveSystem"] and system != self._lastSystem and system:
+		if self.conf["saveSystem"] and system != self._lastSystem:
 			self.data["system"] = system
 			self._lastSystem = system
 		self.message(_("Processing, please wait..."))
