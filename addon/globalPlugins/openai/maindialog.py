@@ -400,6 +400,9 @@ class OpenAIDlg(wx.Dialog):
 				self._lastSystem = self.data["system"]
 			else:
 				self._lastSystem = DEFAULT_SYSTEM_PROMPT
+		else:
+			# removes the system entry from data so that the last system prompt is not remembered when the user unchecks the save system prompt checkbox.
+			self.data.pop("system", None)
 		if not title:
 			title = "Open AI - %s" % (
 				_("organization") if conf["use_org"] else _("personal")
