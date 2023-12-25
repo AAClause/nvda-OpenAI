@@ -622,8 +622,11 @@ class OpenAIDlg(wx.Dialog):
 	def getCurrentModel(self):
 		return MODELS[self.modelListBox.GetSelection()]
 
-	def resetSystemPrompt(self, event):
+	def onResetSystemPrompt(self, event):
 		self.systemText.SetValue(DEFAULT_SYSTEM_PROMPT)
+	def onDelete(self, event):
+		self.systemText.SetValue('')
+
 	def onMenuSystem(self, event):
 		menu = wx.Menu()
 		resetItem = menu.Append(wx.NewId(), _("Reset to default"))
@@ -635,7 +638,8 @@ class OpenAIDlg(wx.Dialog):
 		menu.Append(wx.ID_SELECTALL)
 		menu.Append(wx.ID_DELETE)
 
-		self.Bind(wx.EVT_MENU, self.resetSystemPrompt, resetItem)
+		self.Bind(wx.EVT_MENU, self.onResetSystemPrompt, resetItem)
+		self.Bind(wx.EVT_MENU, self.onDelete, id=wx.ID_DELETE)
 		self.systemText.PopupMenu(menu)
 		menu.Destroy()
 	def onModelChange(self, evt):
