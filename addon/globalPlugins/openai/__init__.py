@@ -436,6 +436,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 
 	@script(
 		gesture="kb:nvda+e",
+		# Translators: This is the description of a command to take a screenshot and describe it.
 		description=_("Take a screenshot and describe it")
 	)
 	def script_recognizeScreen(self, gesture):
@@ -452,12 +453,16 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 				client=self.getClient(),
 				conf=conf,
 				pathList=[
-					(tmpPath, _("Screenshot"))
+					(
+						tmpPath,
+						# Translators: This is the name of the screenshot to be described.
+						_("Screenshot"))
 				]
 			)
 
 	@script(
 		gesture="kb:nvda+o",
+		# Translators: This is the description of a command to grab the current navigator object and describe it.
 		description=_("Grab the current navigator object and describe it")
 	)
 	def script_recognizeObject(self, gesture):
@@ -482,6 +487,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 				sct_img = sct.grab(monitor)
 				mss.tools.to_png(sct_img.rgb, sct_img.size, output=tmpPath)
 			from . import maindialog
+			# Translators: This is the name of the screenshot to be described.
 			default_name = _("Navigator Object")
 			name = nav.name
 			if (
