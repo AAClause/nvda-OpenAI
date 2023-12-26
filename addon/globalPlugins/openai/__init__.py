@@ -44,7 +44,7 @@ confSpecs = {
 	"TTSVoice": f"option({', '.join(TTS_VOICES)}, default={TTS_DEFAULT_VOICE})",
 	"blockEscapeKey": "boolean(default=False)",
 	"conversationMode": "boolean(default=True)",
-	"saveSystem": "boolean(default=False)",
+	"saveSystem": "boolean(default=true)",
 	"advancedMode": "boolean(default=False)",
 	"images": {
 		"maxHeight": "integer(min=0, default=720)",

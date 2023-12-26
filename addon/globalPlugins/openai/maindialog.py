@@ -19,7 +19,8 @@ from .consts import (
 	ADDON_DIR, DATA_DIR,
 	MODELS, MODEL_VISION,
 	TOP_P_MIN, TOP_P_MAX,
-	N_MIN, N_MAX
+	N_MIN, N_MAX,
+	DEFAULT_SYSTEM_PROMPT
 )
 from .imagehelper import resize_image, describeFromImageFileList, encode_image
 from .recordthread import RecordThread
@@ -393,7 +394,14 @@ class OpenAIDlg(wx.Dialog):
 		self._lastSystem = None
 		self._model_names = [model.name for model in MODELS]
 		if self.conf["saveSystem"]:
-			self._lastSystem = self.data.get("system", "")
+			# If the user has chosen to save the system prompt, use the last system prompt used by the user as the default value, otherwise use the default system prompt.
+			if "system" in self.data:
+				self._lastSystem = self.data["system"]
+			else:
+				self._lastSystem = DEFAULT_SYSTEM_PROMPT
+		else:
+			# removes the system entry from data so that the last system prompt is not remembered when the user unchecks the save system prompt checkbox.
+			self.data.pop("system", None)
 		if not title:
 			title = "Open AI - %s" % (
 				_("organization") if conf["use_org"] else _("personal")
@@ -414,8 +422,13 @@ class OpenAIDlg(wx.Dialog):
 			size=(550, -1),
 			style=wx.TE_MULTILINE,
 		)
-		if conf["saveSystem"] and self._lastSystem:
+		# Adds event handler to reset the system prompt to the default value when the user opens the context menu on the system prompt.
+		self.systemText.Bind(wx.EVT_CONTEXT_MENU, self.onMenuSystem)
+		# If the system prompt has been defined by the user, use it as the default value, otherwise use the default system prompt.
+		if conf["saveSystem"]:
 			self.systemText.SetValue(self._lastSystem)
+		else:
+			self.systemText.SetValue(DEFAULT_SYSTEM_PROMPT)
 
 		historyLabel = wx.StaticText(
 			parent=self,
@@ -609,6 +622,30 @@ class OpenAIDlg(wx.Dialog):
 	def getCurrentModel(self):
 		return MODELS[self.modelListBox.GetSelection()]
 
+	def onResetSystemPrompt(self, event):
+		self.systemText.SetValue(DEFAULT_SYSTEM_PROMPT)
+	def onDelete(self, event):
+		self.systemText.SetValue('')
+	def addStandardMenuOptions(self, menu):
+		menu.Append(wx.ID_UNDO)
+		menu.Append(wx.ID_REDO)
+		menu.AppendSeparator()
+		menu.Append(wx.ID_CUT)
+		menu.Append(wx.ID_COPY)
+		menu.Append(wx.ID_PASTE)
+		menu.Append(wx.ID_DELETE)
+		menu.AppendSeparator()
+		menu.Append(wx.ID_SELECTALL)
+		self.Bind(wx.EVT_MENU, self.onDelete, id=wx.ID_DELETE)
+
+	def onMenuSystem(self, event):
+		menu = wx.Menu()
+		resetItem = menu.Append(wx.NewId(), _("Reset to default"))
+		menu.AppendSeparator()
+		self.Bind(wx.EVT_MENU, self.onResetSystemPrompt, resetItem)
+		self.addStandardMenuOptions(menu)
+		self.systemText.PopupMenu(menu)
+		menu.Destroy()
 	def onModelChange(self, evt):
 		model = self.getCurrentModel()
 		self.maxTokens.SetRange(
@@ -683,7 +720,7 @@ class OpenAIDlg(wx.Dialog):
 			)
 			self.conf["images"]["resizeInfoDisplayed"] = True
 		system = self.systemText.GetValue().strip()
-		if self.conf["saveSystem"] and system != self._lastSystem and system:
+		if self.conf["saveSystem"] and system != self._lastSystem:
 			self.data["system"] = system
 			self._lastSystem = system
 		self.message(_("Processing, please wait..."))
