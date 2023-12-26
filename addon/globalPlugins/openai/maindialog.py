@@ -641,6 +641,7 @@ class OpenAIDlg(wx.Dialog):
 		self.systemText.SetValue(DEFAULT_SYSTEM_PROMPT)
 	def onDelete(self, event):
 		self.systemText.SetValue('')
+
 	def addStandardMenuOptions(self, menu):
 		menu.Append(wx.ID_UNDO)
 		menu.Append(wx.ID_REDO)
@@ -661,6 +662,7 @@ class OpenAIDlg(wx.Dialog):
 		self.addStandardMenuOptions(menu)
 		self.systemText.PopupMenu(menu)
 		menu.Destroy()
+
 	def onModelChange(self, evt):
 		model = self.getCurrentModel()
 		self.maxTokens.SetRange(
@@ -700,7 +702,7 @@ class OpenAIDlg(wx.Dialog):
 		if not model:
 			gui.messageBox(
 				_("Please select a model."),
-				_("Open AI"),
+				"Open AI",
 				wx.OK|wx.ICON_ERROR
 			)
 			return
@@ -711,14 +713,14 @@ class OpenAIDlg(wx.Dialog):
 		):
 			gui.messageBox(
 				_("No image provided. Please use the Image Description button and select one or more images. Otherwise, please select another model."),
-				_("Open AI"),
+				"Open AI",
 				wx.OK|wx.ICON_ERROR
 			)
 			return
 		if model.name != MODEL_VISION and self.pathList:
 			gui.messageBox(
 				_("This model does not support image description. Please select the %s model.") % MODEL_VISION,
-				_("Open AI"),
+				"Open AI",
 				wx.OK|wx.ICON_ERROR
 			)
 			return
@@ -730,7 +732,7 @@ class OpenAIDlg(wx.Dialog):
 			msg = _("Be aware that the add-on may auto-resize images before API submission to lower request sizes and costs. Adjust this feature in the Open AI settings if needed. This message won't show again.")
 			gui.messageBox(
 				msg,
-				_("Open AI"),
+				"Open AI",
 				wx.OK|wx.ICON_INFORMATION
 			)
 			self.conf["images"]["resizeInfoDisplayed"] = True
@@ -1110,7 +1112,7 @@ class OpenAIDlg(wx.Dialog):
 				text,
 				extras=["fenced-code-blocks", "footnotes", "header-ids", "spoiler", "strike", "tables", "task_list", "underline", "wiki-tables"]
 			),
-			title=_("Open AI"),
+			title="Open AI",
 			isHtml=isHtml
 		)
 
@@ -1145,10 +1147,10 @@ class OpenAIDlg(wx.Dialog):
 	def onHistoryContextMenu(self, evt):
 		menu = wx.Menu()
 		item_id = wx.NewIdRef()
-		menu.Append(item_id, _("Show message in web browser as formatted HTML") + " (Space)")
+		menu.Append(item_id, _("Show message in web view as formatted HTML") + " (Space)")
 		self.Bind(wx.EVT_MENU, lambda evt: self.onWebviewMessage(evt, True), id=item_id)
 		item_id = wx.NewIdRef()
-		menu.Append(item_id, _("Show message in web browser as HTML source") + " (Shift+Space)")
+		menu.Append(item_id, _("Show message in web view as HTML source") + " (Shift+Space)")
 		self.Bind(wx.EVT_MENU, lambda evt: self.onWebviewMessage(evt, False), id=item_id)
 		item_id = wx.NewIdRef()
 		menu.Append(item_id, _("Copy message as plain text") + " (Ctrl+C)")
@@ -1177,17 +1179,18 @@ class OpenAIDlg(wx.Dialog):
 		item_id = wx.NewIdRef()
 		menu.Append(item_id, _("Move to next message") + " (K)")
 		self.Bind(wx.EVT_MENU, self.onNextMessage, id=item_id)
-		self.PopupMenu(menu)
+		self.addStandardMenuOptions(menu)
+		self.historyText.PopupMenu(menu)
 		menu.Destroy()
 
 	def onPromptContextMenu(self, evt):
-		if not self.previousPrompt:
-			return
 		menu = wx.Menu()
-		item_id = wx.NewIdRef()
-		menu.Append(item_id, _("Insert previous prompt") + " (Ctrl+Up)")
-		self.Bind(wx.EVT_MENU, self.onPreviousPrompt, id=item_id)
-		self.PopupMenu(menu)
+		if self.previousPrompt:
+			item_id = wx.NewIdRef()
+			menu.Append(item_id, _("Insert previous prompt") + " (Ctrl+Up)")
+			self.Bind(wx.EVT_MENU, self.onPreviousPrompt, id=item_id)
+		self.addStandardMenuOptions(menu)
+		self.promptText.PopupMenu(menu)
 		menu.Destroy()
 
 	def message(self, msg, onlySpeech=False):
@@ -1243,7 +1246,7 @@ class OpenAIDlg(wx.Dialog):
 		dlg = wx.TextEntryDialog(
 			None,
 			message=_("Enter image URL"),
-			caption=_("Open AI"),
+			caption="Open AI",
 			style=wx.OK|wx.CANCEL
 		)
 		if dlg.ShowModal() != wx.ID_OK:
@@ -1258,7 +1261,7 @@ class OpenAIDlg(wx.Dialog):
 		if re.match(url_pattern, url) is None:
 			gui.messageBox(
 				_("Invalid URL, bad format."),
-				_("Open AI"),
+				"Open AI",
 				wx.OK|wx.ICON_ERROR
 			)
 			return
@@ -1268,7 +1271,7 @@ class OpenAIDlg(wx.Dialog):
 		except urllib.error.HTTPError as err:
 			gui.messageBox(
 				_("Invalid URL, HTTP error: %s.") % err,
-				_("Open AI"),
+				"Open AI",
 				wx.OK|wx.ICON_ERROR
 			)
 			return
@@ -1315,7 +1318,7 @@ class OpenAIDlg(wx.Dialog):
 		if not self.promptText.GetValue().strip():
 			gui.messageBox(
 				_("Please enter some text in the prompt field first."),
-				_("Open AI"),
+				"Open AI",
 				wx.OK|wx.ICON_ERROR
 			)
 			self.promptText.SetFocus()
