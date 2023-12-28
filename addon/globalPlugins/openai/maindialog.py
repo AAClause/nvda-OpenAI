@@ -497,7 +497,7 @@ class OpenAIDlg(wx.Dialog):
 			style=wx.TE_MULTILINE,
 		)
 		# Adds event handler to reset the system prompt to the default value when the user opens the context menu on the system prompt.
-		self.systemText.Bind(wx.EVT_CONTEXT_MENU, self.onMenuSystem)
+		self.systemText.Bind(wx.EVT_CONTEXT_MENU, self.onSystemContextMenu)
 		# If the system prompt has been defined by the user, use it as the default value, otherwise use the default system prompt.
 		if conf["saveSystem"]:
 			self.systemText.SetValue(self._lastSystem)
@@ -748,15 +748,6 @@ class OpenAIDlg(wx.Dialog):
 		menu.AppendSeparator()
 		menu.Append(wx.ID_SELECTALL)
 		self.Bind(wx.EVT_MENU, self.onDelete, id=wx.ID_DELETE)
-
-	def onMenuSystem(self, event):
-		menu = wx.Menu()
-		resetItem = menu.Append(wx.NewId(), _("Reset to default"))
-		menu.AppendSeparator()
-		self.Bind(wx.EVT_MENU, self.onResetSystemPrompt, resetItem)
-		self.addStandardMenuOptions(menu)
-		self.systemText.PopupMenu(menu)
-		menu.Destroy()
 
 	def onModelChange(self, evt):
 		model = self.getCurrentModel()
@@ -1224,6 +1215,16 @@ class OpenAIDlg(wx.Dialog):
 			f.write(self.historyText.GetValue())
 		self.message(_("History saved"))
 
+	def onSystemContextMenu(self, event):
+		menu = wx.Menu()
+		item_id = wx.NewIdRef()
+		resetItem = menu.Append(item_id, _("Reset to default"))
+		self.Bind(wx.EVT_MENU, self.onResetSystemPrompt, id=item_id)
+		menu.AppendSeparator()
+		self.addStandardMenuOptions(menu)
+		self.systemText.PopupMenu(menu)
+		menu.Destroy()
+
 	def onHistoryContextMenu(self, evt):
 		menu = wx.Menu()
 		item_id = wx.NewIdRef()
@@ -1259,6 +1260,7 @@ class OpenAIDlg(wx.Dialog):
 		item_id = wx.NewIdRef()
 		menu.Append(item_id, _("Move to next message") + " (k)")
 		self.Bind(wx.EVT_MENU, self.onNextMessage, id=item_id)
+		menu.AppendSeparator()
 		self.addStandardMenuOptions(menu)
 		self.historyText.PopupMenu(menu)
 		menu.Destroy()
@@ -1269,6 +1271,7 @@ class OpenAIDlg(wx.Dialog):
 			item_id = wx.NewIdRef()
 			menu.Append(item_id, _("Insert previous prompt") + " (Ctrl+Up)")
 			self.Bind(wx.EVT_MENU, self.onPreviousPrompt, id=item_id)
+			menu.AppendSeparator()
 		self.addStandardMenuOptions(menu)
 		self.promptText.PopupMenu(menu)
 		menu.Destroy()
