@@ -29,6 +29,7 @@ from .resultevent import ResultEvent, EVT_RESULT_ID
 additionalLibsPath = os.path.join(ADDON_DIR, "lib")
 sys.path.insert(0, additionalLibsPath)
 import openai
+import markdown2
 sys.path.remove(additionalLibsPath)
 
 addonHandler.initTranslation()
@@ -38,6 +39,16 @@ DATA_JSON_FP = os.path.join(DATA_DIR, "data.json")
 
 def EVT_RESULT(win, func):
 	win.Connect(-1, -1, EVT_RESULT_ID, func)
+
+def copyToClipAsHTML(html_content):
+	html_data_object = wx.HTMLDataObject()
+	html_data_object.SetHTML(html_content)
+	if wx.TheClipboard.Open():
+		wx.TheClipboard.Clear()
+		wx.TheClipboard.SetData(html_data_object)
+		wx.TheClipboard.Close()
+	else:
+		raise RuntimeError("Unable to open the clipboard")
 
 
 class CompletionThread(threading.Thread):
@@ -858,8 +869,11 @@ class OpenAIDlg(wx.Dialog):
 		accelEntries  = []
 		self.addEntry(accelEntries, wx.ACCEL_CTRL + wx.ACCEL_SHIFT, wx.WXK_DOWN, self.onNextSegment)
 		self.addEntry(accelEntries, wx.ACCEL_CTRL + wx.ACCEL_SHIFT, wx.WXK_UP, self.onPreviousSegment)
+		self.addEntry(accelEntries, wx.ACCEL_CTRL + wx.ACCEL_SHIFT, ord("C"), lambda evt: self.onCopySegment(evt, True))
 		self.addEntry(accelEntries, wx.ACCEL_CTRL, ord("E"), self.onEditBlock)
 		self.addEntry(accelEntries, wx.ACCEL_CTRL, ord("D"), self.onDeleteBlock)
+		self.addEntry(accelEntries, wx.ACCEL_CTRL, ord("H"), lambda evt: self.onBrowseableSegment(evt, False))
+		self.addEntry(accelEntries, wx.ACCEL_CTRL, ord("K"), lambda evt: self.onBrowseableSegment(evt, True))
 		self.addEntry(accelEntries, wx.ACCEL_ALT, wx.WXK_LEFT, self.onCopyResponseToContext)
 		self.addEntry(accelEntries, wx.ACCEL_ALT, wx.WXK_RIGHT, self.onCopyPromptToPrompt)
 		accelTable = wx.AcceleratorTable(accelEntries)
@@ -1013,7 +1027,7 @@ class OpenAIDlg(wx.Dialog):
 		self.promptText.SetFocus ()
 		self.message(_("Compied to prompt"))
 
-	def onCopySegment (self, evt):
+	def onCopySegment(self, evt, isHtml=False):
 		text = self.historyText.GetStringSelection()
 		msg = _("Copy")
 		if not text:
@@ -1027,7 +1041,15 @@ class OpenAIDlg(wx.Dialog):
 			elif segment == block.segmentResponseLabel or segment == block.segmentResponse:
 				text = block.segmentResponse.getText()
 				msg = _("Copy response")
-		api.copyToClip(text)
+		if isHtml:
+			text = markdown2.markdown(
+				text,
+				extras=["fenced-code-blocks", "footnotes", "header-ids", "spoiler", "strike", "tables", "task_list", "underline", "wiki-tables"]
+			)
+			copyToClipAsHTML(text)
+			msg += ' ' + _("as formatted HTML")
+		else:
+			api.copyToClip(text)
 		self.message(msg)
 
 	def onDeleteBlock(self, evt):
@@ -1052,6 +1074,24 @@ class OpenAIDlg(wx.Dialog):
 		else:
 			self.lastBlock = block.previous
 		self.message(_("Block deleted"))
+
+	def onBrowseableSegment(self, evt, isHtml=False):
+		segment = TextSegment.getCurrentSegment (self.historyText)
+		if segment is None:
+			return
+		block = segment.owner
+		if segment == block.segmentPromptLabel or segment == block.segmentPrompt:
+			text = block.segmentPrompt.getText ()
+		elif segment == block.segmentResponseLabel or segment == block.segmentResponse:
+			text = block.segmentResponse.getText ()
+		ui.browseableMessage(
+			markdown2.markdown(
+				text,
+				extras=["fenced-code-blocks", "footnotes", "header-ids", "spoiler", "strike", "tables", "task_list", "underline", "wiki-tables"]
+			),
+			title=_("Open AI"),
+			isHtml=isHtml
+		)
 
 	def message(self, msg, onlySpeech=False):
 		func = ui.message if not onlySpeech else speech.speakMessage
