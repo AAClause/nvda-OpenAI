@@ -63,7 +63,7 @@ Conversely, when the checkbox is left unticked, only the current user prompt is 
 
 You can switch between the two modes at any time during a session.
 
-### About the `System` Field
+#### About the `System` Field
 
 The `System` field is designed to fine-tune the AI model's behavior and personality to match your specific expectations.
 
