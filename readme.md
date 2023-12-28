@@ -10,49 +10,46 @@ This add-on designed to seamlessly integrate the capabilities of the Open AI API
 
 ## Prerequisites for Use
 
-In order to utilize the full functionality of the OpenAI NVDA add-on, an API key from OpenAI is required. Follow these steps to set it up:
+To fully unlock the capabilities of the OpenAI NVDA add-on, you must obtain an API key from OpenAI. Here's how to configure it for use:
 
 1. Acquire an API key by registering for an OpenAI account at [https://platform.openai.com/api-keys](https://platform.openai.com/api-keys).
 2. With the API key ready, you have two options for configuration:
- 	- Through the NVDA settings dialog:
-     1. Access the NVDA menu and navigate to the "Preferences" submenu.
-     2. Open the "Settings" dialog and select the "Open AI" category.
-     3. Input your API key in the provided field and click "OK" to confirm.
- 	- Using environment variables:
-     1. Press `Windows+Pause` to open System Properties.
-     2. Click on "Advanced system settings" and select "Environment Variables".
-     3. Create a new variable under "User variables":
-         1. Click on "New".
-         2. Enter `OPENAI_API_KEY` as the variable name and paste your API key as the value.
-     4. Click "OK" to save your changes.
+	- Through the NVDA settings dialog:
+		1. Access the NVDA menu and navigate to the "Preferences" submenu.
+		2. Open the "Settings" dialog and select the "Open AI" category.
+		3. Input your API key in the provided field and click "OK" to confirm.
+	- Using environment variables:
+		1. Press `Windows+Pause` to open System Properties.
+		2. Click on "Advanced system settings" and select "Environment Variables".
+		3. Create a new variable under "User variables":
+			1. Click on "New".
+			2. Enter `OPENAI_API_KEY` as the variable name and paste your API key as the value.
+		4. Click "OK" to save your changes.
 
 You are now equipped to explore the features of the OpenAI NVDA add-on!
 
 ## How to Use the Add-on
 
-### Accessing Main Features
+### The Main Dialog
 
-The functionality of the add-on is housed within a central dialog that can be opened using the shortcut `NVDA+g`. This dialog provides access to the majority of the add-on's features, enabling you to:
+The majority of the add-on's features can be easily accessed via a dialog box, which can be launched by pressing `NVDA+G`.  
+As an alternative, navigate to the "Open AI" submenu under the NVDA menu and select the "Main Dialog…" item.  
+Within this dialog, you will be able to:
 
-- Engage in conversation with the AI model.
+- Initiate interactive conversations with the AI models for assistance or information gathering.
 - Get descriptions of images from image files.
 - Transcribe spoken content from audio files or through a microphone.
 - Use the text-to-speech feature to vocalize written text in the prompt.
 
-#### Commands from main dialog
+To further improve your interaction with the interface, please take note of the following:
 
-Some commands are available in the main dialog for different elements.
+- The multiline "System", "History", and "Prompt" fields come equipped with context menus filled with commands that can be quickly executed using keyboard shortcuts.
+  These shortcuts are active when the relevant field is in focus.
+  For example, the keys 'j' and 'k' allow you to navigate to the previous and next messages, respectively, when the focus is on the History field.
 
-- When the Prompt Field is focused:
-	- `Ctrl+Enter`: Submit the text you've entered.
-	- `Ctrl+Up Arrow`: Retrieve and place the most recently entered prompt into the current field for review or re-use.
-- When the History Field is focused:
-	- `Alt+Right Arrow`: Copy the user's text to the prompt.
-	- `Alt+Left Arrow`: Copy the assistant's response to the system.
-	- `Ctrl+c`: Copy the assistant's response or the user's text depending on the cursor's position.
-	- `Ctrl+d`: Delete the current block  (user input and assistant's response).
-	- `Ctrl+Shift+Up Arrow`: Move to the text block of the user or assistant above the current block.
-	- `Ctrl+Shift+Down Arrow`: Move to the text block of the user or assistant below the current block.
+- Additionally, the interface includes keyboard shortcuts that are effective across the entire window. For instance, `CTRL + R` starts or stops a recording.
+
+All keyboard shortcuts are displayed next to the labels of their corresponding elements.
 
 ### Global Commands
 
@@ -67,7 +64,8 @@ These commands can be used to trigger actions from anywhere on your computer. It
 
 The add-on comes bundled with the following essential dependencies:
 
-- [OpenAI](https://pypi.org/project/openai/): The official Python library for the openai API.
+- [openai](https://pypi.org/project/openai/): The official Python library for the openai API.
+- [markdown2](https://pypi.org/project/markdown2/): A fast and complete Python implementation of Markdown.
 - [MSS](https://pypi.org/project/mss/): An ultra fast cross-platform multiple screenshots module in pure python using ctypes.
 - [Pillow](https://pypi.org/project/Pillow/): The user-friendly fork of the Python Imaging Library, used for image resizing.
 - [sounddevice](https://pypi.org/project/sounddevice/): Play and Record Sound with Python.
