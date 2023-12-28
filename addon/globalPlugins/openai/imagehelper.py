@@ -8,7 +8,16 @@ additionalLibsPath = os.path.join(ADDON_DIR, "lib")
 sys.path.insert(0, additionalLibsPath)
 from openai import OpenAI
 from PIL import Image
+import fractions
 sys.path.remove(additionalLibsPath)
+
+def get_image_dimensions(path):
+	"""
+	Get the dimensions of an image.
+	"""
+	img = Image.open(path)
+	return img.size
+
 
 def resize_image(
 	src: str,

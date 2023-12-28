@@ -7,6 +7,7 @@ import threading
 import winsound
 import gui
 import wx
+from enum import Enum
 
 import addonHandler
 import api
@@ -23,7 +24,12 @@ from .consts import (
 	N_MIN, N_MAX,
 	DEFAULT_SYSTEM_PROMPT
 )
-from .imagehelper import resize_image, describeFromImageFileList, encode_image
+from .imagehelper import (
+	describeFromImageFileList,
+	encode_image,
+	get_image_dimensions,
+	resize_image,
+)
 from .recordthread import RecordThread
 from .resultevent import ResultEvent, EVT_RESULT_ID
 
@@ -37,9 +43,11 @@ addonHandler.initTranslation()
 
 TTS_FILE_NAME = os.path.join(DATA_DIR, "tts.wav")
 DATA_JSON_FP = os.path.join(DATA_DIR, "data.json")
+URL_PATTERN = re.compile(r"^(?:http)s?://(?:[A-Z0-9-]+\.)+[A-Z]{2,6}(?::\d+)?(?:/?|[/?]\S+)$", re.IGNORECASE)
 
 def EVT_RESULT(win, func):
 	win.Connect(-1, -1, EVT_RESULT_ID, func)
+
 
 def copyToClipAsHTML(html_content):
 	html_data_object = wx.HTMLDataObject()
@@ -50,6 +58,75 @@ def copyToClipAsHTML(html_content):
 		wx.TheClipboard.Close()
 	else:
 		raise RuntimeError("Unable to open the clipboard")
+
+
+def get_display_size(size):
+	if size < 1024:
+		return f"{size} B"
+	if size < 1024 * 1024:
+		return f"{size / 1024:.2f} KB"
+	return f"{size / 1024 / 1024:.2f} MB"
+
+
+class ImageFileTypes(Enum):
+
+	UNKNOWN = 0
+	IMAGE_LOCAL = 1
+	IMAGE_URL = 2
+
+
+class ImageFile:
+
+	def __init__(
+		self,
+		path: str,
+		name: str=None,
+		description: str=None,
+		size: int=-1,
+		dimensions: tuple=None
+	):
+		if not isinstance(path, str):
+			raise TypeError("path must be a string")
+		self.path = path
+		self.type = self._get_type()
+		self.name = name or self._get_name()
+		self.description = description
+		if size and size > 0:
+			self.size = get_display_size(size)
+		else:
+			self.size = self._get_size()
+		self.dimensions = dimensions or self._get_dimensions()
+
+	def _get_type(self):
+		if os.path.exists(self.path):
+			return ImageFileTypes.IMAGE_LOCAL
+		if re.match(
+			URL_PATTERN,
+			self.path
+		):
+			return ImageFileTypes.IMAGE_URL
+		return ImageFileTypes.UNKNOWN
+
+	def _get_name(self):
+		if self.type == ImageFileTypes.IMAGE_LOCAL:
+			return os.path.basename(self.path)
+		if self.type == ImageFileTypes.IMAGE_URL:
+			return self.path.split("/")[-1]
+		return "N/A"
+
+	def _get_size(self):
+		if self.type == ImageFileTypes.IMAGE_LOCAL:
+			size = os.path.getsize(self.path)
+			return get_display_size(size)
+		return "N/A"
+
+	def _get_dimensions(self):
+		if self.type == ImageFileTypes.IMAGE_LOCAL:
+			return get_image_dimensions(self.path)
+		return None
+
+	def __str__(self):
+		return f"{self.name} ({self.path}, {self.size}, {self.dimensions}, {self.description})"
 
 
 class CompletionThread(threading.Thread):
@@ -98,7 +175,7 @@ class CompletionThread(threading.Thread):
 		block.topP = topP
 		conversationMode = conf["conversationMode"]
 		conf["conversationMode"] = wnd.conversationCheckBox.IsChecked()
-		block.pathList = wnd.pathList
+		block.pathList = wnd.pathList.copy()
 
 		if not 0 <= temperature <= model.maxTemperature * 100:
 			wx.PostEvent(self._notifyWindow, ResultEvent(_("Invalid temperature")))
@@ -110,8 +187,35 @@ class CompletionThread(threading.Thread):
 		if system:
 			messages.append({"role": "system", "content": system})
 		wnd.getMessages(messages)
+		if wnd.pathList:
+			images = wnd.getImages()
+			if images:
+				messages.append({"role": "user", "content": images})
 		if prompt:
 			messages.append({"role": "user", "content": prompt})
+		nbImages = 0
+		for message in messages:
+			if (
+				message["role"] == "user"
+				and not isinstance(message["content"], str)
+			):
+				for content in message["content"]:
+					if content["type"] == "image_url":
+						nbImages += 1
+		msg = ""
+		if nbImages == 1:
+			# Translators: This is a message displayed when uploading one image to the API.
+			msg = _("Uploading one image, please wait...")
+		elif nbImages > 1:
+			# Translators: This is a message displayed when uploading multiple images to the API.
+			msg = _("Uploading %d images, please wait...") % nbImages
+		else:
+			# Translators: This is a message displayed when sending a request to the API.
+			msg = _("Processing, please wait...")
+		wnd.message(msg)
+		if debug and nbImages:
+			log.info(f"{nbImages} images")
+			log.info(f"{json.dumps(messages, indent=2, ensure_ascii=False)}")
 		params = {
 			"model": model.name,
 			"messages": messages,
@@ -138,6 +242,7 @@ class CompletionThread(threading.Thread):
 			self._responseWithStream(response, block, debug)
 		else:
 			self._responseWithoutStream(response, block, debug)
+		wnd.pathList.clear()
 		wx.PostEvent(self._notifyWindow, ResultEvent())
 		wnd.message(_("Ready"))
 
@@ -154,78 +259,18 @@ class CompletionThread(threading.Thread):
 			finish = event.choices[0].finish_reason
 			text = ""
 			if delta.content:
-				text = "%s" % delta.content
-
+				text = delta.content
 			block.responseText += text
 		block.responseTerminated = True
 
 	def _responseWithoutStream(self, response, block, debug=False):
 		wnd = self._notifyWindow
 		text = ""
-		n = 1 # len(response.choices)
-		if n > 1:
-			text += f"# {n} completions"
 		for i, choice in enumerate(response.choices):
 			if self._wantAbort: break
-			if debug:
-				text = f"{json.dumps(response, indent=2, ensure_ascii=False)}"
-				break
-			if n > 1:
-				text += f"\n\n## completion {i+1}\n\n"
 			text += choice.message.content
 		block.responseText += text
 		block.responseTerminated = True
-
-
-class ImageDescriptionThread(threading.Thread):
-
-	def __init__(self, notifyWindow):
-		threading.Thread.__init__(self)
-		self._notifyWindow = notifyWindow
-
-	def run(self):
-		wnd = self._notifyWindow
-		client = wnd.client
-		prompt = wnd.promptText.GetValue().strip()
-		messages = []
-		wnd.getMessages(messages)
-		if wnd.pathList:
-			content = [
-				{"type": "text", "text": prompt}
-			]
-			content.extend(wnd.getImages())
-			messages.append({
-				"role": "user",
-				"content": content
-			})
-		else:
-			messages.append({"role": "user", "content": prompt})
-		nbImages = 0
-		for message in messages:
-			if message["role"] == "user":
-				for content in message["content"]:
-					if not isinstance(content, dict):
-						continue
-					if content["type"] == "image_url":
-						nbImages += 1
-		if nbImages == 1:
-			wnd.message(_("One image to analyze..."))
-		elif nbImages > 1:
-			wnd.message(_("%d images to analyze...") % nbImages)
-		max_tokens = wnd.maxTokens.GetValue()
-		try:
-			description = describeFromImageFileList(
-				client,
-				messages=messages,
-				max_tokens=max_tokens
-			)
-		except BaseException as err:
-			wx.PostEvent(self._notifyWindow, ResultEvent(repr(err)))
-			return
-		wx.PostEvent(self._notifyWindow, ResultEvent(description))
-
-	def abort(self):
-		pass
 
 
 class TextToSpeechThread(threading.Thread):
@@ -392,17 +437,33 @@ class OpenAIDlg(wx.Dialog):
 	):
 		if not client or not conf:
 			return
-		if conf["images"]["useCustomPrompt"]:
-			DEFAULT_PROMPT_IMAGE_DESCRIPTION = conf["images"]["customPromptText"]
-		else:
-			DEFAULT_PROMPT_IMAGE_DESCRIPTION = _("Describe the images in as much detail as possible.")
 		self.client = client
 		self.conf = conf
 		self.data = self.loadData()
 		self._orig_data = self.data.copy() if isinstance(self.data, dict) else None
 		self._historyPath = None
 		self.blocks = []
-		self.pathList = pathList
+		self.pathList = []
+		if pathList:
+			for path in pathList:
+				if isinstance(path, ImageFile):
+					self.pathList.append(path)
+				elif isinstance(path, str):
+					if not os.path.exists(path):
+						continue
+					self.pathList.append(ImageFile(path))
+				elif isinstance(path, tuple) and len(path) == 2:
+					location, name = path
+					if not os.path.exists(location):
+						continue
+					self.pathList.append(
+						ImageFile(
+							location,
+							name=name
+						)
+					)
+				else:
+					raise ValueError(f"Invalid path: {path}")
 		self.previousPrompt = None
 		self._lastSystem = None
 		self._model_names = [model.name for model in MODELS]
@@ -464,9 +525,36 @@ class OpenAIDlg(wx.Dialog):
 			style=wx.TE_MULTILINE,
 		)
 		self.promptText.Bind(wx.EVT_CONTEXT_MENU, self.onPromptContextMenu)
-		if self.pathList:
-			self.promptText.SetValue(DEFAULT_PROMPT_IMAGE_DESCRIPTION)
 
+		self.imageListLabel = wx.StaticText(
+			parent=self,
+			# Translators: This is a label for a list of images attached to the prompt.
+			label=_("Attached ima&ges:")
+		)
+		self.imageListCtrl = wx.ListCtrl(
+			parent=self,
+			style=wx.LC_REPORT | wx.LC_HRULES | wx.LC_VRULES
+		)
+		self.imageListCtrl.InsertColumn(0, _("name"))
+		self.imageListCtrl.InsertColumn(1, _("path"))
+		self.imageListCtrl.InsertColumn(2, _("size"))
+		self.imageListCtrl.InsertColumn(3, _("Dimensions"))
+		self.imageListCtrl.InsertColumn(4, _("description"))
+		self.imageListCtrl.SetColumnWidth(0, 100)
+		self.imageListCtrl.SetColumnWidth(1, 200)
+		self.imageListCtrl.SetColumnWidth(2, 100)
+		self.imageListCtrl.SetColumnWidth(3, 100)
+		self.imageListCtrl.SetColumnWidth(4, 200)
+		self.imageListCtrl.Bind(wx.EVT_LIST_ITEM_RIGHT_CLICK, self.onImageListContextMenu)
+		self.imageListCtrl.Bind(wx.EVT_KEY_DOWN, self.onImageListKeyDown)
+		self.imageListCtrl.Bind(wx.EVT_CONTEXT_MENU, self.onImageListContextMenu)
+		self.imageListCtrl.Bind(wx.EVT_RIGHT_UP, self.onImageListContextMenu)
+
+		if self.pathList:
+			self.promptText.SetValue(
+				self.getDefaultImageDescriptionsPrompt()
+			)
+		self.updateImageList()
 		modelsLabel = wx.StaticText(
 			parent=self,
 			label=_("&Model:")
@@ -475,7 +563,7 @@ class OpenAIDlg(wx.Dialog):
 		self.modelListBox = wx.ListBox(
 			parent=self,
 			choices=models,
-			style=wx.LB_SINGLE
+			style=wx.LB_SINGLE | wx.LB_HSCROLL | wx.LB_NEEDED_SB
 		)
 		model = MODEL_VISION if self.pathList else conf["model"]
 		idx = list(self._model_names).index(model) if model in self._model_names else 0
@@ -532,6 +620,8 @@ class OpenAIDlg(wx.Dialog):
 		sizer1.Add(self.historyText, 0, wx.ALL, 5)
 		sizer1.Add(promptLabel, 0, wx.ALL, 5)
 		sizer1.Add(self.promptText, 0, wx.ALL, 5)
+		sizer1.Add(self.imageListLabel, 0, wx.ALL, 5)
+		sizer1.Add(self.imageListCtrl, 0, wx.ALL, 5)
 		sizer1.Add(modelsLabel, 0, wx.ALL, 5)
 		sizer1.Add(self.modelListBox, 0, wx.ALL, 5)
 		sizer1.Add(maxTokensLabel, 0, wx.ALL, 5)
@@ -619,6 +709,11 @@ class OpenAIDlg(wx.Dialog):
 		self.Bind(wx.EVT_CHAR_HOOK, self.onCharHook)
 		self.Bind(wx.EVT_CLOSE, self.onCancel)
 
+	def getDefaultImageDescriptionsPrompt(self):
+		if self.conf["images"]["useCustomPrompt"]:
+			return self.conf["images"]["customPromptText"]
+		return _("Describe the images in as much detail as possible.")
+
 	def loadData(self):
 		if not os.path.exists(DATA_JSON_FP):
 			return {}
@@ -703,7 +798,7 @@ class OpenAIDlg(wx.Dialog):
 			gui.messageBox(
 				_("Please select a model."),
 				"Open AI",
-				wx.OK|wx.ICON_ERROR
+				wx.OK | wx.ICON_ERROR
 			)
 			return
 		if (
@@ -714,14 +809,14 @@ class OpenAIDlg(wx.Dialog):
 			gui.messageBox(
 				_("No image provided. Please use the Image Description button and select one or more images. Otherwise, please select another model."),
 				"Open AI",
-				wx.OK|wx.ICON_ERROR
+				wx.OK | wx.ICON_ERROR
 			)
 			return
 		if model.name != MODEL_VISION and self.pathList:
 			gui.messageBox(
 				_("This model does not support image description. Please select the %s model.") % MODEL_VISION,
 				"Open AI",
-				wx.OK|wx.ICON_ERROR
+				wx.OK | wx.ICON_ERROR
 			)
 			return
 		if (
@@ -733,25 +828,18 @@ class OpenAIDlg(wx.Dialog):
 			gui.messageBox(
 				msg,
 				"Open AI",
-				wx.OK|wx.ICON_INFORMATION
+				wx.OK | wx.ICON_INFORMATION
 			)
 			self.conf["images"]["resizeInfoDisplayed"] = True
 		system = self.systemText.GetValue().strip()
 		if self.conf["saveSystem"] and system != self._lastSystem:
 			self.data["system"] = system
 			self._lastSystem = system
-		self.message(_("Processing, please wait..."))
 		winsound.PlaySound(f"{ADDON_DIR}/sounds/progress.wav", winsound.SND_ASYNC|winsound.SND_LOOP)
 		self.disableButtons()
 		self.historyText.SetFocus()
 		self.stopRequest = threading.Event()
-		if self.pathList:
-			self.modelListBox.SetSelection(
-				self._model_names.index(MODEL_VISION)
-			)
-			self.worker = ImageDescriptionThread(self)
-		else:
-			self.worker = CompletionThread(self)
+		self.worker = CompletionThread(self)
 		self.worker.start()
 
 	def onCancel(self, evt):
@@ -764,9 +852,9 @@ class OpenAIDlg(wx.Dialog):
 		self.Destroy()
 
 	def OnResult(self, event):
+		winsound.PlaySound(None, winsound.SND_ASYNC)
 		self.enableButtons()
 		self.worker = None
-		winsound.PlaySound(None, winsound.SND_ASYNC)
 		if not event.data:
 			return
 
@@ -774,13 +862,6 @@ class OpenAIDlg(wx.Dialog):
 			historyBlock = HistoryBlock()
 			historyBlock.system = self.systemText.GetValue().strip()
 			historyBlock.prompt = self.promptText.GetValue().strip()
-			"""
-			# TODO: Create a special history block for attached images and additional information
-			if self.pathList:
-				historyBlock.prompt += "\n\n" + _("Attached images:")
-				for path in self.pathList:
-					historyBlock.prompt += f"\n- \"{path}\""
-			"""
 			model = self.getCurrentModel()
 			historyBlock.model = model.name
 			if self.conf["advancedMode"]:
@@ -794,8 +875,6 @@ class OpenAIDlg(wx.Dialog):
 			historyBlock.response = event.data
 			historyBlock.responseText = event.data.message.content
 			historyBlock.responseTerminated = True
-			historyBlock.pathList = self.pathList
-			self.pathList = None
 			if self.lastBlock is None:
 				self.firstBlock = self.lastBlock = historyBlock
 			else:
@@ -804,7 +883,6 @@ class OpenAIDlg(wx.Dialog):
 				self.lastBlock = historyBlock
 			self.previousPrompt = self.promptText.GetValue()
 			self.promptText.Clear()
-			self.promptText.SetFocus()
 			return
 
 		if isinstance(event.data, openai.types.audio.transcription.Transcription):
@@ -825,7 +903,7 @@ class OpenAIDlg(wx.Dialog):
 		gui.messageBox(
 			errMsg,
 			_("Open AI error"),
-			wx.OK|wx.ICON_ERROR
+			wx.OK | wx.ICON_ERROR
 		)
 		if "model's maximum context length is " in errMsg:
 			self.modelListBox.SetFocus()
@@ -911,21 +989,22 @@ class OpenAIDlg(wx.Dialog):
 		if not pathList:
 			pathList = self.pathList
 		images = []
-		for path in pathList:
-			url_re = re.compile(r"^https?://")
-			if url_re.match(path):
+		for imageFile in pathList:
+			path = imageFile.path
+			log.debug(f"Processing {path}")
+			if imageFile.type == ImageFileTypes.IMAGE_URL:
 				images.append({"type": "image_url", "image_url": {"url": path}})
-			elif os.path.isfile(path):
+			elif imageFile.type == ImageFileTypes.IMAGE_LOCAL:
 				if conf["images"]["resize"]:
-					path_ = os.path.join(DATA_DIR, "last_resized.jpg")
+					path_resized_image = os.path.join(DATA_DIR, "last_resized.jpg")
 					resize_image(
 						path,
 						max_width=conf["images"]["maxWidth"],
 						max_height=conf["images"]["maxHeight"],
 						quality=conf["images"]["quality"],
-						target=path_
+						target=path_resized_image
 					)
-					path = path_
+					path = path_resized_image
 				base64_image = encode_image(path)
 				format = path.split(".")[-1]
 				mime_type = f"image/{format}"
@@ -936,7 +1015,7 @@ class OpenAIDlg(wx.Dialog):
 					}
 				})
 			else:
-				raise ValueError(f"Invalid path: {path}")
+				raise ValueError(f"Invalid image type for {path}")
 				break
 		return images
 
@@ -949,18 +1028,19 @@ class OpenAIDlg(wx.Dialog):
 			return messages
 		block = self.firstBlock
 		while block is not None:
+			content = []
+			if block.pathList:
+				content.extend(self.getImages(block.pathList))
 			if block.prompt:
-				if block.pathList:
-					content = [
-						{"type": "text", "text": block.prompt}
-					]
-					content.extend(self.getImages(block.pathList))
-					messages.append({
-						"role": "user",
-						"content": content
-					})
-				else:
-					messages.append({"role": "user", "content": block.prompt})
+				content.append({
+					"type": "text",
+					"text": block.prompt
+				})
+			if content:
+				messages.append({
+					"role": "user",
+					"content": content
+				})
 			if block.responseText:
 				messages.append({"role": "system", "content": block.responseText})
 			block = block.next
@@ -1211,6 +1291,120 @@ class OpenAIDlg(wx.Dialog):
 		self.PopupMenu(menu)
 		menu.Destroy()
 
+	def onImageListKeyDown(self, evt):
+		key_code = evt.GetKeyCode()
+		if key_code == wx.WXK_DELETE:
+			self.onRemoveSelectedImages(evt)
+		elif key_code == ord('A') and evt.ControlDown():
+			self.onImageListSelectAll(evt)
+		evt.Skip()
+
+	def onImageListContextMenu(self, evt):
+		"""
+		Display a menu to manage the image list.
+		"""
+		menu = wx.Menu()
+		if self.pathList:
+			if self.imageListCtrl.GetItemCount() > 0 and self.imageListCtrl.GetSelectedItemCount() > 0:
+				item_id = wx.NewIdRef()
+				menu.Append(item_id, _("&Remove selected images") + " (Del)")
+				self.Bind(wx.EVT_MENU, self.onRemoveSelectedImages, id=item_id)
+			item_id = wx.NewIdRef()
+			menu.Append(item_id, _("Remove &all images"))
+			self.Bind(wx.EVT_MENU, self.onRemoveAllImages, id=item_id)
+			menu.AppendSeparator()
+		item_id = wx.NewIdRef()
+		menu.Append(item_id, _("Add from f&ile path...") + " (Ctrl+i)")
+		self.Bind(wx.EVT_MENU, self.onImageDescriptionFromFilePath, id=item_id)
+		item_id = wx.NewIdRef()
+		menu.Append(item_id, _("Add from &URL...") + " (Ctrl+u)")
+		self.Bind(wx.EVT_MENU, self.onImageDescriptionFromURL, id=item_id)
+		self.PopupMenu(menu)
+		menu.Destroy()
+
+	def onImageListSelectAll(self, evt):
+		for i in range(self.imageListCtrl.GetItemCount()):
+			self.imageListCtrl.Select(i)
+
+	def onImageListChange(self, evt):
+		"""
+		Select the model for image description.
+		"""
+		self.modelListBox.SetSelection(
+			self._model_names.index(MODEL_VISION)
+		)
+		self.imageListCtrl.SetSelection(evt.GetSelection())
+		evt.Skip()
+
+	def onRemoveSelectedImages(self, evt):
+		if not self.pathList:
+			return
+		focused_item = self.imageListCtrl.GetFocusedItem()
+		items_to_remove = []
+		selectedItem = self.imageListCtrl.GetFirstSelected()
+		while selectedItem != wx.NOT_FOUND:
+			items_to_remove.append(selectedItem)
+			selectedItem = self.imageListCtrl.GetNextSelected(selectedItem)
+
+		if not items_to_remove:
+			return
+		self.pathList = [
+			path for i, path in enumerate(self.pathList)
+			if i not in items_to_remove
+		]
+		self.updateImageList()
+		if focused_item == wx.NOT_FOUND:
+			return
+		if focused_item > self.imageListCtrl.GetItemCount() - 1:
+			focused_item -= 1
+		self.imageListCtrl.Focus(focused_item)
+		self.imageListCtrl.Select(focused_item)
+
+	def onRemoveAllImages(self, evt):
+		self.pathList.clear()
+		self.updateImageList()
+
+	def imageExists(self, path, pathList=None):
+		if not pathList:
+			pathList = self.pathList
+		for imageFile in pathList:
+			if imageFile.path.lower() == path.lower():
+				return True
+		block = self.firstBlock
+		while block is not None:
+			if block.pathList:
+				for imageFile in block.pathList:
+					if imageFile.path.lower() == path.lower():
+						return True
+			block = block.next
+		return False
+
+	def updateImageList(self, focusPrompt=True):
+		self.imageListCtrl.DeleteAllItems()
+		if not self.pathList:
+			self.imageListCtrl.Hide()
+			self.imageListLabel.Hide()
+			self.Layout()
+			if focusPrompt:
+				self.promptText.SetFocus()
+			return
+		for path in self.pathList:
+			self.imageListCtrl.Append([
+				path.name,
+				path.path,
+				path.size,
+				f"{path.dimensions[0]}x{path.dimensions[1]}" if isinstance(path.dimensions, tuple) else "N/A",
+				path.description or "N/A"
+			])
+		self.imageListLabel.Show()
+		self.imageListCtrl.SetItemState(
+			0,
+			wx.LIST_STATE_FOCUSED,
+			wx.LIST_STATE_FOCUSED
+		)
+		self.imageListCtrl.Show()
+		self.Layout()
+
 	def onImageDescriptionFromFilePath(self, evt):
 		"""
 		Open a file dialog to select one or more images.
@@ -1219,6 +1413,7 @@ class OpenAIDlg(wx.Dialog):
 			self.pathList = []
 		dlg = wx.FileDialog(
 			None,
+			# Translators: This is a message displayed in a dialog to select one or more images.
 			message=_("Select image files"),
 			defaultFile="",
 			wildcard=_("Image files") + " (*.png;*.jpeg;*.jpg;*.gif)|*.png;*.jpeg;*.jpg;*.gif",
@@ -1229,15 +1424,28 @@ class OpenAIDlg(wx.Dialog):
 		paths = dlg.GetPaths()
 		if not paths:
 			return
-		self.pathList.extend(paths)
+		for path in paths:
+			if not self.imageExists(path):
+				self.pathList.append(
+					ImageFile(path)
+				)
+			else:
+				gui.messageBox(
+					# Translators: This message is displayed when the image has already been added.
+					_("The following image has already been added and will be ignored:\n%s") % path,
+					"Open AI",
+					wx.OK | wx.ICON_ERROR
+				)
 		model_name = self.getCurrentModel().name
 		if model_name != MODEL_VISION:
 			self.modelListBox.SetSelection(
 				self._model_names.index(MODEL_VISION)
 			)
 		if not self.promptText.GetValue().strip():
-			self.promptText.SetValue(DEFAULT_PROMPT_IMAGE_DESCRIPTION)
-		self.promptText.SetFocus()
+			self.promptText.SetValue(
+				self.getDefaultImageDescriptionsPrompt()
+			)
+		self.updateImageList()
 
 	def onImageDescriptionFromURL(self, evt):
 		"""
@@ -1245,9 +1453,10 @@ class OpenAIDlg(wx.Dialog):
 		"""
 		dlg = wx.TextEntryDialog(
 			None,
+			# Translators: This is a message displayed in a dialog to enter an image URL.
 			message=_("Enter image URL"),
 			caption="Open AI",
-			style=wx.OK|wx.CANCEL
+			style=wx.OK | wx.CANCEL
 		)
 		if dlg.ShowModal() != wx.ID_OK:
 			return
@@ -1255,14 +1464,13 @@ class OpenAIDlg(wx.Dialog):
 		if not url:
 			return
 		url_pattern = re.compile(
-			r"^(?:http)s?://(?:[A-Z0-9-]+\.)+[A-Z]{2,6}(?::\d+)?(?:/?|[/?]\S+)$",
-			re.IGNORECASE
+			URL_PATTERN
 		)
 		if re.match(url_pattern, url) is None:
 			gui.messageBox(
 				_("Invalid URL, bad format."),
 				"Open AI",
-				wx.OK|wx.ICON_ERROR
+				wx.OK | wx.ICON_ERROR
 			)
 			return
 		try:
@@ -1270,20 +1478,59 @@ class OpenAIDlg(wx.Dialog):
 			r = urllib.request.urlopen(url)
 		except urllib.error.HTTPError as err:
 			gui.messageBox(
-				_("Invalid URL, HTTP error: %s.") % err,
+				# Translators: This message is displayed when the image URL returns an HTTP error.
+				_("HTTP error %s.") % err,
 				"Open AI",
-				wx.OK|wx.ICON_ERROR
+				wx.OK | wx.ICON_ERROR
+			)
+			return
+		if not r.headers.get_content_type().startswith("image/"):
+			gui.messageBox(
+				# Translators: This message is displayed when the image URL does not point to an image.
+				_("The URL does not point to an image."),
+				"Open AI",
+				wx.OK | wx.ICON_ERROR
 			)
 			return
 		if not self.pathList:
 			self.pathList = []
-		self.pathList.append(url)
+		description = []
+		content_type = r.headers.get_content_type()
+		if content_type:
+			description.append(content_type)
+		size = r.headers.get("Content-Length")
+		if size and size.isdigit():
+			size = int(size)
+		if description:
+			description = ", ".join(description)
+		try:
+			dimensions = get_image_dimensions(r)
+		except BaseException as err:
+			log.error(err)
+			dimensions = None
+			gui.messageBox(
+				# Translators: This message is displayed when the add-on fails to get the image dimensions.
+				_("Failed to get image dimensions. %s") % err,
+				"Open AI",
+				wx.OK | wx.ICON_ERROR
+			)
+			return
+		self.pathList.append(
+			ImageFile(
+				url,
+				description=description,
+				size=size or -1,
+				dimensions=dimensions
+			)
+		)
 		self.modelListBox.SetSelection(
 			self._model_names.index(MODEL_VISION)
 		)
 		if not self.promptText.GetValue().strip():
-			self.promptText.SetValue(DEFAULT_PROMPT_IMAGE_DESCRIPTION)
-		self.promptText.SetFocus()
+			self.promptText.SetValue(
+				self.getDefaultImageDescriptionsPrompt()
+			)
+		self.updateImageList()
 
 	def onRecord(self, evt):
 		if self.worker:
@@ -1327,7 +1574,7 @@ class OpenAIDlg(wx.Dialog):
 			gui.messageBox(
 				_("Please enter some text in the prompt field first."),
 				"Open AI",
-				wx.OK|wx.ICON_ERROR
+				wx.OK | wx.ICON_ERROR
 			)
 			self.promptText.SetFocus()
 			return
@@ -1356,6 +1603,17 @@ class OpenAIDlg(wx.Dialog):
 		self.transcribeFromFileBtn.Disable()
 		self.imageDescriptionBtn.Disable()
 		self.TTSBtn.Disable()
+		self.modelListBox.Disable()
+		self.maxTokens.Disable()
+		self.conversationCheckBox.Disable()
+		self.promptText.SetEditable(False)
+		self.systemText.SetEditable(False)
+		self.imageListCtrl.Disable()
+		if self.conf["advancedMode"]:
+			self.temperature.Disable()
+			self.topP.Disable()
+			self.streamModeCheckBox.Disable()
+			self.debugModeCheckBox.Disable()
 
 	def enableButtons(self):
 		self.okBtn.Enable()
@@ -1364,3 +1622,15 @@ class OpenAIDlg(wx.Dialog):
 		self.transcribeFromFileBtn.Enable()
 		self.imageDescriptionBtn.Enable()
 		self.TTSBtn.Enable()
+		self.modelListBox.Enable()
+		self.maxTokens.Enable()
+		self.conversationCheckBox.Enable()
+		self.promptText.SetEditable(True)
+		self.systemText.SetEditable(True)
+		self.imageListCtrl.Enable()
+		if self.conf["advancedMode"]:
+			self.temperature.Enable()
+			self.topP.Enable()
+			self.streamModeCheckBox.Enable()
+			self.debugModeCheckBox.Enable()
+		self.updateImageList(False)
