@@ -1293,7 +1293,11 @@ class OpenAIDlg(wx.Dialog):
 		self.recordBtn.SetLabel(_("Stop &recording") + " (Ctrl+R)")
 		self.recordBtn.Bind(wx.EVT_BUTTON, self.onStopRecord)
 		self.recordBtn.Enable()
-		self.worker = RecordThread(self.client, self)
+		self.worker = RecordThread(
+			self.client,
+			self,
+			conf=self.conf["audio"]
+		)
 		self.worker.start()
 
 	def onRecordFromFilePath(self, evt):
@@ -1306,12 +1310,16 @@ class OpenAIDlg(wx.Dialog):
 		)
 		if dlg.ShowModal() != wx.ID_OK:
 			return
-		filename = dlg.GetPath()
+		fileName = dlg.GetPath()
 		self.message(_("Processing, please wait..."))
 		winsound.PlaySound(f"{ADDON_DIR}/sounds/progress.wav", winsound.SND_ASYNC|winsound.SND_LOOP)
 		self.disableButtons()
 		self.historyText.SetFocus()
-		self.worker = RecordThread(self.client, self, filename)
+		self.worker = RecordThread(
+			self.client,
+			self,
+			fileName
+		)
 		self.worker.start()
 
 	def onTextToSpeech(self, evt):

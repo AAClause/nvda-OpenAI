@@ -55,6 +55,11 @@ confSpecs = {
 		"useCustomPrompt": "boolean(default=False)",
 		"customPromptText": 'string(default="")'
 	},
+	"audio": {
+		"sampleRate": "integer(min=8000, max=48000, default=16000)",
+		"channels": "integer(min=1, max=2, default=1)",
+		"dtype": "string(default=int16)"
+	},
 	"renewClient": "boolean(default=False)",
 	"debug": "boolean(default=False)"
 }
@@ -491,5 +496,8 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			self.recordtThread.stop()
 			self.recordtThread = None
 		else:
-			self.recordtThread = RecordThread(self.getClient())
+			self.recordtThread = RecordThread(
+				self.getClient(),
+				conf=conf["audio"]
+			)
 			self.recordtThread.start()
