@@ -41,6 +41,8 @@ Within this dialog, you will be able to:
 - Transcribe spoken content from audio files or through a microphone.
 - Use the text-to-speech feature to vocalize written text in the prompt.
 
+#### Increase your productivity with shortcuts
+
 To further improve your interaction with the interface, please take note of the following:
 
 - The multiline "System", "History", and "Prompt" fields come equipped with context menus filled with commands that can be quickly executed using keyboard shortcuts.
@@ -50,6 +52,26 @@ To further improve your interaction with the interface, please take note of the 
 - Additionally, the interface includes keyboard shortcuts that are effective across the entire window. For instance, `CTRL + R` starts or stops a recording.
 
 All keyboard shortcuts are displayed next to the labels of their corresponding elements.
+
+#### About Conversation Mode checkbox
+
+The conversation mode checkbox is designed to enhance your chat experience and save input tokens.
+
+When activated (the default setting), the add-on delivers the entirety of the conversation history to the AI model, thereby granting it improved contextual understanding and resulting in more coherent responses. This comprehensive mode does result in higher consumption of input tokens.
+
+Conversely, when the checkbox is left unticked, only the current user prompt is sent to the AI model. Select this mode to direct specific questions or acquire discrete responses, bypassing the need for contextual comprehension and conserving input tokens when the dialogue's history isn't necessary.
+
+You can switch between the two modes at any time during a session.
+
+### About the `System` Field
+
+The `System` field is designed to fine-tune the AI model's behavior and personality to match your specific expectations.
+
+- **Default Prompt**: Upon installation, the add-on includes a default system prompt ready to use.
+- **Customization**: You have the freedom to personalize the system prompt by modifying the text directly within the field. The add-on will remember the last system prompt you used and automatically load it the next time you launch the dialog. This behavior can be disabled in settings.
+- **Reset Option**: Want to go back to the standard configuration? Simply use the context menu to reset the `System` field to its default value effortlessly.
+
+Please be aware that the system prompt is included in the AI model's input data, consuming tokens accordingly.
 
 ### Global Commands
 
