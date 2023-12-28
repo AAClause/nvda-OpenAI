@@ -636,14 +636,14 @@ class OpenAIDlg(wx.Dialog):
 
 		self.recordBtn = wx.Button(
 			parent=self,
-			label=_("Start &recording") + " (ctrl+r)"
+			label=_("Start &recording") + " (Ctrl+R)"
 		)
 		self.recordBtn.Bind(wx.EVT_BUTTON, self.onRecord)
 		self.recordBtn.SetToolTip(_("Record audio from microphone"))
 
 		self.transcribeFromFileBtn = wx.Button(
 			parent=self,
-			label=_("Transcribe from &audio file") + " (ctrl+shift+r)"
+			label=_("Transcribe from &audio file") + " (Ctrl+Shift+R)"
 		)
 		self.transcribeFromFileBtn.Bind(wx.EVT_BUTTON, self.onRecordFromFilePath)
 		self.transcribeFromFileBtn.SetToolTip(_("Transcribe audio from a file path"))
@@ -657,7 +657,7 @@ class OpenAIDlg(wx.Dialog):
 
 		self.TTSBtn = wx.Button(
 			parent=self,
-			label=_("&Vocalize the prompt") + " (ctrl+t)"
+			label=_("&Vocalize the prompt") + " (Ctrl+T)"
 		)
 		self.TTSBtn.Bind(wx.EVT_BUTTON, self.onTextToSpeech)
 
@@ -912,7 +912,7 @@ class OpenAIDlg(wx.Dialog):
 
 	def onCharHook(self, evt):
 		if self.conf["blockEscapeKey"] and evt.GetKeyCode() == wx.WXK_ESCAPE:
-			self.message(_("Press alt+f4 to close the dialog"))
+			self.message(_("Press Alt+F4 to close the dialog"))
 		else:
 			evt.Skip()
 
@@ -1254,10 +1254,10 @@ class OpenAIDlg(wx.Dialog):
 		menu.Append(item_id, _("Say message") + " (M)")
 		self.Bind(wx.EVT_MENU, self.onCurrentMessage, id=item_id)
 		item_id = wx.NewIdRef()
-		menu.Append(item_id, _("Move to previous message") + " (J)")
+		menu.Append(item_id, _("Move to previous message") + " (j)")
 		self.Bind(wx.EVT_MENU, self.onPreviousMessage, id=item_id)
 		item_id = wx.NewIdRef()
-		menu.Append(item_id, _("Move to next message") + " (K)")
+		menu.Append(item_id, _("Move to next message") + " (k)")
 		self.Bind(wx.EVT_MENU, self.onNextMessage, id=item_id)
 		self.addStandardMenuOptions(menu)
 		self.historyText.PopupMenu(menu)
@@ -1283,10 +1283,10 @@ class OpenAIDlg(wx.Dialog):
 		"""
 		menu = wx.Menu()
 		item_id = wx.NewIdRef()
-		menu.Append(item_id, _("From f&ile path...") + " (Ctrl+i)")
+		menu.Append(item_id, _("From f&ile path...") + " (Ctrl+I)")
 		self.Bind(wx.EVT_MENU, self.onImageDescriptionFromFilePath, id=item_id)
 		item_id = wx.NewIdRef()
-		menu.Append(item_id, _("From &URL...") + " (Ctrl+u)")
+		menu.Append(item_id, _("From &URL...") + " (Ctrl+U)")
 		self.Bind(wx.EVT_MENU, self.onImageDescriptionFromURL, id=item_id)
 		self.PopupMenu(menu)
 		menu.Destroy()
@@ -1314,10 +1314,10 @@ class OpenAIDlg(wx.Dialog):
 			self.Bind(wx.EVT_MENU, self.onRemoveAllImages, id=item_id)
 			menu.AppendSeparator()
 		item_id = wx.NewIdRef()
-		menu.Append(item_id, _("Add from f&ile path...") + " (Ctrl+i)")
+		menu.Append(item_id, _("Add from f&ile path...") + " (Ctrl+I)")
 		self.Bind(wx.EVT_MENU, self.onImageDescriptionFromFilePath, id=item_id)
 		item_id = wx.NewIdRef()
-		menu.Append(item_id, _("Add from &URL...") + " (Ctrl+u)")
+		menu.Append(item_id, _("Add from &URL...") + " (Ctrl+U)")
 		self.Bind(wx.EVT_MENU, self.onImageDescriptionFromURL, id=item_id)
 		self.PopupMenu(menu)
 		menu.Destroy()
