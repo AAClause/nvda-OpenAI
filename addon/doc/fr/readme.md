@@ -14,45 +14,64 @@ Pour utiliser toutes les fonctionnalités du module OpenAI pour NVDA, une clé A
 
 1. Obtenez une clé API en vous inscrivant à un compte OpenAI à l'adresse suivante : [https://platform.openai.com/api-keys](https://platform.openai.com/api-keys).
 2. Avec la clé API prête, vous avez deux options de configuration :
-   - Par le biais de la boîte de dialogue des paramètres de NVDA :
-     1. Accédez au menu NVDA et naviguez vers le sous-menu "Préférences".
-     2. Ouvrez la boîte de dialogue "Paramètres" et sélectionnez la catégorie "Open AI".
-     3. Saisissez votre clé API dans le champ prévu à cet effet et cliquez sur "OK" pour confirmer.
-   - En utilisant des variables d'environnement :
-     1. Appuyez sur `Windows+Pause` pour ouvrir les Propriétés du système.
-     2. Cliquez sur "Paramètres avancés du système" et sélectionnez "Variables d'environnement".
-     3. Créez une nouvelle variable sous "Variables utilisateur" :
-         1. Cliquez sur "Nouveau".
-         2. Entrez `OPENAI_API_KEY` comme nom de la variable et collez votre clé API comme valeur.
-     4. Cliquez sur "OK" pour enregistrer vos modifications.
+	- Par le biais de la boîte de dialogue des paramètres de NVDA :
+		1. Accédez au menu NVDA et naviguez vers le sous-menu "Préférences".
+		2. Ouvrez la boîte de dialogue "Paramètres" et sélectionnez la catégorie "Open AI".
+		3. Saisissez votre clé API dans le champ prévu à cet effet et cliquez sur "OK" pour confirmer.
+	- En utilisant des variables d'environnement :
+		1. Appuyez sur `Windows+Pause` pour ouvrir les Propriétés du système.
+		2. Cliquez sur "Paramètres avancés du système" et sélectionnez "Variables d'environnement".
+		3. Créez une nouvelle variable sous "Variables utilisateur" :
+			1. Cliquez sur "Nouveau".
+			2. Entrez `OPENAI_API_KEY` comme nom de la variable et collez votre clé API comme valeur.
+		4. Cliquez sur "OK" pour enregistrer vos modifications.
 
 Vous êtes maintenant prêt à explorer les fonctionnalités du module OpenAI pour NVDA !
 
 ## Comment utiliser le module
 
-### Accès aux principales fonctionnalités
+### Le dialogue principal
 
-La fonctionnalité du module est situé dans une boîte de dialogue centrale qui peut être ouverte en utilisant le raccourci `NVDA+g`. Cette boîte de dialogue donne accès à la majorité des fonctionnalités du module complémentaire, ce qui vous permet de :
+La majorité des fonctionnalités de l'extension sont facilement accessibles via une boîte de dialogue, qui peut être lancée en appuyant sur `NVDA+G`.  
+Vous pouvez également vous rendre dans le sous-menu "Open AI" du menu NVDA et sélectionner l'élément "Dialogue principal…".  
+Dans cette boîte de dialogue, vous pourrez :
 
-- Engager une conversation avec le modèle d'IA.
+- Entamer des conversations interactives avec les modèles d'IA pour obtenir de l'aide ou des informations.
 - Obtenir des descriptions d'images à partir de fichiers d'images.
-- Transcrire du contenu oral à partir de fichiers audio ou via un microphone.
-- Utiliser la fonction Text-To-Tpeech pour vocaliser le texte écrit dans le Prompt.
+- Transcrire du contenu parlé à partir de fichiers audio ou à l'aide d'un microphone.
+- Utiliser la fonction de synthèse vocale pour vocaliser le texte écrit dans l'invite.
 
-#### Commandes à partir de la boîte de dialogue principale
+#### Augmentez votre productivité grâce aux raccourcis
 
-Certaines commandes sont disponibles dans la boîte de dialogue principale pour différents éléments.
+Pour améliorer votre interaction avec l'interface, veuillez prendre note de ce qui suit :
 
-- Lorsque le champ du prompt est sélectionné :
-	- `Ctrl+Entrée` : Soumettre le texte que vous avez entré.
-	- `Ctrl+Flèche haut` : Récupérez et placez le prompt le plus récent dans le champ actuel pour relecture ou réutilisation.
-- Lorsque le champ de l'historique est sélectionné :
-	- `Alt+Flèche droite` : Copier le texte de l'utilisateur dans le prompt.
-	- `Alt+Flèche gauche` : Copier la réponse de l'assistant dans le système.
-	- `Ctrl+c` : Copier la réponse de l'assistant ou le texte de l'utilisateur en fonction de la position du curseur.
-	- `Ctrl+d` : Supprime le bloc actuel (entrée de l'utilisateur et réponse de l'assistant).
-	- `Ctrl+Maj+Flèche haut` : Passer au bloc de texte de l'utilisateur ou de l'assistant au-dessus du bloc actuel.
-	- `Ctrl+Maj+Flèche bas` : Passez au bloc de texte de l'utilisateur ou de l'assistant en dessous du bloc actuel.
+- Les champs multilignes "Système", "Historique" et "Prompt" sont dotés de menus contextuels contenant des commandes qui peuvent être exécutées rapidement à l'aide de raccourcis clavier.
+  Ces raccourcis sont actifs lorsque le champ concerné a le focus.
+  Par exemple, les touches "j" et "k" permettent de naviguer respectivement vers les messages précédents et suivants lorsque le champ "Historique" est en focus.
+
+- En outre, l'interface comprend des raccourcis clavier qui s'appliquent à l'ensemble de la fenêtre. Par exemple, `CTRL + R` démarre ou arrête un enregistrement.
+
+Tous les raccourcis clavier sont affichés à côté des libellés des éléments correspondants.
+
+#### Au sujet de la case à cocher « Mode conversation »
+
+La case à cocher du mode conversation est conçue pour améliorer votre expérience de la discussion et économiser des jetons de saisie.
+
+Lorsqu'elle est activée (paramètre par défaut), le module complémentaire transmet l'intégralité de l'historique de la conversation au modèle d'IA, ce qui lui permet d'améliorer sa compréhension du contexte et d'obtenir des réponses plus cohérentes. Ce mode complet entraîne une plus grande consommation de jetons de saisie.
+
+À l'inverse, lorsque la case n'est pas cochée, seul le prompt courant est envoyée au modèle d'IA. Sélectionnez ce mode pour poser des questions spécifiques ou obtenir des réponses discrètes, en évitant la compréhension du contexte et en conservant les jetons de saisie lorsque l'historique du dialogue n'est pas nécessaire.
+
+Vous pouvez passer d'un mode à l'autre à tout moment au cours d'une session.
+
+### À propos du champ `Système`
+
+Le champ `Système` est conçu pour affiner le comportement et la personnalité du modèle d'IA afin de répondre à vos attentes spécifiques.
+
+- **Invite par défaut** : Lors de l'installation, le module complémentaire inclut un prompt système par défaut prêt à l'emploi.
+- **Personnalisation** : Vous avez la liberté de personnaliser l'invite du système en modifiant le texte directement dans le champ. Le module complémentaire se souviendra du dernier prompt système utilisé et le chargera automatiquement la prochaine fois que vous lancerez la boîte de dialogue. Ce comportement peut être désactivé dans les paramètres.
+- **Option de réinitialisation** : Vous souhaitez revenir à la configuration standard ? Utilisez simplement le menu contextuel pour réinitialiser le champ `Système` à sa valeur par défaut sans effort.
+
+Veuillez noter que le prompt système est inclus dans les données d'entrée du modèle d'IA, entraînant ainsi une consommation de jetons correspondante.
 
 ### Commandes globales
 
@@ -68,6 +87,7 @@ Ces commandes peuvent être utilisées pour déclencher des actions à partir de
 Le module complémentaire est fourni avec les dépendances essentielles suivantes :
 
 - [OpenAI](https://pypi.org/project/openai/) : La bibliothèque Python officielle pour l'API openai.
+- [markdown2](https://pypi.org/project/markdown2/): Une implémentation rapide et complète de Markdown en Python.
 - [MSS](https://pypi.org/project/mss/) : Un module multi-captures d'écran ultra-rapide multi-plateformes en Python pur utilisant ctypes.
 - [Pillow](https://pypi.org/project/Pillow/): Le fork convivial de la bibliothèque Python Imaging Library, utilisée pour le redimensionnement des images.
 - [sounddevice](https://pypi.org/project/sounddevice/) : Jouer et enregistrer du son avec Python.
