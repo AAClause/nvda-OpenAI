@@ -11,21 +11,19 @@ import wx
 import ui
 from logHandler import log
 from scriptHandler import script, getLastScriptRepeatCount
+from . import configspec
+from . import updatecheck
 from .apikeymanager import APIKeyManager
 from .consts import (
 	ADDON_DIR, DATA_DIR,
-	DEFAULT_MODEL, DEFAULT_TOP_P, DEFAULT_N,
-	TOP_P_MIN, TOP_P_MAX,
-	N_MIN, N_MAX,
-	TTS_VOICES, TTS_MODELS, TTS_DEFAULT_VOICE, TTS_DEFAULT_MODEL
+	LIBS_DIR_PY,
+	TTS_MODELS, TTS_VOICES
 )
 from .recordthread import RecordThread
-
-additionalLibsPath = os.path.join(ADDON_DIR, "lib")
-sys.path.insert(0, additionalLibsPath)
+sys.path.insert(0, LIBS_DIR_PY)
 import mss
 from openai import OpenAI
-sys.path.remove(additionalLibsPath)
+sys.path.remove(LIBS_DIR_PY)
 
 addonHandler.initTranslation()
 
@@ -34,40 +32,9 @@ ADDON_INFO = addonHandler.Addon(
 	ROOT_ADDON_DIR
 ).manifest
 
-confSpecs = {
-	"use_org": "boolean(default=False)",
-	"model": f"string(default={DEFAULT_MODEL.name})",
-	"topP": f"integer(min={TOP_P_MIN}, max={TOP_P_MAX}, default={DEFAULT_TOP_P})",
-	"n": f"integer(min={N_MIN}, max={N_MAX}, default={DEFAULT_N})",
-	"stream": "boolean(default=True)",
-	"TTSModel": f"option({', '.join(TTS_MODELS)}, default={TTS_DEFAULT_MODEL})",
-	"TTSVoice": f"option({', '.join(TTS_VOICES)}, default={TTS_DEFAULT_VOICE})",
-	"blockEscapeKey": "boolean(default=False)",
-	"conversationMode": "boolean(default=True)",
-	"saveSystem": "boolean(default=true)",
-	"advancedMode": "boolean(default=False)",
-	"images": {
-		"maxHeight": "integer(min=0, default=720)",
-		"maxWidth": "integer(min=0, default=0)",
-		"quality": "integer(min=0, max=100, default=85)",
-		"resize": "boolean(default=False)",
-		"resizeInfoDisplayed": "boolean(default=False)",
-		"useCustomPrompt": "boolean(default=False)",
-		"customPromptText": 'string(default="")'
-	},
-	"audio": {
-		"sampleRate": "integer(min=8000, max=48000, default=16000)",
-		"channels": "integer(min=1, max=2, default=1)",
-		"dtype": "string(default=int16)"
-	},
-	"renewClient": "boolean(default=False)",
-	"debug": "boolean(default=False)"
-}
-config.conf.spec["OpenAI"] = confSpecs
-conf = config.conf["OpenAI"]
-
 NO_AUTHENTICATION_KEY_PROVIDED_MSG = _("No authentication key provided. Please set it in the Preferences dialog.")
 
+conf = config.conf["OpenAI"]
 api_key_manager = APIKeyManager(DATA_DIR)
 
 class SettingsDlg(gui.settingsDialogs.SettingsPanel):
@@ -76,6 +43,31 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 
 	def makeSettings(self, settingsSizer):
 		sHelper = gui.guiHelper.BoxSizerHelper(self, sizer=settingsSizer)
+
+		updateGroupLabel = _("Update")
+		updateSizer = wx.StaticBoxSizer(wx.VERTICAL, self, label=updateGroupLabel)
+		updateBox = updateSizer.GetStaticBox()
+		updateGroup = gui.guiHelper.BoxSizerHelper(self, sizer=updateSizer)
+
+		self.updateCheck = updateGroup.addItem(
+			wx.CheckBox(
+				updateBox,
+				label=_("Check for &updates on startup and periodically")
+			)
+		)
+		self.updateCheck.SetValue(conf["update"]["check"])
+
+		self.updateChannel = updateGroup.addLabeledControl(
+			_("&Channel:"),
+			wx.Choice,
+			choices=["stable", "dev"]
+		)
+		self.updateChannel.SetSelection(
+			1 if conf["update"]["channel"] == "dev" else 0
+		)
+
+		sHelper.addItem(updateSizer)
+
 		APIKey = api_key_manager.get_api_key()
 		if not APIKey: APIKey = ''
 		APIKeyOrg = api_key_manager.get_api_key(use_org=True)
@@ -265,6 +257,8 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 			self.customPromptText.Enable(False)
 
 	def onSave(self):
+		conf["update"]["check"] = self.updateCheck.GetValue()
+		conf["update"]["channel"] = self.updateChannel.GetString(self.updateChannel.GetSelection())
 		api_key = self.APIKey.GetValue().strip()
 		api_key_manager.save_api_key(api_key)
 		api_key_org = self.org_key.GetValue().strip()

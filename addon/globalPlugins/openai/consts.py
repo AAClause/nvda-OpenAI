@@ -1,4 +1,5 @@
 import os
+import sys
 import globalVars
 import addonHandler
 from .model import Model
@@ -54,4 +55,13 @@ DEFAULT_SYSTEM_PROMPT = _(
 	"organization of the interface. If the image does not correspond to a computer screen, just generate "
 	"a detailed visual description. If the user sends an image alone without additional instructions in text, "
 	"describe the image exactly as prescribed in this system prompt. Adhere strictly to the instructions in "
-	"this system prompt to describe images. Don’t add any additional details unless the user specifically ask you.")
+	"this system prompt to describe images. Don’t add any additional details unless the user specifically ask you."
+)
+LIBS_DIR = os.path.join(DATA_DIR, "libs")
+LIBS_DIR_PY = os.path.join(
+	LIBS_DIR,
+	"lib_py%s.%s" % (
+		sys.version_info.major,
+		sys.version_info.minor
+	)
+)
