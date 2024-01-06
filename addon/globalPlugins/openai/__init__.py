@@ -46,6 +46,8 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 	title = "Open AI"
 
 	def makeSettings(self, settingsSizer):
+		from .mistralai import get_api_key as get_mistral_api_key
+
 		sHelper = gui.guiHelper.BoxSizerHelper(self, sizer=settingsSizer)
 
 		updateGroupLabel = _("Update")
@@ -243,6 +245,22 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 
 		sHelper.addItem(imageSizer)
 
+		# Mistral AI
+		mistralGroupLabel = _("Mistral AI")
+		mistralSizer = wx.StaticBoxSizer(wx.VERTICAL, self, label=mistralGroupLabel)
+		mistralBox = mistralSizer.GetStaticBox()
+		mistralGroup = gui.guiHelper.BoxSizerHelper(self, sizer=mistralSizer)
+
+		label = _("API &key:")
+		self.mistralAPIKey = mistralGroup.addLabeledControl(
+			label,
+			wx.TextCtrl,
+			value=get_mistral_api_key()
+		)
+
+		sHelper.addItem(mistralSizer)
+
+
 		sHelper.addItem(mainDialogSizer)
 
 		self.onUseOpenRouter(None)
@@ -282,6 +300,7 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 
 	def onSave(self):
 		global api_key_manager
+		from .mistralai import set_api_key as set_mistral_api_key
 		conf["update"]["check"] = self.updateCheck.GetValue()
 		conf["update"]["channel"] = self.updateChannel.GetString(self.updateChannel.GetSelection())
 		api_key = self.APIKey.GetValue().strip()
@@ -323,6 +342,8 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 			conf["images"]["customPromptText"] = self.customPromptText.GetValue()
 		else:
 			conf["images"]["useCustomPrompt"] = False
+		set_mistral_api_key(self.mistralAPIKey.GetValue().strip())
+
 
 class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 

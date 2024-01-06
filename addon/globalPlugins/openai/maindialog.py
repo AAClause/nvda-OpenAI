@@ -17,6 +17,8 @@ import speech
 import tones
 import ui
 from logHandler import log
+
+from . import mistralai
 from .consts import (
 	ADDON_DIR, DATA_DIR,
 	LIBS_DIR_PY,
@@ -183,16 +185,7 @@ class CompletionThread(threading.Thread):
 		if not TOP_P_MIN <= topP <= TOP_P_MAX:
 			wx.PostEvent(self._notifyWindow, ResultEvent(_("Invalid top P")))
 			return
-		messages = []
-		if system:
-			messages.append({"role": "system", "content": system})
-		wnd.getMessages(messages)
-		if wnd.pathList:
-			images = wnd.getImages()
-			if images:
-				messages.append({"role": "user", "content": images})
-		if prompt:
-			messages.append({"role": "user", "content": prompt})
+		messages = self._getMessages(system, prompt)
 		nbImages = 0
 		for message in messages:
 			if (
@@ -213,9 +206,6 @@ class CompletionThread(threading.Thread):
 			# Translators: This is a message displayed when sending a request to the API.
 			msg = _("Processing, please wait...")
 		wnd.message(msg)
-		if debug and nbImages:
-			log.info(f"{nbImages} images")
-			log.info(f"{json.dumps(messages, indent=2, ensure_ascii=False)}")
 		params = {
 			"model": model.name,
 			"messages": messages,
@@ -224,8 +214,24 @@ class CompletionThread(threading.Thread):
 			"top_p": topP,
 			"stream": stream
 		}
+
+		if debug:
+			if nbImages:
+				log.info(f"{nbImages} images")
+			log.info(f"{json.dumps(params, indent=2, ensure_ascii=False)}")
+
 		try:
-			response = client.chat.completions.create(**params)
+			if model.name.startswith("mistral"):
+				response = mistralai.make_request(
+					model.name,
+					self._getMessages(system, prompt),
+					temperature=temperature,
+					top_p=topP,
+					max_tokens=maxTokens,
+					stream=stream
+				)
+			else:
+				response = client.chat.completions.create(**params)
 		except BaseException as err:
 			wx.PostEvent(self._notifyWindow, ResultEvent(err))
 			return
@@ -238,13 +244,44 @@ class CompletionThread(threading.Thread):
 		wnd.previousPrompt = wnd.promptText.GetValue()
 		wnd.promptText.Clear()
 
-		if stream:
+		if stream and not isinstance(response, mistralai.MistralResponse):
 			self._responseWithStream(response, block, debug)
 		else:
+			if (
+				isinstance(response, mistralai.MistralResponse)
+				and not response.success
+			):
+				message = _("An error occurred, see the log for more details.")
+				if (
+					response.content
+				):
+					try:
+						content = json.loads(response.content)
+						if "message" in content:
+							message = content["message"]
+					except BaseException as err:
+						log.error(err)
+						message = response.content
+				wx.PostEvent(self._notifyWindow, ResultEvent(message))
+				return
 			self._responseWithoutStream(response, block, debug)
 		wnd.pathList.clear()
 		wx.PostEvent(self._notifyWindow, ResultEvent())
 		wnd.message(_("Ready"))
+
+	def _getMessages(self, system=None, prompt=None):
+		wnd = self._notifyWindow
+		messages = []
+		if system:
+			messages.append({"role": "system", "content": system})
+		wnd.getMessages(messages)
+		if wnd.pathList:
+			images = wnd.getImages()
+			if images:
+				messages.append({"role": "user", "content": images})
+		if prompt:
+			messages.append({"role": "user", "content": prompt})
+		return messages
 
 	def abort(self):
 		self._wantAbort = True
@@ -266,9 +303,16 @@ class CompletionThread(threading.Thread):
 	def _responseWithoutStream(self, response, block, debug=False):
 		wnd = self._notifyWindow
 		text = ""
-		for i, choice in enumerate(response.choices):
-			if self._wantAbort: break
-			text += choice.message.content
+		if isinstance(response, openai.types.chat.chat_completion.Choice):
+			for i, choice in enumerate(response.choices):
+				if self._wantAbort:
+					break
+				text += choice.message.content
+		elif isinstance(response, mistralai.MistralResponse):
+			text = response.content
+		else:
+			responseType = type(response)
+			raise TypeError(f"Invalid response type: {responseType}")
 		block.responseText += text
 		block.responseTerminated = True
 
@@ -937,6 +981,7 @@ class OpenAIDlg(wx.Dialog):
 			self.modelListBox.SetFocus()
 		else:
 			self.promptText.SetFocus()
+		raise Exception(errMsg)
 
 	def onCharHook(self, evt):
 		if self.conf["blockEscapeKey"] and evt.GetKeyCode() == wx.WXK_ESCAPE:
@@ -1050,27 +1095,32 @@ class OpenAIDlg(wx.Dialog):
 	def getMessages(
 		self,
 		messages: list
-	) -> list:
-		model = self.getCurrentModel()
+	):
 		if not self.conversationCheckBox.IsChecked():
-			return messages
+			return
 		block = self.firstBlock
-		while block is not None:
-			content = []
+		while block:
+			userContent = []
 			if block.pathList:
-				content.extend(self.getImages(block.pathList))
-			if block.prompt:
-				content.append({
-					"type": "text",
-					"text": block.prompt
-				})
-			if content:
+				userContent.extend(self.getImages(block.pathList))
+				if block.prompt:
+					userContent.append({
+						"type": "text",
+						"text": block.prompt
+					})
+			else:
+				if block.prompt:
+					userContent = block.prompt
+			if userContent:
 				messages.append({
 					"role": "user",
-					"content": content
+					"content": userContent
 				})
 			if block.responseText:
-				messages.append({"role": "system", "content": block.responseText})
+				messages.append({
+					"role": "assistant",
+					"content": block.responseText
+				})
 			block = block.next
 
 	def onPreviousPrompt(self, event):
