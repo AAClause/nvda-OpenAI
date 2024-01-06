@@ -1,7 +1,9 @@
 import os
 
-API_KEY_FILENAME = "OpenAI.key"
-API_KEY_ORG_FILENAME = "OpenAI_org.key"
+AVILABLE_SERVICES = [
+	"OpenAI",
+	"OpenRouter"
+]
 
 class APIKeyManager:
 
@@ -9,10 +11,23 @@ class APIKeyManager:
 	Manage API key
 	"""
 
-	def __init__(self, data_dir):
+	def __init__(
+		self,
+		data_dir,
+		service="OpenAI"
+	):
+		if service not in AVILABLE_SERVICES:
+			raise ValueError(f"Unknown service: {service}")
 		self.data_dir = data_dir
-		self.api_key_path = os.path.join(data_dir, API_KEY_FILENAME)
-		self.api_key_org_path = os.path.join(data_dir, API_KEY_ORG_FILENAME)
+		self.service = service
+		self.api_key_path = os.path.join(
+			data_dir, 
+			f"{service}.key"
+		)
+		self.api_key_org_path = os.path.join(
+			data_dir,
+			f"{service}_org.key"
+		)
 		self.api_key = None
 		self.api_key_org = None
 		self.ensure_data_dir()
@@ -36,7 +51,9 @@ class APIKeyManager:
 
 		if self.api_key is None:
 			self.api_key = self._read_api_key_from_file(self.api_key_path)
-		return self.api_key or os.getenv("OPENAI_API_KEY")
+		return self.api_key or (
+			os.getenv("OPENAI_API_KEY" if self.service == "OpenAI" else "OPENROUTER_API_KEY")
+		)
 
 	def save_api_key(self, key, org=False, org_name=None):
 		file_path = self.api_key_org_path if org else self.api_key_path

@@ -19,16 +19,44 @@ TTS_VOICES = ["alloy", "echo", "fable", "onyx", "nova", "shimmer"]
 TTS_DEFAULT_VOICE = "nova"
 TTS_MODELS = ["tts-1", "tts-1-hd"]
 TTS_DEFAULT_MODEL = "tts-1"
-MODEL_VISION = "gpt-4-vision-preview"
+
 MODELS = [
 	Model("gpt-3.5-turbo-1106", _("Updated GPT 3.5 Turbo. The latest GPT-3.5 Turbo model with improved instruction following, JSON mode, reproducible outputs, parallel function calling, and more."), 16385, 4096),
 	Model("gpt-3.5-turbo-0613", _("Same capabilities as the standard gpt-3.5-turbo model but with 4 times the context"), 16384, 4096),
 	Model("gpt-4-0613", _("More capable than any GPT-3.5 model, able to do more complex tasks, and optimized for chat"), 8192),
 	Model("gpt-4-1106-preview", _("The latest GPT-4 model with improved instruction following, JSON mode, reproducible outputs, parallel function calling, and more."), 128000, 4096),
-	Model(MODEL_VISION, _("GPT-4 Turbo with vision. Ability to understand images, in addition to all other GPT-4 Turbo capabilities."), 128000, 4096),
+	Model("gpt-4-vision-preview", _("GPT-4 Turbo with vision. Ability to understand images, in addition to all other GPT-4 Turbo capabilities."), 128000, 4096, vision=True),
 	Model("gpt-4-32k-0613", _("Same capabilities as the standard gpt-4 mode but with 4x the context length."), 32768, 8192),
+	Model(
+		"openrouter/auto",
+		_("Depending on their size, subject, and complexity, your prompts will be sent to MythoMax 13B, MythoMax 13B 8k, or GPT-4 Turbo.")
+	),
+	Model("alpindale/goliath-120b"),
+	Model("anthropic/claude-2", _("Anthropic: Claude v2.1")),
+	Model("anthropic/claude-2.0", _("Anthropic: Claude v2.0")),
+	Model("anthropic/claude-instant-v1", "Anthropic: Claude Instant v1"),
+	Model("google/gemini-pro", _("Google: Gemini Pro (preview)")),
+	Model("google/gemini-pro-vision", _("Google: Gemini Pro Vision (preview)"), vision=True),
+	Model("google/palm-2-chat-bison"),
+	Model("google/palm-2-codechat-bison"),
+	Model("google/palm-2-chat-bison-32k"),
+	Model("google/palm-2-codechat-bison-32k"),
+	Model("gryphe/mythomist-7b"),
+	Model("gryphe/mythomax-l2-13b"),
+	Model("haotian-liu/llava-13b", vision=True),
+	Model("meta-llama/llama-2-13b-chat"),
+	Model("meta-llama/llama-2-70b-chat"),
+	Model("mistralai/mixtral-8x7b", "Mistral: Mixtral 8x7B (base)"),
+	Model("neversleep/noromaid-20b"),
+	Model("open-orca/mistral-7b-openorca"),
+	Model("nousresearch/nous-hermes-2-vision-7b"),
+	Model("nousresearch/nous-capybara-7b"),
+	Model("openchat/openchat-7b"),
+	Model("openrouter/cinematika-7b"),
+	Model("rwkv/rwkv-5-world-3b"),
 ]
 DEFAULT_MODEL = MODELS[0]
+DEFAULT_MODEL_VISION = "gpt-4-vision-preview"
 
 DEFAULT_SYSTEM_PROMPT = _(
 	"You are an accessibility assistant integrated in the NVDA screen reader that "
