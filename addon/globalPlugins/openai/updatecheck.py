@@ -47,17 +47,17 @@ def check_hash(
 
 def check_data(data):
 	if (
-		not os.path.exists(LIBS_DIR)
-		or LIB_REV != data["libs_rev"]
-		or os.path.exists(LIBS_DIR_PY)
+		LIB_REV != data["libs_rev"]
+		or not os.path.exists(LIBS_DIR)
+		or not os.path.exists(LIBS_DIR_PY)
 	):
 		msg = _(
-			"New Open AI dependencies revision available: %s. If you just installed the add-on you must install the dependencies to work properly. "
+			"New Open AI dependencies revision available: %s. If you have just installed the add-on, you must install them for it to work properly. "
 			"Do you want to update now?"
 		) % data["libs_rev"]
 		res = gui.messageBox(
 			msg,
-			_("Open AI dependencies update"),
+			_("OpenAI dependencies update"),
 			wx.YES_NO | wx.ICON_QUESTION
 		)
 		if res == wx.YES:
