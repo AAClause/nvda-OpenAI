@@ -12,7 +12,7 @@ class Model:
 		maxOutputToken: int=-1,
 		maxTemperature: float=2.0,
 		defaultTemperature: float=1.0,
-		vision: bool=False
+		vision: bool=False,
 	):
 		self.name = name
 		self.description = description

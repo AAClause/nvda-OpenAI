@@ -206,6 +206,14 @@ class CompletionThread(threading.Thread):
 			# Translators: This is a message displayed when sending a request to the API.
 			msg = _("Processing, please wait...")
 		wnd.message(msg)
+		if model.name.startswith("mistral-"):
+			client.base_url = mistralai.BASE_URL
+			client.api_key = mistralai.get_api_key()
+			client.organization = None
+		else:
+			client.base_url = wnd._base_url
+			client.api_key = wnd._api_key
+			client.organization = wnd._organization
 		params = {
 			"model": model.name,
 			"messages": messages,
@@ -216,22 +224,13 @@ class CompletionThread(threading.Thread):
 		}
 
 		if debug:
+			log.info("Client base URL: %s" % client.base_url)
 			if nbImages:
 				log.info(f"{nbImages} images")
 			log.info(f"{json.dumps(params, indent=2, ensure_ascii=False)}")
 
 		try:
-			if model.name.startswith("mistral"):
-				response = mistralai.make_request(
-					model.name,
-					self._getMessages(system, prompt),
-					temperature=temperature,
-					top_p=topP,
-					max_tokens=maxTokens,
-					stream=stream
-				)
-			else:
-				response = client.chat.completions.create(**params)
+			response = client.chat.completions.create(**params)
 		except BaseException as err:
 			wx.PostEvent(self._notifyWindow, ResultEvent(err))
 			return
@@ -244,26 +243,9 @@ class CompletionThread(threading.Thread):
 		wnd.previousPrompt = wnd.promptText.GetValue()
 		wnd.promptText.Clear()
 
-		if stream and not isinstance(response, mistralai.MistralResponse):
+		if stream:
 			self._responseWithStream(response, block, debug)
 		else:
-			if (
-				isinstance(response, mistralai.MistralResponse)
-				and not response.success
-			):
-				message = _("An error occurred, see the log for more details.")
-				if (
-					response.content
-				):
-					try:
-						content = json.loads(response.content)
-						if "message" in content:
-							message = content["message"]
-					except BaseException as err:
-						log.error(err)
-						message = response.content
-				wx.PostEvent(self._notifyWindow, ResultEvent(message))
-				return
 			self._responseWithoutStream(response, block, debug)
 		wnd.pathList.clear()
 		wx.PostEvent(self._notifyWindow, ResultEvent())
@@ -308,8 +290,6 @@ class CompletionThread(threading.Thread):
 				if self._wantAbort:
 					break
 				text += choice.message.content
-		elif isinstance(response, mistralai.MistralResponse):
-			text = response.content
 		else:
 			responseType = type(response)
 			raise TypeError(f"Invalid response type: {responseType}")
@@ -482,6 +462,9 @@ class OpenAIDlg(wx.Dialog):
 		if not client or not conf:
 			return
 		self.client = client
+		self._base_url = client.base_url
+		self._api_key = client.api_key
+		self._organization = client.organization
 		self.conf = conf
 		self.data = self.loadData()
 		self._orig_data = self.data.copy() if isinstance(self.data, dict) else None
@@ -522,7 +505,7 @@ class OpenAIDlg(wx.Dialog):
 			self.data.pop("system", None)
 		self.service = "OpenRouter" if conf["useOpenRouter"] else "OpenAI"
 		if not title:
-			title = "%s - %s" % (
+			title = "%s - %s & MistralAI" % (
 				self.service,
 				_("organization") if conf["use_org"] else _("personal")
 			)
@@ -959,7 +942,7 @@ class OpenAIDlg(wx.Dialog):
 			errMsg = event.data
 		elif isinstance(event.data, openai.APIStatusError):
 			log.info(event.data.body)
-			errMsg = f"Error %d: %s" % (
+			errMsg = f"Error %s: %s" % (
 				event.data.code,
 				event.data.body["message"]
 			)

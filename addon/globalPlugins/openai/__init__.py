@@ -74,7 +74,7 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 
 		sHelper.addItem(updateSizer)
 
-		APIAccessGroupLabel = _("API access keys (Open AI or Open Router)")
+		APIAccessGroupLabel = _("API Access Keys")
 		APIAccessSizer = wx.StaticBoxSizer(wx.VERTICAL, self, label=APIAccessGroupLabel)
 		APIAccessBox = APIAccessSizer.GetStaticBox()
 		APIAccessGroup = gui.guiHelper.BoxSizerHelper(self, sizer=APIAccessSizer)
@@ -82,7 +82,7 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 		self.useOpenRouter = APIAccessGroup.addItem(
 			wx.CheckBox(
 				APIAccessBox,
-				label=_("Use OpenR&outer")
+				label=_("Use OpenR&outer instead of OpenAI")
 			)
 		)
 		self.useOpenRouter.SetValue(conf["useOpenRouter"])
@@ -92,7 +92,7 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 		)
 
 		self.APIKey = APIAccessGroup.addLabeledControl(
-			_("API Key:"),
+			_("OpenAI/OpenRouter API &Key:"),
 			wx.TextCtrl,
 		)
 
@@ -118,6 +118,13 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 		self.orgKey = APIAccessGroup.addLabeledControl(
 			_("&Organization key:"),
 			wx.TextCtrl,
+		)
+
+		label = _("Mistra&lAI API key:")
+		self.mistralAPIKey = APIAccessGroup.addLabeledControl(
+			label,
+			wx.TextCtrl,
+			value=get_mistral_api_key()
 		)
 
 		sHelper.addItem(APIAccessSizer)
@@ -245,22 +252,6 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 
 		sHelper.addItem(imageSizer)
 
-		# Mistral AI
-		mistralGroupLabel = _("Mistral AI")
-		mistralSizer = wx.StaticBoxSizer(wx.VERTICAL, self, label=mistralGroupLabel)
-		mistralBox = mistralSizer.GetStaticBox()
-		mistralGroup = gui.guiHelper.BoxSizerHelper(self, sizer=mistralSizer)
-
-		label = _("API &key:")
-		self.mistralAPIKey = mistralGroup.addLabeledControl(
-			label,
-			wx.TextCtrl,
-			value=get_mistral_api_key()
-		)
-
-		sHelper.addItem(mistralSizer)
-
-
 		sHelper.addItem(mainDialogSizer)
 
 		self.onUseOpenRouter(None)
@@ -272,11 +263,16 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 		self.orgKey.Enable(self.use_org.GetValue())
 
 	def onUseOpenRouter(self, evt):
+		service = "OpenRouter" if self.useOpenRouter.GetValue() else "OpenAI"
 		api_key_manager = APIKeyManager(
 			DATA_DIR,
-			service="OpenRouter" if self.useOpenRouter.GetValue() else "OpenAI"
+			service=service
 		)
 		APIKey = api_key_manager.get_api_key()
+		self.APIKey.SetLabel(
+			# Translators: This is the label of the API key field in the settings dialog.
+			_("%s API Key:") % service
+		)
 		self.APIKey.SetValue(APIKey if APIKey else '')
 		if not APIKey: APIKey = ''
 		APIKeyOrg = api_key_manager.get_api_key(use_org=True)
