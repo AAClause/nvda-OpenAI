@@ -285,7 +285,12 @@ class CompletionThread(threading.Thread):
 	def _responseWithoutStream(self, response, block, debug=False):
 		wnd = self._notifyWindow
 		text = ""
-		if isinstance(response, openai.types.chat.chat_completion.Choice):
+		if isinstance(
+			response, (
+				openai.types.chat.chat_completion.Choice,
+				openai.types.chat.chat_completion.ChatCompletion
+			)
+		):
 			for i, choice in enumerate(response.choices):
 				if self._wantAbort:
 					break
