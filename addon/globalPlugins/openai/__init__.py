@@ -46,6 +46,8 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 	title = "Open AI"
 
 	def makeSettings(self, settingsSizer):
+		from .mistralai import get_api_key as get_mistral_api_key
+
 		sHelper = gui.guiHelper.BoxSizerHelper(self, sizer=settingsSizer)
 
 		updateGroupLabel = _("Update")
@@ -72,7 +74,7 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 
 		sHelper.addItem(updateSizer)
 
-		APIAccessGroupLabel = _("API access keys (Open AI or Open Router)")
+		APIAccessGroupLabel = _("API Access Keys")
 		APIAccessSizer = wx.StaticBoxSizer(wx.VERTICAL, self, label=APIAccessGroupLabel)
 		APIAccessBox = APIAccessSizer.GetStaticBox()
 		APIAccessGroup = gui.guiHelper.BoxSizerHelper(self, sizer=APIAccessSizer)
@@ -80,7 +82,7 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 		self.useOpenRouter = APIAccessGroup.addItem(
 			wx.CheckBox(
 				APIAccessBox,
-				label=_("Use OpenR&outer")
+				label=_("Use OpenR&outer instead of OpenAI")
 			)
 		)
 		self.useOpenRouter.SetValue(conf["useOpenRouter"])
@@ -90,7 +92,7 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 		)
 
 		self.APIKey = APIAccessGroup.addLabeledControl(
-			_("API Key:"),
+			_("OpenAI/OpenRouter API &Key:"),
 			wx.TextCtrl,
 		)
 
@@ -116,6 +118,13 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 		self.orgKey = APIAccessGroup.addLabeledControl(
 			_("&Organization key:"),
 			wx.TextCtrl,
+		)
+
+		label = _("Mistra&lAI API key:")
+		self.mistralAPIKey = APIAccessGroup.addLabeledControl(
+			label,
+			wx.TextCtrl,
+			value=get_mistral_api_key()
 		)
 
 		sHelper.addItem(APIAccessSizer)
@@ -254,11 +263,16 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 		self.orgKey.Enable(self.use_org.GetValue())
 
 	def onUseOpenRouter(self, evt):
+		service = "OpenRouter" if self.useOpenRouter.GetValue() else "OpenAI"
 		api_key_manager = APIKeyManager(
 			DATA_DIR,
-			service="OpenRouter" if self.useOpenRouter.GetValue() else "OpenAI"
+			service=service
 		)
 		APIKey = api_key_manager.get_api_key()
+		self.APIKey.SetLabel(
+			# Translators: This is the label of the API key field in the settings dialog.
+			_("%s API Key:") % service
+		)
 		self.APIKey.SetValue(APIKey if APIKey else '')
 		if not APIKey: APIKey = ''
 		APIKeyOrg = api_key_manager.get_api_key(use_org=True)
@@ -282,6 +296,7 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 
 	def onSave(self):
 		global api_key_manager
+		from .mistralai import set_api_key as set_mistral_api_key
 		conf["update"]["check"] = self.updateCheck.GetValue()
 		conf["update"]["channel"] = self.updateChannel.GetString(self.updateChannel.GetSelection())
 		api_key = self.APIKey.GetValue().strip()
@@ -323,6 +338,8 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 			conf["images"]["customPromptText"] = self.customPromptText.GetValue()
 		else:
 			conf["images"]["useCustomPrompt"] = False
+		set_mistral_api_key(self.mistralAPIKey.GetValue().strip())
+
 
 class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 
