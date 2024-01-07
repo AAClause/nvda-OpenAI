@@ -18,14 +18,13 @@ import tones
 import core
 import ui
 
-from .consts import ADDON_DIR, DATA_DIR
+from .consts import ADDON_DIR, DATA_DIR, LIBS_DIR_PY
 from .resultevent import ResultEvent
 
-additionalLibsPath = os.path.join(ADDON_DIR, "lib")
-sys.path.insert(0, additionalLibsPath)
+sys.path.insert(0, LIBS_DIR_PY)
 import numpy as np
 import sounddevice as sd
-sys.path.remove(additionalLibsPath)
+sys.path.remove(LIBS_DIR_PY)
 
 addonHandler.initTranslation()
 

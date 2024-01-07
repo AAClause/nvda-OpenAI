@@ -19,6 +19,7 @@ import ui
 from logHandler import log
 from .consts import (
 	ADDON_DIR, DATA_DIR,
+	LIBS_DIR_PY,
 	MODELS, MODEL_VISION,
 	TOP_P_MIN, TOP_P_MAX,
 	N_MIN, N_MAX,
@@ -33,11 +34,10 @@ from .imagehelper import (
 from .recordthread import RecordThread, WhisperTranscription
 from .resultevent import ResultEvent, EVT_RESULT_ID
 
-additionalLibsPath = os.path.join(ADDON_DIR, "lib")
-sys.path.insert(0, additionalLibsPath)
+sys.path.insert(0, LIBS_DIR_PY)
 import openai
 import markdown2
-sys.path.remove(additionalLibsPath)
+sys.path.remove(LIBS_DIR_PY)
 
 addonHandler.initTranslation()
 
@@ -771,12 +771,19 @@ class OpenAIDlg(wx.Dialog):
 			defaultMaxOutputToken = 1024
 		self.maxTokens.SetValue(defaultMaxOutputToken)
 		if self.conf["advancedMode"]:
-			self.temperature.SetRange(0, model.maxTemperature * 100)
+			self.temperature.SetRange(
+				0,
+				int(model.maxTemperature * 100)
+			)
 			key_temperature = "temperature_%s" % model.name
 			if key_temperature in self.data:
-				self.temperature.SetValue(self.data[key_temperature])
+				self.temperature.SetValue(
+					int(self.data[key_temperature])
+				)
 			else:
-				self.temperature.SetValue(model.defaultTemperature * 100) 
+				self.temperature.SetValue(
+					int(model.defaultTemperature * 100)
+				)
 
 	def onOk(self, evt):
 		if not self.promptText.GetValue().strip() and not self.pathList:

@@ -2,14 +2,14 @@ import base64
 import os
 import sys
 from logHandler import log
-from .consts import ADDON_DIR
+from .consts import ADDON_DIR, LIBS_DIR_PY
 
-additionalLibsPath = os.path.join(ADDON_DIR, "lib")
-sys.path.insert(0, additionalLibsPath)
+sys.path.append(LIBS_DIR_PY)
 from openai import OpenAI
 from PIL import Image
 import fractions
-sys.path.remove(additionalLibsPath)
+sys.path.remove(LIBS_DIR_PY)
+
 
 def get_image_dimensions(path):
 	"""
