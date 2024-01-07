@@ -285,7 +285,12 @@ class CompletionThread(threading.Thread):
 	def _responseWithoutStream(self, response, block, debug=False):
 		wnd = self._notifyWindow
 		text = ""
-		if isinstance(response, openai.types.chat.chat_completion.Choice):
+		if isinstance(
+			response, (
+				openai.types.chat.chat_completion.Choice,
+				openai.types.chat.chat_completion.ChatCompletion
+			)
+		):
 			for i, choice in enumerate(response.choices):
 				if self._wantAbort:
 					break
@@ -831,9 +836,10 @@ class OpenAIDlg(wx.Dialog):
 		if (
 			self.service == "OpenAI"
 			and not model.name.startswith("gpt-")
+			and not model.name.startswith("mistral-")
 		):
 			gui.messageBox(
-				_("This model is only available with the OpenRouter service. Please provide an API key in the add-on settings. Otherwise, please select an OpenAI model."),
+				_("This model is only available with the OpenRouter service. Please provide an API key in the add-on settings. Otherwise, please select an OpenAI or MistralAI model."),
 				self.service,
 				wx.OK | wx.ICON_ERROR
 			)
@@ -940,12 +946,13 @@ class OpenAIDlg(wx.Dialog):
 		errMsg = _("Unknown error")
 		if isinstance(event.data, str):
 			errMsg = event.data
-		elif isinstance(event.data, openai.APIStatusError):
-			log.info(event.data.body)
-			errMsg = f"Error %s: %s" % (
-				event.data.code,
-				event.data.body["message"]
+		elif isinstance(
+			event.data, (
+				openai.APIConnectionError,
+				openai.APIStatusError
 			)
+		):
+			errMsg = event.data.message
 		else:
 			log.error(errMsg)
 			log.error(type(event.data))
