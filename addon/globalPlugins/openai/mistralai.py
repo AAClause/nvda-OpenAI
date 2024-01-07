@@ -11,6 +11,17 @@ addonHandler.initTranslation()
 
 MISTRAL_API_KEY = None
 
+
+def set_api_key(key: str):
+	"""
+	Set the API key
+	"""
+	global MISTRAL_API_KEY
+	MISTRAL_API_KEY = key
+	with open(os.path.join(DATA_DIR, "mistralai.key"), "w") as f:
+		f.write(key)
+
+
 def get_api_key():
 	global MISTRAL_API_KEY
 	if MISTRAL_API_KEY:
