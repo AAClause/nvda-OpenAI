@@ -277,7 +277,7 @@ class CompletionThread(threading.Thread):
 			delta = event.choices[0].delta
 			finish = event.choices[0].finish_reason
 			text = ""
-			if delta.content:
+			if delta and delta.content:
 				text = delta.content
 			block.responseText += text
 		block.responseTerminated = True
@@ -857,8 +857,9 @@ class OpenAIDlg(wx.Dialog):
 			)
 			return
 		if not model.vision and self.pathList:
+			visionModels = [model.name for model in MODELS if model.vision]
 			gui.messageBox(
-				_("This model does not support image description. Please select an appropriate model."),
+				_("This model does not support image description. Please select one of the following models: %s.") % ", ".join(visionModels),
 				self.service,
 				wx.OK | wx.ICON_ERROR
 			)
