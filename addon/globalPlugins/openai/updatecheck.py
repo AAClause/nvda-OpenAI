@@ -22,6 +22,10 @@ addonHandler.initTranslation()
 
 ROOT_ADDON_DIR = "\\".join(ADDON_DIR.split(os.sep)[:-2])
 
+# ensure that DATA_DIR exists
+if not os.path.exists(DATA_DIR):
+	os.mkdir(DATA_DIR)
+
 ADDON_INFO = addonHandler.Addon(
 	ROOT_ADDON_DIR
 ).manifest
@@ -37,22 +41,24 @@ LIB_REV =  conf["libRev"]
 
 
 def check_hash(
-		file_path: str,
-		hash_: str
-	) -> bool:
+	file_path: str,
+	hash_: str
+) -> bool:
 	"""Check the hash of a file."""
 	with open(file_path, "rb") as file:
 		file_hash = hashlib.sha256(file.read()).hexdigest()
 	return file_hash == hash_
 
-def check_data(data):
+def check_data(
+	data: dict
+):
 	if (
 		LIB_REV != data["libs_rev"]
 		or not os.path.exists(LIBS_DIR)
 		or not os.path.exists(LIBS_DIR_PY)
 	):
 		msg = _(
-			"New Open AI dependencies revision available: %s. If you have just installed the add-on, you must install them for it to work properly. "
+			"New OpenAI dependencies revision available: %s. If you have just installed the add-on, you must install them for it to work properly. "
 			"Do you want to update now?"
 		) % data["libs_rev"]
 		res = gui.messageBox(
@@ -69,7 +75,7 @@ def check_data(data):
 					zip_file = response.read()
 				zip_path = os.path.join(
 					DATA_DIR,
-					"lib_py3.11.zip"
+					"libs.zip"
 				)
 				with open(zip_path, "wb") as file:
 					file.write(zip_file)
