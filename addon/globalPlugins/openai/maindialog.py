@@ -33,6 +33,7 @@ from .imagehelper import (
 	get_image_dimensions,
 	resize_image,
 )
+from .model import getOpenRouterModels
 from .recordthread import RecordThread
 from .resultevent import ResultEvent, EVT_RESULT_ID
 
@@ -149,19 +150,19 @@ class CompletionThread(threading.Thread):
 		prompt = wnd.promptText.GetValue().strip()
 		block.prompt = prompt
 		model = wnd.getCurrentModel()
-		block.model = model.name
-		conf["model"] = model.name
+		block.model = model.id
+		conf["model"] = model.id
 		stream = conf["stream"]
 		debug = conf["debug"]
 		maxTokens = wnd.maxTokens.GetValue()
 		block.maxTokens = maxTokens
-		key_maxTokens = "maxTokens_%s" % model.name
+		key_maxTokens = "maxTokens_%s" % model.id
 		data[key_maxTokens] = maxTokens
 		temperature = 1
 		topP = 1
 		if conf["advancedMode"]:
 			temperature = wnd.temperature.GetValue() / 100
-			key_temperature = "temperature_%s" % model.name
+			key_temperature = "temperature_%s" % model.id
 			data[key_temperature] = wnd.temperature.GetValue()
 
 			topP = wnd.topP.GetValue() / 100
@@ -206,7 +207,7 @@ class CompletionThread(threading.Thread):
 			# Translators: This is a message displayed when sending a request to the API.
 			msg = _("Processing, please wait...")
 		wnd.message(msg)
-		if model.name.startswith("mistral-"):
+		if model.id.startswith("mistral-"):
 			client.base_url = mistralai.BASE_URL
 			client.api_key = mistralai.get_api_key()
 			client.organization = None
@@ -215,7 +216,7 @@ class CompletionThread(threading.Thread):
 			client.api_key = wnd._api_key
 			client.organization = wnd._organization
 		params = {
-			"model": model.name,
+			"model": model.id,
 			"messages": messages,
 			"temperature": temperature,
 			"max_tokens": maxTokens,
@@ -475,6 +476,8 @@ class OpenAIDlg(wx.Dialog):
 		self._orig_data = self.data.copy() if isinstance(self.data, dict) else None
 		self._historyPath = None
 		self.blocks = []
+		self._models = MODELS.copy()
+		self._models.extend(getOpenRouterModels())
 		self.pathList = []
 		if pathList:
 			for path in pathList:
@@ -498,7 +501,7 @@ class OpenAIDlg(wx.Dialog):
 					raise ValueError(f"Invalid path: {path}")
 		self.previousPrompt = None
 		self._lastSystem = None
-		self._model_names = [model.name for model in MODELS]
+		self._model_ids = [model.id for model in self._models]
 		if self.conf["saveSystem"]:
 			# If the user has chosen to save the system prompt, use the last system prompt used by the user as the default value, otherwise use the default system prompt.
 			if "system" in self.data:
@@ -593,16 +596,17 @@ class OpenAIDlg(wx.Dialog):
 			parent=self,
 			label=_("&Model:")
 		)
-		models = [str(model) for model in MODELS]
+		models = [str(model) for model in self._models]
 		self.modelListBox = wx.ListBox(
 			parent=self,
 			choices=models,
 			style=wx.LB_SINGLE | wx.LB_HSCROLL | wx.LB_NEEDED_SB
 		)
 		model = DEFAULT_MODEL_VISION if self.pathList else conf["model"]
-		idx = list(self._model_names).index(model) if model in self._model_names else 0
+		idx = list(self._model_ids).index(model) if model in self._model_ids else 0
 		self.modelListBox.SetSelection(idx)
 		self.modelListBox.Bind(wx.EVT_LISTBOX, self.onModelChange)
+		self.modelListBox.Bind(wx.EVT_KEY_DOWN, self.onModelKeyDown)
 
 		maxTokensLabel = wx.StaticText(
 			parent=self,
@@ -764,7 +768,7 @@ class OpenAIDlg(wx.Dialog):
 			f.write(json.dumps(self.data))
 
 	def getCurrentModel(self):
-		return MODELS[self.modelListBox.GetSelection()]
+		return self._models[self.modelListBox.GetSelection()]
 
 	def onResetSystemPrompt(self, event):
 		self.systemText.SetValue(DEFAULT_SYSTEM_PROMPT)
@@ -790,7 +794,7 @@ class OpenAIDlg(wx.Dialog):
 			model.maxOutputToken if model.maxOutputToken > 1 else model.contextWindow
 		)
 		defaultMaxOutputToken = 512
-		key_maxTokens = "maxTokens_%s" % model.name
+		key_maxTokens = "maxTokens_%s" % model.id
 		if (
 			key_maxTokens in self.data
 			and isinstance(self.data[key_maxTokens], int)
@@ -809,7 +813,7 @@ class OpenAIDlg(wx.Dialog):
 				0,
 				int(model.maxTemperature * 100)
 			)
-			key_temperature = "temperature_%s" % model.name
+			key_temperature = "temperature_%s" % model.id
 			if key_temperature in self.data:
 				self.temperature.SetValue(
 					int(self.data[key_temperature])
@@ -819,6 +823,27 @@ class OpenAIDlg(wx.Dialog):
 					int(model.defaultTemperature * 100)
 				)
 
+	def showModelDetails(self):
+		model = self.getCurrentModel()
+		details = (
+			"<h1>%s (%s)</h1>"
+			"<blockquote>%s</blockquote>"
+		) % (
+			model.name,
+			model.id,
+			model.description
+		)
+		ui.browseableMessage(
+			details,
+			_("Model details"),
+			True
+		)
+
+	def onModelKeyDown(self, evt):
+		if evt.GetKeyCode() == wx.WXK_SPACE:
+			self.showModelDetails()
+		else:
+			evt.Skip()
 	def onOk(self, evt):
 		if not self.promptText.GetValue().strip() and not self.pathList:
 			self.promptText.SetFocus()
@@ -835,8 +860,8 @@ class OpenAIDlg(wx.Dialog):
 			return
 		if (
 			self.service == "OpenAI"
-			and not model.name.startswith("gpt-")
-			and not model.name.startswith("mistral-")
+			and not model.id.startswith("gpt-")
+			and not model.id.startswith("mistral-")
 		):
 			gui.messageBox(
 				_("This model is only available with the OpenRouter service. Please provide an API key in the add-on settings. Otherwise, please select an OpenAI or MistralAI model."),
@@ -857,7 +882,7 @@ class OpenAIDlg(wx.Dialog):
 			)
 			return
 		if not model.vision and self.pathList:
-			visionModels = [model.name for model in MODELS if model.vision]
+			visionModels = [model.id for model in self._models if model.vision]
 			gui.messageBox(
 				_("This model does not support image description. Please select one of the following models: %s.") % ", ".join(visionModels),
 				self.service,
@@ -908,7 +933,7 @@ class OpenAIDlg(wx.Dialog):
 			historyBlock.system = self.systemText.GetValue().strip()
 			historyBlock.prompt = self.promptText.GetValue().strip()
 			model = self.getCurrentModel()
-			historyBlock.model = model.name
+			historyBlock.model = model.id
 			if self.conf["advancedMode"]:
 				historyBlock.temperature = self.temperature.GetValue() / 100
 				historyBlock.topP = self.topP.GetValue() / 100
@@ -1412,7 +1437,7 @@ class OpenAIDlg(wx.Dialog):
 		Select the model for image description.
 		"""
 		self.modelListBox.SetSelection(
-			self._model_names.index(DEFAULT_MODEL_VISION)
+			self._model_ids.index(DEFAULT_MODEL_VISION)
 		)
 		self.imageListCtrl.SetSelection(evt.GetSelection())
 		evt.Skip()
@@ -1520,7 +1545,7 @@ class OpenAIDlg(wx.Dialog):
 		model = self.getCurrentModel()
 		if model.vision:
 			self.modelListBox.SetSelection(
-				self._model_names.index(DEFAULT_MODEL_VISION)
+				self._model_ids.index(DEFAULT_MODEL_VISION)
 			)
 		if not self.promptText.GetValue().strip():
 			self.promptText.SetValue(
@@ -1605,7 +1630,7 @@ class OpenAIDlg(wx.Dialog):
 			)
 		)
 		self.modelListBox.SetSelection(
-			self._model_names.index(DEFAULT_MODEL_VISION)
+			self._model_ids.index(DEFAULT_MODEL_VISION)
 		)
 		if not self.promptText.GetValue().strip():
 			self.promptText.SetValue(
