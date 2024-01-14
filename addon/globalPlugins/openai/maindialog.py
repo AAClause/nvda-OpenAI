@@ -18,9 +18,9 @@ import tones
 import ui
 from logHandler import log
 
-from . import mistralai
+from . import apikeymanager
 from .consts import (
-	ADDON_DIR, DATA_DIR,
+	ADDON_DIR, BASE_URLs, DATA_DIR,
 	LIBS_DIR_PY,
 	MODELS, DEFAULT_MODEL_VISION,
 	TOP_P_MIN, TOP_P_MAX,
@@ -207,14 +207,12 @@ class CompletionThread(threading.Thread):
 			# Translators: This is a message displayed when sending a request to the API.
 			msg = _("Processing, please wait...")
 		wnd.message(msg)
-		if model.id.startswith("mistral-"):
-			client.base_url = mistralai.BASE_URL
-			client.api_key = mistralai.get_api_key()
-			client.organization = None
-		else:
-			client.base_url = wnd._base_url
-			client.api_key = wnd._api_key
-			client.organization = wnd._organization
+		manager = apikeymanager.get(
+			model.provider
+		)
+		client.base_url =  BASE_URLs[model.provider]
+		client.api_key = manager.get_api_key()
+		client.organization = manager.get_organization_key()
 		params = {
 			"model": model.id,
 			"messages": messages,
@@ -316,6 +314,11 @@ class TextToSpeechThread(threading.Thread):
 	def run(self):
 		wnd = self._notifyWindow
 		client = wnd.client
+		provider = "OpenAI"
+		manager = apikeymanager.get(provider)
+		client.base_url =  BASE_URLs[provider]
+		client.api_key = manager.get_api_key()
+		client.organization = manager.get_organization_key()
 		try:
 			if os.path.exists(TTS_FILE_NAME):
 				os.remove(TTS_FILE_NAME)
@@ -477,7 +480,8 @@ class OpenAIDlg(wx.Dialog):
 		self._historyPath = None
 		self.blocks = []
 		self._models = MODELS.copy()
-		self._models.extend(getOpenRouterModels())
+		if apikeymanager.get("OpenRouter").ready():
+			self._models.extend(getOpenRouterModels())
 		self.pathList = []
 		if pathList:
 			for path in pathList:
@@ -511,12 +515,18 @@ class OpenAIDlg(wx.Dialog):
 		else:
 			# removes the system entry from data so that the last system prompt is not remembered when the user unchecks the save system prompt checkbox.
 			self.data.pop("system", None)
-		self.service = "OpenRouter" if conf["useOpenRouter"] else "OpenAI"
-		if not title:
-			title = "%s - %s & MistralAI" % (
-				self.service,
-				_("organization") if conf["use_org"] else _("personal")
-			)
+		l = []
+		for manager in apikeymanager._managers.values():
+			if not manager.ready():
+				continue
+			e = manager.provider
+			organization = manager.get_api_key(use_org=True)
+			if organization and organization != ":=":
+				e += " (organization)"
+			else:
+				e += " (personal)"
+			l.append(e)
+		title = ", ".join(l)
 		super().__init__(parent, title=title)
 
 		self.conversationCheckBox = wx.CheckBox(
@@ -865,18 +875,16 @@ class OpenAIDlg(wx.Dialog):
 		if not model:
 			gui.messageBox(
 				_("Please select a model."),
-				self.service,
+				"OpenAI",
 				wx.OK | wx.ICON_ERROR
 			)
 			return
-		if (
-			self.service == "OpenAI"
-			and not model.id.startswith("gpt-")
-			and not model.id.startswith("mistral-")
-		):
+		if not apikeymanager.get(model.provider).ready():
 			gui.messageBox(
-				_("This model is only available with the OpenRouter service. Please provide an API key in the add-on settings. Otherwise, please select an OpenAI or MistralAI model."),
-				self.service,
+				_("This model is only available with the %s provider. Please provide an API key for this provider in the add-on settings. Otherwise, please select another model with a different provider.") % (
+					model.provider
+				),
+				_("No API key for %s") % model.provider,
 				wx.OK | wx.ICON_ERROR
 			)
 			return
@@ -887,8 +895,8 @@ class OpenAIDlg(wx.Dialog):
 			and not self.pathList
 		):
 			gui.messageBox(
-				_("No image provided. Please use the Image Description button and select one or more images. Otherwise, please select another model."),
-				self.service,
+				_("Please use the Image Description button and select one or more images. Otherwise, please select another model."),
+				_("No image provided"),
 				wx.OK | wx.ICON_ERROR
 			)
 			return
@@ -896,7 +904,7 @@ class OpenAIDlg(wx.Dialog):
 			visionModels = [model.id for model in self._models if model.vision]
 			gui.messageBox(
 				_("This model does not support image description. Please select one of the following models: %s.") % ", ".join(visionModels),
-				self.service,
+				_("Invalid model"),
 				wx.OK | wx.ICON_ERROR
 			)
 			return
@@ -908,7 +916,7 @@ class OpenAIDlg(wx.Dialog):
 			msg = _("Be aware that the add-on may auto-resize images before API submission to lower request sizes and costs. Adjust this feature in the Open AI settings if needed. This message won't show again.")
 			gui.messageBox(
 				msg,
-				self.service,
+				_("Image resizing"),
 				wx.OK | wx.ICON_INFORMATION
 			)
 			self.conf["images"]["resizeInfoDisplayed"] = True
@@ -999,7 +1007,7 @@ class OpenAIDlg(wx.Dialog):
 			errMsg += "\n\n" + _("Do you want to open the URL in your browser?")
 		res = gui.messageBox(
 			errMsg,
-			_("%s error") % self.service,
+			_("OpenAI Error"),
 			wx.OK | wx.ICON_ERROR | wx.CENTRE if not url else wx.YES_NO | wx.ICON_ERROR | wx.CENTRE,
 		)
 		if url and res == wx.YES:
@@ -1297,7 +1305,7 @@ class OpenAIDlg(wx.Dialog):
 				text,
 				extras=["fenced-code-blocks", "footnotes", "header-ids", "spoiler", "strike", "tables", "task_list", "underline", "wiki-tables"]
 			),
-			title=self.service,
+			title="OpenAI",
 			isHtml=isHtml
 		)
 
@@ -1559,7 +1567,7 @@ class OpenAIDlg(wx.Dialog):
 				gui.messageBox(
 					# Translators: This message is displayed when the image has already been added.
 					_("The following image has already been added and will be ignored:\n%s") % path,
-					self.service,
+					"OpenAI",
 					wx.OK | wx.ICON_ERROR
 				)
 		model = self.getCurrentModel()
@@ -1581,7 +1589,7 @@ class OpenAIDlg(wx.Dialog):
 			None,
 			# Translators: This is a message displayed in a dialog to enter an image URL.
 			message=_("Enter image URL"),
-			caption=self.service,
+			caption="OpenAI",
 			style=wx.OK | wx.CANCEL
 		)
 		if dlg.ShowModal() != wx.ID_OK:
@@ -1595,7 +1603,7 @@ class OpenAIDlg(wx.Dialog):
 		if re.match(url_pattern, url) is None:
 			gui.messageBox(
 				_("Invalid URL, bad format."),
-				self.service,
+				"OpenAI",
 				wx.OK | wx.ICON_ERROR
 			)
 			return
@@ -1606,7 +1614,7 @@ class OpenAIDlg(wx.Dialog):
 			gui.messageBox(
 				# Translators: This message is displayed when the image URL returns an HTTP error.
 				_("HTTP error %s.") % err,
-				self.service,
+				"OpenAI",
 				wx.OK | wx.ICON_ERROR
 			)
 			return
@@ -1614,7 +1622,7 @@ class OpenAIDlg(wx.Dialog):
 			gui.messageBox(
 				# Translators: This message is displayed when the image URL does not point to an image.
 				_("The URL does not point to an image."),
-				self.service,
+				"OpenAI",
 				wx.OK | wx.ICON_ERROR
 			)
 			return
@@ -1637,7 +1645,7 @@ class OpenAIDlg(wx.Dialog):
 			gui.messageBox(
 				# Translators: This message is displayed when the add-on fails to get the image dimensions.
 				_("Failed to get image dimensions. %s") % err,
-				self.service,
+				"OpenAI",
 				wx.OK | wx.ICON_ERROR
 			)
 			return
@@ -1699,7 +1707,7 @@ class OpenAIDlg(wx.Dialog):
 		if not self.promptText.GetValue().strip():
 			gui.messageBox(
 				_("Please enter some text in the prompt field first."),
-				self.service,
+				"OpenAI",
 				wx.OK | wx.ICON_ERROR
 			)
 			self.promptText.SetFocus()
