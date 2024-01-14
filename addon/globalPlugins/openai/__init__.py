@@ -392,7 +392,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		APIKey = api_key_manager.get_api_key()
 		gui.settingsDialogs.NVDASettingsDialog.categoryClasses.append(SettingsDlg)
 		self.client = None
-		self.recordtThread = None
+		self.recordThread = None
 		self.createMenu()
 
 	def createMenu(self):
@@ -618,12 +618,12 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 	def script_toggleRecording(self, gesture):
 		if not self.getClient():
 			return ui.message(NO_AUTHENTICATION_KEY_PROVIDED_MSG)
-		if self.recordtThread:
-			self.recordtThread.stop()
-			self.recordtThread = None
+		if self.recordThread:
+			self.recordThread.stop()
+			self.recordThread = None
 		else:
-			self.recordtThread = RecordThread(
+			self.recordThread = RecordThread(
 				self.getClient(),
 				conf=conf["audio"]
 			)
-			self.recordtThreadg.start()
+			self.recordThread.start()
