@@ -19,6 +19,7 @@ class Model:
 		vision: bool=False,
 		preview=False,
 		name: str='',
+		extraInfo=None,
 		**kwargs
 	):
 		self.id = id_
@@ -30,6 +31,7 @@ class Model:
 		self.defaultTemperature = defaultTemperature
 		self.vision = vision
 		self.preview = preview
+		self.extraInfo = extraInfo or {}
 
 	def getDescription(self):
 		description = self.description.rstrip('.')
@@ -80,7 +82,8 @@ def getOpenRouterModels():
 				maxTemperature=2,
 				defaultTemperature=0.7,
 				vision="#multimodal" in model['description'],
-				preview="-preview" in model['id']
+				preview="-preview" in model['id'],
+				extraInfo={k: v for k, v in model.items() if k not in ("id", "name", "description", "context_length", "top_provider")}
 			))
 		_OpenRouterModels = models
 	return models

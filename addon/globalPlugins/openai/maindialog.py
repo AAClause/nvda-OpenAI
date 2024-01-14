@@ -607,6 +607,7 @@ class OpenAIDlg(wx.Dialog):
 		self.modelListBox.SetSelection(idx)
 		self.modelListBox.Bind(wx.EVT_LISTBOX, self.onModelChange)
 		self.modelListBox.Bind(wx.EVT_KEY_DOWN, self.onModelKeyDown)
+		self.modelListBox.Bind(wx.EVT_CONTEXT_MENU, self.onModelContextMenu)
 
 		maxTokensLabel = wx.StaticText(
 			parent=self,
@@ -823,7 +824,7 @@ class OpenAIDlg(wx.Dialog):
 					int(model.defaultTemperature * 100)
 				)
 
-	def showModelDetails(self):
+	def showModelDetails(self, evt=None):
 		model = self.getCurrentModel()
 		details = (
 			"<h1>%s (%s)</h1>"
@@ -833,6 +834,16 @@ class OpenAIDlg(wx.Dialog):
 			model.id,
 			model.description
 		)
+		if model.extraInfo:
+			details += "<ul>"
+			extraInfo = model.extraInfo
+			if "pricing" in extraInfo:
+				for k, v in extraInfo["pricing"].items():
+					if re.match("^[0-9.]+$", v) and float(v) > 0:
+						details += f"<li><b>{k}</b> cost: {v}/token.</li>"
+			
+			details += "</ul>"
+
 		ui.browseableMessage(
 			details,
 			_("Model details"),
@@ -1377,6 +1388,15 @@ class OpenAIDlg(wx.Dialog):
 			menu.AppendSeparator()
 		self.addStandardMenuOptions(menu)
 		self.promptText.PopupMenu(menu)
+		menu.Destroy()
+
+	def onModelContextMenu(self, evt):
+		menu = wx.Menu()
+		item_id = wx.NewIdRef()
+		menu.Append(item_id, _("Show model details") + " (Space)")
+		self.Bind(wx.EVT_MENU, self.showModelDetails, id=item_id)
+		menu.AppendSeparator()
+		self.modelListBox.PopupMenu(menu)
 		menu.Destroy()
 
 	def message(self, msg, onlySpeech=False):
