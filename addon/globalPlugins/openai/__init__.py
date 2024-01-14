@@ -1,6 +1,7 @@
 import json
 import os
 import sys
+import time
 import addonHandler
 import api
 import config
@@ -518,6 +519,34 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 	def script_showMainDialog(self, gesture):
 		self.onShowMainDialog(None)
 
+	def startChatSession(self, pathList):
+		from . import maindialog
+		if (
+			maindialog.addToSession
+			and isinstance(maindialog.addToSession, maindialog.OpenAIDlg)
+		):
+			instance = maindialog.addToSession
+			if not instance.pathList:
+				instance.pathList = []
+			instance.addImageToList(
+				pathList,
+				True
+			)
+			instance.updateImageList()
+			instance.SetFocus()
+			instance.Raise()
+			api.processPendingEvents()
+			ui.message(
+				_("Image added to an existing session")
+			)
+			return
+		gui.mainFrame.popupSettingsDialog(
+			maindialog.OpenAIDlg,
+			client=self.getClient(),
+			conf=conf,
+			pathList=[pathList]
+		)
+
 	@script(
 		gesture="kb:nvda+e",
 		# Translators: This is the description of a command to take a screenshot and describe it.
@@ -529,20 +558,18 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		if self.checkScreenCurtain():
 			return
 		with mss.mss() as sct:
-			tmpPath = os.path.join(DATA_DIR, "screen.png")
-			sct.shot(output=tmpPath)
-			from . import maindialog
-			gui.mainFrame.popupSettingsDialog(
-				maindialog.OpenAIDlg,
-				client=self.getClient(),
-				conf=conf,
-				pathList=[
-					(
-						tmpPath,
-						# Translators: This is the name of the screenshot to be described.
-						_("Screenshot"))
-				]
+			now = time.strftime("%Y-%m-%d_-_%H:%M:%S")
+			tmpPath = os.path.join(
+				DATA_DIR,
+				f"screen_{now}.png".replace(":", "")
 			)
+			if os.path.exists(tmpPath):
+				return
+			sct.shot(output=tmpPath)
+			name = _("Screenshot %s") % (
+				now.split("_-_")[-1]
+			)
+			self.startChatSession((tmpPath, name))
 
 	@script(
 		gesture="kb:nvda+o",
@@ -555,42 +582,35 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		if self.checkScreenCurtain():
 			return
 		with mss.mss() as sct:
-			tmpPath = os.path.join(DATA_DIR, "object.png")
+			now = time.strftime("%Y-%m-%d_-_%H:%M:%S")
+			tmpPath = os.path.join(
+				DATA_DIR,
+				f"object_{now}.png".replace(":", "")
+			)
+			if os.path.exists(tmpPath):
+				return
 			nav = api.getNavigatorObject()
 			name = nav.name
 			nav.scrollIntoView()
-			if (
-				nav.role == controlTypes.ROLE_LINK
-				and nav.value
-				and nav.value.startswith("http")
-			):
-				tmpPath = [nav.value]
-			else:
-				location = nav.location
-				monitor = {"top": location.top, "left": location.left, "width": location.width, "height": location.height}
-				sct_img = sct.grab(monitor)
-				mss.tools.to_png(sct_img.rgb, sct_img.size, output=tmpPath)
-			from . import maindialog
-			# Translators: This is the name of the screenshot to be described.
-			default_name = _("Navigator Object")
-			name = nav.name
-			if (
-				not name
-				or not name.strip()
-				or '\n' in name
-				or len(name) > 80
-			):
-				name = default_name
-			else:
-				name = "%s (%s)" % (name.strip(), default_name)
-			gui.mainFrame.popupSettingsDialog(
-				maindialog.OpenAIDlg,
-				client=self.getClient(),
-				conf=conf,
-				pathList=[
-					(tmpPath, name)
-				]
-			)
+			location = nav.location
+			monitor = {"top": location.top, "left": location.left, "width": location.width, "height": location.height}
+			sct_img = sct.grab(monitor)
+			mss.tools.to_png(sct_img.rgb, sct_img.size, output=tmpPath)
+		# Translators: This is the name of the screenshot to be described.
+		default_name = _("Navigator Object %s") % (
+			now.split("_-_")[-1]
+		)
+		name = nav.name
+		if (
+			not name
+			or not name.strip()
+			or '\n' in name
+			or len(name) > 80
+		):
+			name = default_name
+		else:
+			name = "%s (%s)" % (name.strip(), default_name)
+		self.startChatSession((tmpPath, name))
 
 	@script(
 		description=_("Toggle the microphone recording and transcribe the audio from anywhere")
@@ -606,4 +626,4 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 				self.getClient(),
 				conf=conf["audio"]
 			)
-			self.recordtThread.start()
+			self.recordtThreadg.start()
