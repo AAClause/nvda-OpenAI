@@ -1,9 +1,12 @@
 import os
 
-AVILABLE_SERVICES = [
+AVAILABLE_PROVIDERS = [
 	"OpenAI",
-	"OpenRouter"
+	"OpenRouter",
+	"MistralAI"
 ]
+
+_managers = {}
 
 class APIKeyManager:
 
@@ -14,19 +17,19 @@ class APIKeyManager:
 	def __init__(
 		self,
 		data_dir,
-		service="OpenAI"
+		provider="OpenAI"
 	):
-		if service not in AVILABLE_SERVICES:
-			raise ValueError(f"Unknown service: {service}")
+		if provider not in AVAILABLE_PROVIDERS:
+			raise ValueError(f"Unknown provider: {provider}")
 		self.data_dir = data_dir
-		self.service = service
+		self.provider = provider
 		self.api_key_path = os.path.join(
 			data_dir, 
-			f"{service}.key"
+			f"{provider}.key"
 		)
 		self.api_key_org_path = os.path.join(
 			data_dir,
-			f"{service}_org.key"
+			f"{provider}_org.key"
 		)
 		self.api_key = None
 		self.api_key_org = None
@@ -41,7 +44,7 @@ class APIKeyManager:
 			with open(file_path, "r") as f:
 				return f.read().strip()
 		except FileNotFoundError:
-			return None
+			return ""
 
 	def get_api_key(self, use_org=False):
 		if use_org:
@@ -52,8 +55,20 @@ class APIKeyManager:
 		if self.api_key is None:
 			self.api_key = self._read_api_key_from_file(self.api_key_path)
 		return self.api_key or (
-			os.getenv("OPENAI_API_KEY" if self.service == "OpenAI" else "OPENROUTER_API_KEY")
+			os.getenv("OPENAI_API_KEY" if self.provider == "OpenAI" else "OPENROUTER_API_KEY")
 		)
+
+	def get_organization_key(self):
+		organization = self.get_api_key(use_org=True)
+		if not organization or organization.count(":=") != 1:
+			return None
+		return organization.split(":=")[1]
+
+	def get_organization_name(self):
+		organization = self.get_api_key(use_org=True)
+		if not organization or organization.count(":") != 1:
+			return None
+		return organization.split(":")[0]
 
 	def save_api_key(self, key, org=False, org_name=None):
 		file_path = self.api_key_org_path if org else self.api_key_path
@@ -66,3 +81,28 @@ class APIKeyManager:
 			self.api_key_org = f"{org_name}:={key}"
 		else:
 			self.api_key = key
+
+	def ready(self):
+		return self.get_api_key() is not None
+
+
+def load(
+	data_dir: str
+):
+	"""
+	Initialize API key manager for all providers
+	"""
+	global _managers
+	for provider in AVAILABLE_PROVIDERS:
+		_managers[provider] = APIKeyManager(data_dir, provider)
+
+
+def get(
+	provider_name: str
+) -> APIKeyManager:
+	"""
+	Get API key manager for provider_name
+	"""
+	if provider_name not in AVAILABLE_PROVIDERS:
+		raise ValueError(f"Unknown provider: {provider_name}. Available: {AVAILABLE_PROVIDERS}")
+	return _managers[provider_name]

@@ -26,13 +26,15 @@ TTS_DEFAULT_MODEL = "tts-1"
 # - https://openrouter.ai/api/v1/models
 MODELS = [
 	Model(
+		"OpenAI",
 		"gpt-3.5-turbo-1106",
 		# Translators: This is a model description
 		_("Updated GPT 3.5 Turbo. The latest GPT-3.5 Turbo model with improved instruction following, JSON mode, reproducible outputs, parallel function calling, and more."),
 		16385,
-		4096
+		4096        
 	),
 	Model(
+		"OpenAI",
 		"gpt-3.5-turbo-0613",
 		# Translators: This is a model description
 		_("Same capabilities as the standard gpt-3.5-turbo model but with 4 times the context"),
@@ -40,12 +42,14 @@ MODELS = [
 		4096
 	),
 	Model(
+		"OpenAI",
 		"gpt-4-0613",
 		# Translators: This is a model description
 		_("More capable than any GPT-3.5 model, able to do more complex tasks, and optimized for chat"),
 		8192
 	),
 	Model(
+		"OpenAI",
 		"gpt-4-1106-preview",
 		# Translators: This is a model description
 		_("The latest GPT-4 model with improved instruction following, JSON mode, reproducible outputs, parallel function calling, and more."),
@@ -54,6 +58,7 @@ MODELS = [
 		preview=True
 	),
 	Model(
+		"OpenAI",
 		"gpt-4-vision-preview",
 		# Translators: This is a model description
 		_("GPT-4 Turbo with vision. Ability to understand images, in addition to all other GPT-4 Turbo capabilities."),
@@ -63,6 +68,7 @@ MODELS = [
 		preview=True
 	),
 	Model(
+		"OpenAI",
 		"gpt-4-32k-0613",
 		# Translators: This is a model description
 		_("Same capabilities as the standard gpt-4 mode but with 4x the context length."),
@@ -70,6 +76,7 @@ MODELS = [
 		8192
 	),
 	Model(
+		"MistralAI",
 		"mistral-tiny",
 		# Translators: This is a model description
 		_("Used for large batch processing tasks where cost is a significant factor but reasoning capabilities are not crucial. Uses the Mistral API."),
@@ -78,6 +85,7 @@ MODELS = [
 		defaultTemperature=0.7
 	),
 	Model(
+		"MistralAI",
 		"mistral-small",
 		# Translators: This is a model description
 		_("Higher reasoning capabilities and more capabilities. Use the Mistral API."),
@@ -86,6 +94,7 @@ MODELS = [
 		defaultTemperature=0.7
 	),
 	Model(
+		"MistralAI",
 		"mistral-medium",
 		# Translators: This is a model description
 		_("Internal prototype model. Uses the Mistral API."),
@@ -96,7 +105,11 @@ MODELS = [
 ]
 DEFAULT_MODEL = MODELS[0]
 DEFAULT_MODEL_VISION = "gpt-4-vision-preview"
-
+BASE_URLs = {
+	"MistralAI": "https://api.mistral.ai/v1",
+	"OpenAI": "https://api.openai.com/v1",
+	"OpenRouter": "https://openrouter.ai/api/v1"
+}
 DEFAULT_SYSTEM_PROMPT = _(
 	"You are an accessibility assistant integrated in the NVDA screen reader that "
 	"helps blind screen reader users access visual information that may not be accessible "

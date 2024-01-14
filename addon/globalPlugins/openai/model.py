@@ -10,6 +10,7 @@ class Model:
 
 	def __init__(
 		self,
+		provider: str,
 		id_: str,
 		description: str='',
 		contextWindow: int=32768,
@@ -22,6 +23,7 @@ class Model:
 		extraInfo=None,
 		**kwargs
 	):
+		self.provider = provider
 		self.id = id_
 		self.name = name or id_
 		self.description = description
@@ -43,21 +45,37 @@ class Model:
 		return f"Model(id={self.id}, name={self.name}, description={self.description}, contextWindow={self.contextWindow}, maxOutputToken={self.maxOutputToken}, maxTemperature={self.maxTemperature}, defaultTemperature={self.defaultTemperature})"
 
 	def __str__(self):
+		name = self.name
 		id_ = self.id
 		contextWindow = self.contextWindow
 		maxOutputToken = self.maxOutputToken
-		s = f"{self.name} ({id_}"
+		s = name + " ("
+		l = []
+		l.append(
+			_("provider: {provider}").format(
+				provider=self.provider
+			)
+		)
+		if id_ != name:
+			l.append(_("ID: {id}").format(id=id_) )
 		if contextWindow > 0:
-			label = _("Context window:")
-			s += f". {label} {contextWindow}"
+			l.append(
+				_("context window: {contextWindow}").format(
+					contextWindow=contextWindow
+				)
+			)
 		if maxOutputToken > 0:
-			label = _("max output token:")
-			s += f", {label} {maxOutputToken}"
+			l.append(
+				_("max output tokens: {maxOutputToken}").format(
+					maxOutputToken=maxOutputToken
+				)
+			)
+		s += ". ".join(l)
 		s += ')'
 		return s
 
 	def __hash__(self):
-		return hash((self.name, self.contextWindow, self.maxOutputToken, self.maxTemperature, self.defaultTemperature))
+		return hash((self.provider, self.id))
 
 
 def getOpenRouterModels():
@@ -74,6 +92,7 @@ def getOpenRouterModels():
 			key=lambda m: m["name"].lower()
 		):
 			models.append(Model(
+				provider="OpenRouter",
 				id_=model['id'],
 				name=model['name'],
 				description=model['description'],
