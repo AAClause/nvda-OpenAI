@@ -17,10 +17,12 @@ import speech
 import tones
 import ui
 from logHandler import log
+
+from . import mistralai
 from .consts import (
 	ADDON_DIR, DATA_DIR,
 	LIBS_DIR_PY,
-	MODELS, MODEL_VISION,
+	MODELS, DEFAULT_MODEL_VISION,
 	TOP_P_MIN, TOP_P_MAX,
 	N_MIN, N_MAX,
 	DEFAULT_SYSTEM_PROMPT
@@ -31,6 +33,7 @@ from .imagehelper import (
 	get_image_dimensions,
 	resize_image,
 )
+from .model import getOpenRouterModels
 from .recordthread import RecordThread, WhisperTranscription
 from .resultevent import ResultEvent, EVT_RESULT_ID
 
@@ -147,19 +150,19 @@ class CompletionThread(threading.Thread):
 		prompt = wnd.promptText.GetValue().strip()
 		block.prompt = prompt
 		model = wnd.getCurrentModel()
-		block.model = model.name
-		conf["model"] = model.name
+		block.model = model.id
+		conf["model"] = model.id
 		stream = conf["stream"]
 		debug = conf["debug"]
 		maxTokens = wnd.maxTokens.GetValue()
 		block.maxTokens = maxTokens
-		key_maxTokens = "maxTokens_%s" % model.name
+		key_maxTokens = "maxTokens_%s" % model.id
 		data[key_maxTokens] = maxTokens
 		temperature = 1
 		topP = 1
 		if conf["advancedMode"]:
 			temperature = wnd.temperature.GetValue() / 100
-			key_temperature = "temperature_%s" % model.name
+			key_temperature = "temperature_%s" % model.id
 			data[key_temperature] = wnd.temperature.GetValue()
 
 			topP = wnd.topP.GetValue() / 100
@@ -183,16 +186,7 @@ class CompletionThread(threading.Thread):
 		if not TOP_P_MIN <= topP <= TOP_P_MAX:
 			wx.PostEvent(self._notifyWindow, ResultEvent(_("Invalid top P")))
 			return
-		messages = []
-		if system:
-			messages.append({"role": "system", "content": system})
-		wnd.getMessages(messages)
-		if wnd.pathList:
-			images = wnd.getImages()
-			if images:
-				messages.append({"role": "user", "content": images})
-		if prompt:
-			messages.append({"role": "user", "content": prompt})
+		messages = self._getMessages(system, prompt)
 		nbImages = 0
 		for message in messages:
 			if (
@@ -213,21 +207,33 @@ class CompletionThread(threading.Thread):
 			# Translators: This is a message displayed when sending a request to the API.
 			msg = _("Processing, please wait...")
 		wnd.message(msg)
-		if debug and nbImages:
-			log.info(f"{nbImages} images")
-			log.info(f"{json.dumps(messages, indent=2, ensure_ascii=False)}")
+		if model.id.startswith("mistral-"):
+			client.base_url = mistralai.BASE_URL
+			client.api_key = mistralai.get_api_key()
+			client.organization = None
+		else:
+			client.base_url = wnd._base_url
+			client.api_key = wnd._api_key
+			client.organization = wnd._organization
 		params = {
-			"model": model.name,
+			"model": model.id,
 			"messages": messages,
 			"temperature": temperature,
 			"max_tokens": maxTokens,
 			"top_p": topP,
 			"stream": stream
 		}
+
+		if debug:
+			log.info("Client base URL: %s" % client.base_url)
+			if nbImages:
+				log.info(f"{nbImages} images")
+			log.info(f"{json.dumps(params, indent=2, ensure_ascii=False)}")
+
 		try:
 			response = client.chat.completions.create(**params)
 		except BaseException as err:
-			wx.PostEvent(self._notifyWindow, ResultEvent(repr(err)))
+			wx.PostEvent(self._notifyWindow, ResultEvent(err))
 			return
 		if wnd.lastBlock is None:
 			wnd.firstBlock = wnd.lastBlock = block
@@ -246,6 +252,20 @@ class CompletionThread(threading.Thread):
 		wx.PostEvent(self._notifyWindow, ResultEvent())
 		wnd.message(_("Ready"))
 
+	def _getMessages(self, system=None, prompt=None):
+		wnd = self._notifyWindow
+		messages = []
+		if system:
+			messages.append({"role": "system", "content": system})
+		wnd.getMessages(messages)
+		if wnd.pathList:
+			images = wnd.getImages()
+			if images:
+				messages.append({"role": "user", "content": images})
+		if prompt:
+			messages.append({"role": "user", "content": prompt})
+		return messages
+
 	def abort(self):
 		self._wantAbort = True
 
@@ -258,7 +278,7 @@ class CompletionThread(threading.Thread):
 			delta = event.choices[0].delta
 			finish = event.choices[0].finish_reason
 			text = ""
-			if delta.content:
+			if delta and delta.content:
 				text = delta.content
 			block.responseText += text
 		block.responseTerminated = True
@@ -266,9 +286,19 @@ class CompletionThread(threading.Thread):
 	def _responseWithoutStream(self, response, block, debug=False):
 		wnd = self._notifyWindow
 		text = ""
-		for i, choice in enumerate(response.choices):
-			if self._wantAbort: break
-			text += choice.message.content
+		if isinstance(
+			response, (
+				openai.types.chat.chat_completion.Choice,
+				openai.types.chat.chat_completion.ChatCompletion
+			)
+		):
+			for i, choice in enumerate(response.choices):
+				if self._wantAbort:
+					break
+				text += choice.message.content
+		else:
+			responseType = type(response)
+			raise TypeError(f"Invalid response type: {responseType}")
 		block.responseText += text
 		block.responseTerminated = True
 
@@ -299,7 +329,7 @@ class TextToSpeechThread(threading.Thread):
 				TTS_FILE_NAME,
 			)
 		except BaseException as err:
-			wx.PostEvent(self._notifyWindow, ResultEvent(repr(err)))
+			wx.PostEvent(self._notifyWindow, ResultEvent(err))
 			return
 		wx.PostEvent(self._notifyWindow, ResultEvent(response))
 
@@ -438,11 +468,16 @@ class OpenAIDlg(wx.Dialog):
 		if not client or not conf:
 			return
 		self.client = client
+		self._base_url = client.base_url
+		self._api_key = client.api_key
+		self._organization = client.organization
 		self.conf = conf
 		self.data = self.loadData()
 		self._orig_data = self.data.copy() if isinstance(self.data, dict) else None
 		self._historyPath = None
 		self.blocks = []
+		self._models = MODELS.copy()
+		self._models.extend(getOpenRouterModels())
 		self.pathList = []
 		if pathList:
 			for path in pathList:
@@ -466,7 +501,7 @@ class OpenAIDlg(wx.Dialog):
 					raise ValueError(f"Invalid path: {path}")
 		self.previousPrompt = None
 		self._lastSystem = None
-		self._model_names = [model.name for model in MODELS]
+		self._model_ids = [model.id for model in self._models]
 		if self.conf["saveSystem"]:
 			# If the user has chosen to save the system prompt, use the last system prompt used by the user as the default value, otherwise use the default system prompt.
 			if "system" in self.data:
@@ -476,8 +511,10 @@ class OpenAIDlg(wx.Dialog):
 		else:
 			# removes the system entry from data so that the last system prompt is not remembered when the user unchecks the save system prompt checkbox.
 			self.data.pop("system", None)
+		self.service = "OpenRouter" if conf["useOpenRouter"] else "OpenAI"
 		if not title:
-			title = "Open AI - %s" % (
+			title = "%s - %s & MistralAI" % (
+				self.service,
 				_("organization") if conf["use_org"] else _("personal")
 			)
 		super().__init__(parent, title=title)
@@ -559,16 +596,18 @@ class OpenAIDlg(wx.Dialog):
 			parent=self,
 			label=_("&Model:")
 		)
-		models = [str(model) for model in MODELS]
+		models = [str(model) for model in self._models]
 		self.modelListBox = wx.ListBox(
 			parent=self,
 			choices=models,
 			style=wx.LB_SINGLE | wx.LB_HSCROLL | wx.LB_NEEDED_SB
 		)
-		model = MODEL_VISION if self.pathList else conf["model"]
-		idx = list(self._model_names).index(model) if model in self._model_names else 0
+		model = DEFAULT_MODEL_VISION if self.pathList else conf["model"]
+		idx = list(self._model_ids).index(model) if model in self._model_ids else 0
 		self.modelListBox.SetSelection(idx)
 		self.modelListBox.Bind(wx.EVT_LISTBOX, self.onModelChange)
+		self.modelListBox.Bind(wx.EVT_KEY_DOWN, self.onModelKeyDown)
+		self.modelListBox.Bind(wx.EVT_CONTEXT_MENU, self.onModelContextMenu)
 
 		maxTokensLabel = wx.StaticText(
 			parent=self,
@@ -730,7 +769,7 @@ class OpenAIDlg(wx.Dialog):
 			f.write(json.dumps(self.data))
 
 	def getCurrentModel(self):
-		return MODELS[self.modelListBox.GetSelection()]
+		return self._models[self.modelListBox.GetSelection()]
 
 	def onResetSystemPrompt(self, event):
 		self.systemText.SetValue(DEFAULT_SYSTEM_PROMPT)
@@ -756,7 +795,7 @@ class OpenAIDlg(wx.Dialog):
 			model.maxOutputToken if model.maxOutputToken > 1 else model.contextWindow
 		)
 		defaultMaxOutputToken = 512
-		key_maxTokens = "maxTokens_%s" % model.name
+		key_maxTokens = "maxTokens_%s" % model.id
 		if (
 			key_maxTokens in self.data
 			and isinstance(self.data[key_maxTokens], int)
@@ -775,7 +814,7 @@ class OpenAIDlg(wx.Dialog):
 				0,
 				int(model.maxTemperature * 100)
 			)
-			key_temperature = "temperature_%s" % model.name
+			key_temperature = "temperature_%s" % model.id
 			if key_temperature in self.data:
 				self.temperature.SetValue(
 					int(self.data[key_temperature])
@@ -785,6 +824,37 @@ class OpenAIDlg(wx.Dialog):
 					int(model.defaultTemperature * 100)
 				)
 
+	def showModelDetails(self, evt=None):
+		model = self.getCurrentModel()
+		details = (
+			"<h1>%s (%s)</h1>"
+			"<blockquote>%s</blockquote>"
+		) % (
+			model.name,
+			model.id,
+			model.description
+		)
+		if model.extraInfo:
+			details += "<ul>"
+			extraInfo = model.extraInfo
+			if "pricing" in extraInfo:
+				for k, v in extraInfo["pricing"].items():
+					if re.match("^[0-9.]+$", v) and float(v) > 0:
+						details += f"<li><b>{k}</b> cost: {v}/token.</li>"
+			
+			details += "</ul>"
+
+		ui.browseableMessage(
+			details,
+			_("Model details"),
+			True
+		)
+
+	def onModelKeyDown(self, evt):
+		if evt.GetKeyCode() == wx.WXK_SPACE:
+			self.showModelDetails()
+		else:
+			evt.Skip()
 	def onOk(self, evt):
 		if not self.promptText.GetValue().strip() and not self.pathList:
 			self.promptText.SetFocus()
@@ -795,37 +865,50 @@ class OpenAIDlg(wx.Dialog):
 		if not model:
 			gui.messageBox(
 				_("Please select a model."),
-				"Open AI",
+				self.service,
 				wx.OK | wx.ICON_ERROR
 			)
 			return
 		if (
-			model.name == MODEL_VISION
+			self.service == "OpenAI"
+			and not model.id.startswith("gpt-")
+			and not model.id.startswith("mistral-")
+		):
+			gui.messageBox(
+				_("This model is only available with the OpenRouter service. Please provide an API key in the add-on settings. Otherwise, please select an OpenAI or MistralAI model."),
+				self.service,
+				wx.OK | wx.ICON_ERROR
+			)
+			return
+
+		if (
+			model.vision
 			and not self.conversationCheckBox.IsChecked()
 			and not self.pathList
 		):
 			gui.messageBox(
 				_("No image provided. Please use the Image Description button and select one or more images. Otherwise, please select another model."),
-				"Open AI",
+				self.service,
 				wx.OK | wx.ICON_ERROR
 			)
 			return
-		if model.name != MODEL_VISION and self.pathList:
+		if not model.vision and self.pathList:
+			visionModels = [model.id for model in self._models if model.vision]
 			gui.messageBox(
-				_("This model does not support image description. Please select the %s model.") % MODEL_VISION,
-				"Open AI",
+				_("This model does not support image description. Please select one of the following models: %s.") % ", ".join(visionModels),
+				self.service,
 				wx.OK | wx.ICON_ERROR
 			)
 			return
 		if (
-			model.name == MODEL_VISION
+			model.vision
 			and not self.conf["images"]["resize"]
 			and not self.conf["images"]["resizeInfoDisplayed"]
 		):
 			msg = _("Be aware that the add-on may auto-resize images before API submission to lower request sizes and costs. Adjust this feature in the Open AI settings if needed. This message won't show again.")
 			gui.messageBox(
 				msg,
-				"Open AI",
+				self.service,
 				wx.OK | wx.ICON_INFORMATION
 			)
 			self.conf["images"]["resizeInfoDisplayed"] = True
@@ -861,7 +944,7 @@ class OpenAIDlg(wx.Dialog):
 			historyBlock.system = self.systemText.GetValue().strip()
 			historyBlock.prompt = self.promptText.GetValue().strip()
 			model = self.getCurrentModel()
-			historyBlock.model = model.name
+			historyBlock.model = model.id
 			if self.conf["advancedMode"]:
 				historyBlock.temperature = self.temperature.GetValue() / 100
 				historyBlock.topP = self.topP.GetValue() / 100
@@ -902,16 +985,35 @@ class OpenAIDlg(wx.Dialog):
 			if os.path.exists(TTS_FILE_NAME):
 				os.startfile(TTS_FILE_NAME)
 			return
-		errMsg = repr(event.data)
-		gui.messageBox(
+		errMsg = _("Unknown error")
+		if isinstance(event.data, str):
+			errMsg = event.data
+		elif isinstance(
+			event.data, (
+				openai.APIConnectionError,
+				openai.APIStatusError
+			)
+		):
+			errMsg = event.data.message
+		else:
+			log.error(errMsg)
+			log.error(type(event.data))
+		# check if the error contains an URL, retrieve it to ask if the user wants to open it in the browser
+		url = re.search("https?://[^\s]+", errMsg)
+		if url:
+			errMsg += "\n\n" + _("Do you want to open the URL in your browser?")
+		res = gui.messageBox(
 			errMsg,
-			_("Open AI error"),
-			wx.OK | wx.ICON_ERROR
+			_("%s error") % self.service,
+			wx.OK | wx.ICON_ERROR | wx.CENTRE if not url else wx.YES_NO | wx.ICON_ERROR | wx.CENTRE,
 		)
+		if url and res == wx.YES:
+			os.startfile(url.group(0).rstrip("."))
 		if "model's maximum context length is " in errMsg:
 			self.modelListBox.SetFocus()
 		else:
 			self.promptText.SetFocus()
+		raise Exception(errMsg)
 
 	def onCharHook(self, evt):
 		if self.conf["blockEscapeKey"] and evt.GetKeyCode() == wx.WXK_ESCAPE:
@@ -1025,27 +1127,32 @@ class OpenAIDlg(wx.Dialog):
 	def getMessages(
 		self,
 		messages: list
-	) -> list:
-		model = self.getCurrentModel()
+	):
 		if not self.conversationCheckBox.IsChecked():
-			return messages
+			return
 		block = self.firstBlock
-		while block is not None:
-			content = []
+		while block:
+			userContent = []
 			if block.pathList:
-				content.extend(self.getImages(block.pathList))
-			if block.prompt:
-				content.append({
-					"type": "text",
-					"text": block.prompt
-				})
-			if content:
+				userContent.extend(self.getImages(block.pathList))
+				if block.prompt:
+					userContent.append({
+						"type": "text",
+						"text": block.prompt
+					})
+			else:
+				if block.prompt:
+					userContent = block.prompt
+			if userContent:
 				messages.append({
 					"role": "user",
-					"content": content
+					"content": userContent
 				})
 			if block.responseText:
-				messages.append({"role": "system", "content": block.responseText})
+				messages.append({
+					"role": "assistant",
+					"content": block.responseText
+				})
 			block = block.next
 
 	def onPreviousPrompt(self, event):
@@ -1195,7 +1302,7 @@ class OpenAIDlg(wx.Dialog):
 				text,
 				extras=["fenced-code-blocks", "footnotes", "header-ids", "spoiler", "strike", "tables", "task_list", "underline", "wiki-tables"]
 			),
-			title="Open AI",
+			title=self.service,
 			isHtml=isHtml
 		)
 
@@ -1288,6 +1395,15 @@ class OpenAIDlg(wx.Dialog):
 		self.promptText.PopupMenu(menu)
 		menu.Destroy()
 
+	def onModelContextMenu(self, evt):
+		menu = wx.Menu()
+		item_id = wx.NewIdRef()
+		menu.Append(item_id, _("Show model details") + " (Space)")
+		self.Bind(wx.EVT_MENU, self.showModelDetails, id=item_id)
+		menu.AppendSeparator()
+		self.modelListBox.PopupMenu(menu)
+		menu.Destroy()
+
 	def message(self, msg, onlySpeech=False):
 		func = ui.message if not onlySpeech else speech.speakMessage
 		queueHandler.queueFunction(queueHandler.eventQueue, func, msg)
@@ -1346,7 +1462,7 @@ class OpenAIDlg(wx.Dialog):
 		Select the model for image description.
 		"""
 		self.modelListBox.SetSelection(
-			self._model_names.index(MODEL_VISION)
+			self._model_ids.index(DEFAULT_MODEL_VISION)
 		)
 		self.imageListCtrl.SetSelection(evt.GetSelection())
 		evt.Skip()
@@ -1448,13 +1564,13 @@ class OpenAIDlg(wx.Dialog):
 				gui.messageBox(
 					# Translators: This message is displayed when the image has already been added.
 					_("The following image has already been added and will be ignored:\n%s") % path,
-					"Open AI",
+					self.service,
 					wx.OK | wx.ICON_ERROR
 				)
-		model_name = self.getCurrentModel().name
-		if model_name != MODEL_VISION:
+		model = self.getCurrentModel()
+		if model.vision:
 			self.modelListBox.SetSelection(
-				self._model_names.index(MODEL_VISION)
+				self._model_ids.index(DEFAULT_MODEL_VISION)
 			)
 		if not self.promptText.GetValue().strip():
 			self.promptText.SetValue(
@@ -1470,7 +1586,7 @@ class OpenAIDlg(wx.Dialog):
 			None,
 			# Translators: This is a message displayed in a dialog to enter an image URL.
 			message=_("Enter image URL"),
-			caption="Open AI",
+			caption=self.service,
 			style=wx.OK | wx.CANCEL
 		)
 		if dlg.ShowModal() != wx.ID_OK:
@@ -1484,7 +1600,7 @@ class OpenAIDlg(wx.Dialog):
 		if re.match(url_pattern, url) is None:
 			gui.messageBox(
 				_("Invalid URL, bad format."),
-				"Open AI",
+				self.service,
 				wx.OK | wx.ICON_ERROR
 			)
 			return
@@ -1495,7 +1611,7 @@ class OpenAIDlg(wx.Dialog):
 			gui.messageBox(
 				# Translators: This message is displayed when the image URL returns an HTTP error.
 				_("HTTP error %s.") % err,
-				"Open AI",
+				self.service,
 				wx.OK | wx.ICON_ERROR
 			)
 			return
@@ -1503,7 +1619,7 @@ class OpenAIDlg(wx.Dialog):
 			gui.messageBox(
 				# Translators: This message is displayed when the image URL does not point to an image.
 				_("The URL does not point to an image."),
-				"Open AI",
+				self.service,
 				wx.OK | wx.ICON_ERROR
 			)
 			return
@@ -1526,7 +1642,7 @@ class OpenAIDlg(wx.Dialog):
 			gui.messageBox(
 				# Translators: This message is displayed when the add-on fails to get the image dimensions.
 				_("Failed to get image dimensions. %s") % err,
-				"Open AI",
+				self.service,
 				wx.OK | wx.ICON_ERROR
 			)
 			return
@@ -1539,7 +1655,7 @@ class OpenAIDlg(wx.Dialog):
 			)
 		)
 		self.modelListBox.SetSelection(
-			self._model_names.index(MODEL_VISION)
+			self._model_ids.index(DEFAULT_MODEL_VISION)
 		)
 		if not self.promptText.GetValue().strip():
 			self.promptText.SetValue(
@@ -1589,7 +1705,7 @@ class OpenAIDlg(wx.Dialog):
 		if not self.promptText.GetValue().strip():
 			gui.messageBox(
 				_("Please enter some text in the prompt field first."),
-				"Open AI",
+				self.service,
 				wx.OK | wx.ICON_ERROR
 			)
 			self.promptText.SetFocus()

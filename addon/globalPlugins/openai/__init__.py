@@ -35,13 +35,19 @@ ADDON_INFO = addonHandler.Addon(
 NO_AUTHENTICATION_KEY_PROVIDED_MSG = _("No authentication key provided. Please set it in the Preferences dialog.")
 
 conf = config.conf["OpenAI"]
-api_key_manager = APIKeyManager(DATA_DIR)
+api_key_manager = APIKeyManager(
+	DATA_DIR,
+	service="OpenRouter" if conf["useOpenRouter"] else "OpenAI"
+)
+
 
 class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 
 	title = "Open AI"
 
 	def makeSettings(self, settingsSizer):
+		from .mistralai import get_api_key as get_mistral_api_key
+
 		sHelper = gui.guiHelper.BoxSizerHelper(self, sizer=settingsSizer)
 
 		updateGroupLabel = _("Update")
@@ -68,28 +74,33 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 
 		sHelper.addItem(updateSizer)
 
-		APIKey = api_key_manager.get_api_key()
-		if not APIKey: APIKey = ''
-		APIKeyOrg = api_key_manager.get_api_key(use_org=True)
-		org_name = ""
-		org_key = ""
-		if APIKeyOrg and ":=" in APIKeyOrg :
-			org_name, org_key = APIKeyOrg.split(":=")
-		self.APIKey = sHelper.addLabeledControl(
-			_("API Key:"),
-			wx.TextCtrl,
-			value=APIKey
+		APIAccessGroupLabel = _("API Access Keys")
+		APIAccessSizer = wx.StaticBoxSizer(wx.VERTICAL, self, label=APIAccessGroupLabel)
+		APIAccessBox = APIAccessSizer.GetStaticBox()
+		APIAccessGroup = gui.guiHelper.BoxSizerHelper(self, sizer=APIAccessSizer)
+
+		self.useOpenRouter = APIAccessGroup.addItem(
+			wx.CheckBox(
+				APIAccessBox,
+				label=_("Use OpenR&outer instead of OpenAI")
+			)
+		)
+		self.useOpenRouter.SetValue(conf["useOpenRouter"])
+		self.useOpenRouter.Bind(
+			wx.EVT_CHECKBOX,
+			self.onUseOpenRouter
 		)
 
-		orgGroupLabel = _("Organization")
-		orgSizer = wx.StaticBoxSizer(wx.VERTICAL, self, label=orgGroupLabel)
-		orgGroupBox = orgSizer.GetStaticBox()
-		orgGroup = gui.guiHelper.BoxSizerHelper(self, sizer=orgSizer)
+		self.APIKey = APIAccessGroup.addLabeledControl(
+			_("OpenAI/OpenRouter API &Key:"),
+			wx.TextCtrl,
+		)
 
-		self.use_org = orgGroup.addItem(
+		self.use_org = APIAccessGroup.addItem(
 			wx.CheckBox(
-				orgGroupBox,
-				label=_("Use or&ganization"))
+				APIAccessBox,
+				label=_("Use or&ganization")
+			)
 		)
 		self.use_org.SetValue(
 			conf["use_org"]
@@ -99,19 +110,24 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 			self.onUseOrg
 		)
 
-		self.org_name = orgGroup.addLabeledControl(
+		self.orgName = APIAccessGroup.addLabeledControl(
 			_("Organization &name:"),
-			wx.TextCtrl,
-			value=org_name
+			wx.TextCtrl
 		)
 
-		self.org_key = orgGroup.addLabeledControl(
+		self.orgKey = APIAccessGroup.addLabeledControl(
 			_("&Organization key:"),
 			wx.TextCtrl,
-			value=org_key
 		)
 
-		sHelper.addItem(orgSizer)
+		label = _("Mistra&lAI API key:")
+		self.mistralAPIKey = APIAccessGroup.addLabeledControl(
+			label,
+			wx.TextCtrl,
+			value=get_mistral_api_key()
+		)
+
+		sHelper.addItem(APIAccessSizer)
 
 		mainDialogGroupLabel = _("Main dialog")
 		mainDialogSizer = wx.StaticBoxSizer(wx.VERTICAL, self, label=mainDialogGroupLabel)
@@ -270,13 +286,35 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 
 		sHelper.addItem(mainDialogSizer)
 
+		self.onUseOpenRouter(None)
 		self.onUseOrg(None)
 		self.onResize(None)
 		self.onWhisperCheckbox(None)
 
 	def onUseOrg(self, evt):
-		self.org_name.Enable(self.use_org.GetValue())
-		self.org_key.Enable(self.use_org.GetValue())
+		self.orgName.Enable(self.use_org.GetValue())
+		self.orgKey.Enable(self.use_org.GetValue())
+
+	def onUseOpenRouter(self, evt):
+		service = "OpenRouter" if self.useOpenRouter.GetValue() else "OpenAI"
+		api_key_manager = APIKeyManager(
+			DATA_DIR,
+			service=service
+		)
+		APIKey = api_key_manager.get_api_key()
+		self.APIKey.SetLabel(
+			# Translators: This is the label of the API key field in the settings dialog.
+			_("%s API Key:") % service
+		)
+		self.APIKey.SetValue(APIKey if APIKey else '')
+		if not APIKey: APIKey = ''
+		APIKeyOrg = api_key_manager.get_api_key(use_org=True)
+		org_name = ""
+		org_key = ""
+		if APIKeyOrg and ":=" in APIKeyOrg :
+			org_name, org_key = APIKeyOrg.split(":=")
+		self.orgName.SetValue(org_name)
+		self.orgKey.SetValue(org_key)
 
 	def onResize(self, evt):
 		self.maxWidth.Enable(self.resize.GetValue())
@@ -296,19 +334,25 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 			self.customPromptText.Enable(False)
 
 	def onSave(self):
+		global api_key_manager
+		from .mistralai import set_api_key as set_mistral_api_key
 		conf["update"]["check"] = self.updateCheck.GetValue()
 		conf["update"]["channel"] = self.updateChannel.GetString(self.updateChannel.GetSelection())
 		api_key = self.APIKey.GetValue().strip()
+		api_key_manager = APIKeyManager(
+			DATA_DIR,
+			service="OpenRouter" if self.useOpenRouter.GetValue() else "OpenAI"
+		)
 		api_key_manager.save_api_key(api_key)
-		api_key_org = self.org_key.GetValue().strip()
+		api_key_org = self.orgKey.GetValue().strip()
 		conf["use_org"] = self.use_org.GetValue()
-		org_name = self.org_name.GetValue().strip()
+		org_name = self.orgName.GetValue().strip()
 		if conf["use_org"]:
 			if not api_key_org:
-				self.org_key.SetFocus()
+				self.orgKey.SetFocus()
 				return
 			if not org_name:
-				self.org_name.SetFocus()
+				self.orgName.SetFocus()
 				return
 		api_key_manager.save_api_key(
 			api_key_org,
@@ -316,6 +360,7 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 			org_name=org_name
 		)
 		conf["blockEscapeKey"] = self.blockEscape.GetValue()
+		conf["useOpenRouter"] = self.useOpenRouter.GetValue()
 		conf["renewClient"] = True
 		conf["saveSystem"] = self.saveSystem.GetValue()
 		conf["advancedMode"] = self.advancedMode.GetValue()
@@ -334,6 +379,7 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 			conf["images"]["useCustomPrompt"] = False
 		conf["audio"]["whisper.cpp"]["enabled"] = self.whisperCheckbox.GetValue()
 		conf["audio"]["whisper.cpp"]["host"] = self.whisperHost.GetValue()
+		set_mistral_api_key(self.mistralAPIKey.GetValue().strip())
 
 
 class GlobalPlugin(globalPluginHandler.GlobalPlugin):
@@ -441,6 +487,8 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			)
 		else:
 			self.client = OpenAI(api_key=api_key)
+		if conf["useOpenRouter"]:
+			self.client.base_url = "https://openrouter.ai/api/v1"
 		return self.client
 
 	def checkScreenCurtain(self):

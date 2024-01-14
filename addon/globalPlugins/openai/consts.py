@@ -19,16 +19,83 @@ TTS_VOICES = ["alloy", "echo", "fable", "onyx", "nova", "shimmer"]
 TTS_DEFAULT_VOICE = "nova"
 TTS_MODELS = ["tts-1", "tts-1-hd"]
 TTS_DEFAULT_MODEL = "tts-1"
-MODEL_VISION = "gpt-4-vision-preview"
+
+# References:
+# - https://platform.openai.com/docs/models/
+# - https://docs.mistral.ai/platform/endpoints/
+# - https://openrouter.ai/api/v1/models
 MODELS = [
-	Model("gpt-3.5-turbo-1106", _("Updated GPT 3.5 Turbo. The latest GPT-3.5 Turbo model with improved instruction following, JSON mode, reproducible outputs, parallel function calling, and more."), 16385, 4096),
-	Model("gpt-3.5-turbo-0613", _("Same capabilities as the standard gpt-3.5-turbo model but with 4 times the context"), 16384, 4096),
-	Model("gpt-4-0613", _("More capable than any GPT-3.5 model, able to do more complex tasks, and optimized for chat"), 8192),
-	Model("gpt-4-1106-preview", _("The latest GPT-4 model with improved instruction following, JSON mode, reproducible outputs, parallel function calling, and more."), 128000, 4096),
-	Model(MODEL_VISION, _("GPT-4 Turbo with vision. Ability to understand images, in addition to all other GPT-4 Turbo capabilities."), 128000, 4096),
-	Model("gpt-4-32k-0613", _("Same capabilities as the standard gpt-4 mode but with 4x the context length."), 32768, 8192),
+	Model(
+		"gpt-3.5-turbo-1106",
+		# Translators: This is a model description
+		_("Updated GPT 3.5 Turbo. The latest GPT-3.5 Turbo model with improved instruction following, JSON mode, reproducible outputs, parallel function calling, and more."),
+		16385,
+		4096
+	),
+	Model(
+		"gpt-3.5-turbo-0613",
+		# Translators: This is a model description
+		_("Same capabilities as the standard gpt-3.5-turbo model but with 4 times the context"),
+		16384,
+		4096
+	),
+	Model(
+		"gpt-4-0613",
+		# Translators: This is a model description
+		_("More capable than any GPT-3.5 model, able to do more complex tasks, and optimized for chat"),
+		8192
+	),
+	Model(
+		"gpt-4-1106-preview",
+		# Translators: This is a model description
+		_("The latest GPT-4 model with improved instruction following, JSON mode, reproducible outputs, parallel function calling, and more."),
+		128000,
+		4096,
+		preview=True
+	),
+	Model(
+		"gpt-4-vision-preview",
+		# Translators: This is a model description
+		_("GPT-4 Turbo with vision. Ability to understand images, in addition to all other GPT-4 Turbo capabilities."),
+		128000,
+		4096,
+		vision=True,
+		preview=True
+	),
+	Model(
+		"gpt-4-32k-0613",
+		# Translators: This is a model description
+		_("Same capabilities as the standard gpt-4 mode but with 4x the context length."),
+		32768,
+		8192
+	),
+	Model(
+		"mistral-tiny",
+		# Translators: This is a model description
+		_("Used for large batch processing tasks where cost is a significant factor but reasoning capabilities are not crucial. Uses the Mistral API."),
+		32000,
+		maxTemperature=1.0,
+		defaultTemperature=0.7
+	),
+	Model(
+		"mistral-small",
+		# Translators: This is a model description
+		_("Higher reasoning capabilities and more capabilities. Use the Mistral API."),
+		32000,
+		maxTemperature=1.0,
+		defaultTemperature=0.7
+	),
+	Model(
+		"mistral-medium",
+		# Translators: This is a model description
+		_("Internal prototype model. Uses the Mistral API."),
+		32000,
+		maxTemperature=1.0,
+		defaultTemperature=0.7
+	)
 ]
 DEFAULT_MODEL = MODELS[0]
+DEFAULT_MODEL_VISION = "gpt-4-vision-preview"
 
 DEFAULT_SYSTEM_PROMPT = _(
 	"You are an accessibility assistant integrated in the NVDA screen reader that "
