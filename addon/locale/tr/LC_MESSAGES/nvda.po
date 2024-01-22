@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Open AI\n"
 "Report-Msgid-Bugs-To: nvda-translations@groups.io\n"
-"POT-Creation-Date: 2024-01-08 16:49+0300\n"
-"PO-Revision-Date: 2024-01-08 17:10+0300\n"
+"POT-Creation-Date: 2024-01-16 17:34+0300\n"
+"PO-Revision-Date: 2024-01-16 18:23+0300\n"
 "Last-Translator: Umut KORKMAZ <umutkork@gmail.com>\n"
 "Language-Team: Umut KORKMAZ <umutkork@gmail.com>\n"
 "Language: tr_TR\n"
@@ -16,103 +16,85 @@ msgstr ""
 "X-Poedit-SearchPath-0: .\n"
 "X-Poedit-SearchPath-1: .\n"
 
-#: openai/__init__.py:35
+#: openai/__init__.py:36
 msgid ""
-"No authentication key provided. Please set it in the Preferences dialog."
+"No API key provided for any provider, please provide at least one API key in "
+"the settings dialog"
 msgstr ""
-"Kimlik doğrulama anahtarı mevcut değil. Lütfen Tercihler/Ayarlar iletişim "
-"kutusunda ekleyin."
+"Hiçbir sağlayıcı için API anahtarı eklenmemiş.. Lütfen ayarlar iletişim "
+"kutusunda en az bir API anahtarı sağlayın"
 
-#: openai/__init__.py:53
+#: openai/__init__.py:117
 msgid "Update"
 msgstr "Güncelleme"
 
-#: openai/__init__.py:61
+#: openai/__init__.py:125
 msgid "Check for &updates on startup and periodically"
 msgstr "Başlangıçta ve periyodik olarak &güncellemeleri denetle"
 
-#: openai/__init__.py:67
+#: openai/__init__.py:131
 msgid "&Channel:"
 msgstr "&Kanal:"
 
-#: openai/__init__.py:77
-#| msgid "API Key:"
+#: openai/__init__.py:141
 msgid "API Access Keys"
 msgstr "API Erişim Anahtarları"
 
-#: openai/__init__.py:85
-msgid "Use OpenR&outer instead of OpenAI"
-msgstr "OpenAI yerine OpenR&outer kullan"
+#: openai/__init__.py:150
+#, python-format
+#| msgid "API &keys"
+msgid "%s API &keys..."
+msgstr "%s API &anahtarı..."
 
-#: openai/__init__.py:95
-msgid "OpenAI/OpenRouter API &Key:"
-msgstr "OpenAI/OpenRouter API ve Anahtarı:"
-
-#: openai/__init__.py:102
-msgid "Use or&ganization"
-msgstr "&Organizasyon kullan"
-
-#: openai/__init__.py:114
-msgid "Organization &name:"
-msgstr "Organizasyon &Adı:"
-
-#: openai/__init__.py:119
-msgid "&Organization key:"
-msgstr "&Organizasyon anahtarı:"
-
-#: openai/__init__.py:123
-msgid "Mistra&lAI API key:"
-msgstr "Mistra&lAI API anahtarı:"
-
-#: openai/__init__.py:132
+#: openai/__init__.py:162
 msgid "Main dialog"
 msgstr "Ana diyalog"
 
-#: openai/__init__.py:137
+#: openai/__init__.py:167
 msgid "Block the closing using the &escape key"
 msgstr "Bloğun &Escape Tuşu İle Kapanmasını Engelle"
 
-#: openai/__init__.py:145
+#: openai/__init__.py:175
 msgid "Remember the content of the S&ystem field between sessions"
 msgstr "Oturumlar arasında Sistem alanının içeri&ğini hatırla"
 
-#: openai/__init__.py:153
+#: openai/__init__.py:183
 msgid "Enable &advanced settings (including temperature and probability mass)"
 msgstr "Gelişmiş &ayarları etkinleştir (sıcaklık ve olasılık kütlesi dahil)"
 
-#: openai/__init__.py:161
+#: openai/__init__.py:191
 msgid "Text To Speech"
 msgstr "Metinden Konuşmaya"
 
-#: openai/__init__.py:167
+#: openai/__init__.py:197
 msgid "&Voice:"
 msgstr "&Ses:"
 
-#: openai/__init__.py:177 openai/maindialog.py:594
+#: openai/__init__.py:207 openai/maindialog.py:598
 msgid "&Model:"
 msgstr "&Modèl:"
 
-#: openai/__init__.py:188
+#: openai/__init__.py:218
 msgid "Image description"
 msgstr "Görsel Betimleme"
 
-#: openai/__init__.py:193
+#: openai/__init__.py:223
 msgid "&Resize images before sending them to the API"
 msgstr "Görüntüleri API'ye göndermeden önce yeniden boyutlandı&r"
 
-#: openai/__init__.py:206
+#: openai/__init__.py:236
 msgid "Maximum &width (0 to resize proportionally to the height):"
 msgstr ""
 "Maksimum geni&şlik (yüksekliğe orantılı olarak yeniden boyutlandırmak için "
 "0):"
 
-#: openai/__init__.py:215
+#: openai/__init__.py:245
 msgid "Maximum &height (0 to resize proportionally to the width):"
 msgstr ""
 "Maksimum y&ükseklik (genişliğe orantılı olarak yeniden boyutlandırmak için "
 "0):"
 
-#: openai/__init__.py:224
+#: openai/__init__.py:254
 msgid ""
 "&Quality for JPEG images (0 [worst] to 95 [best], values above 95 should be "
 "avoided):"
@@ -120,106 +102,108 @@ msgstr ""
 "&JPEG görüntülerin kalitesi (0 [en kötü] ila 95 [en iyi], 95'in üzerindeki "
 "değerlerden kaçınılmalıdır):"
 
-#: openai/__init__.py:236
+#: openai/__init__.py:266
 msgid "Customize default text &prompt"
 msgstr "&Varsayılan metin istemini özelleştir"
 
-#: openai/__init__.py:242
+#: openai/__init__.py:272
 msgid "Default &text prompt:"
 msgstr "&Varsayılan metin istemi:"
 
-#: openai/__init__.py:256
+#: openai/__init__.py:286
 msgid "Recording"
 msgstr "Kaydediliyor"
 
-#: openai/__init__.py:262
+#: openai/__init__.py:292
 msgid "Use &whisper.cpp for transcription"
 msgstr "Transkripsiyon için &whisper.cpp kullan"
 
-#: openai/__init__.py:278
+#: openai/__init__.py:308
 msgid "&Host:"
 msgstr "&Ana Bilgisayar:"
 
-#: openai/__init__.py:307
-#, python-format
-#| msgid "API Key:"
-msgid "%s API Key:"
-msgstr "%s API Anahtarı:"
-
-#: openai/__init__.py:401
+#: openai/__init__.py:403
 msgid "Docu&mentation"
 msgstr "&Yardım"
 
-#: openai/__init__.py:402
+#: openai/__init__.py:404
 msgid "Open the documentation of this addon"
 msgstr "Bu eklentinin yardım belgelerini aç"
 
-#: openai/__init__.py:407
+#: openai/__init__.py:409
 msgid "Main d&ialog..."
 msgstr "&Ana diyalog..."
 
-#: openai/__init__.py:408
+#: openai/__init__.py:410
 msgid "Show the Open AI dialog"
 msgstr "Open AI iletişim kutusunu göster"
 
-#: openai/__init__.py:413
+#: openai/__init__.py:415
 msgid "API &keys"
 msgstr "&API anahtarı"
 
-#: openai/__init__.py:414
+#: openai/__init__.py:416
 msgid "Manage the API keys"
 msgstr "API anahtarlarını yönet"
 
-#: openai/__init__.py:419
+#: openai/__init__.py:421
 msgid "API &usage"
 msgstr "API k&ullan"
 
-#: openai/__init__.py:420
+#: openai/__init__.py:422
 msgid "Open the API usage webpage"
 msgstr "API kullanııcı web sayfasını aç"
 
-#: openai/__init__.py:425
+#: openai/__init__.py:427
 msgid "Git&Hub repository"
 msgstr "Git&Hub deposu"
 
-#: openai/__init__.py:426
+#: openai/__init__.py:428
 msgid "Open the GitHub repository of this addon"
 msgstr "Bu eklentinin GitHub deposunu aç"
 
-#: openai/__init__.py:435
+#: openai/__init__.py:437
 #, python-brace-format
 msgid "Open A&I {addon_version}"
 msgstr "Open A&I {addon_version}"
 
-#: openai/__init__.py:501
+#: openai/__init__.py:505
 msgid "Please disable the screen curtain before taking a screenshot"
 msgstr "Ekran görüntüsü almadan önce lütfen ekran perdesini devre dışı bırakın"
 
-#: openai/__init__.py:516
+#: openai/__init__.py:520
 msgid "Show Open AI dialog"
 msgstr "Open AI İletişim kutusunu gösterir"
 
-#: openai/__init__.py:524
+#: openai/__init__.py:543
+msgid "Image added to an existing session"
+msgstr "Mevcut oturuma görsel eklendi"
+
+#: openai/__init__.py:556
 msgid "Take a screenshot and describe it"
 msgstr "Ekran görüntüsü alır ve betimler"
 
-#: openai/__init__.py:543
-msgid "Screenshot"
-msgstr "Ekran görüntüsü"
+#: openai/__init__.py:572
+#, python-format
+#| msgid "Screenshot"
+msgid "Screenshot %s"
+msgstr "%s Ekran görüntüsü"
 
-#: openai/__init__.py:550
+#: openai/__init__.py:580
 msgid "Grab the current navigator object and describe it"
 msgstr "Geçerli gezgin nesnesini alır ve betimler"
 
-#: openai/__init__.py:575
-msgid "Navigator Object"
-msgstr "Gezgin Nesnesi"
+#: openai/__init__.py:603
+#, python-format
+#| msgid "Navigator Object"
+msgid "Navigator Object %s"
+msgstr "%s Gezgin Nesnesi"
 
-#: openai/__init__.py:596
+#: openai/__init__.py:619
 msgid "Toggle the microphone recording and transcribe the audio from anywhere"
 msgstr "İstenen yerden mikrofonu açar ve sesi yazıya aktarır"
 
-#: openai/consts.py:31
+#: openai/consts.py:32
 msgid ""
 "Updated GPT 3.5 Turbo. The latest GPT-3.5 Turbo model with improved "
 "instruction following, JSON mode, reproducible outputs, parallel function "
@@ -229,7 +213,7 @@ msgstr ""
 "tekrarlanabilir çıktılar, paralel işlev çağrısı ve daha fazlasına sahip en "
 "yeni GPT-3.5 Turbo modeli."
 
-#: openai/consts.py:38
+#: openai/consts.py:40
 msgid ""
 "Same capabilities as the standard gpt-3.5-turbo model but with 4 times the "
 "context"
@@ -237,7 +221,7 @@ msgstr ""
 "Standart gpt-3.5-turbo modeliyle aynı yeteneklere sahiptir ancak 4 kat daha "
 "fazla içeriğe sahiptir"
 
-#: openai/consts.py:45
+#: openai/consts.py:48
 msgid ""
 "More capable than any GPT-3.5 model, able to do more complex tasks, and "
 "optimized for chat"
@@ -245,7 +229,7 @@ msgstr ""
 "Tüm GPT-3.5 modellerinden daha yetenekli, daha karmaşık görevleri yerine "
 "getirebilen ve sohbet için optimize edilmiş"
 
-#: openai/consts.py:51
+#: openai/consts.py:55
 msgid ""
 "The latest GPT-4 model with improved instruction following, JSON mode, "
 "reproducible outputs, parallel function calling, and more."
@@ -253,7 +237,7 @@ msgstr ""
 "Geliştirilmiş talimat takibi, JSON modu, tekrarlanabilir çıktılar, paralel "
 "işlev çağrısı ve daha fazlasına sahip en yeni GPT-4 modeli."
 
-#: openai/consts.py:59
+#: openai/consts.py:64
 msgid ""
 "GPT-4 Turbo with vision. Ability to understand images, in addition to all "
 "other GPT-4 Turbo capabilities."
@@ -261,14 +245,14 @@ msgstr ""
 "Vizyon ile GPT-4 Turbo. Diğer tüm GPT-4 Turbo özelliklerine ek olarak "
 "görüntüleri anlama yeteneği."
 
-#: openai/consts.py:68
+#: openai/consts.py:74
 msgid ""
 "Same capabilities as the standard gpt-4 mode but with 4x the context length."
 msgstr ""
 "Standart gpt-4 modu ile aynı özelliklere sahiptir ancak bağlam uzunluğu 4 "
 "kat daha fazladır."
 
-#: openai/consts.py:75
+#: openai/consts.py:82
 msgid ""
 "Used for large batch processing tasks where cost is a significant factor but "
 "reasoning capabilities are not crucial. Uses the Mistral API."
@@ -277,275 +261,18 @@ msgstr ""
 "olmadığı büyük toplu işleme görevleri için kullanılır. Mistral API'sini "
 "kullanır."
 
-#: openai/consts.py:83
+#: openai/consts.py:91
 msgid ""
 "Higher reasoning capabilities and more capabilities. Use the Mistral API."
 msgstr ""
 "Daha yüksek muhakeme yetenekleri ve daha fazla yetenek. Mistral API'sını "
 "kullanır."
 
-#: openai/consts.py:91
+#: openai/consts.py:100
 msgid "Internal prototype model. Uses the Mistral API."
 msgstr "Dahili prototip modeli. Mistral API'sini kullanır."
 
-#: openai/consts.py:99
-msgid ""
-"Depending on their size, subject, and complexity, your prompts will be sent "
-"to MythoMax 13B, MythoMax 13B 8k, or GPT-4 Turbo."
-msgstr ""
-"Boyutlarına, konularına ve karmaşıklıklarına bağlı olarak istemleriniz "
-"MythoMax 13B, MythoMax 13B 8k veya GPT-4 Turbo'ya gönderilecektir."
-
-#: openai/consts.py:104
-msgid ""
-"A large LLM created by combining two fine-tuned Llama 70B models into one "
-"120B model. Combines Xwin and Euryale."
-msgstr ""
-"İki ince ayarlı Llama 70B modelinin tek bir 120B modelinde "
-"birleştirilmesiyle oluşturulan büyük bir LLM. Xwin ve Euryale'yi birleştirir."
-
-#: openai/consts.py:110
-msgid ""
-"Claude 2.1 delivers advancements in key capabilities for enterprises—"
-"including an industry-leading 200K token context window, significant "
-"reductions in rates of model hallucination, system prompts and new beta "
-"feature: tool use."
-msgstr ""
-"Claude 2.1, sektör lideri 200.000 token bağlam penceresi, model halüsinasyon "
-"oranlarında önemli azalmalar, sistem istemleri ve yeni beta özelliği olan "
-"araç kullanımı da dahil olmak üzere işletmeler için temel yeteneklerde "
-"ilerlemeler sağlar."
-
-#: openai/consts.py:116
-msgid ""
-"Superior performance on tasks that require complex reasoning. Supports up to "
-"100k tokens in one pass, or hundreds of pages of text."
-msgstr ""
-"Karmaşık akıl yürütme gerektiren görevlerde üstün performans. Tek geçişte "
-"100 bine kadar jetonu veya yüzlerce sayfalık metni destekler."
-
-#: openai/consts.py:122
-msgid ""
-"For low-latency, high throughput text generation. Supports up to 100k tokens "
-"in one pass, or hundreds of pages of text."
-msgstr ""
-"Düşük gecikmeli, yüksek verimli metin üretimi için. Tek geçişte 100 bine "
-"kadar jetonu veya yüzlerce sayfalık metni destekler."
-
-#: openai/consts.py:128
-msgid ""
-"This is a 16k context fine-tune of Mixtral-8x7b. It excels in coding tasks "
-"due to extensive training with coding data and is known for its obedience, "
-"although it lacks DPO tuning. The model is uncensored and is stripped of "
-"alignment and bias. It requires an external alignment layer for ethical use."
-msgstr ""
-"Bu, Mixtral-8x7b'nin 16k bağlam ince ayarıdır. Kodlama verileriyle ilgili "
-"kapsamlı eğitim sayesinde kodlama görevlerinde başarılıdır ve DPO ayarından "
-"yoksun olmasına rağmen itaatiyle tanınır. Model sansürsüzdür ve hizalama ve "
-"önyargılardan arındırılmıştır. Etik kullanım için harici bir hizalama "
-"katmanı gerektirir."
-
-#: openai/consts.py:134
-msgid ""
-"Designed to handle natural language tasks, multiturn text and code chat, and "
-"code generation."
-msgstr ""
-"Doğal dil görevlerini, çok yönlü metin ve kod sohbetini ve kod oluşturmayı "
-"gerçekleştirmek üzere tasarlanmıştır."
-
-#: openai/consts.py:142
-msgid ""
-"Google's flagship multimodal model, supporting image and video in text or "
-"chat prompts for a text or code response."
-msgstr ""
-"Metin veya sohbet istemlerinde resim ve videoyu destekleyen Google'ın amiral "
-"gemisi çok modlu modeli, metin veya kod yanıtı ister."
-
-#: openai/consts.py:151 openai/consts.py:158
-msgid ""
-"PaLM 2 is a language model by Google with improved multilingual, reasoning "
-"and coding capabilities."
-msgstr ""
-"PaLM 2, Google'ın geliştirilmiş çok dilli, akıl yürütme ve kodlama "
-"yeteneklerine sahip bir dil modelidir."
-
-#: openai/consts.py:165 openai/consts.py:172
-msgid ""
-"PaLM 2 fine-tuned for chatbot conversations that help with code-related "
-"questions."
-msgstr ""
-"PaLM 2, kodla ilgili sorulara yardımcı olan chatbot konuşmaları için ince "
-"ayar yapılmıştır."
-
-#: openai/consts.py:179
-msgid ""
-"One of the highest performing fine-tunes of Llama 2 13B, with rich "
-"descriptions and roleplay."
-msgstr ""
-"Zengin açıklamalar ve rol oyunlarıyla Llama 2 13B'nin en yüksek performanslı "
-"ince ayarlarından biri."
-
-#: openai/consts.py:185
-msgid ""
-"Merges a suite of models to reduce word anticipation, ministrations, and "
-"other undesirable words in ChatGPT roleplaying data. It combines Neural Chat "
-"7B, Airoboros 7b, Toppy M 7B, Zepher 7b beta, Nous Capybara 34B, OpenHeremes "
-"2.5, and many others."
-msgstr ""
-"ChatGPT rol yapma verilerinde kelime tahminini, hizmetleri ve diğer "
-"istenmeyen kelimeleri azaltmak için bir model paketini birleştirir. Neural "
-"Chat 7B, Airoboros 7b, Toppy M 7B, Zepher 7b beta, Nous Capybara 34B, "
-"OpenHeremes 2.5 ve daha fazlasını birleştirir."
-
-#: openai/consts.py:192
-msgid ""
-"LLaVA is a large multimodal model that combines a vision encoder and Vicuna "
-"for general-purpose visual and language understanding, achieving impressive "
-"chat capabilities mimicking GPT-4 and setting a new state-of-the-art "
-"accuracy on Science QA"
-msgstr ""
-"LLaVA, genel amaçlı görsel ve dil anlayışı için görüntü kodlayıcıyı ve "
-"Vicuna'yı birleştiren, GPT-4'ü taklit eden etkileyici sohbet yetenekleri "
-"elde eden ve Science QA'da yeni ve son teknoloji bir doğruluk sağlayan "
-"büyük, çok modlu bir modeldir"
-
-#: openai/consts.py:199
-msgid ""
-"A fine-tuned version of mistralai/Mistral-7B-v0.1 that was trained on a mix "
-"of publicly available, synthetic datasets using Direct Preference "
-"Optimization (DPO)."
-msgstr ""
-"Doğrudan Tercih Optimizasyonu (DPO) kullanılarak halka açık, sentetik veri "
-"kümelerinin bir karışımı üzerinde eğitilmiş, mistralai/Mistral-7B-v0.1'in "
-"ince ayarlı bir sürümü."
-
-#: openai/consts.py:205
-msgid ""
-"Built upon Llama 2 and excels at filling in code, handling extensive input "
-"contexts, and folling programming instructions without prior training for "
-"various programming tasks."
-msgstr ""
-"Llama 2 üzerine inşa edilmiştir ve çeşitli programlama görevleri için "
-"önceden eğitim gerektirmeden kodu doldurma, kapsamlı giriş bağlamlarını "
-"yönetme ve programlama talimatlarını takip etme konusunda mükemmeldir."
-
-#: openai/consts.py:211
-msgid ""
-"A 13 billion parameter language model from Meta, fine tuned for chat "
-"completions"
-msgstr ""
-"Meta'nın sohbet tamamlamaları için ince ayarlı 13 milyar parametreli dil "
-"modeli"
-
-#: openai/consts.py:217
-msgid ""
-"A 70 billion parameter language model from Meta, fine tuned for chat "
-"completions."
-msgstr ""
-"Meta'nın sohbet tamamlamaları için ince ayarlı 70 milyar parametreli dil "
-"modeli."
-
-#: openai/consts.py:223
-msgid ""
-"A pretrained generative Sparse Mixture of Experts, by Mistral AI. "
-"Incorporates 8 experts (feed-forward networks) for a total of 47B "
-"parameters. Base model (not fine-tuned for instructions) - see Mixtral 8x7B "
-"Instruct, for an instruct-tuned model."
-msgstr ""
-"Mistral AI tarafından hazırlanan, önceden eğitilmiş, üretken, Seyrek "
-"Uzmanlar Karışımı. Toplam 47B parametresi için 8 uzmanı (ileri beslemeli "
-"ağlar) bünyesinde barındırır. Temel model (talimatlar için ince ayar "
-"yapılmamıştır) - talimat ayarlı bir model için Mixtral 8x7B Instruct'a bakın."
-
-#: openai/consts.py:228
-msgid ""
-"A 7.3B parameter model that outperforms Llama 2 13B on all benchmarks, with "
-"optimizations for speed and context length."
-msgstr ""
-"Hız ve bağlam uzunluğu optimizasyonlarıyla tüm kıyaslamalarda Llama 2 "
-"13B'den daha iyi performans gösteren bir 7.3B parametre modeli."
-
-#: openai/consts.py:234
-msgid "A merge suitable for RP, ERP, and general knowledge."
-msgstr "RP, ERP ve genel bilgiye uygun bir birleştirme."
-
-#: openai/consts.py:240
-msgid ""
-"A fine-tune of Mistral using the OpenOrca dataset. First 7B model to beat "
-"all other models <30B."
-msgstr ""
-"OpenOrca veri kümesini kullanan Mistral'ın ince ayarı. Diğer tüm <30B "
-"modellerini geride bırakan ilk 7B modeli."
-
-#: openai/consts.py:246
-msgid ""
-"A collection of datasets and models made by fine-tuning on data created by "
-"Nous, mostly in-house. V1.9 uses unalignment techniques for more consistent "
-"and dynamic control. It also leverages a significantly better foundation "
-"model, Mistral 7B."
-msgstr ""
-"Nous tarafından çoğunlukla şirket içinde oluşturulan veriler üzerinde ince "
-"ayarlar yapılarak oluşturulan veri kümeleri ve modellerden oluşan bir "
-"koleksiyon. V1.9, daha tutarlı ve dinamik kontrol için hizalama tekniklerini "
-"kullanır. Aynı zamanda çok daha iyi bir temel modeli olan Mistral 7B'den de "
-"yararlanıyor."
-
-#: openai/consts.py:252
-msgid ""
-"Built on innovations from the popular OpenHermes-2.5 model, by Teknium. It "
-"adds vision support, and is trained on a custom dataset enriched with "
-"function calling."
-msgstr ""
-"Teknium'un popüler OpenHermes-2.5 modelinin yenilikleri üzerine inşa "
-"edilmiştir. Görme desteği ekler ve işlev çağrısıyla zenginleştirilmiş özel "
-"bir veri kümesi üzerinde eğitilir."
-
-#: openai/consts.py:259
-msgid ""
-"A state-of-the-art language model fine-tuned on over 300k instructions by "
-"Nous Research, with Teknium and Emozilla leading the fine tuning process."
-msgstr ""
-"Teknium ve Emozilla'nın ince ayar sürecine öncülük ettiği, Nous Research "
-"tarafından 300.000'den fazla talimatla ince ayar yapılan son teknoloji ürünü "
-"bir dil modeli."
-
-#: openai/consts.py:265
-msgid ""
-"Was trained on 1,000,000 entries of primarily GPT-4 generated data, as well "
-"as other high quality data from open datasets across the AI landscape."
-msgstr ""
-"Öncelikle GPT-4 tarafından oluşturulan verilerden oluşan 1.000.000 girişin "
-"yanı sıra yapay zeka ortamındaki açık veri kümelerinden diğer yüksek "
-"kaliteli veriler konusunda eğitim aldı."
-
-#: openai/consts.py:271
-msgid ""
-"A library of open-source language models, fine-tuned with \"C-RLFT "
-"(Conditioned Reinforcement Learning Fine-Tuning)\" - a strategy inspired by "
-"offline reinforcement learning. It has been trained on mixed-quality data "
-"without preference labels."
-msgstr ""
-"Çevrimdışı takviyeli öğrenmeden ilham alan bir strateji olan \"C-RLFT "
-"(Koşullu Güçlendirme Öğrenimi İnce Ayarı)\" ile ince ayar yapılmış açık "
-"kaynaklı dil modellerinden oluşan bir kitaplık. Tercih etiketleri olmadan "
-"karışık kalitede veriler üzerine eğitilmiştir."
-
-#: openai/consts.py:277
-msgid ""
-"RWKV is an RNN (recurrent neural network) with transformer-level "
-"performance. It aims to combine the best of RNNs and transformers - great "
-"performance, fast inference, low VRAM, fast training, \"infinite\" context "
-"length, and free sentence embedding. RWKV-5 is trained on 100+ world "
-"languages (70% English, 15% multilang, 15% code)."
-msgstr ""
-"RWKV, transformatör düzeyinde performansa sahip bir RNN'dir (tekrarlayan "
-"sinir ağı). RNN'lerin ve dönüştürücülerin en iyilerini birleştirmeyi "
-"amaçlamaktadır: mükemmel performans, hızlı çıkarım, düşük VRAM, hızlı "
-"eğitim, \"sonsuz\" bağlam uzunluğu ve serbest cümle yerleştirme. RWKV-5, "
-"100'den fazla dünya dili (%70 İngilizce, %15 çoklu dil, %15 kod) üzerine "
-"eğitilmiştir."
-
-#: openai/consts.py:285
+#: openai/consts.py:114
 msgid ""
 "You are an accessibility assistant integrated in the NVDA screen reader that "
 "helps blind screen reader users access visual information that may not be "
@@ -614,157 +341,169 @@ msgstr ""
 "sistem istemindeki talimatlara kesinlikle uyun. Kullanıcı size özellikle "
 "sormadıkça herhangi bir ek ayrıntı eklemeyin."
 
-#: openai/maindialog.py:183
+#: openai/maindialog.py:186
 msgid "Invalid temperature"
 msgstr "Geçersiz sıcaklık"
 
-#: openai/maindialog.py:186
+#: openai/maindialog.py:189
 msgid "Invalid top P"
 msgstr "Geçersiz üst P"
 
-#: openai/maindialog.py:201
+#: openai/maindialog.py:204
 msgid "Uploading one image, please wait..."
 msgstr "Bir görsel yükleniyor, lütfen bekleyin..."
 
-#: openai/maindialog.py:204
+#: openai/maindialog.py:207
 #, python-format
 msgid "Uploading %d images, please wait..."
 msgstr "%d görsel yükleniyor, lütfen bekleyin..."
 
-#: openai/maindialog.py:207 openai/maindialog.py:1647 openai/maindialog.py:1668
+#: openai/maindialog.py:210 openai/maindialog.py:1761 openai/maindialog.py:1782
 msgid "Processing, please wait..."
 msgstr "İşleniyor, lütfen bekleyin..."
 
-#: openai/maindialog.py:252
+#: openai/maindialog.py:253
 msgid "Ready"
 msgstr "Hazır"
 
-#: openai/maindialog.py:515
-msgid "organization"
-msgstr "organizasyon"
-
-#: openai/maindialog.py:515
-msgid "personal"
-msgstr "kişisel"
-
-#: openai/maindialog.py:521
+#: openai/maindialog.py:525
 msgid "Conversati&on mode"
 msgstr "K&onuşma modu"
 
-#: openai/maindialog.py:526
+#: openai/maindialog.py:530
 msgid "S&ystem:"
 msgstr "&Sistem:"
 
-#: openai/maindialog.py:543
+#: openai/maindialog.py:547
 msgid "&History:"
 msgstr "&Geçmiş:"
 
-#: openai/maindialog.py:554
+#: openai/maindialog.py:558
 msgid "&Prompt:"
 msgstr "İs&tem:"
 
-#: openai/maindialog.py:566
+#: openai/maindialog.py:570
 msgid "Attached ima&ges:"
 msgstr "Eklenmi&ş Görüntü Dosyaları:"
 
-#: openai/maindialog.py:572
+#: openai/maindialog.py:576
 msgid "name"
 msgstr "ad"
 
-#: openai/maindialog.py:573
+#: openai/maindialog.py:577
 msgid "path"
 msgstr "konum"
 
-#: openai/maindialog.py:574
+#: openai/maindialog.py:578
 msgid "size"
 msgstr "boyut"
 
-#: openai/maindialog.py:575
+#: openai/maindialog.py:579
 msgid "Dimensions"
 msgstr "Boyutlar"
 
-#: openai/maindialog.py:576
+#: openai/maindialog.py:580
 msgid "description"
 msgstr "betimle"
 
-#: openai/maindialog.py:609
+#: openai/maindialog.py:615
 msgid "Maximum to&kens for the completion:"
 msgstr "Tamamlama için ma&ksimum Jetonlar:"
 
-#: openai/maindialog.py:619
+#: openai/maindialog.py:625
 msgid "&Temperature:"
 msgstr "&Sıcaklık :"
 
-#: openai/maindialog.py:627
+#: openai/maindialog.py:633
 msgid "Probability &mass (Top P):"
 msgstr "&Olasılık kütlesi (Üst P):"
 
-#: openai/maindialog.py:638
+#: openai/maindialog.py:644
 msgid "Stream mode"
 msgstr "Akış modu"
 
-#: openai/maindialog.py:644
+#: openai/maindialog.py:650
 msgid "&Debug mode"
 msgstr "&Hata ayıklama modu"
 
-#: openai/maindialog.py:673 openai/maindialog.py:1681
+#: openai/maindialog.py:679 openai/maindialog.py:1795
 msgid "Start &recording"
 msgstr "&Kayda başla"
 
-#: openai/maindialog.py:676
+#: openai/maindialog.py:682
 msgid "Record audio from microphone"
 msgstr "Mikrofondan ses kaydet"
 
-#: openai/maindialog.py:680
+#: openai/maindialog.py:686
 msgid "Transcribe from &audio file"
 msgstr "Ses dosy&asından metne dönüştür"
 
-#: openai/maindialog.py:683
+#: openai/maindialog.py:689
 msgid "Transcribe audio from a file path"
 msgstr "Bir konumdaki Ses dosyasını Metne Dönüştür"
 
-#: openai/maindialog.py:687
+#: openai/maindialog.py:693
 msgid "&Image description"
 msgstr "Görsel&i Betimle"
 
-#: openai/maindialog.py:690
+#: openai/maindialog.py:696
 msgid "Describe an image from a file path or an URL"
 msgstr "Bir Görseli, dosya konumundan veya bağlantıdan betimle"
 
-#: openai/maindialog.py:694
+#: openai/maindialog.py:700
 msgid "&Vocalize the prompt"
 msgstr "İstemi seslendi&r"
 
-#: openai/maindialog.py:749
+#: openai/maindialog.py:786
 msgid "Describe the images in as much detail as possible."
 msgstr "Görselleri mümkün olduğunca ayrıntılı bir şekilde betimle."
 
-#: openai/maindialog.py:831
+#: openai/maindialog.py:881
+msgid "Model details"
+msgstr "Model ayrıntıları"
+
+#: openai/maindialog.py:899
 msgid "Please select a model."
 msgstr "Lütfen bir model seçin."
 
-#: openai/maindialog.py:842
-msgid ""
-"This model is only available with the OpenRouter service. Please provide an "
-"API key in the add-on settings. Otherwise, please select an OpenAI or "
-"MistralAI model."
-msgstr ""
-"Bu model yalnızca OpenRouter hizmetiyle kullanılabilir. Lütfen eklenti "
-"ayarlarında bir API anahtarı sağlayın. Aksi takdirde lütfen bir OpenAI veya "
-"MistralAI modeli seçin."
-
-#: openai/maindialog.py:854
-msgid ""
-"No image provided. Please use the Image Description button and select one or "
-"more images. Otherwise, please select another model."
-msgstr ""
-"Görüntü sağlanmadı. Lütfen Görüntüyü Betimle düğmesini kullanın ve bir veya "
-"daha fazla resim ekleyin. Aksi takdirde lütfen başka bir model seçin."
-
-#: openai/maindialog.py:862
+#: openai/maindialog.py:906
 #, python-format
 #| msgid ""
-#| "This model does not support image description. Please select the %s model."
+#| "This model is only available with the OpenRouter service. Please provide "
+#| "an API key in the add-on settings. Otherwise, please select an OpenAI or "
+#| "MistralAI model."
+msgid ""
+"This model is only available with the %s provider. Please provide an API key "
+"for this provider in the add-on settings. Otherwise, please select another "
+"model with a different provider."
+msgstr ""
+"Bu model yalnızca %s sağlayıcısında mevcuttur. Lütfen eklenti ayarlarında bu "
+"sağlayıcı için bir API anahtarı sağlayın. Aksi takdirde lütfen farklı bir "
+"sağlayıcıya sahip başka bir model seçin."
+
+#: openai/maindialog.py:909
+#, python-format
+#| msgid "API &keys"
+msgid "No API key for %s"
+msgstr "%s için API anahtarı yok"
+
+#: openai/maindialog.py:920
+#| msgid ""
+#| "No image provided. Please use the Image Description button and select one "
+#| "or more images. Otherwise, please select another model."
+msgid ""
+"Please use the Image Description button and select one or more images. "
+"Otherwise, please select another model."
+msgstr ""
+"Lütfen Görsel betimleme düğmesini kullanın ve bir veya daha fazla resim "
+"seçin. Aksi takdirde lütfen başka bir model seçin."
+
+#: openai/maindialog.py:921
+msgid "No image provided"
+msgstr "Görsel sağlanmadı"
+
+#: openai/maindialog.py:928
+#, python-format
 msgid ""
 "This model does not support image description. Please select one of the "
 "following models: %s."
@@ -772,7 +511,12 @@ msgstr ""
 "Bu model görüntü açıklamasını desteklemiyor. Lütfen aşağıdaki modellerden "
 "birini seçin: %s."
 
-#: openai/maindialog.py:872
+#: openai/maindialog.py:929
+#| msgid "Invalid top P"
+msgid "Invalid model"
+msgstr "Geçersiz model"
+
+#: openai/maindialog.py:938
 msgid ""
 "Be aware that the add-on may auto-resize images before API submission to "
 "lower request sizes and costs. Adjust this feature in the Open AI settings "
@@ -783,170 +527,193 @@ msgstr ""
 "Gerekirse bu özelliği Open AI ayarlarında ayarlayın. Bu mesaj bir daha "
 "gösterilmeyecek."
 
-#: openai/maindialog.py:943
+#: openai/maindialog.py:941
+#| msgid "Image description"
+msgid "Image resizing"
+msgstr "Görsel yeniden boyutlandırma"
+
+#: openai/maindialog.py:968
+#, python-format
+msgid ""
+"Unable to delete the file: %s\n"
+"Please remove it manually."
+msgstr ""
+"Dosya silinemiyor: %s\n"
+"Lütfen el ile kaldırın."
+
+#: openai/maindialog.py:1024
 #, python-format
 msgid "Insertion of: %s"
 msgstr "Eklenen: %s"
 
-#: openai/maindialog.py:952
+#: openai/maindialog.py:1033
 msgid "Unknown error"
 msgstr "Bilinmeyen hata"
 
-#: openai/maindialog.py:968
+#: openai/maindialog.py:1049
 msgid "Do you want to open the URL in your browser?"
 msgstr "Bağlantıyı tarayıcınızda açmak istiyor musunuz?"
 
-#: openai/maindialog.py:971
-#, python-format
-msgid "%s error"
-msgstr "%s hatası"
+#: openai/maindialog.py:1052
+#| msgid "Open AI error"
+msgid "OpenAI Error"
+msgstr "Open AI Hata"
 
-#: openai/maindialog.py:984
+#: openai/maindialog.py:1065
 msgid "Press Alt+F4 to close the dialog"
 msgstr "İletişim kutusunu kapatmak için Alt+F4 tuşlarına basın"
 
-#: openai/maindialog.py:994
+#: openai/maindialog.py:1075
 msgid "User:"
 msgstr "Kullanıcı:"
 
-#: openai/maindialog.py:996
+#: openai/maindialog.py:1077
 msgid "Assistant:"
 msgstr "Asistan:"
 
-#: openai/maindialog.py:1135
+#: openai/maindialog.py:1217
 msgid "Begin"
 msgstr "Baş"
 
-#: openai/maindialog.py:1155
+#: openai/maindialog.py:1237
 msgid "End"
 msgstr "Son"
 
-#: openai/maindialog.py:1196
+#: openai/maindialog.py:1278
 #, python-format
 msgid "Response copied to system: %s"
 msgstr "Yanıt sisteme kopyalandı: %s"
 
-#: openai/maindialog.py:1205
+#: openai/maindialog.py:1287
 msgid "Compied to prompt"
 msgstr "İsteme göre derlendi"
 
-#: openai/maindialog.py:1209
+#: openai/maindialog.py:1291
 msgid "Copy"
 msgstr "Kopyala"
 
-#: openai/maindialog.py:1217
+#: openai/maindialog.py:1299
 msgid "Copy prompt"
 msgstr "İstemi kopyala"
 
-#: openai/maindialog.py:1220
+#: openai/maindialog.py:1302
 msgid "Copy response"
 msgstr "Yanıtı kopyala"
 
-#: openai/maindialog.py:1227
+#: openai/maindialog.py:1309
 msgid "as formatted HTML"
 msgstr "biçimlendirilmiş HTML olarak"
 
-#: openai/maindialog.py:1253
+#: openai/maindialog.py:1335
 msgid "Block deleted"
 msgstr "Blok silindi"
 
-#: openai/maindialog.py:1286
+#: openai/maindialog.py:1368
 msgid "Save history"
 msgstr "Geçmişi kaydet"
 
-#: openai/maindialog.py:1288
+#: openai/maindialog.py:1370
 msgid "Text file"
 msgstr "Metin dosyası"
 
-#: openai/maindialog.py:1299
+#: openai/maindialog.py:1381
 msgid "History saved"
 msgstr "Geçmiş kaydedildi"
 
-#: openai/maindialog.py:1304
+#: openai/maindialog.py:1386
 msgid "Reset to default"
 msgstr "Varsayılana sıfırla"
 
-#: openai/maindialog.py:1314
+#: openai/maindialog.py:1396
 msgid "Show message in web view as formatted HTML"
 msgstr "Mesajı web tarayıcısında biçimlendirilmiş HTML olarak göster"
 
-#: openai/maindialog.py:1317
+#: openai/maindialog.py:1399
 msgid "Show message in web view as HTML source"
 msgstr "Mesajı web tarayıcısında HTML kaynak kodu olarak göster"
 
-#: openai/maindialog.py:1320
+#: openai/maindialog.py:1402
 msgid "Copy message as plain text"
 msgstr "Mesajı düz metin olarak kopyala"
 
-#: openai/maindialog.py:1323
+#: openai/maindialog.py:1405
 msgid "Copy message as formatted HTML"
 msgstr "Mesajı biçimlendirilmiş HTML olarak kopyala"
 
-#: openai/maindialog.py:1326
+#: openai/maindialog.py:1408
 msgid "Copy response to system"
 msgstr "Yanıtı sisteme kopyala"
 
-#: openai/maindialog.py:1329
+#: openai/maindialog.py:1411
 msgid "Copy prompt to prompt"
 msgstr "İstemi bilgi istemine kopyala"
 
-#: openai/maindialog.py:1332
+#: openai/maindialog.py:1414
 msgid "Delete block"
 msgstr "Bloğu sil"
 
-#: openai/maindialog.py:1335
+#: openai/maindialog.py:1417
 msgid "Save history as text file"
 msgstr "Geçmişi metin dosyası olarak kaydet"
 
-#: openai/maindialog.py:1338
+#: openai/maindialog.py:1420
 msgid "Say message"
 msgstr "Mesajı söyle"
 
-#: openai/maindialog.py:1341
+#: openai/maindialog.py:1423
 msgid "Move to previous message"
 msgstr "Önceki mesaja git"
 
-#: openai/maindialog.py:1344
+#: openai/maindialog.py:1426
 msgid "Move to next message"
 msgstr "Sonraki mesaja git"
 
-#: openai/maindialog.py:1355
+#: openai/maindialog.py:1437
 msgid "Insert previous prompt"
 msgstr "Önceki istemi ekle"
 
-#: openai/maindialog.py:1372
+#: openai/maindialog.py:1447
+msgid "Show model details"
+msgstr "Model ayrıntılarını göster"
+
+#: openai/maindialog.py:1464
 msgid "From f&ile path..."
 msgstr "D&osya Konumundan..."
 
-#: openai/maindialog.py:1375
+#: openai/maindialog.py:1468
 msgid "From &URL..."
 msgstr "&URL'den..."
 
-#: openai/maindialog.py:1396
+#: openai/maindialog.py:1472
+#| msgid "Screenshot"
+msgid "From &screenshot"
+msgstr "Ekran görüntü&sünden"
+
+#: openai/maindialog.py:1494
 msgid "&Remove selected images"
 msgstr "Seçili gö&rselleri kaldır"
 
-#: openai/maindialog.py:1399
+#: openai/maindialog.py:1497
 msgid "Remove &all images"
 msgstr "&Tüm Görüntü dosyalarını kaldır"
 
-#: openai/maindialog.py:1403
+#: openai/maindialog.py:1501
 msgid "Add from f&ile path..."
 msgstr "Konumdan dosya &Ekle..."
 
-#: openai/maindialog.py:1406
+#: openai/maindialog.py:1504
 msgid "Add from &URL..."
 msgstr "&URL'den ekle..."
 
-#: openai/maindialog.py:1503
+#: openai/maindialog.py:1601
 msgid "Select image files"
 msgstr "Bir görüntü dosyası seçin"
 
-#: openai/maindialog.py:1505
+#: openai/maindialog.py:1603
 msgid "Image files"
 msgstr "Görüntü dosyaları"
 
-#: openai/maindialog.py:1521
+#: openai/maindialog.py:1619
 #, python-format
 msgid ""
 "The following image has already been added and will be ignored:\n"
@@ -955,37 +722,45 @@ msgstr ""
 "Aşağıdaki görüntü dosyası zaten eklenmiş ve göz ardı edilecek:\n"
 "%s"
 
-#: openai/maindialog.py:1543
+#: openai/maindialog.py:1641
 msgid "Enter image URL"
 msgstr "Görüntü dosyası URL'sini girin"
 
-#: openai/maindialog.py:1557
+#: openai/maindialog.py:1655
 msgid "Invalid URL, bad format."
 msgstr "Geçersiz URL, hatalı biçim."
 
-#: openai/maindialog.py:1568
+#: openai/maindialog.py:1666
 #, python-format
 msgid "HTTP error %s."
 msgstr "HTTP hatası %s."
 
-#: openai/maindialog.py:1576
+#: openai/maindialog.py:1674
 msgid "The URL does not point to an image."
 msgstr "URL bir görüntüye işaret etmiyor."
 
-#: openai/maindialog.py:1599
+#: openai/maindialog.py:1697
 #, python-format
 msgid "Failed to get image dimensions. %s"
 msgstr "Görüntü dosyası boyutları alınamadı. %s"
 
-#: openai/maindialog.py:1626
+#: openai/maindialog.py:1726
+msgid "Screenshot reception disabled"
+msgstr "Ekran görüntüsü alma devre dışı bırakıldı"
+
+#: openai/maindialog.py:1732
+msgid "Screenshot reception enabled"
+msgstr "Ekran görüntüsü alma etkinleştirildi"
+
+#: openai/maindialog.py:1740
 msgid "Stop &recording"
 msgstr "Kaydı &durdur"
 
-#: openai/maindialog.py:1639
+#: openai/maindialog.py:1753
 msgid "Select audio file"
 msgstr "Bir ses dosyası seçin"
 
-#: openai/maindialog.py:1641
+#: openai/maindialog.py:1755
 msgid ""
 "Audio files (*.mp3;*.mp4;*.mpeg;*.mpga;*.m4a;*.wav;*.webm)|*.mp3;*.mp4;*."
 "mpeg;*.mpga;*.m4a;*.wav;*.webm"
@@ -993,72 +768,89 @@ msgstr ""
 "Ses dosyaları (*.mp3;*.mp4;*.mpeg;*.mpga;*.m4a;*.wav;*.webm)|*.mp3;*.mp4;*."
 "mpeg;*.mpga;*.m4a;*.wav;*.webm"
 
-#: openai/maindialog.py:1662
+#: openai/maindialog.py:1776
 msgid "Please enter some text in the prompt field first."
 msgstr "Lütfen önce istem alanına bir miktar metin girin."
 
-#: openai/model.py:34
+#: openai/model.py:41
 msgid "preview: not yet suited for production traffic"
 msgstr "önizleme: henüz üretim trafiğine uygun değil"
 
-#: openai/model.py:39
-msgid "Context window:"
-msgstr "Bağlam penceresi:"
+#: openai/model.py:55
+#, python-brace-format
+msgid "provider: {provider}"
+msgstr "sağlayıcı: {provider}"
 
-#: openai/model.py:42
-msgid "max output token:"
-msgstr "maksimum çıkış jetonu:"
+#: openai/model.py:60
+#, python-brace-format
+msgid "ID: {id}"
+msgstr "ID: {id}"
 
-#: openai/recordthread.py:45
+#: openai/model.py:63
+#, python-brace-format
+#| msgid "Context window:"
+msgid "context window: {contextWindow}"
+msgstr "bağlam penceresi: {contextWindow}"
+
+#: openai/model.py:69
+#, python-brace-format
+#| msgid "max output token:"
+msgid "max output tokens: {maxOutputToken}"
+msgstr "maksimum çıkış jetonu: {maxOutputToken}"
+
+#: openai/recordthread.py:47
 msgid "Transcription copied to clipboard"
 msgstr "Betimleme panoya kopyalandı"
 
-#: openai/recordthread.py:87
+#: openai/recordthread.py:94
 msgid "Transcribing..."
 msgstr "Metne dönüştürülüyor..."
 
-#: openai/recordthread.py:163 openai/recordthread.py:172
-#: openai/recordthread.py:187
+#: openai/recordthread.py:170 openai/recordthread.py:179
+#: openai/recordthread.py:194
 msgid "Error!"
 msgstr "Hata!"
 
-#: openai/updatecheck.py:55
+#: openai/updatecheck.py:61
 #, python-format
+#| msgid ""
+#| "New Open AI dependencies revision available: %s. If you have just "
+#| "installed the add-on, you must install them for it to work properly. Do "
+#| "you want to update now?"
 msgid ""
-"New Open AI dependencies revision available: %s. If you have just installed "
+"New OpenAI dependencies revision available: %s. If you have just installed "
 "the add-on, you must install them for it to work properly. Do you want to "
 "update now?"
 msgstr ""
-"Yeni Open AI bağımlılıkları revizyonu mevcut: %s. Eklentiyi yeni "
+"Yeni OpenAI bağımlılıkları revizyonu mevcut: %s. Eklentiyi yeni "
 "yüklediyseniz düzgün çalışması için bunları yüklemeniz gerekir. Şimdi "
 "güncellemek istiyor musunuz?"
 
-#: openai/updatecheck.py:60
+#: openai/updatecheck.py:66
 msgid "OpenAI dependencies update"
 msgstr "OpenAI bağımlılıkları güncellemesi"
 
-#: openai/updatecheck.py:64
+#: openai/updatecheck.py:70
 msgid "Updating Open AI dependencies... Please wait"
 msgstr "Open AI bağımlılıkları güncelleniyor... Lütfen bekleyin"
 
-#: openai/updatecheck.py:77
+#: openai/updatecheck.py:83
 msgid "Libs hash mismatch"
 msgstr "Libs karma uyumsuzluğu"
 
-#: openai/updatecheck.py:78 openai/updatecheck.py:93
-#| msgid "Error!"
+#: openai/updatecheck.py:84 openai/updatecheck.py:99
 msgid "Error"
 msgstr "Hata"
 
-#: openai/updatecheck.py:86
+#: openai/updatecheck.py:92
 msgid "Open AI dependencies updated successfully"
 msgstr "Open AI bağımlılıkları başarıyla güncellendi"
 
-#: openai/updatecheck.py:88
+#: openai/updatecheck.py:94
 msgid "Success. Restart NVDA to apply changes"
 msgstr "Başarılı. Değişiklikleri uygulamak için NVDA'yı yeniden başlatın"
 
-#: openai/updatecheck.py:92
+#: openai/updatecheck.py:98
 msgid ""
 "Error while updating Open AI dependencies. See log for details. Please retry "
 "later."
@@ -1066,11 +858,281 @@ msgstr ""
 "Open AI bağımlılıkları güncellenirken hata oluştu. Ayrıntılar için günlüğe "
 "bakın. Lütfen daha sonra tekrar deneyin."
 
+#~ msgid ""
+#~ "No authentication key provided. Please set it in the Preferences dialog."
+#~ msgstr ""
+#~ "Kimlik doğrulama anahtarı mevcut değil. Lütfen Tercihler/Ayarlar iletişim "
+#~ "kutusunda ekleyin."
+
+#~ msgid "Use OpenR&outer instead of OpenAI"
+#~ msgstr "OpenAI yerine OpenR&outer kullan"
+
+#~ msgid "OpenAI/OpenRouter API &Key:"
+#~ msgstr "OpenAI/OpenRouter API ve Anahtarı:"
+
+#~ msgid "Use or&ganization"
+#~ msgstr "&Organizasyon kullan"
+
+#~ msgid "Organization &name:"
+#~ msgstr "Organizasyon &Adı:"
+
+#~ msgid "&Organization key:"
+#~ msgstr "&Organizasyon anahtarı:"
+
+#~ msgid "Mistra&lAI API key:"
+#~ msgstr "Mistra&lAI API anahtarı:"
+
+#, python-format
+#~| msgid "API Key:"
+#~ msgid "%s API Key:"
+#~ msgstr "%s API Anahtarı:"
+
+#~ msgid ""
+#~ "Depending on their size, subject, and complexity, your prompts will be "
+#~ "sent to MythoMax 13B, MythoMax 13B 8k, or GPT-4 Turbo."
+#~ msgstr ""
+#~ "Boyutlarına, konularına ve karmaşıklıklarına bağlı olarak istemleriniz "
+#~ "MythoMax 13B, MythoMax 13B 8k veya GPT-4 Turbo'ya gönderilecektir."
+
+#~ msgid ""
+#~ "A large LLM created by combining two fine-tuned Llama 70B models into one "
+#~ "120B model. Combines Xwin and Euryale."
+#~ msgstr ""
+#~ "İki ince ayarlı Llama 70B modelinin tek bir 120B modelinde "
+#~ "birleştirilmesiyle oluşturulan büyük bir LLM. Xwin ve Euryale'yi "
+#~ "birleştirir."
+
+#~ msgid ""
+#~ "Claude 2.1 delivers advancements in key capabilities for enterprises—"
+#~ "including an industry-leading 200K token context window, significant "
+#~ "reductions in rates of model hallucination, system prompts and new beta "
+#~ "feature: tool use."
+#~ msgstr ""
+#~ "Claude 2.1, sektör lideri 200.000 token bağlam penceresi, model "
+#~ "halüsinasyon oranlarında önemli azalmalar, sistem istemleri ve yeni beta "
+#~ "özelliği olan araç kullanımı da dahil olmak üzere işletmeler için temel "
+#~ "yeteneklerde ilerlemeler sağlar."
+
+#~ msgid ""
+#~ "Superior performance on tasks that require complex reasoning. Supports up "
+#~ "to 100k tokens in one pass, or hundreds of pages of text."
+#~ msgstr ""
+#~ "Karmaşık akıl yürütme gerektiren görevlerde üstün performans. Tek geçişte "
+#~ "100 bine kadar jetonu veya yüzlerce sayfalık metni destekler."
+
+#~ msgid ""
+#~ "For low-latency, high throughput text generation. Supports up to 100k "
+#~ "tokens in one pass, or hundreds of pages of text."
+#~ msgstr ""
+#~ "Düşük gecikmeli, yüksek verimli metin üretimi için. Tek geçişte 100 bine "
+#~ "kadar jetonu veya yüzlerce sayfalık metni destekler."
+
+#~ msgid ""
+#~ "This is a 16k context fine-tune of Mixtral-8x7b. It excels in coding "
+#~ "tasks due to extensive training with coding data and is known for its "
+#~ "obedience, although it lacks DPO tuning. The model is uncensored and is "
+#~ "stripped of alignment and bias. It requires an external alignment layer "
+#~ "for ethical use."
+#~ msgstr ""
+#~ "Bu, Mixtral-8x7b'nin 16k bağlam ince ayarıdır. Kodlama verileriyle ilgili "
+#~ "kapsamlı eğitim sayesinde kodlama görevlerinde başarılıdır ve DPO "
+#~ "ayarından yoksun olmasına rağmen itaatiyle tanınır. Model sansürsüzdür ve "
+#~ "hizalama ve önyargılardan arındırılmıştır. Etik kullanım için harici bir "
+#~ "hizalama katmanı gerektirir."
+
+#~ msgid ""
+#~ "Designed to handle natural language tasks, multiturn text and code chat, "
+#~ "and code generation."
+#~ msgstr ""
+#~ "Doğal dil görevlerini, çok yönlü metin ve kod sohbetini ve kod "
+#~ "oluşturmayı gerçekleştirmek üzere tasarlanmıştır."
+
+#~ msgid ""
+#~ "Google's flagship multimodal model, supporting image and video in text or "
+#~ "chat prompts for a text or code response."
+#~ msgstr ""
+#~ "Metin veya sohbet istemlerinde resim ve videoyu destekleyen Google'ın "
+#~ "amiral gemisi çok modlu modeli, metin veya kod yanıtı ister."
+
+#~ msgid ""
+#~ "PaLM 2 is a language model by Google with improved multilingual, "
+#~ "reasoning and coding capabilities."
+#~ msgstr ""
+#~ "PaLM 2, Google'ın geliştirilmiş çok dilli, akıl yürütme ve kodlama "
+#~ "yeteneklerine sahip bir dil modelidir."
+
+#~ msgid ""
+#~ "PaLM 2 fine-tuned for chatbot conversations that help with code-related "
+#~ "questions."
+#~ msgstr ""
+#~ "PaLM 2, kodla ilgili sorulara yardımcı olan chatbot konuşmaları için ince "
+#~ "ayar yapılmıştır."
+
+#~ msgid ""
+#~ "One of the highest performing fine-tunes of Llama 2 13B, with rich "
+#~ "descriptions and roleplay."
+#~ msgstr ""
+#~ "Zengin açıklamalar ve rol oyunlarıyla Llama 2 13B'nin en yüksek "
+#~ "performanslı ince ayarlarından biri."
+
+#~ msgid ""
+#~ "Merges a suite of models to reduce word anticipation, ministrations, and "
+#~ "other undesirable words in ChatGPT roleplaying data. It combines Neural "
+#~ "Chat 7B, Airoboros 7b, Toppy M 7B, Zepher 7b beta, Nous Capybara 34B, "
+#~ "OpenHeremes 2.5, and many others."
+#~ msgstr ""
+#~ "ChatGPT rol yapma verilerinde kelime tahminini, hizmetleri ve diğer "
+#~ "istenmeyen kelimeleri azaltmak için bir model paketini birleştirir. "
+#~ "Neural Chat 7B, Airoboros 7b, Toppy M 7B, Zepher 7b beta, Nous Capybara "
+#~ "34B, OpenHeremes 2.5 ve daha fazlasını birleştirir."
+
+#~ msgid ""
+#~ "LLaVA is a large multimodal model that combines a vision encoder and "
+#~ "Vicuna for general-purpose visual and language understanding, achieving "
+#~ "impressive chat capabilities mimicking GPT-4 and setting a new state-of-"
+#~ "the-art accuracy on Science QA"
+#~ msgstr ""
+#~ "LLaVA, genel amaçlı görsel ve dil anlayışı için görüntü kodlayıcıyı ve "
+#~ "Vicuna'yı birleştiren, GPT-4'ü taklit eden etkileyici sohbet yetenekleri "
+#~ "elde eden ve Science QA'da yeni ve son teknoloji bir doğruluk sağlayan "
+#~ "büyük, çok modlu bir modeldir"
+
+#~ msgid ""
+#~ "A fine-tuned version of mistralai/Mistral-7B-v0.1 that was trained on a "
+#~ "mix of publicly available, synthetic datasets using Direct Preference "
+#~ "Optimization (DPO)."
+#~ msgstr ""
+#~ "Doğrudan Tercih Optimizasyonu (DPO) kullanılarak halka açık, sentetik "
+#~ "veri kümelerinin bir karışımı üzerinde eğitilmiş, mistralai/Mistral-7B-"
+#~ "v0.1'in ince ayarlı bir sürümü."
+
+#~ msgid ""
+#~ "Built upon Llama 2 and excels at filling in code, handling extensive "
+#~ "input contexts, and folling programming instructions without prior "
+#~ "training for various programming tasks."
+#~ msgstr ""
+#~ "Llama 2 üzerine inşa edilmiştir ve çeşitli programlama görevleri için "
+#~ "önceden eğitim gerektirmeden kodu doldurma, kapsamlı giriş bağlamlarını "
+#~ "yönetme ve programlama talimatlarını takip etme konusunda mükemmeldir."
+
+#~ msgid ""
+#~ "A 13 billion parameter language model from Meta, fine tuned for chat "
+#~ "completions"
+#~ msgstr ""
+#~ "Meta'nın sohbet tamamlamaları için ince ayarlı 13 milyar parametreli dil "
+#~ "modeli"
+
+#~ msgid ""
+#~ "A 70 billion parameter language model from Meta, fine tuned for chat "
+#~ "completions."
+#~ msgstr ""
+#~ "Meta'nın sohbet tamamlamaları için ince ayarlı 70 milyar parametreli dil "
+#~ "modeli."
+
+#~ msgid ""
+#~ "A pretrained generative Sparse Mixture of Experts, by Mistral AI. "
+#~ "Incorporates 8 experts (feed-forward networks) for a total of 47B "
+#~ "parameters. Base model (not fine-tuned for instructions) - see Mixtral "
+#~ "8x7B Instruct, for an instruct-tuned model."
+#~ msgstr ""
+#~ "Mistral AI tarafından hazırlanan, önceden eğitilmiş, üretken, Seyrek "
+#~ "Uzmanlar Karışımı. Toplam 47B parametresi için 8 uzmanı (ileri beslemeli "
+#~ "ağlar) bünyesinde barındırır. Temel model (talimatlar için ince ayar "
+#~ "yapılmamıştır) - talimat ayarlı bir model için Mixtral 8x7B Instruct'a "
+#~ "bakın."
+
+#~ msgid ""
+#~ "A 7.3B parameter model that outperforms Llama 2 13B on all benchmarks, "
+#~ "with optimizations for speed and context length."
+#~ msgstr ""
+#~ "Hız ve bağlam uzunluğu optimizasyonlarıyla tüm kıyaslamalarda Llama 2 "
+#~ "13B'den daha iyi performans gösteren bir 7.3B parametre modeli."
+
+#~ msgid "A merge suitable for RP, ERP, and general knowledge."
+#~ msgstr "RP, ERP ve genel bilgiye uygun bir birleştirme."
+
+#~ msgid ""
+#~ "A fine-tune of Mistral using the OpenOrca dataset. First 7B model to beat "
+#~ "all other models <30B."
+#~ msgstr ""
+#~ "OpenOrca veri kümesini kullanan Mistral'ın ince ayarı. Diğer tüm <30B "
+#~ "modellerini geride bırakan ilk 7B modeli."
+
+#~ msgid ""
+#~ "A collection of datasets and models made by fine-tuning on data created "
+#~ "by Nous, mostly in-house. V1.9 uses unalignment techniques for more "
+#~ "consistent and dynamic control. It also leverages a significantly better "
+#~ "foundation model, Mistral 7B."
+#~ msgstr ""
+#~ "Nous tarafından çoğunlukla şirket içinde oluşturulan veriler üzerinde "
+#~ "ince ayarlar yapılarak oluşturulan veri kümeleri ve modellerden oluşan "
+#~ "bir koleksiyon. V1.9, daha tutarlı ve dinamik kontrol için hizalama "
+#~ "tekniklerini kullanır. Aynı zamanda çok daha iyi bir temel modeli olan "
+#~ "Mistral 7B'den de yararlanıyor."
+
+#~ msgid ""
+#~ "Built on innovations from the popular OpenHermes-2.5 model, by Teknium. "
+#~ "It adds vision support, and is trained on a custom dataset enriched with "
+#~ "function calling."
+#~ msgstr ""
+#~ "Teknium'un popüler OpenHermes-2.5 modelinin yenilikleri üzerine inşa "
+#~ "edilmiştir. Görme desteği ekler ve işlev çağrısıyla zenginleştirilmiş "
+#~ "özel bir veri kümesi üzerinde eğitilir."
+
+#~ msgid ""
+#~ "A state-of-the-art language model fine-tuned on over 300k instructions by "
+#~ "Nous Research, with Teknium and Emozilla leading the fine tuning process."
+#~ msgstr ""
+#~ "Teknium ve Emozilla'nın ince ayar sürecine öncülük ettiği, Nous Research "
+#~ "tarafından 300.000'den fazla talimatla ince ayar yapılan son teknoloji "
+#~ "ürünü bir dil modeli."
+
+#~ msgid ""
+#~ "Was trained on 1,000,000 entries of primarily GPT-4 generated data, as "
+#~ "well as other high quality data from open datasets across the AI "
+#~ "landscape."
+#~ msgstr ""
+#~ "Öncelikle GPT-4 tarafından oluşturulan verilerden oluşan 1.000.000 "
+#~ "girişin yanı sıra yapay zeka ortamındaki açık veri kümelerinden diğer "
+#~ "yüksek kaliteli veriler konusunda eğitim aldı."
+
+#~ msgid ""
+#~ "A library of open-source language models, fine-tuned with \"C-RLFT "
+#~ "(Conditioned Reinforcement Learning Fine-Tuning)\" - a strategy inspired "
+#~ "by offline reinforcement learning. It has been trained on mixed-quality "
+#~ "data without preference labels."
+#~ msgstr ""
+#~ "Çevrimdışı takviyeli öğrenmeden ilham alan bir strateji olan \"C-RLFT "
+#~ "(Koşullu Güçlendirme Öğrenimi İnce Ayarı)\" ile ince ayar yapılmış açık "
+#~ "kaynaklı dil modellerinden oluşan bir kitaplık. Tercih etiketleri olmadan "
+#~ "karışık kalitede veriler üzerine eğitilmiştir."
+
+#~ msgid ""
+#~ "RWKV is an RNN (recurrent neural network) with transformer-level "
+#~ "performance. It aims to combine the best of RNNs and transformers - great "
+#~ "performance, fast inference, low VRAM, fast training, \"infinite\" "
+#~ "context length, and free sentence embedding. RWKV-5 is trained on 100+ "
+#~ "world languages (70% English, 15% multilang, 15% code)."
+#~ msgstr ""
+#~ "RWKV, transformatör düzeyinde performansa sahip bir RNN'dir (tekrarlayan "
+#~ "sinir ağı). RNN'lerin ve dönüştürücülerin en iyilerini birleştirmeyi "
+#~ "amaçlamaktadır: mükemmel performans, hızlı çıkarım, düşük VRAM, hızlı "
+#~ "eğitim, \"sonsuz\" bağlam uzunluğu ve serbest cümle yerleştirme. RWKV-5, "
+#~ "100'den fazla dünya dili (%70 İngilizce, %15 çoklu dil, %15 kod) üzerine "
+#~ "eğitilmiştir."
+
+#~ msgid "organization"
+#~ msgstr "organizasyon"
+
+#~ msgid "personal"
+#~ msgstr "kişisel"
+
+#, python-format
+#~ msgid "%s error"
+#~ msgstr "%s hatası"
+
 #~ msgid "Organization"
 #~ msgstr "Organizasyon"
-
-#~ msgid "Open AI error"
-#~ msgstr "Open AI Hata"
 
 #~ msgid ""
 #~ "Open AI is an NVDA add-on designed to seamlessly integrate the "
