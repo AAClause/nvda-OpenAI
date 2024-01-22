@@ -1107,7 +1107,6 @@ class OpenAIDlg(wx.Dialog):
 		self.addEntry(accelEntries, wx.ACCEL_NORMAL, ord("K"), self.onNextMessage)
 		self.addEntry(accelEntries, wx.ACCEL_CTRL + wx.ACCEL_SHIFT, wx.WXK_DOWN, self.onNextMessage)
 		self.addEntry(accelEntries, wx.ACCEL_CTRL + wx.ACCEL_SHIFT, ord("C"), lambda evt: self.onCopyMessage(evt, True))
-		self.addEntry(accelEntries, wx.ACCEL_CTRL, ord("E"), self.onEditBlock)
 		self.addEntry(accelEntries, wx.ACCEL_CTRL, ord("D"), self.onDeleteBlock)
 		self.addEntry(accelEntries, wx.ACCEL_CTRL, ord("S"), self.onSaveHistory)
 		self.addEntry(accelEntries, wx.ACCEL_NORMAL, wx.WXK_SPACE, lambda evt: self.onWebviewMessage(evt, True))
