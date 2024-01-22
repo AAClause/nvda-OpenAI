@@ -2,8 +2,10 @@ import datetime
 import json
 import os
 import re
+import speech
 import sys
 import threading
+import time
 import winsound
 import gui
 import wx
@@ -47,6 +49,18 @@ addonHandler.initTranslation()
 TTS_FILE_NAME = os.path.join(DATA_DIR, "tts.wav")
 DATA_JSON_FP = os.path.join(DATA_DIR, "data.json")
 URL_PATTERN = re.compile(r"^(?:http)s?://(?:[A-Z0-9-]+\.)+[A-Z]{2,6}(?::\d+)?(?:/?|[/?]\S+)$", re.IGNORECASE)
+SND_CHAT_RESPONSE_PENDING = os.path.join(
+	ADDON_DIR, "sounds", "chatResponsePending.wav"
+)
+SND_CHAT_RESPONSE_RECEIVED = os.path.join(
+	ADDON_DIR, "sounds", "chatResponseReceived.wav"
+)
+SND_CHAT_RESPONSE_SENT = os.path.join(
+	ADDON_DIR, "sounds", "chatRequestSent.wav"
+)
+SND_PROGRESS = os.path.join(
+	ADDON_DIR, "sounds", "progress.wav"
+)
 
 addToSession = None
 
@@ -140,6 +154,7 @@ class CompletionThread(threading.Thread):
 		threading.Thread.__init__(self)
 		self._notifyWindow = notifyWindow
 		self._wantAbort = 0
+		self.lastTime = int(time.time())
 
 	def run(self):
 		wnd = self._notifyWindow
@@ -205,10 +220,6 @@ class CompletionThread(threading.Thread):
 		elif nbImages > 1:
 			# Translators: This is a message displayed when uploading multiple images to the API.
 			msg = _("Uploading %d images, please wait...") % nbImages
-		else:
-			# Translators: This is a message displayed when sending a request to the API.
-			msg = _("Processing, please wait...")
-		wnd.message(msg)
 		manager = apikeymanager.get(
 			model.provider
 		)
@@ -232,6 +243,7 @@ class CompletionThread(threading.Thread):
 
 		try:
 			response = client.chat.completions.create(**params)
+			winsound.PlaySound(SND_CHAT_RESPONSE_SENT, winsound.SND_ASYNC)
 		except BaseException as err:
 			wx.PostEvent(self._notifyWindow, ResultEvent(err))
 			return
@@ -250,7 +262,6 @@ class CompletionThread(threading.Thread):
 			self._responseWithoutStream(response, block, debug)
 		wnd.pathList.clear()
 		wx.PostEvent(self._notifyWindow, ResultEvent())
-		wnd.message(_("Ready"))
 
 	def _getMessages(self, system=None, prompt=None):
 		wnd = self._notifyWindow
@@ -272,7 +283,14 @@ class CompletionThread(threading.Thread):
 	def _responseWithStream(self, response, block, debug=False):
 		wnd = self._notifyWindow
 		text = ""
+		speechBuffer = ""
 		for i, event in enumerate(response):
+			if int(time.time()) - self.lastTime > 4:
+				self.lastTime = int(time.time())
+				winsound.PlaySound(
+					SND_CHAT_RESPONSE_PENDING,
+					winsound.SND_ASYNC
+				)
 			if wnd.stopRequest.is_set():
 				break
 			delta = event.choices[0].delta
@@ -280,7 +298,19 @@ class CompletionThread(threading.Thread):
 			text = ""
 			if delta and delta.content:
 				text = delta.content
+				speechBuffer += text
+				if (
+					speechBuffer.endswith('\n')
+					or speechBuffer.endswith(". ")
+					or speechBuffer.endswith("? ")
+					or speechBuffer.endswith("! ")
+				):
+					if speechBuffer.strip():
+						speech.speakMessage(speechBuffer)
+					speechBuffer = ""
 			block.responseText += text
+		if speechBuffer:
+			speech.speakMessage(speechBuffer)
 		block.responseTerminated = True
 
 	def _responseWithoutStream(self, response, block, debug=False):
@@ -946,9 +976,7 @@ class OpenAIDlg(wx.Dialog):
 		if self.conf["saveSystem"] and system != self._lastSystem:
 			self.data["system"] = system
 			self._lastSystem = system
-		winsound.PlaySound(f"{ADDON_DIR}/sounds/progress.wav", winsound.SND_ASYNC|winsound.SND_LOOP)
 		self.disableButtons()
-		self.historyText.SetFocus()
 		self.stopRequest = threading.Event()
 		self.worker = CompletionThread(self)
 		self.worker.start()
@@ -978,7 +1006,7 @@ class OpenAIDlg(wx.Dialog):
 		self.Destroy()
 
 	def OnResult(self, event):
-		winsound.PlaySound(None, winsound.SND_ASYNC)
+		winsound.PlaySound(SND_CHAT_RESPONSE_RECEIVED, winsound.SND_ASYNC)
 		self.enableButtons()
 		self.worker = None
 		if not event.data:
@@ -1088,9 +1116,6 @@ class OpenAIDlg(wx.Dialog):
 					block.segmentResponse = TextSegment(self.historyText, newText, block)
 				else:
 					block.segmentResponse.appendText (newText)
-			if not block.focused and (block.responseTerminated or "\n" in block.responseText or len (block.responseText) > 180):
-				self.historyText.SetFocus ()
-				block.focused = True
 
 	def addEntry(self, accelEntries, modifiers, key, func):
 		id_ = wx.Window.NewControlId()
@@ -1758,7 +1783,7 @@ class OpenAIDlg(wx.Dialog):
 			return
 		fileName = dlg.GetPath()
 		self.message(_("Processing, please wait..."))
-		winsound.PlaySound(f"{ADDON_DIR}/sounds/progress.wav", winsound.SND_ASYNC|winsound.SND_LOOP)
+		winsound.PlaySound(SND_PROGRESS, winsound.SND_ASYNC|winsound.SND_LOOP)
 		self.disableButtons()
 		self.historyText.SetFocus()
 		self.worker = RecordThread(
@@ -1779,7 +1804,7 @@ class OpenAIDlg(wx.Dialog):
 			self.promptText.SetFocus()
 			return
 		self.message(_("Processing, please wait..."))
-		winsound.PlaySound(f"{ADDON_DIR}/sounds/progress.wav", winsound.SND_ASYNC|winsound.SND_LOOP)
+		winsound.PlaySound(SND_PROGRESS, winsound.SND_ASYNC|winsound.SND_LOOP)
 		self.disableButtons()
 		self.promptText.SetFocus()
 		self.worker = TextToSpeechThread(self, self.promptText.GetValue())
