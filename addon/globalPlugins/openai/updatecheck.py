@@ -16,19 +16,20 @@ import ui
 import versionInfo
 from logHandler import log
 
-from .consts import ADDON_DIR, DATA_DIR, LIBS_DIR
+from .consts import ADDON_DIR, DATA_DIR, LIBS_DIR, LIBS_DIR_PY
 
 addonHandler.initTranslation()
 
 ROOT_ADDON_DIR = "\\".join(ADDON_DIR.split(os.sep)[:-2])
-
+ADDON_INFO = addonHandler.Addon(ROOT_ADDON_DIR).manifest
+LAST_CHECK_FP = os.path.join(DATA_DIR, "last_check")
+LIB_REV_FP = os.path.join(LIBS_DIR_PY, "libs_rev.txt")
 URL_LATEST_RELEASE = "https://andreabc.net/projects/NVDA_addons/OpenAI/version.json"
 
 NVDA_VERSION = f"{versionInfo.version_year}.{versionInfo.version_major}.{versionInfo.version_minor}"
 PYTHON_VERSION = f"{sys.version_info.major}.{sys.version_info.minor}"
 
 conf = config.conf["OpenAI"]["update"]
-LIB_REV = conf["libRev"]
 
 
 def ensure_dir_exists(directory: str):
@@ -38,8 +39,22 @@ def ensure_dir_exists(directory: str):
 
 ensure_dir_exists(DATA_DIR)
 
-ADDON_INFO = addonHandler.Addon(ROOT_ADDON_DIR).manifest
-LAST_CHECK_FP = os.path.join(DATA_DIR, "last_check")
+_lib_rev = ""
+
+def get_lib_rev():
+	"""Return the current revision of the OpenAI dependencies."""
+	global _lib_rev
+	if _lib_rev:
+		return _lib_rev
+	if os.path.exists(LIB_REV_FP):
+		try:
+			with open(LIB_REV_FP) as file:
+				_lib_rev = file.read().strip()
+		except ValueError:
+			pass
+	return _lib_rev
+
+
 _last_check = 0
 
 def get_last_check():
@@ -71,10 +86,13 @@ def check_addon_version(data: dict, auto: bool):
 	if local_version.split('-')[0] != remote_version:
 		# Translators: This is the message displayed when a new version of the add-on is available.
 		msg = _(
-			"New version available: %s. "
+			"New version available: %s. Your version is %s. "
 			"You can update from the add-on store "
 			"or from the GitHub repository."
-		) % remote_version
+		) % (
+			remote_version,
+			local_version
+		)
 		gui.messageBox(
 			msg,
 			# Translators: This is the title of the message displayed when a new version of the add-on is available.
@@ -100,7 +118,7 @@ def load_remote_data(auto: bool):
 		"python_version": PYTHON_VERSION,
 		"addon_version": ADDON_INFO["version"],
 		"addon_channel": channel,
-		"lib_rev": LIB_REV
+		"lib_rev": get_lib_rev()
 	}
 	request_url = f"{URL_LATEST_RELEASE}?{urllib.parse.urlencode(params)}"
 	with urllib.request.urlopen(request_url) as response:
@@ -110,7 +128,7 @@ def load_remote_data(auto: bool):
 def handle_data_update(response_data: dict, auto: bool):
 	"""Check the addon and dependencies version and handle updates if necessary."""
 	check_addon_version(response_data, auto)
-	if (conf["libRev"] != response_data["libs_rev"]) or not os.path.exists(LIBS_DIR):
+	if (get_lib_rev() != response_data["libs_rev"]) or not os.path.exists(LIBS_DIR):
 		if offer_data_update(response_data):
 			update_dependency_files(response_data)
 	else:
@@ -125,7 +143,11 @@ def check_file_hash(file_path: str, expected_hash: str) -> bool:
 def offer_data_update(data: dict) -> bool:
 	"""Offer to update the OpenAI dependencies and return the user's choice."""
 	# Translators: This is the message displayed when a new version of the OpenAI dependencies is available.
-	msg = _("New OpenAI dependencies revision available: %s. Update now?") % data["libs_rev"]
+	msg = _("New OpenAI dependencies revision available: %s. Your version is %s. Update now?") % (
+		data["libs_rev"],
+		get_lib_rev() or _("unknown")
+	)
+
 	result = gui.messageBox(
 		msg,
 		# Translators: This is the title of the message displayed when a new version of the OpenAI dependencies is available.
@@ -152,14 +174,13 @@ def update_dependency_files(data: dict):
 		if not check_file_hash(zip_path, data["libs_hash"]):
 			raise ValueError("Libs hash mismatch")
 
-		if os.path.exists(LIBS_DIR):
-			shutil.rmtree(LIBS_DIR)
+		if os.path.exists(LIBS_DIR_PY):
+			shutil.rmtree(LIBS_DIR_PY)
 
 		with zipfile.ZipFile(zip_path, "r") as zip_file:
 			zip_file.extractall(LIBS_DIR)
 
 		os.remove(zip_path)
-		conf["libRev"] = data["libs_rev"]
 		update_last_check()
 		gui.messageBox(
 			# Translators: This is the message displayed when the OpenAI dependencies are updated successfully.
@@ -179,7 +200,7 @@ def update_dependency_files(data: dict):
 		log.error(f"Error updating OpenAI dependencies: {e}")
 		gui.messageBox(
 			# Translators: This is the message displayed when the OpenAI dependencies cannot be updated.
-			_("Error updating dependencies. Please restart NVDA to try again."),
+			_("Error updating dependencies. Please restart NVDA and try again."),
 			# Translators: This is the title of the message displayed when the OpenAI dependencies cannot be updated.
 			_("Error"),
 			wx.OK | wx.ICON_ERROR
@@ -199,5 +220,6 @@ def check_update(auto: bool = True):
 if (
 	(conf["check"] and get_last_check() + 86400 * 3 < time.time())
 	or not os.path.exists(LIBS_DIR)
+	or not get_lib_rev()
 ):
 	check_update()

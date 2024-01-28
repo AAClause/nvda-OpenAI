@@ -16,8 +16,7 @@ from .consts import (
 confSpecs = {
 	"update": {
 		"check": "boolean(default=True)",
-		"channel": "string(default='stable')",
-		"libRev": "string(default='0')"
+		"channel": "string(default='stable')"
 	},
 	"use_org": "boolean(default=False)",
 	"model": f"string(default={DEFAULT_MODEL.name})",
