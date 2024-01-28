@@ -17,7 +17,6 @@ confSpecs = {
 	"update": {
 		"check": "boolean(default=True)",
 		"channel": "string(default='stable')",
-		"lastCheck": "float(default=0)",
 		"libRev": "string(default='0')"
 	},
 	"use_org": "boolean(default=False)",
