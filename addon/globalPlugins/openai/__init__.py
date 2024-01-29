@@ -262,7 +262,7 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 
 		self.useCustomPrompt = imageGroup.addItem(
 			wx.CheckBox(
-				imageBox, 
+				imageBox,
 				label=_("Customize default text &prompt")
 			)
 		)
@@ -410,6 +410,9 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			_("Show the Open AI dialog")
 		)
 		gui.mainFrame.sysTrayIcon.Bind(wx.EVT_MENU, self.onShowMainDialog, item)
+
+		self.submenu.AppendSeparator()
+
 		item = self.submenu.Append(
 			wx.ID_ANY,
 			_("API &keys"),
@@ -428,6 +431,19 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			_("Open the GitHub repository of this addon")
 		)
 		gui.mainFrame.sysTrayIcon.Bind(wx.EVT_MENU, self.onGitRepo, item)
+
+		self.submenu.AppendSeparator()
+
+		item = self.submenu.Append(
+			wx.ID_ANY,
+			_("Check for &updates..."),
+			_("Check for updates")
+		)
+		gui.mainFrame.sysTrayIcon.Bind(
+			wx.EVT_MENU,
+			self.onCheckForUpdates,
+			item
+		)
 
 		addon_name = ADDON_INFO["name"]
 		addon_version = ADDON_INFO["version"]
@@ -464,6 +480,12 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			if os.path.exists(fp):
 				os.startfile(fp)
 				break
+
+	def onCheckForUpdates(self, evt):
+		updatecheck.check_update(
+			auto=False
+		)
+		updatecheck.update_last_check()
 
 	def terminate(self):
 		gui.settingsDialogs.NVDASettingsDialog.categoryClasses.remove(SettingsDlg)

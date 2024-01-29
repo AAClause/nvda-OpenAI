@@ -64,6 +64,8 @@ SND_PROGRESS = os.path.join(
 
 addToSession = None
 
+addToSession = None
+
 def EVT_RESULT(win, func):
 	win.Connect(-1, -1, EVT_RESULT_ID, func)
 
