@@ -13,7 +13,9 @@ from enum import Enum
 
 import addonHandler
 import api
+import braille
 import config
+import controlTypes
 import queueHandler
 import speech
 import tones
@@ -62,7 +64,8 @@ SND_PROGRESS = os.path.join(
 	ADDON_DIR, "sounds", "progress.wav"
 )
 
-addToSession = None
+# Translators: This is a message emitted by the add-on when an operation is in progress.
+PROCESSING_MSG = _("Please wait...")
 
 addToSession = None
 
@@ -155,7 +158,7 @@ class CompletionThread(threading.Thread):
 	def __init__(self, notifyWindow):
 		threading.Thread.__init__(self)
 		self._notifyWindow = notifyWindow
-		self._wantAbort = 0
+		self._wantAbort = False
 		self.lastTime = int(time.time())
 
 	def run(self):
@@ -222,6 +225,9 @@ class CompletionThread(threading.Thread):
 		elif nbImages > 1:
 			# Translators: This is a message displayed when uploading multiple images to the API.
 			msg = _("Uploading %d images, please wait...") % nbImages
+		else:
+			msg = PROCESSING_MSG
+		wnd.message(msg, onlySpeech=True)
 		manager = apikeymanager.get(
 			model.provider
 		)
@@ -306,13 +312,16 @@ class CompletionThread(threading.Thread):
 					or speechBuffer.endswith(". ")
 					or speechBuffer.endswith("? ")
 					or speechBuffer.endswith("! ")
+					or speechBuffer.endswith(": ")
 				):
 					if speechBuffer.strip():
-						speech.speakMessage(speechBuffer)
+						wnd.message(speechBuffer, onlySpeech=True, onlyIfPromptFocused=True)
 					speechBuffer = ""
 			block.responseText += text
 		if speechBuffer:
-			speech.speakMessage(speechBuffer)
+			wnd.message(speechBuffer, onlySpeech=True, onlyIfPromptFocused=True)
+			if wnd.promptText.HasFocus():
+				queueHandler.queueFunction(queueHandler.eventQueue, braille.handler.message, speechBuffer)
 		block.responseTerminated = True
 
 	def _responseWithoutStream(self, response, block, debug=False):
@@ -332,6 +341,9 @@ class CompletionThread(threading.Thread):
 			responseType = type(response)
 			raise TypeError(f"Invalid response type: {responseType}")
 		block.responseText += text
+		wnd.message(text, onlySpeech=True, onlyIfPromptFocused=True)
+		if wnd.promptText.HasFocus():
+			queueHandler.queueFunction(queueHandler.eventQueue, braille.handler.message, text)
 		block.responseTerminated = True
 
 
@@ -519,6 +531,7 @@ class OpenAIDlg(wx.Dialog):
 			self._models.extend(getOpenRouterModels())
 		self.pathList = []
 		self._fileToRemoveAfter = []
+		self.lastFocusedItem = None
 		if pathList:
 			addToSession = self
 			for path in pathList:
@@ -551,6 +564,8 @@ class OpenAIDlg(wx.Dialog):
 			l.append(e)
 		title = ", ".join(l)
 		super().__init__(parent, title=title)
+
+		self.Bind(wx.EVT_CHILD_FOCUS, self.onSetFocus)
 
 		self.conversationCheckBox = wx.CheckBox(
 			parent=self,
@@ -979,6 +994,7 @@ class OpenAIDlg(wx.Dialog):
 			self.data["system"] = system
 			self._lastSystem = system
 		self.disableButtons()
+		self.promptText.SetFocus()
 		self.stopRequest = threading.Event()
 		self.worker = CompletionThread(self)
 		self.worker.start()
@@ -1003,7 +1019,6 @@ class OpenAIDlg(wx.Dialog):
 		if self.worker:
 			self.worker.abort()
 			self.worker = None
-			winsound.PlaySound(None, winsound.SND_ASYNC)
 		self.timer.Stop()
 		self.Destroy()
 
@@ -1086,9 +1101,6 @@ class OpenAIDlg(wx.Dialog):
 			os.startfile(url.group(0).rstrip("."))
 		if "model's maximum context length is " in errMsg:
 			self.modelListBox.SetFocus()
-		else:
-			self.promptText.SetFocus()
-		raise Exception(errMsg)
 
 	def onCharHook(self, evt):
 		if self.conf["blockEscapeKey"] and evt.GetKeyCode() == wx.WXK_ESCAPE:
@@ -1109,6 +1121,19 @@ class OpenAIDlg(wx.Dialog):
 			l = len(block.responseText)
 			if block.lastLen == 0 and l > 0:
 				self.historyText.SetInsertionPointEnd()
+				api.processPendingEvents()
+				obj = api.getFocusObject()
+				if (
+					obj
+					and obj.role == controlTypes.ROLE_EDITABLETEXT
+					and obj.appModule.productName == "NVDA"
+				):
+					try:
+						obj = obj.parent.previous.previous.firstChild
+						if obj and obj.role == controlTypes.ROLE_EDITABLETEXT:
+							api.setNavigatorObject(obj)
+					except BaseException as err:
+						log.error(err)
 				block.responseText = block.responseText.lstrip()
 				l = len(block.responseText)
 			if l > block.lastLen:
@@ -1117,7 +1142,7 @@ class OpenAIDlg(wx.Dialog):
 				if block.segmentResponse is None:
 					block.segmentResponse = TextSegment(self.historyText, newText, block)
 				else:
-					block.segmentResponse.appendText (newText)
+					block.segmentResponse.appendText(newText)
 
 	def addEntry(self, accelEntries, modifiers, key, func):
 		id_ = wx.Window.NewControlId()
@@ -1272,8 +1297,8 @@ class OpenAIDlg(wx.Dialog):
 		self.historyText.SetInsertionPoint(start)
 		self.message(label + text)
 
-	def onCurrentMessage(self, evt):
 		"""Say the current message"""
+	def onCurrentMessage(self, evt):
 		segment = TextSegment.getCurrentSegment (self.historyText)
 		if segment is None:
 			return
@@ -1309,14 +1334,14 @@ class OpenAIDlg(wx.Dialog):
 			return
 		block = segment.owner
 		self.promptText.SetValue (block.segmentPrompt.getText ())
-		self.promptText.SetFocus ()
-		self.message(_("Compied to prompt"))
+		self.promptText.SetFocus()
+		self.message(_("Copied to prompt"))
 
 	def onCopyMessage(self, evt, isHtml=False):
 		text = self.historyText.GetStringSelection()
 		msg = _("Copy")
 		if not text:
-			segment = TextSegment.getCurrentSegment (self.historyText)
+			segment = TextSegment.getCurrentSegment(self.historyText)
 			if segment is None:
 				return
 			block = segment.owner
@@ -1338,7 +1363,7 @@ class OpenAIDlg(wx.Dialog):
 		self.message(msg)
 
 	def onDeleteBlock(self, evt):
-		segment = TextSegment.getCurrentSegment (self.historyText)
+		segment = TextSegment.getCurrentSegment(self.historyText)
 		if segment is None:
 			return
 		block = segment.owner
@@ -1476,9 +1501,26 @@ class OpenAIDlg(wx.Dialog):
 		self.modelListBox.PopupMenu(menu)
 		menu.Destroy()
 
-	def message(self, msg, onlySpeech=False):
-		func = ui.message if not onlySpeech else speech.speakMessage
-		queueHandler.queueFunction(queueHandler.eventQueue, func, msg)
+	def onSetFocus(self, evt):
+		self.lastFocusedItem = evt.GetEventObject()
+		evt.Skip()
+
+	def message(
+		self,
+		msg: str,
+		onlySpeech: bool = False,
+		onlyIfPromptFocused: bool = False
+	):
+		if not msg:
+			return
+		if onlyIfPromptFocused and self.lastFocusedItem not in (self.promptText, None):
+			return
+		queueHandler.queueFunction(queueHandler.eventQueue, speech.speakMessage, msg)
+		if not onlySpeech:
+			queueHandler.queueFunction(queueHandler.eventQueue, braille.handler.message, msg)
+		if api.getFocusObject().appModule.productName == "NVDA":
+			braille.handler.handleUpdate(api.getNavigatorObject())
+			braille.handler.handleReviewMove(True)
 
 	def onImageDescription(self, evt):
 		"""
@@ -1762,7 +1804,6 @@ class OpenAIDlg(wx.Dialog):
 		if self.worker:
 			self.onStopRecord(evt)
 			return
-		self.disableButtons()
 		self.recordBtn.SetLabel(_("Stop &recording") + " (Ctrl+R)")
 		self.recordBtn.Bind(wx.EVT_BUTTON, self.onStopRecord)
 		self.recordBtn.Enable()
@@ -1784,10 +1825,8 @@ class OpenAIDlg(wx.Dialog):
 		if dlg.ShowModal() != wx.ID_OK:
 			return
 		fileName = dlg.GetPath()
-		self.message(_("Processing, please wait..."))
-		winsound.PlaySound(SND_PROGRESS, winsound.SND_ASYNC|winsound.SND_LOOP)
+		self.message(PROCESSING_MSG)
 		self.disableButtons()
-		self.historyText.SetFocus()
 		self.worker = RecordThread(
 			self.client,
 			self,
@@ -1805,18 +1844,16 @@ class OpenAIDlg(wx.Dialog):
 			)
 			self.promptText.SetFocus()
 			return
-		self.message(_("Processing, please wait..."))
-		winsound.PlaySound(SND_PROGRESS, winsound.SND_ASYNC|winsound.SND_LOOP)
 		self.disableButtons()
 		self.promptText.SetFocus()
 		self.worker = TextToSpeechThread(self, self.promptText.GetValue())
 		self.worker.start()
 
 	def onStopRecord(self, evt):
+		self.disableButtons()
 		if self.worker:
 			self.worker.stop()
 			self.worker = None
-			winsound.PlaySound(None, winsound.SND_ASYNC)
 		self.recordBtn.SetLabel(
 			_("Start &recording") + " (Ctrl+R)"
 		)
@@ -1824,6 +1861,7 @@ class OpenAIDlg(wx.Dialog):
 		self.enableButtons()
 
 	def disableButtons(self):
+		winsound.PlaySound(SND_PROGRESS, winsound.SND_ASYNC|winsound.SND_LOOP)
 		self.okBtn.Disable()
 		self.cancelBtn.Disable()
 		self.recordBtn.Disable()
@@ -1843,21 +1881,20 @@ class OpenAIDlg(wx.Dialog):
 			self.debugModeCheckBox.Disable()
 
 	def enableButtons(self):
-		self.okBtn.Enable()
-		self.cancelBtn.Enable()
+		self.conversationCheckBox.Enable()
 		self.recordBtn.Enable()
 		self.transcribeFromFileBtn.Enable()
 		self.imageDescriptionBtn.Enable()
 		self.TTSBtn.Enable()
 		self.modelListBox.Enable()
 		self.maxTokens.Enable()
-		self.conversationCheckBox.Enable()
-		self.promptText.SetEditable(True)
 		self.systemText.SetEditable(True)
-		self.imageListCtrl.Enable()
+		self.promptText.SetEditable(True)
 		if self.conf["advancedMode"]:
 			self.temperature.Enable()
 			self.topP.Enable()
 			self.streamModeCheckBox.Enable()
 			self.debugModeCheckBox.Enable()
 		self.updateImageList(False)
+		self.okBtn.Enable()
+		self.cancelBtn.Enable()
