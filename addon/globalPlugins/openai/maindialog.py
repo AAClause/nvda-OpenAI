@@ -232,7 +232,7 @@ class CompletionThread(threading.Thread):
 			msg = _("Uploading %d images, please wait...") % nbImages
 		else:
 			msg = PROCESSING_MSG
-		wnd.message(msg, onlySpeech=True)
+		wnd.message(msg)
 		if debug and nbImages:
 			log.info(f"{nbImages} images")
 			log.info(f"{json.dumps(messages, indent=2, ensure_ascii=False)}")
@@ -296,13 +296,11 @@ class CompletionThread(threading.Thread):
 					or speechBuffer.endswith(": ")
 				):
 					if speechBuffer.strip():
-						wnd.message(speechBuffer, onlySpeech=True, onlyIfPromptFocused=True)
+						wnd.message(speechBuffer, speechOnly=True, onPromptFieldOnly=True)
 					speechBuffer = ""
 			block.responseText += text
 		if speechBuffer:
-			wnd.message(speechBuffer, onlySpeech=True, onlyIfPromptFocused=True)
-			if wnd.promptText.HasFocus():
-				queueHandler.queueFunction(queueHandler.eventQueue, braille.handler.message, speechBuffer)
+			wnd.message(speechBuffer, speechOnly=True, onPromptFieldOnly=True)
 		block.responseTerminated = True
 
 	def _responseWithoutStream(self, response, block, debug=False):
@@ -312,9 +310,7 @@ class CompletionThread(threading.Thread):
 			if self._wantAbort: break
 			text += choice.message.content
 		block.responseText += text
-		wnd.message(text, onlySpeech=True, onlyIfPromptFocused=True)
-		if wnd.promptText.HasFocus():
-			queueHandler.queueFunction(queueHandler.eventQueue, braille.handler.message, text)
+		wnd.message(text, speechOnly=True, onPromptFieldOnly=True)
 		block.responseTerminated = True
 
 
@@ -492,6 +488,8 @@ class OpenAIDlg(wx.Dialog):
 		self.pathList = []
 		self._fileToRemoveAfter = []
 		self.lastFocusedItem = None
+		self.historyObj = None
+		self.foregroundObj = None
 		if pathList:
 			addToSession = self
 			for path in pathList:
@@ -903,6 +901,20 @@ class OpenAIDlg(wx.Dialog):
 			self._lastSystem = system
 		self.disableButtons()
 		self.promptText.SetFocus()
+		api.processPendingEvents()
+		self.foregroundObj = api.getForegroundObject()
+		if not self.foregroundObj:
+			log.error("Unable to retrieve the foreground object")
+		try:
+			obj = self.foregroundObj.children[4]
+			if obj and obj.role == controlTypes.ROLE_EDITABLETEXT:
+				self.historyObj = obj
+			else:
+				self.historyObj = None
+				log.error("Unable to find the history object")
+		except BaseException as err:
+			log.error(err)
+			self.historyObj  = None
 		self.stopRequest = threading.Event()
 		self.worker = CompletionThread(self)
 		self.worker.start()
@@ -1006,19 +1018,15 @@ class OpenAIDlg(wx.Dialog):
 			l = len(block.responseText)
 			if block.lastLen == 0 and l > 0:
 				self.historyText.SetInsertionPointEnd()
-				api.processPendingEvents()
-				obj = api.getFocusObject()
 				if (
-					obj
-					and obj.role == controlTypes.ROLE_EDITABLETEXT
-					and obj.appModule.productName == "NVDA"
+					self.historyObj
+					and self.foregroundObj is api.getForegroundObject()
 				):
-					try:
-						obj = obj.parent.previous.previous.firstChild
-						if obj and obj.role == controlTypes.ROLE_EDITABLETEXT:
-							api.setNavigatorObject(obj)
-					except BaseException as err:
-						log.error(err)
+					if braille.handler.buffer is braille.handler.messageBuffer:
+						braille.handler._dismissMessage()
+					self.focusHistoryBrl()
+				else:
+					log.error("Unable to focus the history object or the foreground object has changed")
 				block.responseText = block.responseText.lstrip()
 				l = len(block.responseText)
 			if l > block.lastLen:
@@ -1376,22 +1384,31 @@ class OpenAIDlg(wx.Dialog):
 		self.lastFocusedItem = evt.GetEventObject()
 		evt.Skip()
 
+	def focusHistoryBrl(self):
+		if (
+			self.historyObj
+			and self.foregroundObj is api.getForegroundObject()
+		):
+			if api.getNavigatorObject() is not self.historyObj:
+				api.setNavigatorObject(self.historyObj)
+			braille.handler.handleUpdate(self.historyObj)
+			braille.handler.handleReviewMove(True)
+
 	def message(
 		self,
 		msg: str,
-		onlySpeech: bool = False,
-		onlyIfPromptFocused: bool = False
+		speechOnly: bool = False,
+		onPromptFieldOnly: bool = False
 	):
 		if not msg:
 			return
-		if onlyIfPromptFocused and self.lastFocusedItem not in (self.promptText, None):
+		if onPromptFieldOnly and self.lastFocusedItem is not self.promptText:
 			return
 		queueHandler.queueFunction(queueHandler.eventQueue, speech.speakMessage, msg)
-		if not onlySpeech:
+		if not speechOnly:
 			queueHandler.queueFunction(queueHandler.eventQueue, braille.handler.message, msg)
-		if api.getFocusObject().appModule.productName == "NVDA":
-			braille.handler.handleUpdate(api.getNavigatorObject())
-			braille.handler.handleReviewMove(True)
+		if onPromptFieldOnly:
+			self.focusHistoryBrl()
 
 	def onImageDescription(self, evt):
 		"""
