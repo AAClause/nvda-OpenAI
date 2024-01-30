@@ -49,7 +49,7 @@ class Model:
 		id_ = self.id
 		contextWindow = self.contextWindow
 		maxOutputToken = self.maxOutputToken
-		s = name + " ("
+		s = name + " ["
 		l = []
 		l.append(
 			_("provider: {provider}").format(
@@ -71,7 +71,7 @@ class Model:
 				)
 			)
 		s += ". ".join(l)
-		s += ')'
+		s += ']'
 		return s
 
 	def __hash__(self):
@@ -97,7 +97,7 @@ def getOpenRouterModels():
 				name=model['name'],
 				description=model['description'],
 				contextWindow=int(model['context_length']),
-				maxOutputToken=model["top_provider"]['max_completion_tokens'] or -1,
+				maxOutputToken=model.get("top_provider").get("max_completion_tokens") or -1,
 				maxTemperature=2,
 				defaultTemperature=0.7,
 				vision="#multimodal" in model['description'],
