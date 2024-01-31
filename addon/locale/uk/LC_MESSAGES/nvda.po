@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: nvda-translations@groups.io\n"
-"POT-Creation-Date: 2024-01-16 17:34+0300\n"
-"PO-Revision-Date: 2024-01-24 16:37+0200\n"
+"POT-Creation-Date: 2024-01-30 21:57+0100\n"
+"PO-Revision-Date: 2024-01-31 07:22+0200\n"
 "Last-Translator: Heorhii Halas <nvda.translation.uk@gmail.com>\n"
 "Language-Team: Heorhi Halas\n"
 "Language: uk\n"
@@ -15,7 +15,7 @@ msgstr ""
 "X-Poedit-Bookmarks: -1,26,47,-1,-1,-1,-1,-1,-1,-1\n"
 "X-Poedit-SearchPath-0: .\n"
 
-#: openai/__init__.py:36
+#: addon\globalPlugins\openai\__init__.py:36
 msgid ""
 "No API key provided for any provider, please provide at least one API key in "
 "the settings dialog"
@@ -23,73 +23,74 @@ msgstr ""
 "Ключ API не надано для жодного постачальника, будь ласка, надайте принаймні "
 "один ключ API у діалозі налаштувань"
 
-#: openai/__init__.py:117
+#: addon\globalPlugins\openai\__init__.py:117
 msgid "Update"
 msgstr "Оновлення"
 
-#: openai/__init__.py:125
+#: addon\globalPlugins\openai\__init__.py:125
 msgid "Check for &updates on startup and periodically"
 msgstr "Періодично перевіряти наявність &оновлень під час запуску"
 
-#: openai/__init__.py:131
+#: addon\globalPlugins\openai\__init__.py:131
 msgid "&Channel:"
 msgstr "&Канал:"
 
-#: openai/__init__.py:141
+#: addon\globalPlugins\openai\__init__.py:141
 msgid "API Access Keys"
 msgstr "Ключі доступу до API"
 
-#: openai/__init__.py:150
+#: addon\globalPlugins\openai\__init__.py:150
 #, python-format
 msgid "%s API &keys..."
 msgstr "&Ключі API %s..."
 
-#: openai/__init__.py:162
+#: addon\globalPlugins\openai\__init__.py:162
 msgid "Main dialog"
 msgstr "Головний діалог"
 
-#: openai/__init__.py:167
+#: addon\globalPlugins\openai\__init__.py:167
 msgid "Block the closing using the &escape key"
 msgstr "Заблокувати закриття за допомогою клавіші &escape"
 
-#: openai/__init__.py:175
+#: addon\globalPlugins\openai\__init__.py:175
 msgid "Remember the content of the S&ystem field between sessions"
 msgstr "Запам’ятовувати вміст поля S&ystem між сеансами"
 
-#: openai/__init__.py:183
+#: addon\globalPlugins\openai\__init__.py:183
 msgid "Enable &advanced settings (including temperature and probability mass)"
 msgstr ""
 "Увімкнути &розширені параметри (зокрема температуру та маси ймовірності)"
 
-#: openai/__init__.py:191
+#: addon\globalPlugins\openai\__init__.py:191
 msgid "Text To Speech"
 msgstr "Перетворення тексту в мовлення"
 
-#: openai/__init__.py:197
+#: addon\globalPlugins\openai\__init__.py:197
 msgid "&Voice:"
 msgstr "&Голос:"
 
-#: openai/__init__.py:207 openai/maindialog.py:598
+#: addon\globalPlugins\openai\__init__.py:207
+#: addon\globalPlugins\openai\maindialog.py:643
 msgid "&Model:"
 msgstr "&Модель:"
 
-#: openai/__init__.py:218
+#: addon\globalPlugins\openai\__init__.py:218
 msgid "Image description"
 msgstr "Опис зображення"
 
-#: openai/__init__.py:223
+#: addon\globalPlugins\openai\__init__.py:223
 msgid "&Resize images before sending them to the API"
 msgstr "&Змінити розмір зображення, перш ніж надсилати їх до API"
 
-#: openai/__init__.py:236
+#: addon\globalPlugins\openai\__init__.py:236
 msgid "Maximum &width (0 to resize proportionally to the height):"
 msgstr "Максимальна &ширина (0 для зміни розміру пропорційно висоті):"
 
-#: openai/__init__.py:245
+#: addon\globalPlugins\openai\__init__.py:245
 msgid "Maximum &height (0 to resize proportionally to the width):"
 msgstr "Максимальна &висота (0 для зміни розміру пропорційно ширині):"
 
-#: openai/__init__.py:254
+#: addon\globalPlugins\openai\__init__.py:254
 msgid ""
 "&Quality for JPEG images (0 [worst] to 95 [best], values above 95 should be "
 "avoided):"
@@ -97,107 +98,122 @@ msgstr ""
 "&Якість для зображень у форматі JPEG (де 0 [найгірше] а 95 [найкраще], варто "
 "уникати значень вище 95):"
 
-#: openai/__init__.py:266
+#: addon\globalPlugins\openai\__init__.py:266
 msgid "Customize default text &prompt"
 msgstr "Налаштувати &початковий текст підказки"
 
-#: openai/__init__.py:272
+#: addon\globalPlugins\openai\__init__.py:272
 msgid "Default &text prompt:"
 msgstr "&Початкова текстова підказка:"
 
-#: openai/__init__.py:286
+#. Translators: This is the name of a group of settings
+#: addon\globalPlugins\openai\__init__.py:286
 msgid "Recording"
 msgstr "Запис"
 
-#: openai/__init__.py:292
+#. Translators: This is the name of a setting in the Recording group
+#: addon\globalPlugins\openai\__init__.py:292
 msgid "Use &whisper.cpp for transcription"
 msgstr "Використовувати &whisper.cpp для транскрипції"
 
-#: openai/__init__.py:308
+#. Translators: This is the name of a setting in the Recording group
+#: addon\globalPlugins\openai\__init__.py:308
 msgid "&Host:"
 msgstr "&Хост:"
 
-#: openai/__init__.py:403
+#: addon\globalPlugins\openai\__init__.py:403
 msgid "Docu&mentation"
 msgstr "&Документація"
 
-#: openai/__init__.py:404
+#: addon\globalPlugins\openai\__init__.py:404
 msgid "Open the documentation of this addon"
 msgstr "Відкрити документацію цього додатка"
 
-#: openai/__init__.py:409
+#: addon\globalPlugins\openai\__init__.py:409
 msgid "Main d&ialog..."
 msgstr "Головни&й діалог..."
 
-#: openai/__init__.py:410
+#: addon\globalPlugins\openai\__init__.py:410
 msgid "Show the Open AI dialog"
 msgstr "Показати діалог Open AI"
 
-#: openai/__init__.py:415
+#: addon\globalPlugins\openai\__init__.py:418
 msgid "API &keys"
 msgstr "&Ключі API"
 
-#: openai/__init__.py:416
+#: addon\globalPlugins\openai\__init__.py:419
 msgid "Manage the API keys"
 msgstr "Керування ключами API"
 
-#: openai/__init__.py:421
+#: addon\globalPlugins\openai\__init__.py:424
 msgid "API &usage"
 msgstr "&Використання API"
 
-#: openai/__init__.py:422
+#: addon\globalPlugins\openai\__init__.py:425
 msgid "Open the API usage webpage"
 msgstr "Відкрити веб-сторінку використання API"
 
-#: openai/__init__.py:427
+#: addon\globalPlugins\openai\__init__.py:430
 msgid "Git&Hub repository"
 msgstr "Репозиторій Git&Hub"
 
-#: openai/__init__.py:428
+#: addon\globalPlugins\openai\__init__.py:431
 msgid "Open the GitHub repository of this addon"
 msgstr "Відкрити репозиторій GitHub цього додатка"
 
-#: openai/__init__.py:437
+#: addon\globalPlugins\openai\__init__.py:439
+msgid "Check for &updates..."
+msgstr "&Перевірити наявність оновлень..."
+
+#: addon\globalPlugins\openai\__init__.py:440
+msgid "Check for updates"
+msgstr "Перевірити наявність оновлень"
+
+#: addon\globalPlugins\openai\__init__.py:453
 #, python-brace-format
 msgid "Open A&I {addon_version}"
 msgstr "Open A&I {addon_version}"
 
-#: openai/__init__.py:505
+#: addon\globalPlugins\openai\__init__.py:527
 msgid "Please disable the screen curtain before taking a screenshot"
 msgstr "Перш ніж робити знімок екрана, вимкніть екранну завісу"
 
-#: openai/__init__.py:520
+#: addon\globalPlugins\openai\__init__.py:542
 msgid "Show Open AI dialog"
 msgstr "Показати діалог Open AI"
 
-#: openai/__init__.py:543
+#: addon\globalPlugins\openai\__init__.py:565
 msgid "Image added to an existing session"
 msgstr "Зображення додано до існуючого сеансу"
 
-#: openai/__init__.py:556
+#. Translators: This is the description of a command to take a screenshot and describe it.
+#: addon\globalPlugins\openai\__init__.py:578
 msgid "Take a screenshot and describe it"
 msgstr "Зробити знімок екрана і описати його"
 
-#: openai/__init__.py:572
+#: addon\globalPlugins\openai\__init__.py:594
 #, python-format
 msgid "Screenshot %s"
 msgstr "Знімок екрана %s"
 
-#: openai/__init__.py:580
+#. Translators: This is the description of a command to grab the current navigator object and describe it.
+#: addon\globalPlugins\openai\__init__.py:602
 msgid "Grab the current navigator object and describe it"
 msgstr "Захопити поточний об’єкт навігатора й описати його"
 
-#: openai/__init__.py:603
+#. Translators: This is the name of the screenshot to be described.
+#: addon\globalPlugins\openai\__init__.py:625
 #, python-format
 msgid "Navigator Object %s"
 msgstr "Об'єкт навігатора %s"
 
-#: openai/__init__.py:619
+#: addon\globalPlugins\openai\__init__.py:641
 msgid "Toggle the microphone recording and transcribe the audio from anywhere"
 msgstr ""
 "Перемикати запис з мікрофона та транскрибувати аудіо з будь-якого місця"
 
-#: openai/consts.py:32
+#. Translators: This is a model description
+#: addon\globalPlugins\openai\consts.py:32
 msgid ""
 "Updated GPT 3.5 Turbo. The latest GPT-3.5 Turbo model with improved "
 "instruction following, JSON mode, reproducible outputs, parallel function "
@@ -207,7 +223,8 @@ msgstr ""
 "дотриманням інструкцій, режимом JSON, відтворюваними виводами, паралельним "
 "викликом функцій тощо."
 
-#: openai/consts.py:40
+#. Translators: This is a model description
+#: addon\globalPlugins\openai\consts.py:40
 msgid ""
 "Same capabilities as the standard gpt-3.5-turbo model but with 4 times the "
 "context"
@@ -215,7 +232,8 @@ msgstr ""
 "Ті ж можливості, що й у стандартної моделі gpt-3.5-turbo, але вчетверо "
 "більше контексту"
 
-#: openai/consts.py:48
+#. Translators: This is a model description
+#: addon\globalPlugins\openai\consts.py:48
 msgid ""
 "More capable than any GPT-3.5 model, able to do more complex tasks, and "
 "optimized for chat"
@@ -223,7 +241,8 @@ msgstr ""
 "Більш потужний, ніж будь-яка модель GPT-3.5, здатний виконувати більш "
 "складні завдання та оптимізований для чату"
 
-#: openai/consts.py:55
+#. Translators: This is a model description
+#: addon\globalPlugins\openai\consts.py:55
 msgid ""
 "The latest GPT-4 model with improved instruction following, JSON mode, "
 "reproducible outputs, parallel function calling, and more."
@@ -231,7 +250,8 @@ msgstr ""
 "Остання модель GPT-4 із покращеним дотриманням інструкцій, режимом JSON, "
 "відтворюваними виводами, паралельним викликом функцій тощо."
 
-#: openai/consts.py:64
+#. Translators: This is a model description
+#: addon\globalPlugins\openai\consts.py:64
 msgid ""
 "GPT-4 Turbo with vision. Ability to understand images, in addition to all "
 "other GPT-4 Turbo capabilities."
@@ -239,14 +259,16 @@ msgstr ""
 "GPT-4 Turbo з оглядом. Здатність розуміти зображення на додаток до всіх "
 "інших можливостей GPT-4 Turbo."
 
-#: openai/consts.py:74
+#. Translators: This is a model description
+#: addon\globalPlugins\openai\consts.py:74
 msgid ""
 "Same capabilities as the standard gpt-4 mode but with 4x the context length."
 msgstr ""
 "Ті ж можливості, що і в стандартному режимі gpt-4, але з 4-кратною довжиною "
 "контексту."
 
-#: openai/consts.py:82
+#. Translators: This is a model description
+#: addon\globalPlugins\openai\consts.py:82
 msgid ""
 "Used for large batch processing tasks where cost is a significant factor but "
 "reasoning capabilities are not crucial. Uses the Mistral API."
@@ -255,17 +277,19 @@ msgstr ""
 "важливим фактором, але можливості міркування не мають вирішального значення. "
 "Використовує Mistral API."
 
-#: openai/consts.py:91
+#. Translators: This is a model description
+#: addon\globalPlugins\openai\consts.py:91
 msgid ""
 "Higher reasoning capabilities and more capabilities. Use the Mistral API."
 msgstr ""
 "Вищі можливості міркування та більше можливостей. Використовуйте Mistral API."
 
-#: openai/consts.py:100
+#. Translators: This is a model description
+#: addon\globalPlugins\openai\consts.py:100
 msgid "Internal prototype model. Uses the Mistral API."
 msgstr "Внутрішній прототип моделі. Використовує Mistral API."
 
-#: openai/consts.py:114
+#: addon\globalPlugins\openai\consts.py:114
 msgid ""
 "You are an accessibility assistant integrated in the NVDA screen reader that "
 "helps blind screen reader users access visual information that may not be "
@@ -333,132 +357,135 @@ msgstr ""
 "this system prompt to describe images. Don’t add any additional details "
 "unless the user specifically ask you."
 
-#: openai/maindialog.py:186
+#. Translators: This is a message emitted by the add-on when an operation is in progress.
+#: addon\globalPlugins\openai\maindialog.py:68
+#, fuzzy
+#| msgid "Processing, please wait..."
+msgid "Please wait..."
+msgstr "Обробка, зачекайте..."
+
+#: addon\globalPlugins\openai\maindialog.py:206
 msgid "Invalid temperature"
 msgstr "Неправильна температура"
 
-#: openai/maindialog.py:189
+#: addon\globalPlugins\openai\maindialog.py:209
 msgid "Invalid top P"
 msgstr "Неправильна вершина P"
 
-#: openai/maindialog.py:204
+#. Translators: This is a message displayed when uploading one image to the API.
+#: addon\globalPlugins\openai\maindialog.py:224
 msgid "Uploading one image, please wait..."
 msgstr "Відвантаження одного зображення, зачекайте..."
 
-#: openai/maindialog.py:207
+#. Translators: This is a message displayed when uploading multiple images to the API.
+#: addon\globalPlugins\openai\maindialog.py:227
 #, python-format
 msgid "Uploading %d images, please wait..."
 msgstr "Відвантажуються %d зображень, будь ласка, зачекайте..."
 
-#: openai/maindialog.py:210 openai/maindialog.py:1761 openai/maindialog.py:1782
-msgid "Processing, please wait..."
-msgstr "Обробка, зачекайте..."
-
-#: openai/maindialog.py:253
-msgid "Ready"
-msgstr "Готово"
-
-#: openai/maindialog.py:525
+#: addon\globalPlugins\openai\maindialog.py:570
 msgid "Conversati&on mode"
 msgstr "Режим &розмови"
 
-#: openai/maindialog.py:530
+#: addon\globalPlugins\openai\maindialog.py:575
 msgid "S&ystem:"
 msgstr "S&ystem:"
 
-#: openai/maindialog.py:547
+#: addon\globalPlugins\openai\maindialog.py:592
 msgid "&History:"
 msgstr "&Історія:"
 
-#: openai/maindialog.py:558
+#: addon\globalPlugins\openai\maindialog.py:603
 msgid "&Prompt:"
 msgstr "&Запит:"
 
-#: openai/maindialog.py:570
+#. Translators: This is a label for a list of images attached to the prompt.
+#: addon\globalPlugins\openai\maindialog.py:615
 msgid "Attached ima&ges:"
 msgstr "&Вкладені зображення:"
 
-#: openai/maindialog.py:576
+#: addon\globalPlugins\openai\maindialog.py:621
 msgid "name"
 msgstr "назва"
 
-#: openai/maindialog.py:577
+#: addon\globalPlugins\openai\maindialog.py:622
 msgid "path"
 msgstr "шлях"
 
-#: openai/maindialog.py:578
+#: addon\globalPlugins\openai\maindialog.py:623
 msgid "size"
 msgstr "розмір"
 
-#: openai/maindialog.py:579
+#: addon\globalPlugins\openai\maindialog.py:624
 msgid "Dimensions"
 msgstr "Розміри"
 
-#: openai/maindialog.py:580
+#: addon\globalPlugins\openai\maindialog.py:625
 msgid "description"
 msgstr "опис"
 
-#: openai/maindialog.py:615
+#: addon\globalPlugins\openai\maindialog.py:660
 msgid "Maximum to&kens for the completion:"
 msgstr "Максимальна кількість то&кенів для завершення:"
 
-#: openai/maindialog.py:625
+#: addon\globalPlugins\openai\maindialog.py:670
 msgid "&Temperature:"
 msgstr "&Температура:"
 
-#: openai/maindialog.py:633
+#: addon\globalPlugins\openai\maindialog.py:678
 msgid "Probability &mass (Top P):"
 msgstr "&Маса ймовірності (Верхнє P):"
 
-#: openai/maindialog.py:644
+#: addon\globalPlugins\openai\maindialog.py:689
 msgid "Stream mode"
 msgstr "Потоковий режим"
 
-#: openai/maindialog.py:650
+#: addon\globalPlugins\openai\maindialog.py:695
 msgid "&Debug mode"
 msgstr "&Режим налагодження"
 
-#: openai/maindialog.py:679 openai/maindialog.py:1795
+#: addon\globalPlugins\openai\maindialog.py:724
+#: addon\globalPlugins\openai\maindialog.py:1875
 msgid "Start &recording"
 msgstr "&Почати запис"
 
-#: openai/maindialog.py:682
+#: addon\globalPlugins\openai\maindialog.py:727
 msgid "Record audio from microphone"
 msgstr "Запис звуку з мікрофона"
 
-#: openai/maindialog.py:686
+#: addon\globalPlugins\openai\maindialog.py:731
 msgid "Transcribe from &audio file"
 msgstr "Транскрибувати з &аудіофайлу"
 
-#: openai/maindialog.py:689
+#: addon\globalPlugins\openai\maindialog.py:734
 msgid "Transcribe audio from a file path"
 msgstr "Транскрибувати аудіо зі шляху до файлу"
 
-#: openai/maindialog.py:693
+#: addon\globalPlugins\openai\maindialog.py:738
 msgid "&Image description"
 msgstr "&Опис зображення"
 
-#: openai/maindialog.py:696
+#: addon\globalPlugins\openai\maindialog.py:741
 msgid "Describe an image from a file path or an URL"
 msgstr "Описати зображення за допомогою шляху до файлу або URL-адреси"
 
-#: openai/maindialog.py:700
+#: addon\globalPlugins\openai\maindialog.py:745
 msgid "&Vocalize the prompt"
 msgstr "&Промовити запит"
 
-#: openai/maindialog.py:786
+#: addon\globalPlugins\openai\maindialog.py:831
 msgid "Describe the images in as much detail as possible."
 msgstr "Описати зображення якомога детальніше."
 
-#: openai/maindialog.py:881
+#: addon\globalPlugins\openai\maindialog.py:926
 msgid "Model details"
 msgstr "Деталі моделі"
 
-#: openai/maindialog.py:899
+#: addon\globalPlugins\openai\maindialog.py:944
 msgid "Please select a model."
 msgstr "Будь ласка, виберіть модель."
 
-#: openai/maindialog.py:906
+#: addon\globalPlugins\openai\maindialog.py:951
 #, python-format
 msgid ""
 "This model is only available with the %s provider. Please provide an API key "
@@ -469,12 +496,12 @@ msgstr ""
 "постачальника в налаштуваннях додатка. В іншому випадку виберіть іншу модель "
 "від іншого постачальника."
 
-#: openai/maindialog.py:909
+#: addon\globalPlugins\openai\maindialog.py:954
 #, python-format
 msgid "No API key for %s"
 msgstr "Немає ключа API для %s"
 
-#: openai/maindialog.py:920
+#: addon\globalPlugins\openai\maindialog.py:965
 #, fuzzy
 #| msgid ""
 #| "No image provided. Please use the Image Description button and select one "
@@ -487,12 +514,15 @@ msgstr ""
 "й виберіть одне або декілька зображень. В іншому випадку, будь ласка, "
 "виберіть іншу модель."
 
-#: openai/maindialog.py:921
+#: addon\globalPlugins\openai\maindialog.py:966
 msgid "No image provided"
 msgstr "Зображення не надано"
 
-#: openai/maindialog.py:928
-#, python-format
+#: addon\globalPlugins\openai\maindialog.py:973
+#, fuzzy, python-format
+#| msgid ""
+#| "This model does not support image description. Please select one of the "
+#| "following models: %s."
 msgid ""
 "This model does not support image description. Please select one of the "
 "following models: %s."
@@ -500,13 +530,13 @@ msgstr ""
 "Ця модель не підтримує опису зображень. Будь ласка, оберіть одну з таких "
 "моделей: %s."
 
-#: openai/maindialog.py:929
+#: addon\globalPlugins\openai\maindialog.py:974
 #, fuzzy
 #| msgid "Invalid top P"
 msgid "Invalid model"
 msgstr "Неправильна вершина P"
 
-#: openai/maindialog.py:938
+#: addon\globalPlugins\openai\maindialog.py:983
 msgid ""
 "Be aware that the add-on may auto-resize images before API submission to "
 "lower request sizes and costs. Adjust this feature in the Open AI settings "
@@ -517,13 +547,13 @@ msgstr ""
 "налаштуйте цю функцію в налаштуваннях Open AI. Це повідомлення більше не "
 "з'явиться."
 
-#: openai/maindialog.py:941
+#: addon\globalPlugins\openai\maindialog.py:986
 #, fuzzy
 #| msgid "Image description"
 msgid "Image resizing"
 msgstr "Опис зображення"
 
-#: openai/maindialog.py:968
+#: addon\globalPlugins\openai\maindialog.py:1026
 #, python-format
 msgid ""
 "Unable to delete the file: %s\n"
@@ -532,179 +562,183 @@ msgstr ""
 "Не вдалося видалити файл: %s\n"
 "Видаліть його вручну."
 
-#: openai/maindialog.py:1024
+#: addon\globalPlugins\openai\maindialog.py:1081
 #, python-format
 msgid "Insertion of: %s"
 msgstr "Вставка з: %s"
 
-#: openai/maindialog.py:1033
+#: addon\globalPlugins\openai\maindialog.py:1090
 msgid "Unknown error"
 msgstr "Невідома помилка"
 
-#: openai/maindialog.py:1049
+#: addon\globalPlugins\openai\maindialog.py:1106
 msgid "Do you want to open the URL in your browser?"
 msgstr "Бажаєте відкрити URL-адресу у своєму браузері?"
 
-#: openai/maindialog.py:1052
+#: addon\globalPlugins\openai\maindialog.py:1109
 #, fuzzy
 #| msgid "Open AI error"
 msgid "OpenAI Error"
 msgstr "Помилка Open AI"
 
-#: openai/maindialog.py:1065
+#: addon\globalPlugins\openai\maindialog.py:1119
 msgid "Press Alt+F4 to close the dialog"
 msgstr "Натисніть Alt+F4, щоб закрити діалог"
 
-#: openai/maindialog.py:1075
+#: addon\globalPlugins\openai\maindialog.py:1129
 msgid "User:"
 msgstr "Користувач:"
 
-#: openai/maindialog.py:1077
+#: addon\globalPlugins\openai\maindialog.py:1131
 msgid "Assistant:"
 msgstr "Помічник:"
 
-#: openai/maindialog.py:1217
+#: addon\globalPlugins\openai\maindialog.py:1276
 msgid "Begin"
 msgstr "Початок"
 
-#: openai/maindialog.py:1237
+#: addon\globalPlugins\openai\maindialog.py:1296
 msgid "End"
 msgstr "Кінець"
 
-#: openai/maindialog.py:1278
+#: addon\globalPlugins\openai\maindialog.py:1337
 #, python-format
 msgid "Response copied to system: %s"
 msgstr "Відповідь скопійовано до system: %s"
 
-#: openai/maindialog.py:1287
-msgid "Compied to prompt"
+#: addon\globalPlugins\openai\maindialog.py:1346
+#, fuzzy
+#| msgid "Compied to prompt"
+msgid "Copied to prompt"
 msgstr "Запит скопійовано"
 
-#: openai/maindialog.py:1291
+#: addon\globalPlugins\openai\maindialog.py:1350
 msgid "Copy"
 msgstr "Копіювати"
 
-#: openai/maindialog.py:1299
+#: addon\globalPlugins\openai\maindialog.py:1358
 msgid "Copy prompt"
 msgstr "Копіювати запит"
 
-#: openai/maindialog.py:1302
+#: addon\globalPlugins\openai\maindialog.py:1361
 msgid "Copy response"
 msgstr "Копіювати відповідь"
 
-#: openai/maindialog.py:1309
+#: addon\globalPlugins\openai\maindialog.py:1368
 msgid "as formatted HTML"
 msgstr "як форматований HTML"
 
-#: openai/maindialog.py:1335
+#: addon\globalPlugins\openai\maindialog.py:1394
 msgid "Block deleted"
 msgstr "Блокування видалено"
 
-#: openai/maindialog.py:1368
+#: addon\globalPlugins\openai\maindialog.py:1427
 msgid "Save history"
 msgstr "Зберегти історію"
 
-#: openai/maindialog.py:1370
+#: addon\globalPlugins\openai\maindialog.py:1429
 msgid "Text file"
 msgstr "Текстовий файл"
 
-#: openai/maindialog.py:1381
+#: addon\globalPlugins\openai\maindialog.py:1440
 msgid "History saved"
 msgstr "Історію збережено"
 
-#: openai/maindialog.py:1386
+#: addon\globalPlugins\openai\maindialog.py:1445
 msgid "Reset to default"
 msgstr "Скинути до початкових"
 
-#: openai/maindialog.py:1396
+#: addon\globalPlugins\openai\maindialog.py:1455
 msgid "Show message in web view as formatted HTML"
 msgstr "Показати повідомлення у веб-перегляді як форматований HTML"
 
-#: openai/maindialog.py:1399
+#: addon\globalPlugins\openai\maindialog.py:1458
 msgid "Show message in web view as HTML source"
 msgstr "Показати повідомлення у веб-перегляді як джерело HTML"
 
-#: openai/maindialog.py:1402
+#: addon\globalPlugins\openai\maindialog.py:1461
 msgid "Copy message as plain text"
 msgstr "Копіювати повідомлення як звичайний текст"
 
-#: openai/maindialog.py:1405
+#: addon\globalPlugins\openai\maindialog.py:1464
 msgid "Copy message as formatted HTML"
 msgstr "Копіювати повідомлення як форматований HTML"
 
-#: openai/maindialog.py:1408
+#: addon\globalPlugins\openai\maindialog.py:1467
 msgid "Copy response to system"
 msgstr "Копіювати відповідь до system"
 
-#: openai/maindialog.py:1411
+#: addon\globalPlugins\openai\maindialog.py:1470
 msgid "Copy prompt to prompt"
 msgstr "Копіювати запит до запиту"
 
-#: openai/maindialog.py:1414
+#: addon\globalPlugins\openai\maindialog.py:1473
 msgid "Delete block"
 msgstr "Видалити блок"
 
-#: openai/maindialog.py:1417
+#: addon\globalPlugins\openai\maindialog.py:1476
 msgid "Save history as text file"
 msgstr "Зберегти історію у текстовий файл"
 
-#: openai/maindialog.py:1420
+#: addon\globalPlugins\openai\maindialog.py:1479
 msgid "Say message"
 msgstr "Промовити повідомлення"
 
-#: openai/maindialog.py:1423
+#: addon\globalPlugins\openai\maindialog.py:1482
 msgid "Move to previous message"
 msgstr "Перейти до попереднього повідомлення"
 
-#: openai/maindialog.py:1426
+#: addon\globalPlugins\openai\maindialog.py:1485
 msgid "Move to next message"
 msgstr "Перейти до наступного повідомлення"
 
-#: openai/maindialog.py:1437
+#: addon\globalPlugins\openai\maindialog.py:1496
 msgid "Insert previous prompt"
 msgstr "Вставити попередній запит"
 
-#: openai/maindialog.py:1447
+#: addon\globalPlugins\openai\maindialog.py:1506
 msgid "Show model details"
 msgstr "Показати деталі моделі"
 
-#: openai/maindialog.py:1464
+#: addon\globalPlugins\openai\maindialog.py:1549
 msgid "From f&ile path..."
 msgstr "&Зі шляху до файлу..."
 
-#: openai/maindialog.py:1468
+#: addon\globalPlugins\openai\maindialog.py:1553
 msgid "From &URL..."
 msgstr "З &URL..."
 
-#: openai/maindialog.py:1472
+#: addon\globalPlugins\openai\maindialog.py:1557
 msgid "From &screenshot"
 msgstr "Зі &знімка екрана"
 
-#: openai/maindialog.py:1494
+#: addon\globalPlugins\openai\maindialog.py:1579
 msgid "&Remove selected images"
 msgstr "&Видалити вибрані зображення"
 
-#: openai/maindialog.py:1497
+#: addon\globalPlugins\openai\maindialog.py:1582
 msgid "Remove &all images"
 msgstr "Видалити &всі зображення"
 
-#: openai/maindialog.py:1501
+#: addon\globalPlugins\openai\maindialog.py:1586
 msgid "Add from f&ile path..."
 msgstr "&Додати зі шляху до файлу..."
 
-#: openai/maindialog.py:1504
+#: addon\globalPlugins\openai\maindialog.py:1589
 msgid "Add from &URL..."
 msgstr "Додати з &URL..."
 
-#: openai/maindialog.py:1601
+#. Translators: This is a message displayed in a dialog to select one or more images.
+#: addon\globalPlugins\openai\maindialog.py:1686
 msgid "Select image files"
 msgstr "Вибрати файли зображень"
 
-#: openai/maindialog.py:1603
+#: addon\globalPlugins\openai\maindialog.py:1688
 msgid "Image files"
 msgstr "Файли зображень"
 
-#: openai/maindialog.py:1619
+#. Translators: This message is displayed when the image has already been added.
+#: addon\globalPlugins\openai\maindialog.py:1704
 #, python-format
 msgid ""
 "The following image has already been added and will be ignored:\n"
@@ -713,45 +747,51 @@ msgstr ""
 "Наступне зображення вже додано та буде проігноровано:\n"
 "%s"
 
-#: openai/maindialog.py:1641
+#. Translators: This is a message displayed in a dialog to enter an image URL.
+#: addon\globalPlugins\openai\maindialog.py:1726
 msgid "Enter image URL"
 msgstr "Введіть URL зображення"
 
-#: openai/maindialog.py:1655
+#: addon\globalPlugins\openai\maindialog.py:1740
 msgid "Invalid URL, bad format."
 msgstr "Недійсна URL-адреса, неправильний формат."
 
-#: openai/maindialog.py:1666
+#. Translators: This message is displayed when the image URL returns an HTTP error.
+#: addon\globalPlugins\openai\maindialog.py:1751
 #, python-format
 msgid "HTTP error %s."
 msgstr "Помилка HTTP %s."
 
-#: openai/maindialog.py:1674
+#. Translators: This message is displayed when the image URL does not point to an image.
+#: addon\globalPlugins\openai\maindialog.py:1759
 msgid "The URL does not point to an image."
 msgstr "URL-адреса не вказує на зображення."
 
-#: openai/maindialog.py:1697
+#. Translators: This message is displayed when the add-on fails to get the image dimensions.
+#: addon\globalPlugins\openai\maindialog.py:1782
 #, python-format
 msgid "Failed to get image dimensions. %s"
 msgstr "Не вдалося отримати розміри зображення. %s"
 
-#: openai/maindialog.py:1726
+#. Translators: This message is displayed when a chat session stops receiving images.
+#: addon\globalPlugins\openai\maindialog.py:1811
 msgid "Screenshot reception disabled"
 msgstr "Отримання знімків екрана вимкнено"
 
-#: openai/maindialog.py:1732
+#. Translators: This message is displayed when a chat session starts to receive images.
+#: addon\globalPlugins\openai\maindialog.py:1817
 msgid "Screenshot reception enabled"
 msgstr "Отримання знімків екрана увімкнено"
 
-#: openai/maindialog.py:1740
+#: addon\globalPlugins\openai\maindialog.py:1824
 msgid "Stop &recording"
 msgstr "Зупинити &запис"
 
-#: openai/maindialog.py:1753
+#: addon\globalPlugins\openai\maindialog.py:1837
 msgid "Select audio file"
 msgstr "Вибрати аудіофайл"
 
-#: openai/maindialog.py:1755
+#: addon\globalPlugins\openai\maindialog.py:1839
 msgid ""
 "Audio files (*.mp3;*.mp4;*.mpeg;*.mpga;*.m4a;*.wav;*.webm)|*.mp3;*.mp4;*."
 "mpeg;*.mpga;*.m4a;*.wav;*.webm"
@@ -759,94 +799,138 @@ msgstr ""
 "Аудіофайли (*.mp3;*.mp4;*.mpeg;*.mpga;*.m4a;*.wav;*.webm)|*.mp3;*.mp4;*.mpeg;"
 "*.mpga;*. m4a;*.wav;*.webm"
 
-#: openai/maindialog.py:1776
+#: addon\globalPlugins\openai\maindialog.py:1858
 msgid "Please enter some text in the prompt field first."
 msgstr "Спочатку введіть текст у поле запиту."
 
-#: openai/model.py:41
+#: addon\globalPlugins\openai\model.py:41
 msgid "preview: not yet suited for production traffic"
 msgstr "попередній перегляд: ще не підходить для робочого трафіку"
 
-#: openai/model.py:55
+#: addon\globalPlugins\openai\model.py:55
 #, python-brace-format
 msgid "provider: {provider}"
 msgstr "постачальник: {provider}"
 
-#: openai/model.py:60
+#: addon\globalPlugins\openai\model.py:60
 #, python-brace-format
 msgid "ID: {id}"
 msgstr "ID: {id}"
 
-#: openai/model.py:63
-#, fuzzy, python-brace-format
-#| msgid "Context window:"
+#: addon\globalPlugins\openai\model.py:63
+#, python-brace-format
 msgid "context window: {contextWindow}"
-msgstr "Контекстне вікно:"
+msgstr "контекстне вікно: {contextWindow}"
 
-#: openai/model.py:69
+#: addon\globalPlugins\openai\model.py:69
 #, python-brace-format
 msgid "max output tokens: {maxOutputToken}"
-msgstr "максимальна кількість вихідних токенів: {maxOutputToken}"
+msgstr "максимальна кількість вихідних токенів:  {maxOutputToken}"
 
-#: openai/recordthread.py:47
+#: addon\globalPlugins\openai\recordthread.py:47
 msgid "Transcription copied to clipboard"
 msgstr "Транскрипцію скопійовано в буфер обміну"
 
-#: openai/recordthread.py:94
+#: addon\globalPlugins\openai\recordthread.py:94
 msgid "Transcribing..."
 msgstr "Транскрибування..."
 
-#: openai/recordthread.py:170 openai/recordthread.py:179
-#: openai/recordthread.py:194
+#: addon\globalPlugins\openai\recordthread.py:170
+#: addon\globalPlugins\openai\recordthread.py:179
+#: addon\globalPlugins\openai\recordthread.py:194
 msgid "Error!"
 msgstr "Помилка!"
 
-#: openai/updatecheck.py:61
-#, fuzzy, python-format
-#| msgid ""
-#| "New Open AI dependencies revision available: %s. If you have just "
-#| "installed the add-on, you must install them for it to work properly. Do "
-#| "you want to update now?"
+#: addon\globalPlugins\openai\updatecheck.py:89
+#, python-format
 msgid ""
-"New OpenAI dependencies revision available: %s. If you have just installed "
-"the add-on, you must install them for it to work properly. Do you want to "
-"update now?"
+"New version available: %s. Your version is %s. You can update from the add-"
+"on store or from the GitHub repository."
 msgstr ""
-"Доступна нова версія залежностей Open AI: %s. Якщо ви  щойно встановили "
-"додаток, ви повинні встановити їх, щоб він працював належним чином. Хочете "
-"оновити зараз?"
+"Доступна нова версія: %s. Ваша версія: %s. Ви можете оновитися з магазину "
+"додатків або з репозиторію GitHub."
 
-#: openai/updatecheck.py:66
+#. Translators: This is the title of the message displayed when a new version of the add-on is available.
+#. Translators: This is the title of the message displayed when the user checks for updates manually and there are no updates available.
+#: addon\globalPlugins\openai\updatecheck.py:99
+#: addon\globalPlugins\openai\updatecheck.py:108
+#, fuzzy
+#| msgid "OpenAI dependencies update"
+msgid "OpenAI update"
+msgstr "Оновлення залежностей OpenAI"
+
+#. Translators: This is the message displayed when the user checks for updates manually and there are no updates available.
+#: addon\globalPlugins\openai\updatecheck.py:104
+msgid "You have the latest version of OpenAI add-on installed."
+msgstr "У вас встановлена остання версія додатка OpenAI."
+
+#. Translators: This is the message displayed when a new version of the OpenAI dependencies is available.
+#: addon\globalPlugins\openai\updatecheck.py:146
+#, python-format
+msgid ""
+"New OpenAI dependencies revision available: %s. Your version is %s. Update "
+"now?"
+msgstr ""
+"Доступна нова версія залежностей OpenAI: %s. Ваша версія %s. Оновити зараз?"
+
+#: addon\globalPlugins\openai\updatecheck.py:148
+msgid "unknown"
+msgstr "невідома помилка"
+
+#. Translators: This is the title of the message displayed when a new version of the OpenAI dependencies is available.
+#: addon\globalPlugins\openai\updatecheck.py:154
 msgid "OpenAI dependencies update"
 msgstr "Оновлення залежностей OpenAI"
 
-#: openai/updatecheck.py:70
-msgid "Updating Open AI dependencies... Please wait"
+#. Translators: This is the message emitted when updating the OpenAI dependencies.
+#: addon\globalPlugins\openai\updatecheck.py:164
+#, fuzzy
+#| msgid "Updating Open AI dependencies... Please wait"
+msgid "Updating OpenAI dependencies... Please wait"
 msgstr "Оновлення залежностей Open AI... Зачекайте"
 
-#: openai/updatecheck.py:83
-msgid "Libs hash mismatch"
-msgstr "Невідповідність хешу Libs"
-
-#: openai/updatecheck.py:84 openai/updatecheck.py:99
-msgid "Error"
-msgstr "Помилка"
-
-#: openai/updatecheck.py:92
-msgid "Open AI dependencies updated successfully"
-msgstr "Залежності Open AI успішно оновлено"
-
-#: openai/updatecheck.py:94
-msgid "Success. Restart NVDA to apply changes"
-msgstr "Успішно. Перезапустіть NVDA, щоб застосувати зміни"
-
-#: openai/updatecheck.py:98
+#. Translators: This is the message displayed when the OpenAI dependencies are updated successfully.
+#: addon\globalPlugins\openai\updatecheck.py:187
 msgid ""
-"Error while updating Open AI dependencies. See log for details. Please retry "
-"later."
+"Dependencies updated successfully. NVDA will now restart to apply the "
+"changes."
+msgstr ""
+"Залежності успішно оновлено. NVDA буде перезапущено для застосування змін."
+
+#. Translators: This is the title of the message displayed when the OpenAI dependencies are updated successfully.
+#: addon\globalPlugins\openai\updatecheck.py:189
+msgid "Success"
+msgstr "Успішно"
+
+#. Translators: This is the message displayed when the OpenAI dependencies cannot be updated.
+#: addon\globalPlugins\openai\updatecheck.py:203
+#, fuzzy
+#| msgid ""
+#| "Error while updating Open AI dependencies. See log for details. Please "
+#| "retry later."
+msgid "Error updating dependencies. Please restart NVDA and try again."
 msgstr ""
 "Помилка під час оновлення залежностей Open AI. Подробиці дивіться в журналі. "
 "Повторіть спробу пізніше."
+
+#. Translators: This is the title of the message displayed when the OpenAI dependencies cannot be updated.
+#: addon\globalPlugins\openai\updatecheck.py:205
+msgid "Error"
+msgstr "Помилка"
+
+#: buildVars.py:42
+msgid ""
+"Open AI is an NVDA add-on designed to seamlessly integrate the capabilities "
+"of the Open AI API into your workflow. Whether you're looking to craft "
+"comprehensive text, translate passages with precision, concisely summarize "
+"documents, or even interpret and describe visual content, this add-on does "
+"it all with ease."
+msgstr ""
+"Цей додаток призначений для безперешкодної інтеграції можливостей API Open "
+"AI у ваш робочий процес. Незалежно від того, чи потрібно вам створити "
+"вичерпний текст, точно перекласти уривки, стисло підсумувати документи або "
+"навіть інтерпретувати й описати візуальний вміст, цей додаток легко "
+"впорається з усіма цими завданнями."
 
 #~ msgid ""
 #~ "No authentication key provided. Please set it in the Preferences dialog."
@@ -854,11 +938,11 @@ msgstr ""
 #~ "Ключ автентифікації не надано. Будь ласка, встановіть його в діалозі "
 #~ "Налаштування."
 
-#~ msgid "Use OpenR&outer instead of OpenAI"
-#~ msgstr "Використовувати OpenR&outer замість OpenAI"
+#~ msgid "API Key:"
+#~ msgstr "Ключ API:"
 
-#~ msgid "OpenAI/OpenRouter API &Key:"
-#~ msgstr "&Ключ OpenAI/OpenRouter API:"
+#~ msgid "Organization"
+#~ msgstr "Організація"
 
 #~ msgid "Use or&ganization"
 #~ msgstr "Використовувати &організацію"
@@ -869,12 +953,32 @@ msgstr ""
 #~ msgid "&Organization key:"
 #~ msgstr "&Ключ організації:"
 
+#~ msgid "Ready"
+#~ msgstr "Готово"
+
+#~ msgid "organization"
+#~ msgstr "організація"
+
+#~ msgid "personal"
+#~ msgstr "особистий"
+
+#~ msgid "Libs hash mismatch"
+#~ msgstr "Невідповідність хешу Libs"
+
+#~ msgid "Open AI dependencies updated successfully"
+#~ msgstr "Залежності Open AI успішно оновлено"
+
+#~ msgid "Success. Restart NVDA to apply changes"
+#~ msgstr "Успішно. Перезапустіть NVDA, щоб застосувати зміни"
+
+#~ msgid "Use OpenR&outer instead of OpenAI"
+#~ msgstr "Використовувати OpenR&outer замість OpenAI"
+
+#~ msgid "OpenAI/OpenRouter API &Key:"
+#~ msgstr "&Ключ OpenAI/OpenRouter API:"
+
 #~ msgid "Mistra&lAI API key:"
 #~ msgstr "Ключ API Mistra&lAI:"
-
-#, python-format
-#~ msgid "%s API Key:"
-#~ msgstr "Ключ API %s:"
 
 #~ msgid ""
 #~ "Depending on their size, subject, and complexity, your prompts will be "
@@ -1107,31 +1211,9 @@ msgstr ""
 #~ "вбудовування речень. RWKV-5 навчається на 100+ мовах світу (70% "
 #~ "англійська, 15% багатомовність, 15% — код)."
 
-#~ msgid "organization"
-#~ msgstr "організація"
-
-#~ msgid "personal"
-#~ msgstr "особистий"
-
 #, python-format
 #~ msgid "%s error"
 #~ msgstr "%s помилка"
-
-#~ msgid "Organization"
-#~ msgstr "Організація"
-
-#~ msgid ""
-#~ "Open AI is an NVDA add-on designed to seamlessly integrate the "
-#~ "capabilities of the Open AI API into your workflow. Whether you're "
-#~ "looking to craft comprehensive text, translate passages with precision, "
-#~ "concisely summarize documents, or even interpret and describe visual "
-#~ "content, this add-on does it all with ease."
-#~ msgstr ""
-#~ "Цей додаток призначений для безперешкодної інтеграції можливостей API "
-#~ "Open AI у ваш робочий процес. Незалежно від того, чи потрібно вам "
-#~ "створити вичерпний текст, точно перекласти уривки, стисло підсумувати "
-#~ "документи або навіть інтерпретувати й описати візуальний вміст, цей "
-#~ "додаток легко впорається з усіма цими завданнями."
 
 #~ msgid "Whisper through whisper.cpp"
 #~ msgstr "Whisper.cpp aracılığıyla fısılda"
