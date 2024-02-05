@@ -237,6 +237,59 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 
 		sHelper.addItem(imageSizer)
 
+		chatFeedback = _("Chat feedback")
+		chatFeedbackSizer = wx.StaticBoxSizer(wx.VERTICAL, self, label=chatFeedback)
+		chatFeedbackBox = chatFeedbackSizer.GetStaticBox()
+		chatFeedbackGroup = gui.guiHelper.BoxSizerHelper(self, sizer=chatFeedbackSizer)
+
+		self.chatFeedback = {
+			"sndTaskInProgress": chatFeedbackGroup.addItem(
+				wx.CheckBox(
+					chatFeedbackBox,
+					# Translators: This is a setting to play a sound when a task is in progress.
+					label=_("Play sound when a task is in progress")
+				)
+			),
+			"sndResponseSent": chatFeedbackGroup.addItem(
+				wx.CheckBox(
+					chatFeedbackBox,
+					# Translators: This is a setting to play a sound when a response is sent.
+					label=_("Play sound when a response is sent")
+				)
+			),
+			"sndResponsePending": chatFeedbackGroup.addItem(
+				wx.CheckBox(
+					chatFeedbackBox,
+					# Translators: This is a setting to play a sound when a response is pending.
+					label=_("Play sound when a response is pending")
+				)
+			),
+			"sndResponseReceived": chatFeedbackGroup.addItem(
+				wx.CheckBox(
+					chatFeedbackBox,
+					# Translators: This is a setting to play a sound when a response is received.
+					label=_("Play sound when a response is received")
+				)
+			),
+			"brailleAutoFocusHistory": chatFeedbackGroup.addItem(
+				wx.CheckBox(
+					chatFeedbackBox,
+					# Translators: This is a setting to attach braille to the history if the focus is in the prompt field.
+					label=_("Attach braille to the history if the focus is in the prompt field")
+				)
+			),
+			"speechResponseReceived": chatFeedbackGroup.addItem(
+				wx.CheckBox(
+					chatFeedbackBox,
+					label=_("Speak response when the focus is in the prompt field")
+				)
+			)
+		}
+		for key, item in self.chatFeedback.items():
+			item.SetValue(conf["chatFeedback"][key])
+
+		sHelper.addItem(chatFeedbackSizer)
+
 		sHelper.addItem(mainDialogSizer)
 
 		self.onUseOrg(None)
@@ -294,6 +347,10 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 			conf["images"]["customPromptText"] = self.customPromptText.GetValue()
 		else:
 			conf["images"]["useCustomPrompt"] = False
+
+		for key, item in self.chatFeedback.items():
+			conf["chatFeedback"][key] = item.GetValue()
+
 
 class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 
