@@ -46,6 +46,14 @@ confSpecs = {
 		"channels": "integer(min=1, max=2, default=1)",
 		"dtype": "string(default=int16)"
 	},
+	"chatFeedback": {
+		"sndResponsePending": "boolean(default=True)",
+		"sndResponseReceived": "boolean(default=True)",
+		"sndResponseSent": "boolean(default=True)",
+		"sndTaskInProgress": "boolean(default=True)",
+		"brailleAutoFocusHistory": "boolean(default=True)",
+		"speechResponseReceived": "boolean(default=True)",
+	},
 	"renewClient": "boolean(default=False)",
 	"debug": "boolean(default=False)"
 }

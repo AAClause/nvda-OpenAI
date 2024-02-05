@@ -251,7 +251,8 @@ class CompletionThread(threading.Thread):
 
 		try:
 			response = client.chat.completions.create(**params)
-			winsound.PlaySound(SND_CHAT_RESPONSE_SENT, winsound.SND_ASYNC)
+			if conf["chatFeedback"]["sndResponseSent"]:
+				winsound.PlaySound(SND_CHAT_RESPONSE_SENT, winsound.SND_ASYNC)
 		except BaseException as err:
 			wx.PostEvent(self._notifyWindow, ResultEvent(err))
 			return
@@ -293,12 +294,10 @@ class CompletionThread(threading.Thread):
 		text = ""
 		speechBuffer = ""
 		for i, event in enumerate(response):
-			if int(time.time()) - self.lastTime > 4:
+			if time.time() - self.lastTime > 4:
 				self.lastTime = int(time.time())
-				winsound.PlaySound(
-					SND_CHAT_RESPONSE_PENDING,
-					winsound.SND_ASYNC
-				)
+				if wnd.conf["chatFeedback"]["sndResponsePending"]:
+					winsound.PlaySound(SND_CHAT_RESPONSE_PENDING, winsound.SND_ASYNC)
 			if wnd.stopRequest.is_set():
 				break
 			delta = event.choices[0].delta
@@ -1035,7 +1034,10 @@ class OpenAIDlg(wx.Dialog):
 		self.Destroy()
 
 	def OnResult(self, event):
-		winsound.PlaySound(SND_CHAT_RESPONSE_RECEIVED, winsound.SND_ASYNC)
+		if self.conf["chatFeedback"]["sndResponseReceived"]:
+			winsound.PlaySound(SND_CHAT_RESPONSE_RECEIVED, winsound.SND_ASYNC)
+		else:
+			winsound.PlaySound(None, winsound.SND_ASYNC)
 		self.enableButtons()
 		self.worker = None
 		if not event.data:
@@ -1513,7 +1515,12 @@ class OpenAIDlg(wx.Dialog):
 		self.lastFocusedItem = evt.GetEventObject()
 		evt.Skip()
 
-	def focusHistoryBrl(self):
+	def focusHistoryBrl(self, force=False):
+		if (
+			not force
+			and not self.conf["chatFeedback"]["brailleAutoFocusHistory"]
+		):
+			return
 		if (
 			self.historyObj
 			and self.foregroundObj is api.getForegroundObject()
@@ -1533,7 +1540,14 @@ class OpenAIDlg(wx.Dialog):
 			return
 		if onPromptFieldOnly and self.lastFocusedItem is not self.promptText:
 			return
-		queueHandler.queueFunction(queueHandler.eventQueue, speech.speakMessage, msg)
+		if (
+			not onPromptFieldOnly
+			or (
+				onPromptFieldOnly
+				and self.conf["chatFeedback"]["speechResponseReceived"]
+			)
+		):
+			queueHandler.queueFunction(queueHandler.eventQueue, speech.speakMessage, msg)
 		if not speechOnly:
 			queueHandler.queueFunction(queueHandler.eventQueue, braille.handler.message, msg)
 		if onPromptFieldOnly:
