@@ -27,6 +27,22 @@ TTS_DEFAULT_MODEL = "tts-1"
 MODELS = [
 	Model(
 		"OpenAI",
+		"gpt-3.5-turbo",
+		# Translators: This is a model description
+		_("Points to one of the most recent iterations of gpt-3.5 model."),
+		16385,
+		4096
+	),
+	Model(
+		"OpenAI",
+		"gpt-3.5-turbo-0125",
+		# Translators: This is a model description
+		_("The latest GPT-3.5 Turbo model with higher accuracy at responding in requested formats and a fix for a bug which caused a text encoding issue for non-English language function calls."),
+		16385,
+		4096
+	),
+	Model(
+		"OpenAI",
 		"gpt-3.5-turbo-1106",
 		# Translators: This is a model description
 		_("Updated GPT 3.5 Turbo. The latest GPT-3.5 Turbo model with improved instruction following, JSON mode, reproducible outputs, parallel function calling, and more."),
@@ -43,16 +59,25 @@ MODELS = [
 	),
 	Model(
 		"OpenAI",
-		"gpt-4-0613",
+		"gpt-4-turbo-preview",
 		# Translators: This is a model description
-		_("More capable than any GPT-3.5 model, able to do more complex tasks, and optimized for chat"),
-		8192
+		_("Points to one of the most recent iterations of gpt-4 model."),
+		128000,
+		4096
+	),
+	Model(
+		"OpenAI",
+		"gpt-4-0125-preview",
+		# Translators: This is a model description
+		_("The latest GPT-4 model intended to reduce cases of “laziness” where the model doesn’t complete a task."),
+		128000,
+		4096
 	),
 	Model(
 		"OpenAI",
 		"gpt-4-1106-preview",
 		# Translators: This is a model description
-		_("The latest GPT-4 model with improved instruction following, JSON mode, reproducible outputs, parallel function calling, and more."),
+		_("GPT-4 Turbo model featuring improved instruction following, JSON mode, reproducible outputs, parallel function calling, and more."),
 		128000,
 		4096,
 		preview=True
@@ -66,6 +91,13 @@ MODELS = [
 		4096,
 		vision=True,
 		preview=True
+	),
+	Model(
+		"OpenAI",
+		"gpt-4-0613",
+		# Translators: This is a model description
+		_("More capable than any GPT-3.5 model, able to do more complex tasks, and optimized for chat"),
+		8192
 	),
 	Model(
 		"OpenAI",

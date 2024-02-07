@@ -48,6 +48,8 @@ TTS_FILE_NAME = os.path.join(DATA_DIR, "tts.wav")
 DATA_JSON_FP = os.path.join(DATA_DIR, "data.json")
 URL_PATTERN = re.compile(r"^(?:http)s?://(?:[A-Z0-9-]+\.)+[A-Z]{2,6}(?::\d+)?(?:/?|[/?]\S+)$", re.IGNORECASE)
 
+addToSession = None
+
 def EVT_RESULT(win, func):
 	win.Connect(-1, -1, EVT_RESULT_ID, func)
 
@@ -468,6 +470,7 @@ class OpenAIDlg(wx.Dialog):
 		title=None,
 		pathList=None
 	):
+		global addToSession
 		if not client or not conf:
 			return
 		self.client = client
@@ -483,26 +486,14 @@ class OpenAIDlg(wx.Dialog):
 		if apikeymanager.get("OpenRouter").ready():
 			self._models.extend(getOpenRouterModels())
 		self.pathList = []
+		self._fileToRemoveAfter = []
 		if pathList:
+			addToSession = self
 			for path in pathList:
-				if isinstance(path, ImageFile):
-					self.pathList.append(path)
-				elif isinstance(path, str):
-					if not os.path.exists(path):
-						continue
-					self.pathList.append(ImageFile(path))
-				elif isinstance(path, tuple) and len(path) == 2:
-					location, name = path
-					if not os.path.exists(location):
-						continue
-					self.pathList.append(
-						ImageFile(
-							location,
-							name=name
-						)
-					)
-				else:
-					raise ValueError(f"Invalid path: {path}")
+				self.addImageToList(
+					path,
+					removeAfter=True
+				)
 		self.previousPrompt = None
 		self._lastSystem = None
 		self._model_ids = [model.id for model in self._models]
@@ -758,6 +749,37 @@ class OpenAIDlg(wx.Dialog):
 		self.Bind(wx.EVT_CHAR_HOOK, self.onCharHook)
 		self.Bind(wx.EVT_CLOSE, self.onCancel)
 
+	def addImageToList(
+		self,
+		path,
+		removeAfter=False
+	):
+		if not path:
+			return
+		if isinstance(path, ImageFile):
+			self.pathList.append(path)
+		elif isinstance(path, str):
+			self.pathList.append(
+				ImageFile(
+					path
+				)
+			)
+		elif (
+			isinstance(path, tuple)
+			and len(path) == 2
+		):
+			location, name = path
+			self.pathList.append(
+				ImageFile(
+					location,
+					name=name
+				)
+			)
+			if removeAfter:
+				self._fileToRemoveAfter.append(location)
+		else:
+			raise ValueError(f"Invalid path: {path}")
+
 	def getDefaultImageDescriptionsPrompt(self):
 		if self.conf["images"]["useCustomPrompt"]:
 			return self.conf["images"]["customPromptText"]
@@ -932,6 +954,21 @@ class OpenAIDlg(wx.Dialog):
 		self.worker.start()
 
 	def onCancel(self, evt):
+		global addToSession
+		if addToSession and addToSession is self:
+			addToSession = None
+		# remove files marked for deletion
+		for path in self._fileToRemoveAfter:
+			if os.path.exists(path):
+				try:
+					os.remove(path)
+				except BaseException as err:
+					log.error(err)
+					gui.messageBox(
+						_("Unable to delete the file: %s\nPlease remove it manually.") % path,
+						"Open AI",
+						wx.OK | wx.ICON_ERROR
+					)
 		self.saveData()
 		if self.worker:
 			self.worker.abort()
@@ -1065,7 +1102,6 @@ class OpenAIDlg(wx.Dialog):
 		self.addEntry(accelEntries, wx.ACCEL_NORMAL, ord("K"), self.onNextMessage)
 		self.addEntry(accelEntries, wx.ACCEL_CTRL + wx.ACCEL_SHIFT, wx.WXK_DOWN, self.onNextMessage)
 		self.addEntry(accelEntries, wx.ACCEL_CTRL + wx.ACCEL_SHIFT, ord("C"), lambda evt: self.onCopyMessage(evt, True))
-		self.addEntry(accelEntries, wx.ACCEL_CTRL, ord("E"), self.onEditBlock)
 		self.addEntry(accelEntries, wx.ACCEL_CTRL, ord("D"), self.onDeleteBlock)
 		self.addEntry(accelEntries, wx.ACCEL_CTRL, ord("S"), self.onSaveHistory)
 		self.addEntry(accelEntries, wx.ACCEL_NORMAL, wx.WXK_SPACE, lambda evt: self.onWebviewMessage(evt, True))
@@ -1085,6 +1121,7 @@ class OpenAIDlg(wx.Dialog):
 		self.addEntry(accelEntries, wx.ACCEL_CTRL | wx.ACCEL_SHIFT, ord("r"), self.onRecordFromFilePath)
 		self.addEntry(accelEntries, wx.ACCEL_CTRL, ord("i"), self.onImageDescriptionFromFilePath)
 		self.addEntry(accelEntries, wx.ACCEL_CTRL, ord("u"), self.onImageDescriptionFromURL)
+		self.addEntry(accelEntries, wx.ACCEL_CTRL, ord("e"), self.onImageDescriptionFromScreenshot)
 		self.addEntry(accelEntries, wx.ACCEL_CTRL, ord("t"), self.onTextToSpeech)
 		accelTable = wx.AcceleratorTable(accelEntries)
 		self.SetAcceleratorTable(accelTable)
@@ -1416,12 +1453,19 @@ class OpenAIDlg(wx.Dialog):
 		Display a menu to select the source of the image.
 		"""
 		menu = wx.Menu()
+
 		item_id = wx.NewIdRef()
 		menu.Append(item_id, _("From f&ile path...") + " (Ctrl+I)")
 		self.Bind(wx.EVT_MENU, self.onImageDescriptionFromFilePath, id=item_id)
+
 		item_id = wx.NewIdRef()
 		menu.Append(item_id, _("From &URL...") + " (Ctrl+U)")
 		self.Bind(wx.EVT_MENU, self.onImageDescriptionFromURL, id=item_id)
+
+		item_id = wx.NewIdRef()
+		menu.Append(item_id, _("From &screenshot") + " (Ctrl+E)")
+		self.Bind(wx.EVT_MENU, self.onImageDescriptionFromScreenshot, id=item_id)
+
 		self.PopupMenu(menu)
 		menu.Destroy()
 
@@ -1665,6 +1709,22 @@ class OpenAIDlg(wx.Dialog):
 				self.getDefaultImageDescriptionsPrompt()
 			)
 		self.updateImageList()
+
+	def onImageDescriptionFromScreenshot(self, evt):
+		"""Define this session as a image receiving session."""
+		global addToSession
+		if addToSession and addToSession is self:
+			addToSession = None
+			self.message(
+				# Translators: This message is displayed when a chat session stops receiving images.
+				_("Screenshot reception disabled")
+			)
+			return
+		addToSession = self
+		self.message(
+			# Translators: This message is displayed when a chat session starts to receive images.
+			_("Screenshot reception enabled")
+		)
 
 	def onRecord(self, evt):
 		if self.worker:
