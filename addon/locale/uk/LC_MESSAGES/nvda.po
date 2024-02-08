@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: nvda-translations@groups.io\n"
-"POT-Creation-Date: 2024-02-05 20:13+0100\n"
-"PO-Revision-Date: 2024-02-05 22:13+0200\n"
+"POT-Creation-Date: 2024-02-08 00:19+0100\n"
+"PO-Revision-Date: 2024-02-08 07:45+0200\n"
 "Last-Translator: Heorhii Halas <nvda.translation.uk@gmail.com>\n"
 "Language-Team: Heorhi Halas\n"
 "Language: uk\n"
@@ -248,6 +248,22 @@ msgstr ""
 
 #. Translators: This is a model description
 #: addon\globalPlugins\openai\consts.py:32
+msgid "Points to one of the most recent iterations of gpt-3.5 model."
+msgstr "Вказує на одну з останніх ітерацій моделі gpt-3.5."
+
+#. Translators: This is a model description
+#: addon\globalPlugins\openai\consts.py:40
+msgid ""
+"The latest GPT-3.5 Turbo model with higher accuracy at responding in "
+"requested formats and a fix for a bug which caused a text encoding issue for "
+"non-English language function calls."
+msgstr ""
+"Остання модель GPT-3.5 Turbo з підвищеною точністю обробки запитуваних "
+"форматів і виправленням помилки, яка спричиняла проблеми з кодуванням тексту "
+"при виклику неанглійських функцій."
+
+#. Translators: This is a model description
+#: addon\globalPlugins\openai\consts.py:48
 msgid ""
 "Updated GPT 3.5 Turbo. The latest GPT-3.5 Turbo model with improved "
 "instruction following, JSON mode, reproducible outputs, parallel function "
@@ -258,7 +274,7 @@ msgstr ""
 "викликом функцій тощо."
 
 #. Translators: This is a model description
-#: addon\globalPlugins\openai\consts.py:40
+#: addon\globalPlugins\openai\consts.py:56
 msgid ""
 "Same capabilities as the standard gpt-3.5-turbo model but with 4 times the "
 "context"
@@ -267,25 +283,30 @@ msgstr ""
 "більше контексту"
 
 #. Translators: This is a model description
-#: addon\globalPlugins\openai\consts.py:48
-msgid ""
-"More capable than any GPT-3.5 model, able to do more complex tasks, and "
-"optimized for chat"
-msgstr ""
-"Більш потужний, ніж будь-яка модель GPT-3.5, здатний виконувати більш "
-"складні завдання та оптимізований для чату"
+#: addon\globalPlugins\openai\consts.py:64
+msgid "Points to one of the most recent iterations of gpt-4 model."
+msgstr "Вказує на одну з останніх ітерацій моделі gpt-4."
 
 #. Translators: This is a model description
-#: addon\globalPlugins\openai\consts.py:55
+#: addon\globalPlugins\openai\consts.py:72
 msgid ""
-"The latest GPT-4 model with improved instruction following, JSON mode, "
+"The latest GPT-4 model intended to reduce cases of “laziness” where the "
+"model doesn’t complete a task."
+msgstr ""
+"Остання модель GPT-4 призначена для зменшення випадків \"лінощів\", коли "
+"модель не виконує завдання."
+
+#. Translators: This is a model description
+#: addon\globalPlugins\openai\consts.py:80
+msgid ""
+"GPT-4 Turbo model featuring improved instruction following, JSON mode, "
 "reproducible outputs, parallel function calling, and more."
 msgstr ""
-"Остання модель GPT-4 із покращеним дотриманням інструкцій, режимом JSON, "
+"Модель GPT-4 Turbo із покращеним дотриманням інструкцій, режимом JSON, "
 "відтворюваними виводами, паралельним викликом функцій тощо."
 
 #. Translators: This is a model description
-#: addon\globalPlugins\openai\consts.py:64
+#: addon\globalPlugins\openai\consts.py:89
 msgid ""
 "GPT-4 Turbo with vision. Ability to understand images, in addition to all "
 "other GPT-4 Turbo capabilities."
@@ -294,7 +315,16 @@ msgstr ""
 "інших можливостей GPT-4 Turbo."
 
 #. Translators: This is a model description
-#: addon\globalPlugins\openai\consts.py:74
+#: addon\globalPlugins\openai\consts.py:99
+msgid ""
+"More capable than any GPT-3.5 model, able to do more complex tasks, and "
+"optimized for chat"
+msgstr ""
+"Більш потужний, ніж будь-яка модель GPT-3.5, здатний виконувати більш "
+"складні завдання та оптимізований для чату"
+
+#. Translators: This is a model description
+#: addon\globalPlugins\openai\consts.py:106
 msgid ""
 "Same capabilities as the standard gpt-4 mode but with 4x the context length."
 msgstr ""
@@ -302,7 +332,7 @@ msgstr ""
 "контексту."
 
 #. Translators: This is a model description
-#: addon\globalPlugins\openai\consts.py:82
+#: addon\globalPlugins\openai\consts.py:114
 msgid ""
 "Used for large batch processing tasks where cost is a significant factor but "
 "reasoning capabilities are not crucial. Uses the Mistral API."
@@ -312,18 +342,18 @@ msgstr ""
 "Використовує Mistral API."
 
 #. Translators: This is a model description
-#: addon\globalPlugins\openai\consts.py:91
+#: addon\globalPlugins\openai\consts.py:123
 msgid ""
 "Higher reasoning capabilities and more capabilities. Use the Mistral API."
 msgstr ""
 "Вищі можливості міркування та більше можливостей. Використовуйте Mistral API."
 
 #. Translators: This is a model description
-#: addon\globalPlugins\openai\consts.py:100
+#: addon\globalPlugins\openai\consts.py:132
 msgid "Internal prototype model. Uses the Mistral API."
 msgstr "Внутрішній прототип моделі. Використовує Mistral API."
 
-#: addon\globalPlugins\openai\consts.py:114
+#: addon\globalPlugins\openai\consts.py:146
 msgid ""
 "You are an accessibility assistant integrated in the NVDA screen reader that "
 "helps blind screen reader users access visual information that may not be "
