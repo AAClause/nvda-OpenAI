@@ -18,11 +18,12 @@ import tones
 import ui
 from logHandler import log
 
+from . import addoncfg
 from . import apikeymanager
 from .consts import (
-	ADDON_DIR, BASE_URLs, DATA_DIR,
+	ADDON_DIR, DATA_DIR,
 	LIBS_DIR_PY,
-	MODELS, DEFAULT_MODEL_VISION,
+	DEFAULT_MODEL_VISION,
 	TOP_P_MIN, TOP_P_MAX,
 	N_MIN, N_MAX,
 	DEFAULT_SYSTEM_PROMPT
@@ -33,7 +34,7 @@ from .imagehelper import (
 	get_image_dimensions,
 	resize_image,
 )
-from .model import getOpenRouterModels
+from .model import get_models
 from .recordthread import RecordThread
 from .resultevent import ResultEvent, EVT_RESULT_ID
 
@@ -45,7 +46,6 @@ sys.path.remove(LIBS_DIR_PY)
 addonHandler.initTranslation()
 
 TTS_FILE_NAME = os.path.join(DATA_DIR, "tts.wav")
-DATA_JSON_FP = os.path.join(DATA_DIR, "data.json")
 URL_PATTERN = re.compile(r"^(?:http)s?://(?:[A-Z0-9-]+\.)+[A-Z]{2,6}(?::\d+)?(?:/?|[/?]\S+)$", re.IGNORECASE)
 
 addToSession = None
@@ -212,7 +212,7 @@ class CompletionThread(threading.Thread):
 		manager = apikeymanager.get(
 			model.provider
 		)
-		client.base_url =  BASE_URLs[model.provider]
+		client.base_url = manager.base_url
 		client.api_key = manager.get_api_key()
 		client.organization = manager.get_organization_key()
 		params = {
@@ -318,7 +318,7 @@ class TextToSpeechThread(threading.Thread):
 		client = wnd.client
 		provider = "OpenAI"
 		manager = apikeymanager.get(provider)
-		client.base_url =  BASE_URLs[provider]
+		client.base_url = manager.base_url
 		client.api_key = manager.get_api_key()
 		client.organization = manager.get_organization_key()
 		try:
@@ -478,13 +478,12 @@ class OpenAIDlg(wx.Dialog):
 		self._api_key = client.api_key
 		self._organization = client.organization
 		self.conf = conf
-		self.data = self.loadData()
-		self._orig_data = self.data.copy() if isinstance(self.data, dict) else None
+		self.data = addoncfg.get()
 		self._historyPath = None
 		self.blocks = []
-		self._models = MODELS.copy()
-		if apikeymanager.get("OpenRouter").ready():
-			self._models.extend(getOpenRouterModels())
+		self._models = []
+		for provider in apikeymanager.getReadyProviders():
+			self._models.extend(provider.get_models())
 		self.pathList = []
 		self._fileToRemoveAfter = []
 		if pathList:
@@ -510,7 +509,7 @@ class OpenAIDlg(wx.Dialog):
 		for manager in apikeymanager._managers.values():
 			if not manager.ready():
 				continue
-			e = manager.provider
+			e = manager.name
 			organization = manager.get_api_key(use_org=True)
 			if organization and organization != ":=":
 				e += " (organization)"
@@ -785,21 +784,6 @@ class OpenAIDlg(wx.Dialog):
 			return self.conf["images"]["customPromptText"]
 		return _("Describe the images in as much detail as possible.")
 
-	def loadData(self):
-		if not os.path.exists(DATA_JSON_FP):
-			return {}
-		try:
-			with open(DATA_JSON_FP, 'r') as f :
-				return json.loads(f.read())
-		except BaseException as err:
-			log.error(err)
-
-	def saveData(self, force=False):
-		if not force and self.data == self._orig_data:
-			return
-		with open(DATA_JSON_FP, "w") as f:
-			f.write(json.dumps(self.data))
-
 	def getCurrentModel(self):
 		return self._models[self.modelListBox.GetSelection()]
 
@@ -873,7 +857,7 @@ class OpenAIDlg(wx.Dialog):
 				for k, v in extraInfo["pricing"].items():
 					if re.match("^[0-9.]+$", v) and float(v) > 0:
 						details += f"<li><b>{k}</b> cost: {v}/token.</li>"
-			
+
 			details += "</ul>"
 
 		ui.browseableMessage(
@@ -969,7 +953,7 @@ class OpenAIDlg(wx.Dialog):
 						"Open AI",
 						wx.OK | wx.ICON_ERROR
 					)
-		self.saveData()
+		addoncfg.save()
 		if self.worker:
 			self.worker.abort()
 			self.worker = None

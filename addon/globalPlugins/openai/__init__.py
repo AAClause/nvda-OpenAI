@@ -16,7 +16,7 @@ from . import apikeymanager
 from . import configspec
 from . import updatecheck
 from .consts import (
-	ADDON_DIR, BASE_URLs, DATA_DIR,
+	ADDON_DIR, DATA_DIR,
 	LIBS_DIR_PY,
 	TTS_MODELS, TTS_VOICES
 )
@@ -36,74 +36,6 @@ ADDON_INFO = addonHandler.Addon(
 NO_AUTHENTICATION_KEY_PROVIDED_MSG = _("No API key provided for any provider, please provide at least one API key in the settings dialog")
 
 conf = config.conf["OpenAI"]
-
-
-class APIAccessDialog(wx.Dialog):
-
-	def __init__(
-		self,
-		parent,
-		title: str,
-		APIKeyManager: apikeymanager.APIKeyManager,
-	):
-		super(APIAccessDialog, self).__init__(parent, title=title)
-		self.APIKeyManager = APIKeyManager
-		self.provider_name = APIKeyManager.provider
-		self.InitUI()
-		self.CenterOnParent()
-		self.SetSize((500, 200))
-
-	def InitUI(self):
-		pnl = wx.Panel(self)
-		vbox = wx.BoxSizer(wx.VERTICAL)
-		fgs = wx.FlexGridSizer(3, 2, 9, 25)  # 3 rows, 2 columns, vertical and horizontal gap
-
-		lblAPIKey = wx.StaticText(pnl, label=f"{self.provider_name} API Key:")
-		self.txtAPIKey = wx.TextCtrl(pnl)
-
-		lblOrgName = wx.StaticText(pnl, label="Organization name:")
-		self.txtOrgName = wx.TextCtrl(pnl)
-
-		lblOrgKey = wx.StaticText(pnl, label="Organization key:")
-		self.txtOrgKey = wx.TextCtrl(pnl)
-
-		# Adding Rows to the FlexGridSizer
-		fgs.AddMany(
-			[
-				lblAPIKey, (self.txtAPIKey, 1, wx.EXPAND),
-				lblOrgName, (self.txtOrgName, 1, wx.EXPAND),
-				lblOrgKey, (self.txtOrgKey, 1, wx.EXPAND),
-			])
-
-		# Configure an expanding column for text controls
-		fgs.AddGrowableCol(1, 1)
-
-		APIKey = self.APIKeyManager.get_api_key()
-		if APIKey:
-			self.txtAPIKey.SetValue(
-				APIKey
-			)
-		orgKey = self.APIKeyManager.get_organization_key()
-		orgName = self.APIKeyManager.get_organization_name()
-		if orgKey and orgName:
-			self.txtOrgName.SetValue(
-				orgName
-			)
-			self.txtOrgKey.SetValue(
-				orgKey
-			)
-
-		btnsizer = wx.StdDialogButtonSizer()
-		btnOK = wx.Button(pnl, wx.ID_OK)
-		btnOK.SetDefault()
-		btnsizer.AddButton(btnOK)
-		btnsizer.AddButton(wx.Button(pnl, wx.ID_CANCEL))
-		btnsizer.Realize()
-
-		# Layout sizers
-		vbox.Add(fgs, proportion=1, flag=wx.ALL|wx.EXPAND, border=10)
-		vbox.Add(btnsizer, flag=wx.ALIGN_CENTER|wx.TOP|wx.BOTTOM, border=10)
-		pnl.SetSizer(vbox)
 
 
 class SettingsDlg(gui.settingsDialogs.SettingsPanel):
@@ -287,22 +219,31 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 		self.onResize(None)
 
 	def onAPIKeys(self, evt):
+		from .providerdialog import ProviderDialog
 		provider_name = evt.GetEventObject().GetName()
 		manager = apikeymanager.get(provider_name)
-		dlg = APIAccessDialog(
+		dlg = ProviderDialog(
 			self,
 			"%s API Access Keys" % provider_name,
 			manager
 		)
 		if dlg.ShowModal() == wx.ID_OK:
-			manager.save_api_key(
-				dlg.txtAPIKey.GetValue().strip()
-			)
-			manager.save_api_key(
-				dlg.txtOrgKey.GetValue().strip(),
-				org=True,
-				org_name=dlg.txtOrgName.GetValue()
-			)
+			if manager.require_api_key:
+				manager.save(
+					dlg.txtAPIKey.GetValue().strip()
+				)
+				manager.save(
+					dlg.txtOrgKey.GetValue().strip(),
+					org=True,
+					org_name=dlg.txtOrgName.GetValue()
+				)
+			if manager.custom:
+				manager.base_url = dlg.txtBaseURL.GetValue().strip()
+				from . import addoncfg
+				data = addoncfg.get()
+				data["providers"][manager.name] = manager.to_dict()
+				addoncfg.save(force=True)
+		dlg.Destroy()
 
 	def onResize(self, evt):
 		self.maxWidth.Enable(self.resize.GetValue())
@@ -472,7 +413,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			organization = manager.get_api_key(use_org=True)
 			if organization and organization.count(":=") == 1:
 				self.client.organization = organization.split(":=")[1]
-			self.client.base_url = BASE_URLs[manager.provider]
+			self.client.base_url = apikeymanager.BASE_URLs[manager.name]
 			return self.client
 		return None
 

@@ -1,6 +1,5 @@
 import config
 from .consts import (
-	DEFAULT_MODEL,
 	DEFAULT_TOP_P,
 	DEFAULT_N,
 	TOP_P_MIN,
@@ -18,7 +17,7 @@ confSpecs = {
 		"check": "boolean(default=True)",
 		"channel": "string(default='stable')"
 	},
-	"model": f"string(default={DEFAULT_MODEL.name})",
+	"model": f"string(default=gpt-3.5-turbo)",
 	"topP": f"integer(min={TOP_P_MIN}, max={TOP_P_MAX}, default={DEFAULT_TOP_P})",
 	"n": f"integer(min={N_MIN}, max={N_MAX}, default={DEFAULT_N})",
 	"stream": "boolean(default=True)",

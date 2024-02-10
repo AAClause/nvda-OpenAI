@@ -17,7 +17,7 @@ import core
 import ui
 
 from . import apikeymanager
-from .consts import ADDON_DIR, BASE_URLs, DATA_DIR, LIBS_DIR_PY
+from .consts import ADDON_DIR, DATA_DIR, LIBS_DIR_PY
 from .resultevent import ResultEvent
 
 sys.path.insert(0, LIBS_DIR_PY)
@@ -50,7 +50,7 @@ class RecordThread(threading.Thread):
 		super(RecordThread, self).__init__()
 		provider = "OpenAI"
 		manager = apikeymanager.get(provider)
-		client.base_url =  BASE_URLs[provider]
+		client.base_url =  apikeymanager.BASE_URLs[provider]
 		client.api_key = manager.get_api_key()
 		client.organization = manager.get_organization_key()
 		self.client = client
