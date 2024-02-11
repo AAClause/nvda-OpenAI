@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Open AI\n"
 "Report-Msgid-Bugs-To: nvda-translations@groups.io\n"
-"POT-Creation-Date: 2024-02-05 20:13+0100\n"
-"PO-Revision-Date: 2024-02-06 13:52+0300\n"
+"POT-Creation-Date: 2024-02-08 00:19+0100\n"
+"PO-Revision-Date: 2024-02-08 21:39+0300\n"
 "Last-Translator: Umut KORKMAZ <umutkork@gmail.com>\n"
 "Language-Team: Umut KORKMAZ <umutkork@gmail.com>\n"
 "Language: tr_TR\n"
@@ -140,7 +140,6 @@ msgid "Attach braille to the history if the focus is in the prompt field"
 msgstr "Odak bilgi istemi alanındaysa geçmişi braille'ye ekle"
 
 #: addon\globalPlugins\openai\__init__.py:329
-#| msgid "Please enter some text in the prompt field first."
 msgid "Speak response when the focus is in the prompt field"
 msgstr "Odak bilgi istemi alanında olduğunda yanıtı sesli olarak söyle"
 
@@ -251,6 +250,22 @@ msgstr "İstenen yerden mikrofonu açar ve sesi yazıya aktarır"
 
 #. Translators: This is a model description
 #: addon\globalPlugins\openai\consts.py:32
+msgid "Points to one of the most recent iterations of gpt-3.5 model."
+msgstr "Gpt-3.5 modelinin en son yinelemelerinden birine işaret eder."
+
+#. Translators: This is a model description
+#: addon\globalPlugins\openai\consts.py:40
+msgid ""
+"The latest GPT-3.5 Turbo model with higher accuracy at responding in "
+"requested formats and a fix for a bug which caused a text encoding issue for "
+"non-English language function calls."
+msgstr ""
+"İstenen biçimlerde yanıt vermede daha yüksek doğruluğa sahip en yeni GPT-3.5 "
+"Turbo modeli ve İngilizce olmayan işlev çağrıları için metin kodlama "
+"sorununa neden olan bir hata için bir düzeltme."
+
+#. Translators: This is a model description
+#: addon\globalPlugins\openai\consts.py:48
 msgid ""
 "Updated GPT 3.5 Turbo. The latest GPT-3.5 Turbo model with improved "
 "instruction following, JSON mode, reproducible outputs, parallel function "
@@ -261,7 +276,7 @@ msgstr ""
 "yeni GPT-3.5 Turbo modeli."
 
 #. Translators: This is a model description
-#: addon\globalPlugins\openai\consts.py:40
+#: addon\globalPlugins\openai\consts.py:56
 msgid ""
 "Same capabilities as the standard gpt-3.5-turbo model but with 4 times the "
 "context"
@@ -270,25 +285,33 @@ msgstr ""
 "fazla içeriğe sahiptir"
 
 #. Translators: This is a model description
-#: addon\globalPlugins\openai\consts.py:48
-msgid ""
-"More capable than any GPT-3.5 model, able to do more complex tasks, and "
-"optimized for chat"
-msgstr ""
-"Tüm GPT-3.5 modellerinden daha yetenekli, daha karmaşık görevleri yerine "
-"getirebilen ve sohbet için optimize edilmiş"
+#: addon\globalPlugins\openai\consts.py:64
+msgid "Points to one of the most recent iterations of gpt-4 model."
+msgstr "GPT-4 modelinin en son yinelemelerinden birine işaret eder."
 
 #. Translators: This is a model description
-#: addon\globalPlugins\openai\consts.py:55
+#: addon\globalPlugins\openai\consts.py:72
 msgid ""
-"The latest GPT-4 model with improved instruction following, JSON mode, "
+"The latest GPT-4 model intended to reduce cases of “laziness” where the "
+"model doesn’t complete a task."
+msgstr ""
+"En son GPT-4 modeli, modelin bir görevi tamamlamadığı \"tembellik\" "
+"vakalarını azaltmayı amaçlıyor."
+
+#. Translators: This is a model description
+#: addon\globalPlugins\openai\consts.py:80
+#| msgid ""
+#| "The latest GPT-4 model with improved instruction following, JSON mode, "
+#| "reproducible outputs, parallel function calling, and more."
+msgid ""
+"GPT-4 Turbo model featuring improved instruction following, JSON mode, "
 "reproducible outputs, parallel function calling, and more."
 msgstr ""
-"Geliştirilmiş talimat takibi, JSON modu, tekrarlanabilir çıktılar, paralel "
-"işlev çağrısı ve daha fazlasına sahip en yeni GPT-4 modeli."
+"GPT-4 Turbo modeli, geliştirilmiş talimat takibi, JSON modu, tekrarlanabilir "
+"çıktılar, paralel işlev çağrısı ve daha fazlasını içerir."
 
 #. Translators: This is a model description
-#: addon\globalPlugins\openai\consts.py:64
+#: addon\globalPlugins\openai\consts.py:89
 msgid ""
 "GPT-4 Turbo with vision. Ability to understand images, in addition to all "
 "other GPT-4 Turbo capabilities."
@@ -297,7 +320,16 @@ msgstr ""
 "görüntüleri anlama yeteneği."
 
 #. Translators: This is a model description
-#: addon\globalPlugins\openai\consts.py:74
+#: addon\globalPlugins\openai\consts.py:99
+msgid ""
+"More capable than any GPT-3.5 model, able to do more complex tasks, and "
+"optimized for chat"
+msgstr ""
+"Tüm GPT-3.5 modellerinden daha yetenekli, daha karmaşık görevleri yerine "
+"getirebilen ve sohbet için optimize edilmiş"
+
+#. Translators: This is a model description
+#: addon\globalPlugins\openai\consts.py:106
 msgid ""
 "Same capabilities as the standard gpt-4 mode but with 4x the context length."
 msgstr ""
@@ -305,7 +337,7 @@ msgstr ""
 "kat daha fazladır."
 
 #. Translators: This is a model description
-#: addon\globalPlugins\openai\consts.py:82
+#: addon\globalPlugins\openai\consts.py:114
 msgid ""
 "Used for large batch processing tasks where cost is a significant factor but "
 "reasoning capabilities are not crucial. Uses the Mistral API."
@@ -315,7 +347,7 @@ msgstr ""
 "kullanır."
 
 #. Translators: This is a model description
-#: addon\globalPlugins\openai\consts.py:91
+#: addon\globalPlugins\openai\consts.py:123
 msgid ""
 "Higher reasoning capabilities and more capabilities. Use the Mistral API."
 msgstr ""
@@ -323,11 +355,11 @@ msgstr ""
 "kullanır."
 
 #. Translators: This is a model description
-#: addon\globalPlugins\openai\consts.py:100
+#: addon\globalPlugins\openai\consts.py:132
 msgid "Internal prototype model. Uses the Mistral API."
 msgstr "Dahili prototip modeli. Mistral API'sini kullanır."
 
-#: addon\globalPlugins\openai\consts.py:114
+#: addon\globalPlugins\openai\consts.py:146
 msgid ""
 "You are an accessibility assistant integrated in the NVDA screen reader that "
 "helps blind screen reader users access visual information that may not be "
