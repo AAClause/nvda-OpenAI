@@ -18,7 +18,6 @@ confSpecs = {
 		"check": "boolean(default=True)",
 		"channel": "string(default='stable')"
 	},
-	"use_org": "boolean(default=False)",
 	"model": f"string(default={DEFAULT_MODEL.name})",
 	"topP": f"integer(min={TOP_P_MIN}, max={TOP_P_MAX}, default={DEFAULT_TOP_P})",
 	"n": f"integer(min={N_MIN}, max={N_MAX}, default={DEFAULT_N})",
