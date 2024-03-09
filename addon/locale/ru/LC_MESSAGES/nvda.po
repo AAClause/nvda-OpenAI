@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: nvda-translations@groups.io\n"
 "POT-Creation-Date: 2024-02-08 00:19+0100\n"
-"PO-Revision-Date: 2024-03-09 13:53+0300\n"
+"PO-Revision-Date: 2024-03-09 20:56+0300\n"
 "Last-Translator: Danil Kostenkov <danilkostenkov38@gmail.com>\n"
 "Language-Team: Danil Kostenkov\n"
 "Language: ru\n"
@@ -54,7 +54,7 @@ msgstr "Заблокировать закрытие с помощью клави
 
 #: addon\globalPlugins\openai\__init__.py:175
 msgid "Remember the content of the S&ystem field between sessions"
-msgstr "Запоминать содержимое поля S&ystem между сеансами"
+msgstr "Запоминать содержимое поля &Система между сеансами"
 
 #: addon\globalPlugins\openai\__init__.py:183
 msgid "Enable &advanced settings (including temperature and probability mass)"
@@ -134,11 +134,12 @@ msgstr "Воспроизводить звук при получении отве
 #. Translators: This is a setting to attach braille to the history if the focus is in the prompt field.
 #: addon\globalPlugins\openai\__init__.py:323
 msgid "Attach braille to the history if the focus is in the prompt field"
-msgstr "Прикрепить шрифт Брайля к истории, если фокус находится в поле запроса"
+msgstr ""
+"Прикрепить шрифт Брайля к истории, если фокус находится в поле подсказка"
 
 #: addon\globalPlugins\openai\__init__.py:329
 msgid "Speak response when the focus is in the prompt field"
-msgstr "Произносить ответ, когда фокус находится в поле запроса"
+msgstr "Произносить ответ, когда фокус находится в поле подсказка"
 
 #. Translators: This is the name of a group of settings
 #: addon\globalPlugins\openai\__init__.py:339
@@ -452,7 +453,7 @@ msgstr "Режим  &разговора"
 
 #: addon\globalPlugins\openai\maindialog.py:574
 msgid "S&ystem:"
-msgstr "S&ystem:"
+msgstr "&Система:"
 
 #: addon\globalPlugins\openai\maindialog.py:591
 msgid "&History:"
@@ -460,7 +461,7 @@ msgstr "&История:"
 
 #: addon\globalPlugins\openai\maindialog.py:602
 msgid "&Prompt:"
-msgstr "&Запрос:"
+msgstr "&Подсказка:"
 
 #. Translators: This is a label for a list of images attached to the prompt.
 #: addon\globalPlugins\openai\maindialog.py:614
@@ -534,7 +535,7 @@ msgstr "Описать изображение по пути к файлу или
 
 #: addon\globalPlugins\openai\maindialog.py:744
 msgid "&Vocalize the prompt"
-msgstr "&Произнести запрос"
+msgstr "&Произнести подсказку"
 
 #: addon\globalPlugins\openai\maindialog.py:830
 msgid "Describe the images in as much detail as possible."
@@ -653,11 +654,11 @@ msgstr "Конец"
 #: addon\globalPlugins\openai\maindialog.py:1339
 #, python-format
 msgid "Response copied to system: %s"
-msgstr "Ответ скопирован в system: %s"
+msgstr "Ответ скопирован в поле система: %s"
 
 #: addon\globalPlugins\openai\maindialog.py:1348
 msgid "Copied to prompt"
-msgstr "Скопировано в запрос"
+msgstr "Скопировано в поле подсказка"
 
 #: addon\globalPlugins\openai\maindialog.py:1352
 msgid "Copy"
@@ -665,7 +666,7 @@ msgstr "Копировать"
 
 #: addon\globalPlugins\openai\maindialog.py:1360
 msgid "Copy prompt"
-msgstr "Копировать запрос"
+msgstr "Копировать подсказку"
 
 #: addon\globalPlugins\openai\maindialog.py:1363
 msgid "Copy response"
@@ -713,11 +714,11 @@ msgstr "Копировать сообщения как форматирован�
 
 #: addon\globalPlugins\openai\maindialog.py:1469
 msgid "Copy response to system"
-msgstr "Копировать ответ в system"
+msgstr "Копировать ответ в поле система"
 
 #: addon\globalPlugins\openai\maindialog.py:1472
 msgid "Copy prompt to prompt"
-msgstr "Копировать запрос в поле запроса"
+msgstr "Копировать подсказку в поле подсказка"
 
 #: addon\globalPlugins\openai\maindialog.py:1475
 msgid "Delete block"
@@ -741,7 +742,7 @@ msgstr "Перейти к следующему сообщению"
 
 #: addon\globalPlugins\openai\maindialog.py:1498
 msgid "Insert previous prompt"
-msgstr "Вставить предыдущий запрос"
+msgstr "Вставить предыдущую подсказку"
 
 #: addon\globalPlugins\openai\maindialog.py:1508
 msgid "Show model details"
@@ -848,7 +849,7 @@ msgstr ""
 
 #: addon\globalPlugins\openai\maindialog.py:1872
 msgid "Please enter some text in the prompt field first."
-msgstr "Сначала введите текст в поле запроса."
+msgstr "Сначала введите текст в поле подсказка."
 
 #: addon\globalPlugins\openai\model.py:41
 msgid "preview: not yet suited for production traffic"
