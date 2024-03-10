@@ -82,7 +82,7 @@ class APIKeyManager:
 		else:
 			self.api_key = key
 
-	def ready(self):
+	def isReady(self):
 		return self.get_api_key() is not None
 
 

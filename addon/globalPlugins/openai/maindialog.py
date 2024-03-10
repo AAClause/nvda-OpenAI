@@ -522,7 +522,7 @@ class OpenAIDlg(wx.Dialog):
 		self._historyPath = None
 		self.blocks = []
 		self._models = MODELS.copy()
-		if apikeymanager.get("OpenRouter").ready():
+		if apikeymanager.get("OpenRouter").isReady():
 			self._models.extend(getOpenRouterModels())
 		self.pathList = []
 		self._fileToRemoveAfter = []
@@ -550,7 +550,7 @@ class OpenAIDlg(wx.Dialog):
 			self.data.pop("system", None)
 		l = []
 		for manager in apikeymanager._managers.values():
-			if not manager.ready():
+			if not manager.isReady():
 				continue
 			e = manager.provider
 			organization = manager.get_api_key(use_org=True)
@@ -945,7 +945,7 @@ class OpenAIDlg(wx.Dialog):
 				wx.OK | wx.ICON_ERROR
 			)
 			return
-		if not apikeymanager.get(model.provider).ready():
+		if not apikeymanager.get(model.provider).isReady():
 			gui.messageBox(
 				_("This model is only available with the %s provider. Please provide an API key for this provider in the add-on settings. Otherwise, please select another model with a different provider.") % (
 					model.provider

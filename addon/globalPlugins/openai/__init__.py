@@ -559,7 +559,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		# initialize the client with the first available provider, will be adjusted on the fly if needed
 		for provider in apikeymanager.AVAILABLE_PROVIDERS:
 			manager = apikeymanager.get(provider)
-			if not manager.ready:
+			if not manager.isReady():
 				continue
 			api_key = manager.get_api_key()
 			if not api_key or not api_key.strip():
