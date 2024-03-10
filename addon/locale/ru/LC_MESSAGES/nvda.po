@@ -1,0 +1,1286 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: nvda-translations@groups.io\n"
+"POT-Creation-Date: 2024-02-08 00:19+0100\n"
+"PO-Revision-Date: 2024-03-09 20:56+0300\n"
+"Last-Translator: Danil Kostenkov <danilkostenkov38@gmail.com>\n"
+"Language-Team: Danil Kostenkov\n"
+"Language: ru\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.4.2\n"
+"X-Poedit-Basepath: nvda-OpenAI-master/addon/globalPlugins\n"
+"X-Poedit-Bookmarks: -1,26,47,-1,-1,-1,-1,-1,-1,-1\n"
+"X-Poedit-SearchPath-0: .\n"
+
+#: addon\globalPlugins\openai\__init__.py:36
+msgid ""
+"No API key provided for any provider, please provide at least one API key in "
+"the settings dialog"
+msgstr ""
+"Ключ API не предоставлен ни для одного поставщика, пожалуйста, укажите хотя "
+"бы один ключ API в диалоговом окне настроек"
+
+#: addon\globalPlugins\openai\__init__.py:117
+msgid "Update"
+msgstr "Обновление"
+
+#: addon\globalPlugins\openai\__init__.py:125
+msgid "Check for &updates on startup and periodically"
+msgstr "Периодически проверять наличие & обновлений при запуске"
+
+#: addon\globalPlugins\openai\__init__.py:131
+msgid "&Channel:"
+msgstr "&Канал:"
+
+#: addon\globalPlugins\openai\__init__.py:141
+msgid "API Access Keys"
+msgstr "Ключи доступа к API"
+
+#: addon\globalPlugins\openai\__init__.py:150
+#, python-format
+msgid "%s API &keys..."
+msgstr "&Ключи API %s..."
+
+#: addon\globalPlugins\openai\__init__.py:162
+msgid "Main dialog"
+msgstr "Главный диалог"
+
+#: addon\globalPlugins\openai\__init__.py:167
+msgid "Block the closing using the &escape key"
+msgstr "Заблокировать закрытие с помощью клавиши &escape"
+
+#: addon\globalPlugins\openai\__init__.py:175
+msgid "Remember the content of the S&ystem field between sessions"
+msgstr "Запоминать содержимое поля &Система между сеансами"
+
+#: addon\globalPlugins\openai\__init__.py:183
+msgid "Enable &advanced settings (including temperature and probability mass)"
+msgstr ""
+"Включить & расширенные параметры (в том числе температуру и вероятностную "
+"массу)"
+
+#: addon\globalPlugins\openai\__init__.py:191
+msgid "Text To Speech"
+msgstr "Преобразование текста в речь"
+
+#: addon\globalPlugins\openai\__init__.py:197
+msgid "&Voice:"
+msgstr "&Голос:"
+
+#: addon\globalPlugins\openai\__init__.py:207
+#: addon\globalPlugins\openai\maindialog.py:642
+msgid "&Model:"
+msgstr "&Модель:"
+
+#: addon\globalPlugins\openai\__init__.py:218
+msgid "Image description"
+msgstr "Описание изображения"
+
+#: addon\globalPlugins\openai\__init__.py:223
+msgid "&Resize images before sending them to the API"
+msgstr "&Изменять размер изображения перед отправкой в API"
+
+#: addon\globalPlugins\openai\__init__.py:236
+msgid "Maximum &width (0 to resize proportionally to the height):"
+msgstr "Максимальная ширина (0 для изменения размера пропорционально высоте ):"
+
+#: addon\globalPlugins\openai\__init__.py:245
+msgid "Maximum &height (0 to resize proportionally to the width):"
+msgstr "Максимальная &высота (0 для изменения размера пропорционально ширине):"
+
+#: addon\globalPlugins\openai\__init__.py:254
+msgid ""
+"&Quality for JPEG images (0 [worst] to 95 [best], values above 95 should be "
+"avoided):"
+msgstr ""
+"&Качество для изображений в формате JPEG (от 0 [хуже всего] до 95 [лучше "
+"всего] , стоит избегать значений выше 95):"
+
+#: addon\globalPlugins\openai\__init__.py:266
+msgid "Customize default text &prompt"
+msgstr "Настроить & начальный текст подсказки"
+
+#: addon\globalPlugins\openai\__init__.py:272
+msgid "Default &text prompt:"
+msgstr "&Начальный текст подсказки:"
+
+#: addon\globalPlugins\openai\__init__.py:285
+msgid "Chat feedback"
+msgstr "Обратная связь в чате"
+
+#. Translators: This is a setting to play a sound when a task is in progress.
+#: addon\globalPlugins\openai\__init__.py:295
+msgid "Play sound when a task is in progress"
+msgstr "Воспроизводить звук во время выполнения задачи"
+
+#. Translators: This is a setting to play a sound when a response is sent.
+#: addon\globalPlugins\openai\__init__.py:302
+msgid "Play sound when a response is sent"
+msgstr "Воспроизводить звук при получении ответа"
+
+#. Translators: This is a setting to play a sound when a response is pending.
+#: addon\globalPlugins\openai\__init__.py:309
+msgid "Play sound when a response is pending"
+msgstr "Воспроизводить звук при ожидании ответа"
+
+#. Translators: This is a setting to play a sound when a response is received.
+#: addon\globalPlugins\openai\__init__.py:316
+msgid "Play sound when a response is received"
+msgstr "Воспроизводить звук при получении ответа"
+
+#. Translators: This is a setting to attach braille to the history if the focus is in the prompt field.
+#: addon\globalPlugins\openai\__init__.py:323
+msgid "Attach braille to the history if the focus is in the prompt field"
+msgstr ""
+"Прикрепить шрифт Брайля к истории, если фокус находится в поле подсказка"
+
+#: addon\globalPlugins\openai\__init__.py:329
+msgid "Speak response when the focus is in the prompt field"
+msgstr "Произносить ответ, когда фокус находится в поле подсказка"
+
+#. Translators: This is the name of a group of settings
+#: addon\globalPlugins\openai\__init__.py:339
+msgid "Recording"
+msgstr "Запись"
+
+#. Translators: This is the name of a setting in the Recording group
+#: addon\globalPlugins\openai\__init__.py:345
+msgid "Use &whisper.cpp for transcription"
+msgstr "Использовать & whisper.cpp для расшифровки"
+
+#. Translators: This is the name of a setting in the Recording group
+#: addon\globalPlugins\openai\__init__.py:361
+msgid "&Host:"
+msgstr "&Хост:"
+
+#: addon\globalPlugins\openai\__init__.py:460
+msgid "Docu&mentation"
+msgstr "&Документация"
+
+#: addon\globalPlugins\openai\__init__.py:461
+msgid "Open the documentation of this addon"
+msgstr "Открыть документацию этого дополнения"
+
+#: addon\globalPlugins\openai\__init__.py:466
+msgid "Main d&ialog..."
+msgstr "Главный д&иалог..."
+
+#: addon\globalPlugins\openai\__init__.py:467
+msgid "Show the Open AI dialog"
+msgstr "Показать диалог Open AI"
+
+#: addon\globalPlugins\openai\__init__.py:475
+msgid "API &keys"
+msgstr "&Ключи API"
+
+#: addon\globalPlugins\openai\__init__.py:476
+msgid "Manage the API keys"
+msgstr "Управление ключами API"
+
+#: addon\globalPlugins\openai\__init__.py:481
+msgid "API &usage"
+msgstr "&Использование API"
+
+#: addon\globalPlugins\openai\__init__.py:482
+msgid "Open the API usage webpage"
+msgstr "Открыть веб-страницу использования API"
+
+#: addon\globalPlugins\openai\__init__.py:487
+msgid "Git&Hub repository"
+msgstr "Репозиторий Git & Hub"
+
+#: addon\globalPlugins\openai\__init__.py:488
+msgid "Open the GitHub repository of this addon"
+msgstr "Открыть репозиторий этого дополнения на GitHub"
+
+#: addon\globalPlugins\openai\__init__.py:496
+msgid "Check for &updates..."
+msgstr "&Проверить наличие обновлений..."
+
+#: addon\globalPlugins\openai\__init__.py:497
+msgid "Check for updates"
+msgstr "Проверка наличия новой версии"
+
+#: addon\globalPlugins\openai\__init__.py:510
+#, python-brace-format
+msgid "Open A&I {addon_version}"
+msgstr "Open A&I {addon_version}"
+
+#: addon\globalPlugins\openai\__init__.py:584
+msgid "Please disable the screen curtain before taking a screenshot"
+msgstr ""
+"Пожалуйста, отключите затемнение экрана, прежде чем делать снимок экрана"
+
+#: addon\globalPlugins\openai\__init__.py:599
+msgid "Show Open AI dialog"
+msgstr "Показать диалог Open AI"
+
+#: addon\globalPlugins\openai\__init__.py:622
+msgid "Image added to an existing session"
+msgstr "Изображение добавлено в существующий сеанс"
+
+#. Translators: This is the description of a command to take a screenshot and describe it.
+#: addon\globalPlugins\openai\__init__.py:635
+msgid "Take a screenshot and describe it"
+msgstr "Сделать снимок экрана и описать его"
+
+#: addon\globalPlugins\openai\__init__.py:651
+#, python-format
+msgid "Screenshot %s"
+msgstr "Снимок экрана %s"
+
+#. Translators: This is the description of a command to grab the current navigator object and describe it.
+#: addon\globalPlugins\openai\__init__.py:659
+msgid "Grab the current navigator object and describe it"
+msgstr "Захопити поточний об’єкт навігатора й описати його"
+
+#. Translators: This is the name of the screenshot to be described.
+#: addon\globalPlugins\openai\__init__.py:682
+#, python-format
+msgid "Navigator Object %s"
+msgstr "Объект навигатора %s"
+
+#: addon\globalPlugins\openai\__init__.py:698
+msgid "Toggle the microphone recording and transcribe the audio from anywhere"
+msgstr "Переключайте запись с микрофона и расшифровывайте звук из любого места"
+
+#. Translators: This is a model description
+#: addon\globalPlugins\openai\consts.py:32
+msgid "Points to one of the most recent iterations of gpt-3.5 model."
+msgstr "Указывает на одну из последних итераций модели gpt-3.5."
+
+#. Translators: This is a model description
+#: addon\globalPlugins\openai\consts.py:40
+msgid ""
+"The latest GPT-3.5 Turbo model with higher accuracy at responding in "
+"requested formats and a fix for a bug which caused a text encoding issue for "
+"non-English language function calls."
+msgstr ""
+"Новейшая модель GPT-3.5 Turbo с более высокой точностью при ответе в "
+"запрошенных форматах и исправлением ошибки, которая вызывала проблему с "
+"кодировкой текста при вызовах функций не на английском языке."
+
+#. Translators: This is a model description
+#: addon\globalPlugins\openai\consts.py:48
+msgid ""
+"Updated GPT 3.5 Turbo. The latest GPT-3.5 Turbo model with improved "
+"instruction following, JSON mode, reproducible outputs, parallel function "
+"calling, and more."
+msgstr ""
+"Обновлённая GPT 3.5 Turbo. Последняя модель GPT-3.5 Turbo с улучшенным "
+"следованием инструкциям, режимом JSON, воспроизводимыми выходными данными, "
+"параллельным вызовом функций и многим другим."
+
+#. Translators: This is a model description
+#: addon\globalPlugins\openai\consts.py:56
+msgid ""
+"Same capabilities as the standard gpt-3.5-turbo model but with 4 times the "
+"context"
+msgstr ""
+"Те же возможности, что и у стандартной модели gpt-3.5-turbo, но в четыре "
+"раза больше контекста"
+
+#. Translators: This is a model description
+#: addon\globalPlugins\openai\consts.py:64
+msgid "Points to one of the most recent iterations of gpt-4 model."
+msgstr "Указывает на одну из последних итераций модели gpt-4."
+
+#. Translators: This is a model description
+#: addon\globalPlugins\openai\consts.py:72
+msgid ""
+"The latest GPT-4 model intended to reduce cases of “laziness” where the "
+"model doesn’t complete a task."
+msgstr ""
+"Последняя модель GPT-4 предназначена для уменьшения случаев \"лени\", когда "
+"модель не выполняет задачу."
+
+#. Translators: This is a model description
+#: addon\globalPlugins\openai\consts.py:80
+msgid ""
+"GPT-4 Turbo model featuring improved instruction following, JSON mode, "
+"reproducible outputs, parallel function calling, and more."
+msgstr ""
+"Модель GPT-4 Turbo с улучшенным соблюдением инструкций, режимом JSON, "
+"воспроизводимыми выводами, параллельным вызовом функций и т. д."
+
+#. Translators: This is a model description
+#: addon\globalPlugins\openai\consts.py:89
+msgid ""
+"GPT-4 Turbo with vision. Ability to understand images, in addition to all "
+"other GPT-4 Turbo capabilities."
+msgstr ""
+"GPT-4 Turbo с обзором. Способность понимать изображения в дополнение ко всем "
+"другим возможностям GPT-4 Turbo."
+
+#. Translators: This is a model description
+#: addon\globalPlugins\openai\consts.py:99
+msgid ""
+"More capable than any GPT-3.5 model, able to do more complex tasks, and "
+"optimized for chat"
+msgstr ""
+"Более мощная, чем любая модель GPT-3.5, способна выполнять более сложные "
+"задачи и оптимизирована для общения в чате"
+
+#. Translators: This is a model description
+#: addon\globalPlugins\openai\consts.py:106
+msgid ""
+"Same capabilities as the standard gpt-4 mode but with 4x the context length."
+msgstr ""
+"Те же возможности, что и в стандартном режиме gpt-4, но с 4-кратной длиной "
+"контекста."
+
+#. Translators: This is a model description
+#: addon\globalPlugins\openai\consts.py:114
+msgid ""
+"Used for large batch processing tasks where cost is a significant factor but "
+"reasoning capabilities are not crucial. Uses the Mistral API."
+msgstr ""
+"Используется для больших задач пакетной обработки, где стоимость является "
+"важным фактором, но возможности рассуждения не имеют решающего значения. "
+"Использует Mistral API."
+
+#. Translators: This is a model description
+#: addon\globalPlugins\openai\consts.py:123
+msgid ""
+"Higher reasoning capabilities and more capabilities. Use the Mistral API."
+msgstr ""
+"Более высокие возможности рассуждений и больше возможностей. Используйте "
+"Mistral API."
+
+#. Translators: This is a model description
+#: addon\globalPlugins\openai\consts.py:132
+msgid "Internal prototype model. Uses the Mistral API."
+msgstr "Внутренний прототип модели. Использует Mistral API."
+
+#: addon\globalPlugins\openai\consts.py:146
+msgid ""
+"You are an accessibility assistant integrated in the NVDA screen reader that "
+"helps blind screen reader users access visual information that may not be "
+"accessible using the screen reader alone, and answer questions related to "
+"the use of Windows and other applications with NVDA. When answering "
+"questions, always make very clear to the user when something is a fact that "
+"comes from your training data versus an educated guess, and always consider "
+"that the user is primarily accessing content using the keyboard and a screen "
+"reader. When describing images, keep in mind that you are describing content "
+"to a blind screen reader user and they need assistance with accessing visual "
+"information in an image that they cannot see. Please describe any relevant "
+"details such as names, participant lists, or other information that would be "
+"visible to sighted users in the context of a call or application interface. "
+"When the user shares an image, it may be the screenshot of an entire window, "
+"a partial window or an individual control in an application user interface. "
+"Generate a detailed but succinct visual description. If the image is a "
+"control, tell the user the type of control and its current state if "
+"applicable, the visible label if present, and how the control looks like. If "
+"it is a window or a partial window, include the window title if present, and "
+"describe the rest of the screen, listing all sections starting from the top, "
+"and explaining the content of each section separately. For each control, "
+"inform the user about its name, value and current state when applicable, as "
+"well as which control has keyboard focus. Ensure to include all visible "
+"instructions and error messages. When telling the user about visible text, "
+"do not add additional explanations of the text unless the meaning of the "
+"visible text alone is not sufficient to understand the context. Do not make "
+"comments about the aesthetics, cleanliness or overall organization of the "
+"interface. If the image does not correspond to a computer screen, just "
+"generate a detailed visual description. If the user sends an image alone "
+"without additional instructions in text, describe the image exactly as "
+"prescribed in this system prompt. Adhere strictly to the instructions in "
+"this system prompt to describe images. Don’t add any additional details "
+"unless the user specifically ask you."
+msgstr ""
+"You are an accessibility assistant integrated in the NVDA screen reader that "
+"helps blind screen reader users access visual information that may not be "
+"accessible using the screen reader alone, and answer questions related to "
+"the use of Windows and other applications with NVDA. When answering "
+"questions, always make very clear to the user when something is a fact that "
+"comes from your training data versus an educated guess, and always consider "
+"that the user is primarily accessing content using the keyboard and a screen "
+"reader. When describing images, keep in mind that you are describing content "
+"to a blind screen reader user and they need assistance with accessing visual "
+"information in an image that they cannot see. Please describe any relevant "
+"details such as names, participant lists, or other information that would be "
+"visible to sighted users in the context of a call or application interface. "
+"When the user shares an image, it may be the screenshot of an entire window, "
+"a partial window or an individual control in an application user interface. "
+"Generate a detailed but succinct visual description. If the image is a "
+"control, tell the user the type of control and its current state if "
+"applicable, the visible label if present, and how the control looks like. If "
+"it is a window or a partial window, include the window title if present, and "
+"describe the rest of the screen, listing all sections starting from the top, "
+"and explaining the content of each section separately. For each control, "
+"inform the user about its name, value and current state when applicable, as "
+"well as which control has keyboard focus. Ensure to include all visible "
+"instructions and error messages. When telling the user about visible text, "
+"do not add additional explanations of the text unless the meaning of the "
+"visible text alone is not sufficient to understand the context. Do not make "
+"comments about the aesthetics, cleanliness or overall organization of the "
+"interface. If the image does not correspond to a computer screen, just "
+"generate a detailed visual description. If the user sends an image alone "
+"without additional instructions in text, describe the image exactly as "
+"prescribed in this system prompt. Adhere strictly to the instructions in "
+"this system prompt to describe images. Don’t add any additional details "
+"unless the user specifically ask you."
+
+#. Translators: This is a message emitted by the add-on when an operation is in progress.
+#: addon\globalPlugins\openai\maindialog.py:68
+msgid "Please wait..."
+msgstr "Пожалуйста, подождите..."
+
+#: addon\globalPlugins\openai\maindialog.py:206
+msgid "Invalid temperature"
+msgstr "Неправильна температура"
+
+#: addon\globalPlugins\openai\maindialog.py:209
+msgid "Invalid top P"
+msgstr "Неправильна вершина P"
+
+#. Translators: This is a message displayed when uploading one image to the API.
+#: addon\globalPlugins\openai\maindialog.py:224
+msgid "Uploading one image, please wait..."
+msgstr "Загружается одно изображения, подождите..."
+
+#. Translators: This is a message displayed when uploading multiple images to the API.
+#: addon\globalPlugins\openai\maindialog.py:227
+#, python-format
+msgid "Uploading %d images, please wait..."
+msgstr "Загружаются %d изображений, пожалуйста, подождите..."
+
+#: addon\globalPlugins\openai\maindialog.py:569
+msgid "Conversati&on mode"
+msgstr "Режим  &разговора"
+
+#: addon\globalPlugins\openai\maindialog.py:574
+msgid "S&ystem:"
+msgstr "&Система:"
+
+#: addon\globalPlugins\openai\maindialog.py:591
+msgid "&History:"
+msgstr "&История:"
+
+#: addon\globalPlugins\openai\maindialog.py:602
+msgid "&Prompt:"
+msgstr "&Подсказка:"
+
+#. Translators: This is a label for a list of images attached to the prompt.
+#: addon\globalPlugins\openai\maindialog.py:614
+msgid "Attached ima&ges:"
+msgstr "&Вложенные изображения:"
+
+#: addon\globalPlugins\openai\maindialog.py:620
+msgid "name"
+msgstr "название"
+
+#: addon\globalPlugins\openai\maindialog.py:621
+msgid "path"
+msgstr "путь"
+
+#: addon\globalPlugins\openai\maindialog.py:622
+msgid "size"
+msgstr "размер"
+
+#: addon\globalPlugins\openai\maindialog.py:623
+msgid "Dimensions"
+msgstr "Размеры"
+
+#: addon\globalPlugins\openai\maindialog.py:624
+msgid "description"
+msgstr "описание"
+
+#: addon\globalPlugins\openai\maindialog.py:659
+msgid "Maximum to&kens for the completion:"
+msgstr "Максимальное количество то&кенов для завершения:"
+
+#: addon\globalPlugins\openai\maindialog.py:669
+msgid "&Temperature:"
+msgstr "&Температура:"
+
+#: addon\globalPlugins\openai\maindialog.py:677
+msgid "Probability &mass (Top P):"
+msgstr "&Масса вероятности (верхнее P):"
+
+#: addon\globalPlugins\openai\maindialog.py:688
+msgid "Stream mode"
+msgstr "Потоковый режим"
+
+#: addon\globalPlugins\openai\maindialog.py:694
+msgid "&Debug mode"
+msgstr "&Режим отладки"
+
+#: addon\globalPlugins\openai\maindialog.py:723
+#: addon\globalPlugins\openai\maindialog.py:1889
+msgid "Start &recording"
+msgstr "&Начать запись"
+
+#: addon\globalPlugins\openai\maindialog.py:726
+msgid "Record audio from microphone"
+msgstr "Запись звука с микрофона"
+
+#: addon\globalPlugins\openai\maindialog.py:730
+msgid "Transcribe from &audio file"
+msgstr "Расшифровка из &аудиофайла"
+
+#: addon\globalPlugins\openai\maindialog.py:733
+msgid "Transcribe audio from a file path"
+msgstr "Расшифровка аудио по пути к немуу"
+
+#: addon\globalPlugins\openai\maindialog.py:737
+msgid "&Image description"
+msgstr "&Описание изображения"
+
+#: addon\globalPlugins\openai\maindialog.py:740
+msgid "Describe an image from a file path or an URL"
+msgstr "Описать изображение по пути к файлу или по URL - адреса"
+
+#: addon\globalPlugins\openai\maindialog.py:744
+msgid "&Vocalize the prompt"
+msgstr "&Произнести подсказку"
+
+#: addon\globalPlugins\openai\maindialog.py:830
+msgid "Describe the images in as much detail as possible."
+msgstr "Описать изображение как можно подробнее."
+
+#: addon\globalPlugins\openai\maindialog.py:925
+msgid "Model details"
+msgstr "Детали модели"
+
+#: addon\globalPlugins\openai\maindialog.py:943
+msgid "Please select a model."
+msgstr "Пожалуйста, выберите модель."
+
+#: addon\globalPlugins\openai\maindialog.py:950
+#, python-format
+msgid ""
+"This model is only available with the %s provider. Please provide an API key "
+"for this provider in the add-on settings. Otherwise, please select another "
+"model with a different provider."
+msgstr ""
+"Эта модель доступна только у поставщика %s. Укажите ключ API для этого "
+"поставщика в настройках дополнения. В противном случае выберите другую "
+"модель от другого поставщика."
+
+#: addon\globalPlugins\openai\maindialog.py:953
+#, python-format
+msgid "No API key for %s"
+msgstr "Нет ключа API для %s"
+
+#: addon\globalPlugins\openai\maindialog.py:964
+msgid ""
+"Please use the Image Description button and select one or more images. "
+"Otherwise, please select another model."
+msgstr ""
+"Пожалуйста, используйте кнопку \"описание изображения\" и выберите одно или "
+"несколько изображений. В противном случае, выберите другую модель."
+
+#: addon\globalPlugins\openai\maindialog.py:965
+msgid "No image provided"
+msgstr "Изображение не предоставлено"
+
+#: addon\globalPlugins\openai\maindialog.py:972
+#, python-format
+msgid ""
+"This model does not support image description. Please select one of the "
+"following models: %s."
+msgstr ""
+"Эта модель не поддерживает описание изображения. Выберите одну из следующих "
+"моделей: %s."
+
+#: addon\globalPlugins\openai\maindialog.py:973
+msgid "Invalid model"
+msgstr "Неправильна модель"
+
+#: addon\globalPlugins\openai\maindialog.py:982
+msgid ""
+"Be aware that the add-on may auto-resize images before API submission to "
+"lower request sizes and costs. Adjust this feature in the Open AI settings "
+"if needed. This message won't show again."
+msgstr ""
+"Имейте в виду, что дополнение может автоматически изменять размеры "
+"изображений перед отправкой API, чтобы уменьшить размер запроса и затраты. "
+"При необходимости настройте эту функцию в настройках Open AI. Это сообщение "
+"больше не появится."
+
+#: addon\globalPlugins\openai\maindialog.py:985
+msgid "Image resizing"
+msgstr "Изменение размера изображения"
+
+#: addon\globalPlugins\openai\maindialog.py:1025
+#, python-format
+msgid ""
+"Unable to delete the file: %s\n"
+"Please remove it manually."
+msgstr ""
+"Не удалось удалить файл: %s\n"
+"Удалите его вручную."
+
+#: addon\globalPlugins\openai\maindialog.py:1083
+#, python-format
+msgid "Insertion of: %s"
+msgstr "Вставка: %s"
+
+#: addon\globalPlugins\openai\maindialog.py:1092
+msgid "Unknown error"
+msgstr "Неизвестная ошибка"
+
+#: addon\globalPlugins\openai\maindialog.py:1108
+msgid "Do you want to open the URL in your browser?"
+msgstr "Хотите открыть URL-адрес в браузере?"
+
+#: addon\globalPlugins\openai\maindialog.py:1111
+msgid "OpenAI Error"
+msgstr "Ошибка OpenAI"
+
+#: addon\globalPlugins\openai\maindialog.py:1121
+msgid "Press Alt+F4 to close the dialog"
+msgstr "Нажмите Alt + F4, чтобы закрыть диалог"
+
+#: addon\globalPlugins\openai\maindialog.py:1131
+msgid "User:"
+msgstr "Пользователь:"
+
+#: addon\globalPlugins\openai\maindialog.py:1133
+msgid "Assistant:"
+msgstr "Помощник:"
+
+#: addon\globalPlugins\openai\maindialog.py:1278
+msgid "Begin"
+msgstr "Начало"
+
+#: addon\globalPlugins\openai\maindialog.py:1298
+msgid "End"
+msgstr "Конец"
+
+#: addon\globalPlugins\openai\maindialog.py:1339
+#, python-format
+msgid "Response copied to system: %s"
+msgstr "Ответ скопирован в поле система: %s"
+
+#: addon\globalPlugins\openai\maindialog.py:1348
+msgid "Copied to prompt"
+msgstr "Скопировано в поле подсказка"
+
+#: addon\globalPlugins\openai\maindialog.py:1352
+msgid "Copy"
+msgstr "Копировать"
+
+#: addon\globalPlugins\openai\maindialog.py:1360
+msgid "Copy prompt"
+msgstr "Копировать подсказку"
+
+#: addon\globalPlugins\openai\maindialog.py:1363
+msgid "Copy response"
+msgstr "Копировать ответ"
+
+#: addon\globalPlugins\openai\maindialog.py:1370
+msgid "as formatted HTML"
+msgstr "как форматированный HTML"
+
+#: addon\globalPlugins\openai\maindialog.py:1396
+msgid "Block deleted"
+msgstr "Блок удалён"
+
+#: addon\globalPlugins\openai\maindialog.py:1429
+msgid "Save history"
+msgstr "Сохранить историю"
+
+#: addon\globalPlugins\openai\maindialog.py:1431
+msgid "Text file"
+msgstr "Текстовый файл"
+
+#: addon\globalPlugins\openai\maindialog.py:1442
+msgid "History saved"
+msgstr "История сохранена"
+
+#: addon\globalPlugins\openai\maindialog.py:1447
+msgid "Reset to default"
+msgstr "Сбросить к настройкам по умолчанию"
+
+#: addon\globalPlugins\openai\maindialog.py:1457
+msgid "Show message in web view as formatted HTML"
+msgstr "Показать сообщения в браузере как форматированный HTML"
+
+#: addon\globalPlugins\openai\maindialog.py:1460
+msgid "Show message in web view as HTML source"
+msgstr "Показать сообщения в браузере как исходный код HTML"
+
+#: addon\globalPlugins\openai\maindialog.py:1463
+msgid "Copy message as plain text"
+msgstr "Копировать сообщения как обычный текст"
+
+#: addon\globalPlugins\openai\maindialog.py:1466
+msgid "Copy message as formatted HTML"
+msgstr "Копировать сообщения как форматированный HTML"
+
+#: addon\globalPlugins\openai\maindialog.py:1469
+msgid "Copy response to system"
+msgstr "Копировать ответ в поле система"
+
+#: addon\globalPlugins\openai\maindialog.py:1472
+msgid "Copy prompt to prompt"
+msgstr "Копировать подсказку в поле подсказка"
+
+#: addon\globalPlugins\openai\maindialog.py:1475
+msgid "Delete block"
+msgstr "Удалить блок"
+
+#: addon\globalPlugins\openai\maindialog.py:1478
+msgid "Save history as text file"
+msgstr "Сохранить историю в текстовый файл"
+
+#: addon\globalPlugins\openai\maindialog.py:1481
+msgid "Say message"
+msgstr "Произнести сообщение"
+
+#: addon\globalPlugins\openai\maindialog.py:1484
+msgid "Move to previous message"
+msgstr "Перейти к предыдущему сообщению"
+
+#: addon\globalPlugins\openai\maindialog.py:1487
+msgid "Move to next message"
+msgstr "Перейти к следующему сообщению"
+
+#: addon\globalPlugins\openai\maindialog.py:1498
+msgid "Insert previous prompt"
+msgstr "Вставить предыдущую подсказку"
+
+#: addon\globalPlugins\openai\maindialog.py:1508
+msgid "Show model details"
+msgstr "Показать детали модели"
+
+#: addon\globalPlugins\openai\maindialog.py:1563
+msgid "From f&ile path..."
+msgstr "&По пути к файлу..."
+
+#: addon\globalPlugins\openai\maindialog.py:1567
+msgid "From &URL..."
+msgstr "По &URL..."
+
+#: addon\globalPlugins\openai\maindialog.py:1571
+msgid "From &screenshot"
+msgstr "Со снимка экрана"
+
+#: addon\globalPlugins\openai\maindialog.py:1593
+msgid "&Remove selected images"
+msgstr "&Удалить выбранные изображения"
+
+#: addon\globalPlugins\openai\maindialog.py:1596
+msgid "Remove &all images"
+msgstr "Удалить & все изображения"
+
+#: addon\globalPlugins\openai\maindialog.py:1600
+msgid "Add from f&ile path..."
+msgstr "Добавить по &пути к файлу..."
+
+#: addon\globalPlugins\openai\maindialog.py:1603
+msgid "Add from &URL..."
+msgstr "Добавить по &URL..."
+
+#. Translators: This is a message displayed in a dialog to select one or more images.
+#: addon\globalPlugins\openai\maindialog.py:1700
+msgid "Select image files"
+msgstr "Выбрать файлы изображений"
+
+#: addon\globalPlugins\openai\maindialog.py:1702
+msgid "Image files"
+msgstr "Файлы изображений"
+
+#. Translators: This message is displayed when the image has already been added.
+#: addon\globalPlugins\openai\maindialog.py:1718
+#, python-format
+msgid ""
+"The following image has already been added and will be ignored:\n"
+"%s"
+msgstr ""
+"Следующее изображение уже добавлено и будет проигнорировано:\n"
+"%s"
+
+#. Translators: This is a message displayed in a dialog to enter an image URL.
+#: addon\globalPlugins\openai\maindialog.py:1740
+msgid "Enter image URL"
+msgstr "Введите URL изображения"
+
+#: addon\globalPlugins\openai\maindialog.py:1754
+msgid "Invalid URL, bad format."
+msgstr "Неверный URL, неправильный формат."
+
+#. Translators: This message is displayed when the image URL returns an HTTP error.
+#: addon\globalPlugins\openai\maindialog.py:1765
+#, python-format
+msgid "HTTP error %s."
+msgstr "Ошибка HTTP %s."
+
+#. Translators: This message is displayed when the image URL does not point to an image.
+#: addon\globalPlugins\openai\maindialog.py:1773
+msgid "The URL does not point to an image."
+msgstr "URL-адрес не указывает на изображение."
+
+#. Translators: This message is displayed when the add-on fails to get the image dimensions.
+#: addon\globalPlugins\openai\maindialog.py:1796
+#, python-format
+msgid "Failed to get image dimensions. %s"
+msgstr "Не удалось получить размеры изображения. %s"
+
+#. Translators: This message is displayed when a chat session stops receiving images.
+#: addon\globalPlugins\openai\maindialog.py:1825
+msgid "Screenshot reception disabled"
+msgstr "Получение снимков экрана отключено"
+
+#. Translators: This message is displayed when a chat session starts to receive images.
+#: addon\globalPlugins\openai\maindialog.py:1831
+msgid "Screenshot reception enabled"
+msgstr "Получение снимков экрана включено"
+
+#: addon\globalPlugins\openai\maindialog.py:1838
+msgid "Stop &recording"
+msgstr "Остановить & запись"
+
+#: addon\globalPlugins\openai\maindialog.py:1851
+msgid "Select audio file"
+msgstr "Выбрать аудиофайл"
+
+#: addon\globalPlugins\openai\maindialog.py:1853
+msgid ""
+"Audio files (*.mp3;*.mp4;*.mpeg;*.mpga;*.m4a;*.wav;*.webm)|*.mp3;*.mp4;*."
+"mpeg;*.mpga;*.m4a;*.wav;*.webm"
+msgstr ""
+"Аудиофайлы (*.mp3;*.mp4;*.mpeg;*.mpga;*.m4a;*.wav;*.webm)|*.mp3;*.mp4;*.mpeg;"
+"*.mpga;*. m4a;*.wav;*.webm"
+
+#: addon\globalPlugins\openai\maindialog.py:1872
+msgid "Please enter some text in the prompt field first."
+msgstr "Сначала введите текст в поле подсказка."
+
+#: addon\globalPlugins\openai\model.py:41
+msgid "preview: not yet suited for production traffic"
+msgstr "предварительный просмотр: ещё не подходит для рабочего трафика"
+
+#: addon\globalPlugins\openai\model.py:55
+#, python-brace-format
+msgid "provider: {provider}"
+msgstr "поставщик: {provider}"
+
+#: addon\globalPlugins\openai\model.py:60
+#, python-brace-format
+msgid "ID: {id}"
+msgstr "Идентификатор: {id}"
+
+#: addon\globalPlugins\openai\model.py:63
+#, python-brace-format
+msgid "context window: {contextWindow}"
+msgstr "контекстное окно: {contextWindow}"
+
+#: addon\globalPlugins\openai\model.py:69
+#, python-brace-format
+msgid "max output tokens: {maxOutputToken}"
+msgstr "максимальное количество выходных токенов:  {maxOutputToken}"
+
+#: addon\globalPlugins\openai\recordthread.py:47
+msgid "Transcription copied to clipboard"
+msgstr "Расшифровка скопирована в буфер обмена"
+
+#: addon\globalPlugins\openai\recordthread.py:94
+msgid "Transcribing..."
+msgstr "Расшифровка..."
+
+#: addon\globalPlugins\openai\recordthread.py:170
+#: addon\globalPlugins\openai\recordthread.py:179
+#: addon\globalPlugins\openai\recordthread.py:194
+msgid "Error!"
+msgstr "Ошибка!"
+
+#: addon\globalPlugins\openai\updatecheck.py:89
+#, python-format
+msgid ""
+"New version available: %s. Your version is %s. You can update from the add-"
+"on store or from the GitHub repository."
+msgstr ""
+"Доступна новая версия: %s. Ваша версия: %s. Вы можете обновиться из магазина "
+"дополнений или из репозитория GitHub."
+
+#. Translators: This is the title of the message displayed when a new version of the add-on is available.
+#. Translators: This is the title of the message displayed when the user checks for updates manually and there are no updates available.
+#: addon\globalPlugins\openai\updatecheck.py:99
+#: addon\globalPlugins\openai\updatecheck.py:108
+msgid "OpenAI update"
+msgstr "Обновление OpenAI"
+
+#. Translators: This is the message displayed when the user checks for updates manually and there are no updates available.
+#: addon\globalPlugins\openai\updatecheck.py:104
+msgid "You have the latest version of OpenAI add-on installed."
+msgstr "У вас установлена последняя версия дополнения OpenAI."
+
+#. Translators: This is the message displayed when a new version of the OpenAI dependencies is available.
+#: addon\globalPlugins\openai\updatecheck.py:146
+#, python-format
+msgid ""
+"New OpenAI dependencies revision available: %s. Your version is %s. Update "
+"now?"
+msgstr ""
+"Доступна новая версия зависимостей OpenAI: %s. Ваша версия %s. Обновить "
+"сейчас?"
+
+#: addon\globalPlugins\openai\updatecheck.py:148
+msgid "unknown"
+msgstr "неизвестная ошибка"
+
+#. Translators: This is the title of the message displayed when a new version of the OpenAI dependencies is available.
+#: addon\globalPlugins\openai\updatecheck.py:154
+msgid "OpenAI dependencies update"
+msgstr "Обновление зависимостей OpenAI"
+
+#. Translators: This is the message emitted when updating the OpenAI dependencies.
+#: addon\globalPlugins\openai\updatecheck.py:164
+msgid "Updating OpenAI dependencies... Please wait"
+msgstr "Обновление зависимостей OpenAI... Подождите"
+
+#. Translators: This is the message displayed when the OpenAI dependencies are updated successfully.
+#: addon\globalPlugins\openai\updatecheck.py:187
+msgid ""
+"Dependencies updated successfully. NVDA will now restart to apply the "
+"changes."
+msgstr ""
+"Зависимости успешно обновлены. NVDA будет перезагружена для применения "
+"изменений."
+
+#. Translators: This is the title of the message displayed when the OpenAI dependencies are updated successfully.
+#: addon\globalPlugins\openai\updatecheck.py:189
+msgid "Success"
+msgstr "Успешно"
+
+#. Translators: This is the message displayed when the OpenAI dependencies cannot be updated.
+#: addon\globalPlugins\openai\updatecheck.py:203
+msgid "Error updating dependencies. Please restart NVDA and try again."
+msgstr ""
+"Ошибка обновления зависимостей. Перезапустите NVDA и повторите попытку."
+
+#. Translators: This is the title of the message displayed when the OpenAI dependencies cannot be updated.
+#: addon\globalPlugins\openai\updatecheck.py:205
+msgid "Error"
+msgstr "Ошибка"
+
+#: buildVars.py:42
+msgid ""
+"Open AI is an NVDA add-on designed to seamlessly integrate the capabilities "
+"of the Open AI API into your workflow. Whether you're looking to craft "
+"comprehensive text, translate passages with precision, concisely summarize "
+"documents, or even interpret and describe visual content, this add-on does "
+"it all with ease."
+msgstr ""
+"Это дополнение предназначено для беспрепятственной интеграции возможностей "
+"API Open AI в ваш рабочий процесс. Если вам нужно создать исчерпывающий "
+"текст, точно перевести отрывки, кратко резюмировать документы или даже "
+"интерпретировать и описать визуальный контент, это дополнение легко "
+"справится со всеми этими задачами."
+
+#~ msgid ""
+#~ "No authentication key provided. Please set it in the Preferences dialog."
+#~ msgstr ""
+#~ "Ключ автентифікації не надано. Будь ласка, встановіть його в діалозі "
+#~ "Налаштування."
+
+#~ msgid "API Key:"
+#~ msgstr "Ключ API:"
+
+#~ msgid "Organization"
+#~ msgstr "Організація"
+
+#~ msgid "Use or&ganization"
+#~ msgstr "Використовувати &організацію"
+
+#~ msgid "Organization &name:"
+#~ msgstr "&Назва організації:"
+
+#~ msgid "&Organization key:"
+#~ msgstr "&Ключ організації:"
+
+#~ msgid "Ready"
+#~ msgstr "Готово"
+
+#~ msgid "organization"
+#~ msgstr "організація"
+
+#~ msgid "personal"
+#~ msgstr "особистий"
+
+#~ msgid "Libs hash mismatch"
+#~ msgstr "Невідповідність хешу Libs"
+
+#~ msgid "Open AI dependencies updated successfully"
+#~ msgstr "Залежності Open AI успішно оновлено"
+
+#~ msgid "Success. Restart NVDA to apply changes"
+#~ msgstr "Успішно. Перезапустіть NVDA, щоб застосувати зміни"
+
+#~ msgid "Use OpenR&outer instead of OpenAI"
+#~ msgstr "Використовувати OpenR&outer замість OpenAI"
+
+#~ msgid "OpenAI/OpenRouter API &Key:"
+#~ msgstr "&Ключ OpenAI/OpenRouter API:"
+
+#~ msgid "Mistra&lAI API key:"
+#~ msgstr "Ключ API Mistra&lAI:"
+
+#~ msgid ""
+#~ "Depending on their size, subject, and complexity, your prompts will be "
+#~ "sent to MythoMax 13B, MythoMax 13B 8k, or GPT-4 Turbo."
+#~ msgstr ""
+#~ "Залежно від розміру, теми та складності, ваші запити будуть надіслані на "
+#~ "MythoMax 13B, MythoMax 13B 8k або GPT-4 Turbo."
+
+#~ msgid ""
+#~ "A large LLM created by combining two fine-tuned Llama 70B models into one "
+#~ "120B model. Combines Xwin and Euryale."
+#~ msgstr ""
+#~ "Великий LLM, створений шляхом об'єднання двох тонко налаштованих моделей "
+#~ "Llama 70B в одну модель 120B. Поєднує в собі Xwin та Euryale."
+
+#~ msgid ""
+#~ "Claude 2.1 delivers advancements in key capabilities for enterprises—"
+#~ "including an industry-leading 200K token context window, significant "
+#~ "reductions in rates of model hallucination, system prompts and new beta "
+#~ "feature: tool use."
+#~ msgstr ""
+#~ "Claude 2.1 забезпечує досягнення ключових можливостей для підприємств - "
+#~ "включаючи провідне в галузі контекстне вікно токенів 200K, значне "
+#~ "зниження темпів галюцинації моделей, системні підказки та нову бета-"
+#~ "функцію: використання інструментів."
+
+#~ msgid ""
+#~ "Superior performance on tasks that require complex reasoning. Supports up "
+#~ "to 100k tokens in one pass, or hundreds of pages of text."
+#~ msgstr ""
+#~ "Чудова продуктивність при виконанні завдань, що вимагають складних "
+#~ "міркувань. Підтримує до 100 тис. токенів за один прохід або сотні "
+#~ "сторінок тексту."
+
+#~ msgid ""
+#~ "For low-latency, high throughput text generation. Supports up to 100k "
+#~ "tokens in one pass, or hundreds of pages of text."
+#~ msgstr ""
+#~ "Для створення тексту з низькою затримкою та високою пропускною здатністю. "
+#~ "Підтримує до 100 тис. токенів за один прохід або сотні сторінок тексту."
+
+#~ msgid ""
+#~ "This is a 16k context fine-tune of Mixtral-8x7b. It excels in coding "
+#~ "tasks due to extensive training with coding data and is known for its "
+#~ "obedience, although it lacks DPO tuning. The model is uncensored and is "
+#~ "stripped of alignment and bias. It requires an external alignment layer "
+#~ "for ethical use."
+#~ msgstr ""
+#~ "Це тонке налаштування контексту 16k Mixtral-8x7b. Він чудово справляється "
+#~ "із завданнями кодування завдяки інтенсивному навчанню з даними кодування "
+#~ "та відомий своєю слухняністю, хоча йому бракує налаштування DPO. Модель "
+#~ "не піддається цензурі та позбавлена ​​вирівнювання та упередженості. Для "
+#~ "етичного використання потрібен зовнішній рівень вирівнювання."
+
+#~ msgid ""
+#~ "Designed to handle natural language tasks, multiturn text and code chat, "
+#~ "and code generation."
+#~ msgstr ""
+#~ "Призначений для обробки завдань природної мови, багатооборотного "
+#~ "текстового та кодового чату, а також генерації коду."
+
+#~ msgid ""
+#~ "Google's flagship multimodal model, supporting image and video in text or "
+#~ "chat prompts for a text or code response."
+#~ msgstr ""
+#~ "Флагманська мультимодальна модель Google, що підтримує зображення та "
+#~ "відео в тексті або чаті, пропонує текстову або кодову відповідь."
+
+#~ msgid ""
+#~ "PaLM 2 is a language model by Google with improved multilingual, "
+#~ "reasoning and coding capabilities."
+#~ msgstr ""
+#~ "PaLM 2 — це мовна модель від Google із покращеними можливостями "
+#~ "багатомовності, аргументації та кодування."
+
+#~ msgid ""
+#~ "PaLM 2 fine-tuned for chatbot conversations that help with code-related "
+#~ "questions."
+#~ msgstr ""
+#~ "PaLM 2 налаштований для розмов із чат-ботами, які допомагають із "
+#~ "запитаннями, пов’язаними з кодом."
+
+#~ msgid ""
+#~ "One of the highest performing fine-tunes of Llama 2 13B, with rich "
+#~ "descriptions and roleplay."
+#~ msgstr ""
+#~ "Одна з найкращих доопрацювань Llama 2 13B, з багатими описами та рольовою "
+#~ "грою."
+
+#~ msgid ""
+#~ "Merges a suite of models to reduce word anticipation, ministrations, and "
+#~ "other undesirable words in ChatGPT roleplaying data. It combines Neural "
+#~ "Chat 7B, Airoboros 7b, Toppy M 7B, Zepher 7b beta, Nous Capybara 34B, "
+#~ "OpenHeremes 2.5, and many others."
+#~ msgstr ""
+#~ "Об’єднує набір моделей для зменшення передбачуваних слів, допомоги та "
+#~ "інших небажаних слів у даних рольових ігор ChatGPT. Об'єднує Neural Chat "
+#~ "7B, Airoboros 7b, Toppy M 7B, Zepher 7b beta, Nous Capybara 34B, "
+#~ "OpenHeremes 2.5 та багато інших."
+
+#~ msgid ""
+#~ "LLaVA is a large multimodal model that combines a vision encoder and "
+#~ "Vicuna for general-purpose visual and language understanding, achieving "
+#~ "impressive chat capabilities mimicking GPT-4 and setting a new state-of-"
+#~ "the-art accuracy on Science QA"
+#~ msgstr ""
+#~ "LLaVA - це велика мультимодальна модель, яка поєднує в собі візуальний "
+#~ "кодер і Vicuna для загального візуального та мовного розуміння, досягаючи "
+#~ "вражаючих можливостей чату, що імітують GPT-4, і встановлюючи новий "
+#~ "рівень точності в науковому контролі якості"
+
+#~ msgid ""
+#~ "A fine-tuned version of mistralai/Mistral-7B-v0.1 that was trained on a "
+#~ "mix of publicly available, synthetic datasets using Direct Preference "
+#~ "Optimization (DPO)."
+#~ msgstr ""
+#~ "Допрацьована версія mistralai/Mistral-7B-v0.1, яка навчалася на поєднанні "
+#~ "загальнодоступних синтетичних наборів даних з використанням методу прямої "
+#~ "оптимізації переваг (DPO)."
+
+#~ msgid ""
+#~ "Built upon Llama 2 and excels at filling in code, handling extensive "
+#~ "input contexts, and folling programming instructions without prior "
+#~ "training for various programming tasks."
+#~ msgstr ""
+#~ "Побудована на основі Llama 2 і чудово справляється із заповненням коду, "
+#~ "обробкою широких контекстів введення та складанням інструкцій з "
+#~ "програмування без попередньої підготовки для різних завдань програмування."
+
+#~ msgid ""
+#~ "A 13 billion parameter language model from Meta, fine tuned for chat "
+#~ "completions"
+#~ msgstr ""
+#~ "Мовна модель з 13 мільярдами параметрів від Meta, налаштована для "
+#~ "завершення чату"
+
+#~ msgid ""
+#~ "A 70 billion parameter language model from Meta, fine tuned for chat "
+#~ "completions."
+#~ msgstr ""
+#~ "Мовна модель з 70 мільярдами параметрів від Meta, налаштована для "
+#~ "завершення чату."
+
+#~ msgid ""
+#~ "A pretrained generative Sparse Mixture of Experts, by Mistral AI. "
+#~ "Incorporates 8 experts (feed-forward networks) for a total of 47B "
+#~ "parameters. Base model (not fine-tuned for instructions) - see Mixtral "
+#~ "8x7B Instruct, for an instruct-tuned model."
+#~ msgstr ""
+#~ "Попередньо навчена генеративна модель Sparse Mixture of Experts від "
+#~ "Mistral AI. Включає 8 експертів (мереж прямого зв’язку) для 47B "
+#~ "параметрів. Базова модель (не налаштована для інструкцій) — див. Mixtral "
+#~ "8x7B Instruct, для моделі, налаштованої для інструкцій."
+
+#~ msgid ""
+#~ "A 7.3B parameter model that outperforms Llama 2 13B on all benchmarks, "
+#~ "with optimizations for speed and context length."
+#~ msgstr ""
+#~ "Модель з параметрами 7.3B, яка перевершує Llama 2 13B за всіма "
+#~ "показниками, з оптимізацією швидкості та довжини контексту."
+
+#~ msgid "A merge suitable for RP, ERP, and general knowledge."
+#~ msgstr "Злиття підходить для RP, ERP і загальних знань."
+
+#~ msgid ""
+#~ "A fine-tune of Mistral using the OpenOrca dataset. First 7B model to beat "
+#~ "all other models <30B."
+#~ msgstr ""
+#~ "Точне налаштування Mistral за допомогою набору даних OpenOrca. Перша "
+#~ "модель 7B, яка перемогла всі інші моделі <30B."
+
+#~ msgid ""
+#~ "A collection of datasets and models made by fine-tuning on data created "
+#~ "by Nous, mostly in-house. V1.9 uses unalignment techniques for more "
+#~ "consistent and dynamic control. It also leverages a significantly better "
+#~ "foundation model, Mistral 7B."
+#~ msgstr ""
+#~ "Колекція наборів даних і моделей, створених шляхом тонкого налаштування "
+#~ "даних, створених Nous, переважно власними силами. Версія 1.9 використовує "
+#~ "методи вирівнювання для більш послідовного та динамічного керування. Він "
+#~ "також використовує значно кращу базову модель Mistral 7B."
+
+#~ msgid ""
+#~ "Built on innovations from the popular OpenHermes-2.5 model, by Teknium. "
+#~ "It adds vision support, and is trained on a custom dataset enriched with "
+#~ "function calling."
+#~ msgstr ""
+#~ "Побудований на інноваціях популярної моделі OpenHermes-2.5 від Teknium. "
+#~ "Він додає підтримку зору і навчається на власному наборі даних, "
+#~ "збагаченому викликами функцій."
+
+#~ msgid ""
+#~ "A state-of-the-art language model fine-tuned on over 300k instructions by "
+#~ "Nous Research, with Teknium and Emozilla leading the fine tuning process."
+#~ msgstr ""
+#~ "Найсучасніша мовна модель, налаштована на понад 300 тисяч інструкцій Nous "
+#~ "Research, а Teknium і Emozilla керують процесом тонкого налаштування."
+
+#~ msgid ""
+#~ "Was trained on 1,000,000 entries of primarily GPT-4 generated data, as "
+#~ "well as other high quality data from open datasets across the AI "
+#~ "landscape."
+#~ msgstr ""
+#~ "Пройшов навчання з використанням 1 000 000 записів даних, згенерованих "
+#~ "переважно GPT-4, а також інших високоякісних даних із відкритих наборів "
+#~ "даних у всьому світі ШІ."
+
+#~ msgid ""
+#~ "A library of open-source language models, fine-tuned with \"C-RLFT "
+#~ "(Conditioned Reinforcement Learning Fine-Tuning)\" - a strategy inspired "
+#~ "by offline reinforcement learning. It has been trained on mixed-quality "
+#~ "data without preference labels."
+#~ msgstr ""
+#~ "Бібліотека мовних моделей з відкритим вихідним кодом, доопрацьована за "
+#~ "допомогою «C-RLFT (Conditioned Reinforcement Learning Fine-Tuning)» — "
+#~ "стратегії, натхненної офлайн-навчанням з посиленням. Вона була навчена на "
+#~ "даних змішаної якості без міток переваги."
+
+#~ msgid ""
+#~ "RWKV is an RNN (recurrent neural network) with transformer-level "
+#~ "performance. It aims to combine the best of RNNs and transformers - great "
+#~ "performance, fast inference, low VRAM, fast training, \"infinite\" "
+#~ "context length, and free sentence embedding. RWKV-5 is trained on 100+ "
+#~ "world languages (70% English, 15% multilang, 15% code)."
+#~ msgstr ""
+#~ "RWKV — це RNN (рекурентна нейронна мережа) з рівнем продуктивності на "
+#~ "рівні трансформера. Вона має на меті поєднати найкраще від RNN та "
+#~ "трансформерів — чудову продуктивність, швидкі висновки, низький обсяг "
+#~ "відеопам’яті, швидке навчання, «нескінченну» довжину контексту та вільне "
+#~ "вбудовування речень. RWKV-5 навчається на 100+ мовах світу (70% "
+#~ "англійська, 15% багатомовність, 15% — код)."
+
+#, python-format
+#~ msgid "%s error"
+#~ msgstr "%s помилка"
+
+#~ msgid "Whisper through whisper.cpp"
+#~ msgstr "Whisper.cpp aracılığıyla fısılda"
+
+#~ msgid "Open AI"
+#~ msgstr "Open AI"
+
+#~ msgid "Images"
+#~ msgstr "Зображення"
+
+#~ msgid "One image to analyze..."
+#~ msgstr "Одне зображення для аналізу..."
+
+#, python-format
+#~ msgid "%d images to analyze..."
+#~ msgstr "%d зображень для аналізу..."
+
+#~ msgid ""
+#~ "4096 tokens max. Most capable GPT-3.5 model and optimized for chat at "
+#~ "1/10th the cost of text-davinci-003"
+#~ msgstr ""
+#~ "Максимум 4096 токенів. потужна модель GPT-3.5 та оптимізована для чату за "
+#~ "1/10 вартості text-davinci-003"
+
+#~ msgid "GPT-4 Turbo with vision"
+#~ msgstr "GPT-4 Turbo з баченням"
+
+#~ msgid "GPT-4 Turbo, 128K context, maximum of 4096 output tokens."
+#~ msgstr "GPT-4 Turbo, 128K контекст, максимум 4096 вихідних токенів."
