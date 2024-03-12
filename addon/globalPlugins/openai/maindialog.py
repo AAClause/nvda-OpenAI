@@ -22,7 +22,7 @@ from . import apikeymanager
 from .consts import (
 	ADDON_DIR, BASE_URLs, DATA_DIR,
 	LIBS_DIR_PY,
-	MODELS,
+	MODELS, DEFAULT_MODEL_VISION,
 	TOP_P_MIN, TOP_P_MAX,
 	N_MIN, N_MAX,
 	DEFAULT_SYSTEM_PROMPT
@@ -153,10 +153,7 @@ class CompletionThread(threading.Thread):
 		block.prompt = prompt
 		model = wnd.getCurrentModel()
 		block.model = model.id
-		if model.vision:
-			conf["modelVision"] = model.id
-		else:
-			conf["model"] = model.id
+		conf["modelVision" if model.vision else "model"] = model.id
 		stream = conf["stream"]
 		debug = conf["debug"]
 		maxTokens = wnd.maxTokens.GetValue()
@@ -606,8 +603,10 @@ class OpenAIDlg(wx.Dialog):
 			choices=models,
 			style=wx.LB_SINGLE | wx.LB_HSCROLL | wx.LB_NEEDED_SB
 		)
-		model = conf["modelVision"] if self.pathList else conf["model"]
-		idx = list(self._model_ids).index(model) if model in self._model_ids else 0
+		model = conf["modelVision" if self.pathList else "model"]
+		idx = list(self._model_ids).index(model) if model in self._model_ids else (
+			list(self._model_ids).index(DEFAULT_MODEL_VISION) if self.pathList else 0
+		)
 		self.modelListBox.SetSelection(idx)
 		self.modelListBox.Bind(wx.EVT_LISTBOX, self.onModelChange)
 		self.modelListBox.Bind(wx.EVT_KEY_DOWN, self.onModelKeyDown)
