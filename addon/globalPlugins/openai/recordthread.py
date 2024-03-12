@@ -54,11 +54,19 @@ class WhisperTranscription:
 
 class RecordThread(threading.Thread):
 
-	def __init__(self, client, notifyWindow=None, pathList=None, conf=None):
+	def __init__(
+		self,
+		client,
+		notifyWindow=None,
+		pathList=None,
+		conf=None,
+		responseFormat="json"
+	):
 		super(RecordThread, self).__init__()
 		self.client = client
 		self.pathList = pathList
 		self.conf = conf
+		self.responseFormat = responseFormat
 		self._stopRecord = False
 		self._notifyWindow = notifyWindow
 		self._wantAbort = 0
@@ -177,8 +185,9 @@ class RecordThread(threading.Thread):
 				)
 			else:
 				transcription = self.client.audio.transcriptions.create(
-					model="whisper-1", 
-					file=audio_file
+					model="whisper-1",
+					file=audio_file,
+					response_format=self.responseFormat
 				)
 		except BaseException as err:
 			if self._notifyWindow:
@@ -188,6 +197,10 @@ class RecordThread(threading.Thread):
 				ui.message(_("Error!"))
 			return
 		if self._notifyWindow:
+			if isinstance(transcription, str):
+				transcription = WhisperTranscription(
+					transcription
+				)
 			wx.PostEvent(self._notifyWindow, ResultEvent(transcription))
 		else:
 			winsound.PlaySound(None, winsound.SND_ASYNC)
