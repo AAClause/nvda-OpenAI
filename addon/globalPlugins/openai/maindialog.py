@@ -22,7 +22,7 @@ from . import apikeymanager
 from .consts import (
 	ADDON_DIR, BASE_URLs, DATA_DIR,
 	LIBS_DIR_PY,
-	MODELS, DEFAULT_MODEL_VISION,
+	MODELS,
 	TOP_P_MIN, TOP_P_MAX,
 	N_MIN, N_MAX,
 	DEFAULT_SYSTEM_PROMPT
@@ -153,7 +153,10 @@ class CompletionThread(threading.Thread):
 		block.prompt = prompt
 		model = wnd.getCurrentModel()
 		block.model = model.id
-		conf["model"] = model.id
+		if model.vision:
+			conf["modelVision"] = model.id
+		else:
+			conf["model"] = model.id
 		stream = conf["stream"]
 		debug = conf["debug"]
 		maxTokens = wnd.maxTokens.GetValue()
@@ -259,10 +262,10 @@ class CompletionThread(threading.Thread):
 			messages.append({"role": "system", "content": system})
 		wnd.getMessages(messages)
 		if wnd.pathList:
-			images = wnd.getImages()
+			images = wnd.getImages(prompt=prompt)
 			if images:
 				messages.append({"role": "user", "content": images})
-		if prompt:
+		elif prompt:
 			messages.append({"role": "user", "content": prompt})
 		return messages
 
@@ -603,7 +606,7 @@ class OpenAIDlg(wx.Dialog):
 			choices=models,
 			style=wx.LB_SINGLE | wx.LB_HSCROLL | wx.LB_NEEDED_SB
 		)
-		model = DEFAULT_MODEL_VISION if self.pathList else conf["model"]
+		model = conf["modelVision"] if self.pathList else conf["model"]
 		idx = list(self._model_ids).index(model) if model in self._model_ids else 0
 		self.modelListBox.SetSelection(idx)
 		self.modelListBox.Bind(wx.EVT_LISTBOX, self.onModelChange)
@@ -873,7 +876,7 @@ class OpenAIDlg(wx.Dialog):
 				for k, v in extraInfo["pricing"].items():
 					if re.match("^[0-9.]+$", v) and float(v) > 0:
 						details += f"<li><b>{k}</b> cost: {v}/token.</li>"
-			
+
 			details += "</ul>"
 
 		ui.browseableMessage(
@@ -1128,12 +1131,18 @@ class OpenAIDlg(wx.Dialog):
 
 	def getImages(
 		self,
-		pathList: list = None
+		pathList: list = None,
+		prompt: str = None
 	) -> list:
 		conf = self.conf
 		if not pathList:
 			pathList = self.pathList
 		images = []
+		if prompt:
+			images.append({
+				"type": "text",
+				"text": prompt
+			})
 		for imageFile in pathList:
 			path = imageFile.path
 			log.debug(f"Processing {path}")
@@ -1509,7 +1518,7 @@ class OpenAIDlg(wx.Dialog):
 		Select the model for image description.
 		"""
 		self.modelListBox.SetSelection(
-			self._model_ids.index(DEFAULT_MODEL_VISION)
+			self._model_ids.index(self.conf["modelVision"])
 		)
 		self.imageListCtrl.SetSelection(evt.GetSelection())
 		evt.Skip()
@@ -1615,9 +1624,9 @@ class OpenAIDlg(wx.Dialog):
 					wx.OK | wx.ICON_ERROR
 				)
 		model = self.getCurrentModel()
-		if model.vision:
+		if not model.vision:
 			self.modelListBox.SetSelection(
-				self._model_ids.index(DEFAULT_MODEL_VISION)
+				self._model_ids.index(self.conf["modelVision"])
 			)
 		if not self.promptText.GetValue().strip():
 			self.promptText.SetValue(
@@ -1702,7 +1711,7 @@ class OpenAIDlg(wx.Dialog):
 			)
 		)
 		self.modelListBox.SetSelection(
-			self._model_ids.index(DEFAULT_MODEL_VISION)
+			self._model_ids.index(self.conf["modelVision"])
 		)
 		if not self.promptText.GetValue().strip():
 			self.promptText.SetValue(
