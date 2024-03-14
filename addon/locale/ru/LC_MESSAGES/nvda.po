@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: nvda-translations@groups.io\n"
 "POT-Creation-Date: 2024-02-08 00:19+0100\n"
-"PO-Revision-Date: 2024-03-09 20:56+0300\n"
+"PO-Revision-Date: 2024-03-14 07:34+0300\n"
 "Last-Translator: Danil Kostenkov <danilkostenkov38@gmail.com>\n"
 "Language-Team: Danil Kostenkov\n"
 "Language: ru\n"
@@ -235,7 +235,7 @@ msgstr "Снимок экрана %s"
 #. Translators: This is the description of a command to grab the current navigator object and describe it.
 #: addon\globalPlugins\openai\__init__.py:659
 msgid "Grab the current navigator object and describe it"
-msgstr "Захопити поточний об’єкт навігатора й описати його"
+msgstr "Захватить текущий объект навигатора и описать его"
 
 #. Translators: This is the name of the screenshot to be described.
 #: addon\globalPlugins\openai\__init__.py:682
@@ -523,7 +523,7 @@ msgstr "Расшифровка из &аудиофайла"
 
 #: addon\globalPlugins\openai\maindialog.py:733
 msgid "Transcribe audio from a file path"
-msgstr "Расшифровка аудио по пути к немуу"
+msgstr "Расшифровка аудио по пути к нему"
 
 #: addon\globalPlugins\openai\maindialog.py:737
 msgid "&Image description"
@@ -531,7 +531,7 @@ msgstr "&Описание изображения"
 
 #: addon\globalPlugins\openai\maindialog.py:740
 msgid "Describe an image from a file path or an URL"
-msgstr "Описать изображение по пути к файлу или по URL - адреса"
+msgstr "Описать изображение по пути к файлу или по URL - адресу"
 
 #: addon\globalPlugins\openai\maindialog.py:744
 msgid "&Vocalize the prompt"
@@ -873,7 +873,7 @@ msgstr "контекстное окно: {contextWindow}"
 #: addon\globalPlugins\openai\model.py:69
 #, python-brace-format
 msgid "max output tokens: {maxOutputToken}"
-msgstr "максимальное количество выходных токенов:  {maxOutputToken}"
+msgstr "максимальное количество токенов:  {maxOutputToken}"
 
 #: addon\globalPlugins\openai\recordthread.py:47
 msgid "Transcription copied to clipboard"
