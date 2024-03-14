@@ -1266,15 +1266,9 @@ class OpenAIDlg(wx.Dialog):
 		while block:
 			userContent = []
 			if block.pathList:
-				userContent.extend(self.getImages(block.pathList))
-				if block.prompt:
-					userContent.append({
-						"type": "text",
-						"text": block.prompt
-					})
-			else:
-				if block.prompt:
-					userContent = block.prompt
+				userContent.extend(self.getImages(block.pathList, block.prompt))
+			elif block.prompt:
+				userContent = block.prompt
 			if userContent:
 				messages.append({
 					"role": "user",
