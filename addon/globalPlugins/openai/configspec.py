@@ -1,6 +1,7 @@
 import config
 from .consts import (
 	DEFAULT_MODEL,
+	DEFAULT_MODEL_VISION,
 	DEFAULT_TOP_P,
 	DEFAULT_N,
 	TOP_P_MIN,
@@ -18,8 +19,8 @@ confSpecs = {
 		"check": "boolean(default=True)",
 		"channel": "string(default='stable')"
 	},
-	"use_org": "boolean(default=False)",
 	"model": f"string(default={DEFAULT_MODEL.name})",
+	"modelVision": f"string(default={DEFAULT_MODEL_VISION})",
 	"topP": f"integer(min={TOP_P_MIN}, max={TOP_P_MAX}, default={DEFAULT_TOP_P})",
 	"n": f"integer(min={N_MIN}, max={N_MAX}, default={DEFAULT_N})",
 	"stream": "boolean(default=True)",

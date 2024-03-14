@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: open ai\n"
 "Report-Msgid-Bugs-To: nvda-translations@groups.io\n"
-"POT-Creation-Date: 2024-02-05 20:13+0100\n"
-"PO-Revision-Date: 2024-02-06 13:06+0200\n"
+"POT-Creation-Date: 2024-02-08 00:19+0100\n"
+"PO-Revision-Date: 2024-02-08 17:22+0200\n"
 "Last-Translator: \n"
 "Language-Team: Konsta Suurhaukka\n"
 "Language: fi_FI\n"
@@ -244,6 +244,19 @@ msgstr "Ota nauhoitus käyttöön ja erottele ääntä missä tahansa"
 
 #. Translators: This is a model description
 #: addon\globalPlugins\openai\consts.py:32
+msgid "Points to one of the most recent iterations of gpt-3.5 model."
+msgstr "Käyttää yhtä GPT-3.5-mallin uusimmista versioista."
+
+#. Translators: This is a model description
+#: addon\globalPlugins\openai\consts.py:40
+msgid ""
+"The latest GPT-3.5 Turbo model with higher accuracy at responding in "
+"requested formats and a fix for a bug which caused a text encoding issue for "
+"non-English language function calls."
+msgstr "Uusin GPT-3.5 Turbo -malli, jolla on suurempi vastaamistarkkuus."
+
+#. Translators: This is a model description
+#: addon\globalPlugins\openai\consts.py:48
 msgid ""
 "Updated GPT 3.5 Turbo. The latest GPT-3.5 Turbo model with improved "
 "instruction following, JSON mode, reproducible outputs, parallel function "
@@ -253,7 +266,7 @@ msgstr ""
 "ohjeiden seuraaminen, JSON-tila, rinnakkaistoimintokutsut ja paljon muuta."
 
 #. Translators: This is a model description
-#: addon\globalPlugins\openai\consts.py:40
+#: addon\globalPlugins\openai\consts.py:56
 msgid ""
 "Same capabilities as the standard gpt-3.5-turbo model but with 4 times the "
 "context"
@@ -262,25 +275,30 @@ msgstr ""
 "kertaisella kontekstilla"
 
 #. Translators: This is a model description
-#: addon\globalPlugins\openai\consts.py:48
-msgid ""
-"More capable than any GPT-3.5 model, able to do more complex tasks, and "
-"optimized for chat"
-msgstr ""
-"Parempi kuin mikään GPT-3.5-malli, pystyy tekemään monimutkaisempia tehtäviä "
-"ja on chatille"
+#: addon\globalPlugins\openai\consts.py:64
+msgid "Points to one of the most recent iterations of gpt-4 model."
+msgstr "Käyttää yhtä GPT-4-mallin uusimmista versioista."
 
 #. Translators: This is a model description
-#: addon\globalPlugins\openai\consts.py:55
+#: addon\globalPlugins\openai\consts.py:72
 msgid ""
-"The latest GPT-4 model with improved instruction following, JSON mode, "
+"The latest GPT-4 model intended to reduce cases of “laziness” where the "
+"model doesn’t complete a task."
+msgstr ""
+"Uusin GPT-4-malli, joka on tarkoitettu vähentämään \"laiskuutta\" silloin, "
+"kun malli ei voi suorittaa tehtävää."
+
+#. Translators: This is a model description
+#: addon\globalPlugins\openai\consts.py:80
+msgid ""
+"GPT-4 Turbo model featuring improved instruction following, JSON mode, "
 "reproducible outputs, parallel function calling, and more."
 msgstr ""
 "Uusin GPT-4-malli, jossa on parannettu ohjeiden seuraaminen, JSON-tila, "
 "rinnakkaistoimintokutsut ja paljon muuta."
 
 #. Translators: This is a model description
-#: addon\globalPlugins\openai\consts.py:64
+#: addon\globalPlugins\openai\consts.py:89
 msgid ""
 "GPT-4 Turbo with vision. Ability to understand images, in addition to all "
 "other GPT-4 Turbo capabilities."
@@ -289,7 +307,16 @@ msgstr ""
 "Turbo -ominaisuuksien lisäksi."
 
 #. Translators: This is a model description
-#: addon\globalPlugins\openai\consts.py:74
+#: addon\globalPlugins\openai\consts.py:99
+msgid ""
+"More capable than any GPT-3.5 model, able to do more complex tasks, and "
+"optimized for chat"
+msgstr ""
+"Parempi kuin mikään GPT-3.5-malli, pystyy tekemään monimutkaisempia tehtäviä "
+"ja on chatille"
+
+#. Translators: This is a model description
+#: addon\globalPlugins\openai\consts.py:106
 msgid ""
 "Same capabilities as the standard gpt-4 mode but with 4x the context length."
 msgstr ""
@@ -297,7 +324,7 @@ msgstr ""
 "kontekstilla."
 
 #. Translators: This is a model description
-#: addon\globalPlugins\openai\consts.py:82
+#: addon\globalPlugins\openai\consts.py:114
 msgid ""
 "Used for large batch processing tasks where cost is a significant factor but "
 "reasoning capabilities are not crucial. Uses the Mistral API."
@@ -306,17 +333,17 @@ msgstr ""
 "mutta päättelykyvyt eivät ole ratkaisevia. Käyttää Mistral API:a."
 
 #. Translators: This is a model description
-#: addon\globalPlugins\openai\consts.py:91
+#: addon\globalPlugins\openai\consts.py:123
 msgid ""
 "Higher reasoning capabilities and more capabilities. Use the Mistral API."
 msgstr "Parempi päättelykyky ja enemmän ominaisuuksia. Käyttää Mistral API:a."
 
 #. Translators: This is a model description
-#: addon\globalPlugins\openai\consts.py:100
+#: addon\globalPlugins\openai\consts.py:132
 msgid "Internal prototype model. Uses the Mistral API."
 msgstr "Sisäinen prototyyppimalli. Käyttää Mistral API:a."
 
-#: addon\globalPlugins\openai\consts.py:114
+#: addon\globalPlugins\openai\consts.py:146
 msgid ""
 "You are an accessibility assistant integrated in the NVDA screen reader that "
 "helps blind screen reader users access visual information that may not be "
