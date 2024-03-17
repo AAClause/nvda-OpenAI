@@ -537,12 +537,12 @@ class OpenAIDlg(wx.Dialog):
 		mainSizer.Add(self.conversationCheckBox, 0, wx.ALL, 5)
 
 		systemLabel = wx.StaticText(
-			parent=self,
+			self,
 			# Translators: This is the label for the system prompt text control in the main dialog.
 			label=_("S&ystem prompt:")
 		)
 		self.systemTextCtrl = wx.TextCtrl(
-			parent=self,
+			self,
 			size=(700, -1),
 			style=wx.TE_MULTILINE,
 		)
@@ -586,13 +586,14 @@ class OpenAIDlg(wx.Dialog):
 		self.promptTextCtrl.Bind(wx.EVT_CONTEXT_MENU, self.onPromptContextMenu)
 
 		self.imagesLabel = wx.StaticText(
-			parent=self,
+			self,
 			# Translators: This is the label for the images list control in the main dialog.
 			label=_("Images:")
 		)
 		self.imagesListCtrl = wx.ListCtrl(
-			parent=self,
-			style=wx.LC_REPORT | wx.LC_HRULES | wx.LC_VRULES
+			self,
+			style=wx.LC_REPORT | wx.LC_HRULES | wx.LC_VRULES,
+			size=(700, 200)
 		)
 		self.imagesListCtrl.InsertColumn(
 			0,
@@ -637,36 +638,77 @@ class OpenAIDlg(wx.Dialog):
 			)
 		self.updateImageList()
 
-		models = [str(model) for model in self._models]
 		modelsLabel = wx.StaticText(
-			parent=self,
+			self,
 			# Translators: This is the label for the model list box in the main dialog.
 			label=_("M&odel:")
 		)
-		self.modelsListBox = wx.ListBox(
-			parent=self,
-			choices=models,
-			style=wx.LB_SINGLE | wx.LB_HSCROLL | wx.LB_NEEDED_SB,
-			size=(700, -1)
+		self.modelsListCtrl = wx.ListCtrl(
+			self,
+			style=wx.LC_REPORT | wx.LC_HRULES | wx.LC_VRULES,
+			size=(700, 200)
 		)
+		self.modelsListCtrl.InsertColumn(
+			0,
+			# Translators: This is the label for the model name column in the model list control in the main dialog.
+			_("Name")
+		)
+		self.modelsListCtrl.InsertColumn(
+			1,
+			# Translators: This is the label for the model provider column in the model list control in the main dialog.
+			_("Provider")
+		)
+		self.modelsListCtrl.InsertColumn(
+			2,
+			# Translators: This is the label for the model ID column in the model list control in the main dialog.
+			_("ID")
+		)
+		self.modelsListCtrl.InsertColumn(
+			3,
+			# Translators: This is the label for the model context window column in the model list control in the main dialog.
+			_("Context window")
+		)
+		self.modelsListCtrl.InsertColumn(
+			4,
+			# Translators: This is the label for the model max output token column in the model list control in the main dialog.
+			_("Max output token")
+		)
+		self.modelsListCtrl.SetColumnWidth(0, 200)
+		self.modelsListCtrl.SetColumnWidth(1, 100)
+		self.modelsListCtrl.SetColumnWidth(2, 100)
+		self.modelsListCtrl.SetColumnWidth(3, 100)
+		self.modelsListCtrl.SetColumnWidth(4, 100)
+		self.modelsListCtrl.Bind(wx.EVT_KEY_DOWN, self.onModelKeyDown)
+		self.modelsListCtrl.Bind(wx.EVT_CONTEXT_MENU, self.onModelContextMenu)
+		self.modelsListCtrl.Bind(wx.EVT_LIST_ITEM_RIGHT_CLICK, self.onModelContextMenu)
+		self.modelsListCtrl.Bind(wx.EVT_RIGHT_UP, self.onModelContextMenu)
+
+		for i, model in enumerate(self._models):
+			self.modelsListCtrl.InsertItem(i, model.name)
+			self.modelsListCtrl.SetItem(i, 1, model.provider)
+			self.modelsListCtrl.SetItem(i, 2, model.id)
+			self.modelsListCtrl.SetItem(i, 3, str(model.contextWindow))
+			self.modelsListCtrl.SetItem(
+				i,
+				4,
+				str(model.maxOutputToken) if model.maxOutputToken > 1 else ""
+			)
 		model_id = conf["modelVision" if self.pathList else "model"]
-		idx = list(self._model_ids).index(model_id) if model_id in self._model_ids else (
-			list(self._model_ids).index(DEFAULT_MODEL_VISION) if self.pathList else 0
+		self.modelsListCtrl.SetItemState(
+			self._getModelIndex(model_id),
+			wx.LIST_STATE_SELECTED | wx.LIST_STATE_FOCUSED,
+			wx.LIST_STATE_SELECTED | wx.LIST_STATE_FOCUSED
 		)
-		self.modelsListBox.SetSelection(idx)
 		mainSizer.Add(modelsLabel, 0, wx.ALL, 5)
-		mainSizer.Add(self.modelsListBox, 0, wx.ALL, 5)
-		self.modelsListBox.Bind(wx.EVT_LISTBOX, self.onModelChange)
-		self.modelsListBox.Bind(wx.EVT_KEY_DOWN, self.onModelKeyDown)
-		self.modelsListBox.Bind(wx.EVT_CONTEXT_MENU, self.onModelContextMenu)
+		mainSizer.Add(self.modelsListCtrl, 0, wx.ALL, 5)
 
 		maxTokensLabel = wx.StaticText(
-			parent=self,
+			self,
 			# Translators: This is the label for the max tokens spin control in the main dialog.
 			label=_("Max to&kens:")
 		)
 		self.maxTokensSpinCtrl = wx.SpinCtrl(
-			parent=self,
+			self,
 			min=0
 		)
 
@@ -675,12 +717,12 @@ class OpenAIDlg(wx.Dialog):
 
 		if conf["advancedMode"]:
 			temperatureLabel = wx.StaticText(
-				parent=self,
+				self,
 				# Translators: This is the label for the temperature spin control in the main dialog.
 				label=_("&Temperature:")
 			)
 			self.temperatureSpinCtrl = wx.SpinCtrl(
-				parent=self,
+				self,
 				min=0,
 				max=200
 			)
@@ -688,12 +730,12 @@ class OpenAIDlg(wx.Dialog):
 			mainSizer.Add(self.temperatureSpinCtrl, 0, wx.ALL, 5)
 
 			topPLabel = wx.StaticText(
-				parent=self,
+				self,
 				# Translators: This is the label for the top P spin control in the main dialog.
 				label=_("Pro&bability Mass (top P):")
 			)
 			self.topPSpinCtrl = wx.SpinCtrl(
-				parent=self,
+				self,
 				min=TOP_P_MIN,
 				max=TOP_P_MAX,
 				initial=conf["topP"]
@@ -702,14 +744,16 @@ class OpenAIDlg(wx.Dialog):
 			mainSizer.Add(self.topPSpinCtrl, 0, wx.ALL, 5)
 
 			self.whisperResponseFormatLabel = wx.StaticText(
-				parent=self,
+				self,
 				label=_("&Whisper Response Format:")
 			)
 			self.whisperResponseFormatListBox = wx.Choice(
-				parent=self,
+				self,
 				choices=RESP_AUDIO_FORMATS_LABELS
 			)
 			self.whisperResponseFormatListBox.SetSelection(0)
+			mainSizer.Add(self.whisperResponseFormatLabel, 0, wx.ALL, 5)
+			mainSizer.Add(self.whisperResponseFormatListBox, 0, wx.ALL, 5)
 
 			self.streamModeCheckBox = wx.CheckBox(
 				self,
@@ -730,7 +774,7 @@ class OpenAIDlg(wx.Dialog):
 		buttonsSizer = wx.BoxSizer(wx.HORIZONTAL)
 
 		self.recordBtn = wx.Button(
-			parent=self,
+			self,
 			# Translators: This is the label for the record button in the main dialog.
 			label=_("Start &recording") + " (Ctrl+R)"
 		)
@@ -738,7 +782,7 @@ class OpenAIDlg(wx.Dialog):
 		self.recordBtn.SetToolTip(_("Record audio from microphone"))
 
 		self.transcribeFromFileBtn = wx.Button(
-			parent=self,
+			self,
 			# Translators: This is the label for the transcribe from audio file button in the main dialog.
 			label=_("Transcribe from &audio file") + " (Ctrl+Shift+R)"
 		)
@@ -746,7 +790,7 @@ class OpenAIDlg(wx.Dialog):
 		self.transcribeFromFileBtn.SetToolTip(_("Transcribe audio from a file path"))
 
 		self.imageDescriptionBtn = wx.Button(
-			parent=self,
+			self,
 			# Translators: This is the label for the image description button in the main dialog.
 			label=_("&Image description")
 		)
@@ -754,7 +798,7 @@ class OpenAIDlg(wx.Dialog):
 		self.imageDescriptionBtn.SetToolTip(_("Describe an image from a file path or an URL"))
 
 		self.TTSBtn = wx.Button(
-			parent=self,
+			self,
 			# Translators: This is the label for the text to speech button in the main dialog.
 			label=_("&Vocalize the prompt") + " (Ctrl+T)"
 		)
@@ -782,7 +826,7 @@ class OpenAIDlg(wx.Dialog):
 		submitCancelSizer.Add(self.submitBtn, 0, wx.ALL, 5)
 
 		self.cancelBtn = wx.Button(
-			parent=self,
+			self,
 			id=wx.ID_CANCEL
 		)
 		self.cancelBtn.Bind(wx.EVT_BUTTON, self.onCancel)
@@ -806,6 +850,11 @@ class OpenAIDlg(wx.Dialog):
 		self.Bind(wx.EVT_CHAR_HOOK, self.onCharHook)
 		self.Bind(wx.EVT_CLOSE, self.onCancel)
 
+
+	def _getModelIndex(self, model_id):
+		return list(self._model_ids).index(model_id) if model_id in self._model_ids else (
+			list(self._model_ids).index(DEFAULT_MODEL_VISION) if self.pathList else 0
+		)
 
 	def addImageToList(
 		self,
@@ -859,7 +908,7 @@ class OpenAIDlg(wx.Dialog):
 			f.write(json.dumps(self.data))
 
 	def getCurrentModel(self):
-		return self._models[self.modelsListBox.GetSelection()]
+		return self._models[self.modelsListCtrl.GetFocusedItem()]
 
 	def onResetSystemPrompt(self, event):
 		self.systemTextCtrl.SetValue(DEFAULT_SYSTEM_PROMPT)
@@ -983,7 +1032,10 @@ class OpenAIDlg(wx.Dialog):
 		if not model.vision and self.pathList:
 			visionModels = [model.id for model in self._models if model.vision]
 			gui.messageBox(
-				_("This model does not support image description. Please select one of the following models: %s.") % ", ".join(visionModels),
+				_("This model (%s) does not support image description. Please select one of the following models: %s.") % (
+					model.id,
+					", ".join(visionModels)
+				),
 				_("Invalid model"),
 				wx.OK | wx.ICON_ERROR
 			)
@@ -1112,7 +1164,7 @@ class OpenAIDlg(wx.Dialog):
 		if url and res == wx.YES:
 			os.startfile(url.group(0).rstrip("."))
 		if "model's maximum context length is " in errMsg:
-			self.modelsListBox.SetFocus()
+			self.modelsListCtrl.SetFocus()
 		else:
 			self.promptTextCtrl.SetFocus()
 		raise Exception(errMsg)
@@ -1502,7 +1554,7 @@ class OpenAIDlg(wx.Dialog):
 		menu.Append(item_id, _("Show model details") + " (Space)")
 		self.Bind(wx.EVT_MENU, self.showModelDetails, id=item_id)
 		menu.AppendSeparator()
-		self.modelsListBox.PopupMenu(menu)
+		self.modelsListCtrl.PopupMenu(menu)
 		menu.Destroy()
 
 	def message(self, msg, onlySpeech=False):
@@ -1569,10 +1621,12 @@ class OpenAIDlg(wx.Dialog):
 		"""
 		Select the model for image description.
 		"""
-		self.modelsListBox.SetSelection(
-			self._model_ids.index(self.conf["modelVision"])
+		self.modelsListCtrl.SetItemState(
+			self._model_ids.index(self.conf["modelVision"]),
+			wx.LIST_STATE_SELECTED | wx.LIST_STATE_FOCUSED,
+			wx.LIST_STATE_SELECTED | wx.LIST_STATE_FOCUSED
 		)
-		self.imagesListCtrl.SetSelection(evt.GetSelection())
+		self.modelsListCtrl.SetFocus()
 		evt.Skip()
 
 	def onRemoveSelectedImages(self, evt):
@@ -1677,8 +1731,10 @@ class OpenAIDlg(wx.Dialog):
 				)
 		model = self.getCurrentModel()
 		if not model.vision:
-			self.modelsListBox.SetSelection(
-				self._model_ids.index(self.conf["modelVision"])
+			self.modelsListCtrl.SetItemState(
+				self._getModelIndex(self.conf["modelVision"]),
+				wx.LIST_STATE_SELECTED | wx.LIST_STATE_FOCUSED,
+				wx.LIST_STATE_SELECTED | wx.LIST_STATE_FOCUSED
 			)
 		if not self.promptTextCtrl.GetValue().strip():
 			self.promptTextCtrl.SetValue(
@@ -1762,8 +1818,10 @@ class OpenAIDlg(wx.Dialog):
 				dimensions=dimensions
 			)
 		)
-		self.modelsListBox.SetSelection(
-			self._model_ids.index(self.conf["modelVision"])
+		self.modelsListCtrl.SetItemState(
+			self._getModelIndex(self.conf["modelVision"]),
+			wx.LIST_STATE_SELECTED | wx.LIST_STATE_FOCUSED,
+			wx.LIST_STATE_SELECTED | wx.LIST_STATE_FOCUSED
 		)
 		if not self.promptTextCtrl.GetValue().strip():
 			self.promptTextCtrl.SetValue(
@@ -1869,7 +1927,7 @@ class OpenAIDlg(wx.Dialog):
 		self.transcribeFromFileBtn.Disable()
 		self.imageDescriptionBtn.Disable()
 		self.TTSBtn.Disable()
-		self.modelsListBox.Disable()
+		self.modelsListCtrl.Disable()
 		self.maxTokensSpinCtrl.Disable()
 		self.conversationCheckBox.Disable()
 		self.promptTextCtrl.SetEditable(False)
@@ -1889,7 +1947,7 @@ class OpenAIDlg(wx.Dialog):
 		self.transcribeFromFileBtn.Enable()
 		self.imageDescriptionBtn.Enable()
 		self.TTSBtn.Enable()
-		self.modelsListBox.Enable()
+		self.modelsListCtrl.Enable()
 		self.maxTokensSpinCtrl.Enable()
 		self.conversationCheckBox.Enable()
 		self.promptTextCtrl.SetEditable(True)
