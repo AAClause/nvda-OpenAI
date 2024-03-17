@@ -47,6 +47,12 @@ addonHandler.initTranslation()
 TTS_FILE_NAME = os.path.join(DATA_DIR, "tts.wav")
 DATA_JSON_FP = os.path.join(DATA_DIR, "data.json")
 URL_PATTERN = re.compile(r"^(?:http)s?://(?:[A-Z0-9-]+\.)+[A-Z]{2,6}(?::\d+)?(?:/?|[/?]\S+)$", re.IGNORECASE)
+RESP_AUDIO_FORMATS = ("json", "srt", "vtt")
+RESP_AUDIO_FORMATS_LABELS = (
+	_("Text"),
+	_("SubRip (SRT)"),
+	_("Web Video Text Tracks (VTT)")
+)
 
 addToSession = None
 
@@ -620,7 +626,6 @@ class OpenAIDlg(wx.Dialog):
 			parent=self,
 			min=0
 		)
-
 		if conf["advancedMode"]:
 			temperatureLabel = wx.StaticText(
 				parent=self,
@@ -640,6 +645,16 @@ class OpenAIDlg(wx.Dialog):
 				max=TOP_P_MAX,
 				initial=conf["topP"]
 			)
+
+			self.whisperResponseFormatLabel = wx.StaticText(
+				parent=self,
+				label=_("&Whisper Response Format:")
+			)
+			self.whisperResponseFormatListBox = wx.Choice(
+				parent=self,
+				choices=RESP_AUDIO_FORMATS_LABELS
+			)
+			self.whisperResponseFormatListBox.SetSelection(0)
 
 			self.streamModeCheckBox = wx.CheckBox(
 				parent=self,
@@ -673,6 +688,8 @@ class OpenAIDlg(wx.Dialog):
 			sizer1.Add(self.temperature, 0, wx.ALL, 5)
 			sizer1.Add(topPLabel, 0, wx.ALL, 5)
 			sizer1.Add(self.topP, 0, wx.ALL, 5)
+			sizer1.Add(self.whisperResponseFormatLabel, 0, wx.ALL, 5)
+			sizer1.Add(self.whisperResponseFormatListBox, 0, wx.ALL, 5)
 			sizer1.Add(self.streamModeCheckBox, 0, wx.ALL, 5)
 			sizer1.Add(self.debugModeCheckBox, 0, wx.ALL, 5)
 
@@ -1733,6 +1750,14 @@ class OpenAIDlg(wx.Dialog):
 			_("Screenshot reception enabled")
 		)
 
+	def getWhisperResponseFormat(self):
+		choiceIndex = 0
+		if self.conf["advancedMode"]:
+			choiceIndex = self.whisperResponseFormatListBox.GetSelection()
+		if choiceIndex == wx.NOT_FOUND:
+			choiceIndex = 0
+		return RESP_AUDIO_FORMATS[choiceIndex]
+
 	def onRecord(self, evt):
 		if self.worker:
 			self.onStopRecord(evt)
@@ -1744,7 +1769,8 @@ class OpenAIDlg(wx.Dialog):
 		self.worker = RecordThread(
 			self.client,
 			self,
-			conf=self.conf["audio"]
+			conf=self.conf["audio"],
+			responseFormat=self.getWhisperResponseFormat()
 		)
 		self.worker.start()
 
@@ -1767,7 +1793,8 @@ class OpenAIDlg(wx.Dialog):
 			self.client,
 			self,
 			fileName,
-			conf=self.conf["audio"]
+			conf=self.conf["audio"],
+			responseFormat=self.getWhisperResponseFormat()
 		)
 		self.worker.start()
 
@@ -1814,6 +1841,7 @@ class OpenAIDlg(wx.Dialog):
 		if self.conf["advancedMode"]:
 			self.temperature.Disable()
 			self.topP.Disable()
+			self.whisperResponseFormatListBox.Disable()
 			self.streamModeCheckBox.Disable()
 			self.debugModeCheckBox.Disable()
 
@@ -1833,6 +1861,7 @@ class OpenAIDlg(wx.Dialog):
 		if self.conf["advancedMode"]:
 			self.temperature.Enable()
 			self.topP.Enable()
+			self.whisperResponseFormatListBox.Enable()
 			self.streamModeCheckBox.Enable()
 			self.debugModeCheckBox.Enable()
 		self.updateImageList(False)
