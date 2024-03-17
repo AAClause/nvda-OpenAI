@@ -635,7 +635,7 @@ class OpenAIDlg(wx.Dialog):
 		modelsLabel = wx.StaticText(
 			parent=self,
 			# Translators: This is the label for the model list box in the main dialog.
-			label=_("&Model:")
+			label=_("M&odel:")
 		)
 		self.modelsListBox = wx.ListBox(
 			parent=self,
@@ -683,7 +683,7 @@ class OpenAIDlg(wx.Dialog):
 			topPLabel = wx.StaticText(
 				parent=self,
 				# Translators: This is the label for the top P spin control in the main dialog.
-				label=_("Probability &Mass (top P):")
+				label=_("Pro&bability Mass (top P):")
 			)
 			self.topPSpinCtrl = wx.SpinCtrl(
 				parent=self,
