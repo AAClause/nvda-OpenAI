@@ -19,17 +19,147 @@ TTS_VOICES = ["alloy", "echo", "fable", "onyx", "nova", "shimmer"]
 TTS_DEFAULT_VOICE = "nova"
 TTS_MODELS = ["tts-1", "tts-1-hd"]
 TTS_DEFAULT_MODEL = "tts-1"
-MODEL_VISION = "gpt-4-vision-preview"
+
+# References:
+# - https://platform.openai.com/docs/models/
+# - https://docs.mistral.ai/platform/endpoints/
+# - https://openrouter.ai/api/v1/models
 MODELS = [
-	Model("gpt-3.5-turbo-1106", _("Updated GPT 3.5 Turbo. The latest GPT-3.5 Turbo model with improved instruction following, JSON mode, reproducible outputs, parallel function calling, and more."), 16385, 4096),
-	Model("gpt-3.5-turbo-0613", _("Same capabilities as the standard gpt-3.5-turbo model but with 4 times the context"), 16384, 4096),
-	Model("gpt-4-0613", _("More capable than any GPT-3.5 model, able to do more complex tasks, and optimized for chat"), 8192),
-	Model("gpt-4-1106-preview", _("The latest GPT-4 model with improved instruction following, JSON mode, reproducible outputs, parallel function calling, and more."), 128000, 4096),
-	Model(MODEL_VISION, _("GPT-4 Turbo with vision. Ability to understand images, in addition to all other GPT-4 Turbo capabilities."), 128000, 4096),
-	Model("gpt-4-32k-0613", _("Same capabilities as the standard gpt-4 mode but with 4x the context length."), 32768, 8192),
+	Model(
+		"OpenAI",
+		"gpt-3.5-turbo",
+		# Translators: This is a model description
+		_("Points to one of the most recent iterations of gpt-3.5 model."),
+		16385,
+		4096
+	),
+	Model(
+		"OpenAI",
+		"gpt-3.5-turbo-0125",
+		# Translators: This is a model description
+		_("The latest GPT-3.5 Turbo model with higher accuracy at responding in requested formats and a fix for a bug which caused a text encoding issue for non-English language function calls."),
+		16385,
+		4096
+	),
+	Model(
+		"OpenAI",
+		"gpt-3.5-turbo-1106",
+		# Translators: This is a model description
+		_("Updated GPT 3.5 Turbo. The latest GPT-3.5 Turbo model with improved instruction following, JSON mode, reproducible outputs, parallel function calling, and more."),
+		16385,
+		4096
+	),
+	Model(
+		"OpenAI",
+		"gpt-3.5-turbo-0613",
+		# Translators: This is a model description
+		_("Same capabilities as the standard gpt-3.5-turbo model but with 4 times the context"),
+		16384,
+		4096
+	),
+	Model(
+		"OpenAI",
+		"gpt-4-turbo-preview",
+		# Translators: This is a model description
+		_("Points to one of the most recent iterations of gpt-4 model."),
+		128000,
+		4096
+	),
+	Model(
+		"OpenAI",
+		"gpt-4-0125-preview",
+		# Translators: This is a model description
+		_("The latest GPT-4 model intended to reduce cases of “laziness” where the model doesn’t complete a task."),
+		128000,
+		4096
+	),
+	Model(
+		"OpenAI",
+		"gpt-4-1106-preview",
+		# Translators: This is a model description
+		_("GPT-4 Turbo model featuring improved instruction following, JSON mode, reproducible outputs, parallel function calling, and more."),
+		128000,
+		4096,
+		preview=True
+	),
+	Model(
+		"OpenAI",
+		"gpt-4-vision-preview",
+		# Translators: This is a model description
+		_("GPT-4 Turbo with vision. Ability to understand images, in addition to all other GPT-4 Turbo capabilities."),
+		128000,
+		4096,
+		vision=True,
+		preview=True
+	),
+	Model(
+		"OpenAI",
+		"gpt-4-0613",
+		# Translators: This is a model description
+		_("More capable than any GPT-3.5 model, able to do more complex tasks, and optimized for chat"),
+		8192
+	),
+	Model(
+		"OpenAI",
+		"gpt-4-32k-0613",
+		# Translators: This is a model description
+		_("Same capabilities as the standard gpt-4 mode but with 4x the context length."),
+		32768,
+		8192
+	),
+	Model(
+		"MistralAI",
+		"open-mistral-7b",
+		# Translators: This is a model description
+		_("aka %s") % "mistral-tiny-2312",
+		32000,
+		maxTemperature=1.0,
+		defaultTemperature=0.7
+	),
+Model(
+		"MistralAI",
+		"open-mixtral-8x7b",
+		# Translators: This is a model description
+		_("aka %s") % "mistral-small-2312",
+		32000,
+		maxTemperature=1.0,
+		defaultTemperature=0.7
+	),
+	Model(
+		"MistralAI",
+		"mistral-small-latest",
+		# Translators: This is a model description
+		_("Simple tasks (Classification, Customer Support, or Text Generation)"),
+		32000,
+		maxTemperature=1.0,
+		defaultTemperature=0.7
+	),
+	Model(
+		"MistralAI",
+		"mistral-medium-latest",
+		# Translators: This is a model description
+		_("Intermediate tasks that require moderate reasoning (Data extraction, Summarizing a Document, Writing emails, Writing a Job Description, or Writing Product Descriptions)"),
+		32000,
+		maxTemperature=1.0,
+		defaultTemperature=0.7
+	),
+	Model(
+		"MistralAI",
+		"mistral-large-latest",
+		# Translators: This is a model description
+		_("Complex tasks that require large reasoning capabilities or are highly specialized (Synthetic Text Generation, Code Generation, RAG, or Agents)"),
+		32000,
+		maxTemperature=1.0,
+		defaultTemperature=0.7
+	)
 ]
 DEFAULT_MODEL = MODELS[0]
-
+DEFAULT_MODEL_VISION = "gpt-4-vision-preview"
+BASE_URLs = {
+	"MistralAI": "https://api.mistral.ai/v1",
+	"OpenAI": "https://api.openai.com/v1",
+	"OpenRouter": "https://openrouter.ai/api/v1"
+}
 DEFAULT_SYSTEM_PROMPT = _(
 	"You are an accessibility assistant integrated in the NVDA screen reader that "
 	"helps blind screen reader users access visual information that may not be accessible "

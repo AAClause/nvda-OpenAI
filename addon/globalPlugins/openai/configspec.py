@@ -1,6 +1,7 @@
 import config
 from .consts import (
 	DEFAULT_MODEL,
+	DEFAULT_MODEL_VISION,
 	DEFAULT_TOP_P,
 	DEFAULT_N,
 	TOP_P_MIN,
@@ -18,8 +19,8 @@ confSpecs = {
 		"check": "boolean(default=True)",
 		"channel": "string(default='stable')"
 	},
-	"use_org": "boolean(default=False)",
 	"model": f"string(default={DEFAULT_MODEL.name})",
+	"modelVision": f"string(default={DEFAULT_MODEL_VISION})",
 	"topP": f"integer(min={TOP_P_MIN}, max={TOP_P_MAX}, default={DEFAULT_TOP_P})",
 	"n": f"integer(min={N_MIN}, max={N_MAX}, default={DEFAULT_N})",
 	"stream": "boolean(default=True)",
@@ -39,6 +40,10 @@ confSpecs = {
 		"customPromptText": 'string(default="")'
 	},
 	"audio": {
+		"whisper.cpp": {
+			"enabled": "boolean(default=False)",
+			"host": "string(default='http://127.0.0.1:8081')"
+		},
 		"sampleRate": "integer(min=8000, max=48000, default=16000)",
 		"channels": "integer(min=1, max=2, default=1)",
 		"dtype": "string(default=int16)"
