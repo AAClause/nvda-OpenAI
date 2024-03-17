@@ -34,7 +34,7 @@ from .imagehelper import (
 	resize_image,
 )
 from .model import getOpenRouterModels
-from .recordthread import RecordThread
+from .recordthread import RecordThread, WhisperTranscription
 from .resultevent import ResultEvent, EVT_RESULT_ID
 
 sys.path.insert(0, LIBS_DIR_PY)
@@ -47,6 +47,12 @@ addonHandler.initTranslation()
 TTS_FILE_NAME = os.path.join(DATA_DIR, "tts.wav")
 DATA_JSON_FP = os.path.join(DATA_DIR, "data.json")
 URL_PATTERN = re.compile(r"^(?:http)s?://(?:[A-Z0-9-]+\.)+[A-Z]{2,6}(?::\d+)?(?:/?|[/?]\S+)$", re.IGNORECASE)
+RESP_AUDIO_FORMATS = ("json", "srt", "vtt")
+RESP_AUDIO_FORMATS_LABELS = (
+	_("Text"),
+	_("SubRip (SRT)"),
+	_("Web Video Text Tracks (VTT)")
+)
 
 addToSession = None
 
@@ -663,6 +669,7 @@ class OpenAIDlg(wx.Dialog):
 			parent=self,
 			min=0
 		)
+
 		mainSizer.Add(maxTokensLabel, 0, wx.ALL, 5)
 		mainSizer.Add(self.maxTokensSpinCtrl, 0, wx.ALL, 5)
 
@@ -693,6 +700,16 @@ class OpenAIDlg(wx.Dialog):
 			)
 			mainSizer.Add(topPLabel, 0, wx.ALL, 5)
 			mainSizer.Add(self.topPSpinCtrl, 0, wx.ALL, 5)
+
+			self.whisperResponseFormatLabel = wx.StaticText(
+				parent=self,
+				label=_("&Whisper Response Format:")
+			)
+			self.whisperResponseFormatListBox = wx.Choice(
+				parent=self,
+				choices=RESP_AUDIO_FORMATS_LABELS
+			)
+			self.whisperResponseFormatListBox.SetSelection(0)
 
 			self.streamModeCheckBox = wx.CheckBox(
 				self,
@@ -1051,9 +1068,13 @@ class OpenAIDlg(wx.Dialog):
 			self.previousPrompt = self.promptTextCtrl.GetValue()
 			self.promptTextCtrl.Clear()
 			return
-
-		if isinstance(event.data, openai.types.audio.transcription.Transcription):
-			self.promptTextCtrl.AppendText(event.data.text)
+		if isinstance(event.data, (
+			openai.types.audio.transcription.Transcription,
+			WhisperTranscription
+		)):
+			self.promptText.AppendText(
+				event.data.text if event.data.text else ""
+			)
 			self.promptTextCtrl.SetFocus()
 			self.promptTextCtrl.SetInsertionPointEnd()
 			self.message(
@@ -1766,6 +1787,14 @@ class OpenAIDlg(wx.Dialog):
 			_("Screenshot reception enabled")
 		)
 
+	def getWhisperResponseFormat(self):
+		choiceIndex = 0
+		if self.conf["advancedMode"]:
+			choiceIndex = self.whisperResponseFormatListBox.GetSelection()
+		if choiceIndex == wx.NOT_FOUND:
+			choiceIndex = 0
+		return RESP_AUDIO_FORMATS[choiceIndex]
+
 	def onRecord(self, evt):
 		if self.worker:
 			self.onStopRecord(evt)
@@ -1777,7 +1806,8 @@ class OpenAIDlg(wx.Dialog):
 		self.worker = RecordThread(
 			self.client,
 			self,
-			conf=self.conf["audio"]
+			conf=self.conf["audio"],
+			responseFormat=self.getWhisperResponseFormat()
 		)
 		self.worker.start()
 
@@ -1799,7 +1829,9 @@ class OpenAIDlg(wx.Dialog):
 		self.worker = RecordThread(
 			self.client,
 			self,
-			fileName
+			fileName,
+			conf=self.conf["audio"],
+			responseFormat=self.getWhisperResponseFormat()
 		)
 		self.worker.start()
 
@@ -1846,6 +1878,7 @@ class OpenAIDlg(wx.Dialog):
 		if self.conf["advancedMode"]:
 			self.temperatureSpinCtrl.Disable()
 			self.topPSpinCtrl.Disable()
+			self.whisperResponseFormatListBox.Disable()
 			self.streamModeCheckBox.Disable()
 			self.debugModeCheckBox.Disable()
 
@@ -1865,6 +1898,7 @@ class OpenAIDlg(wx.Dialog):
 		if self.conf["advancedMode"]:
 			self.temperatureSpinCtrl.Enable()
 			self.topPSpinCtrl.Enable()
+			self.whisperResponseFormatListBox.Enable()
 			self.streamModeCheckBox.Enable()
 			self.debugModeCheckBox.Enable()
 		self.updateImageList(False)

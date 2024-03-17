@@ -282,9 +282,42 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 
 		sHelper.addItem(imageSizer)
 
+		# Translators: This is the name of a group of settings
+		whisperGroupLabel = _("Recording")
+		whisperSizer = wx.StaticBoxSizer(wx.VERTICAL, self, label=whisperGroupLabel)
+		whisperBox = whisperSizer.GetStaticBox()
+		whisperGroup = gui.guiHelper.BoxSizerHelper(self, sizer=whisperSizer)
+
+		# Translators: This is the name of a setting in the Recording group
+		label = _("Use &whisper.cpp for transcription")
+		self.whisperCheckbox = whisperGroup.addItem(
+			wx.CheckBox(
+				whisperBox,
+				label=label,
+			)
+		)
+		self.whisperCheckbox.SetValue(
+			conf["audio"]["whisper.cpp"]["enabled"]
+		)
+		self.whisperCheckbox.Bind(
+			wx.EVT_CHECKBOX,
+			self.onWhisperCheckbox
+		)
+
+		# Translators: This is the name of a setting in the Recording group
+		label = _("&Host:")
+		self.whisperHost = whisperGroup.addLabeledControl(
+			label,
+			wx.TextCtrl,
+			value=conf["audio"]["whisper.cpp"]["host"]
+		)
+
+		sHelper.addItem(whisperSizer)
+
 		sHelper.addItem(mainDialogSizer)
 
 		self.onResize(None)
+		self.onWhisperCheckbox(None)
 
 	def onAPIKeys(self, evt):
 		provider_name = evt.GetEventObject().GetName()
@@ -308,6 +341,12 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 		self.maxWidth.Enable(self.resize.GetValue())
 		self.maxHeight.Enable(self.resize.GetValue())
 		self.quality.Enable(self.resize.GetValue())
+
+	def onWhisperCheckbox(self, evt):
+		self.whisperHost.Enable(
+			self.whisperCheckbox.GetValue()
+		)
+
 	def onDefaultPrompt(self, evt):
 		if self.useCustomPrompt.GetValue():
 			self.customPromptText.Enable()
@@ -335,6 +374,9 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 			conf["images"]["customPromptText"] = self.customPromptText.GetValue()
 		else:
 			conf["images"]["useCustomPrompt"] = False
+		conf["audio"]["whisper.cpp"]["enabled"] = self.whisperCheckbox.GetValue()
+		conf["audio"]["whisper.cpp"]["host"] = self.whisperHost.GetValue()
+
 
 
 class GlobalPlugin(globalPluginHandler.GlobalPlugin):
@@ -345,7 +387,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		super().__init__()
 		gui.settingsDialogs.NVDASettingsDialog.categoryClasses.append(SettingsDlg)
 		self.client = None
-		self.recordtThread = None
+		self.recordThread = None
 		self.createMenu()
 		apikeymanager.load(DATA_DIR)
 		log.info(
@@ -602,12 +644,12 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 	def script_toggleRecording(self, gesture):
 		if not self.getClient():
 			return ui.message(NO_AUTHENTICATION_KEY_PROVIDED_MSG)
-		if self.recordtThread:
-			self.recordtThread.stop()
-			self.recordtThread = None
+		if self.recordThread:
+			self.recordThread.stop()
+			self.recordThread = None
 		else:
-			self.recordtThread = RecordThread(
+			self.recordThread = RecordThread(
 				self.getClient(),
 				conf=conf["audio"]
 			)
-			self.recordtThreadg.start()
+			self.recordThread.start()
