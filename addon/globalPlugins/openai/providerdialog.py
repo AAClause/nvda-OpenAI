@@ -172,7 +172,7 @@ class ProviderDialog(wx.Dialog):
 		if self.provider.require_api_key:
 			self.txtAPIKey.SetFocus()
 		else:
-			self.modelList.SetFocus()
+			self.txtBaseURL.SetFocus()
 
 		btnsizer = wx.StdDialogButtonSizer()
 		btnOK = wx.Button(pnl, wx.ID_OK)

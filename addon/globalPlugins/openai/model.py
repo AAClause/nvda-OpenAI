@@ -206,25 +206,41 @@ def get_models(provider_name):
 	elif provider_name == "MistralAI":
 		models = [
 			Model(
-				"mistral-tiny",
+				"open-mistral-7b",
 				# Translators: This is a model description
-				_("Used for large batch processing tasks where cost is a significant factor but reasoning capabilities are not crucial. Uses the Mistral API."),
+				_("aka %s") % "mistral-tiny-2312",
 				32000,
 				maxTemperature=1.0,
 				defaultTemperature=0.7
 			),
 			Model(
-				"mistral-small",
+				"open-mixtral-8x7b",
 				# Translators: This is a model description
-				_("Higher reasoning capabilities and more capabilities. Use the Mistral API."),
+				_("aka %s") % "mistral-small-2312",
 				32000,
 				maxTemperature=1.0,
 				defaultTemperature=0.7
 			),
 			Model(
-				"mistral-medium",
+				"mistral-small-latest",
 				# Translators: This is a model description
-				_("Internal prototype model. Uses the Mistral API."),
+				_("Simple tasks (Classification, Customer Support, or Text Generation)"),
+				32000,
+				maxTemperature=1.0,
+				defaultTemperature=0.7
+			),
+			Model(
+				"mistral-medium-latest",
+				# Translators: This is a model description
+				_("Intermediate tasks that require moderate reasoning (Data extraction, Summarizing a Document, Writing emails, Writing a Job Description, or Writing Product Descriptions)"),
+				32000,
+				maxTemperature=1.0,
+				defaultTemperature=0.7
+			),
+			Model(
+				"mistral-large-latest",
+				# Translators: This is a model description
+				_("Complex tasks that require large reasoning capabilities or are highly specialized (Synthetic Text Generation, Code Generation, RAG, or Agents)"),
 				32000,
 				maxTemperature=1.0,
 				defaultTemperature=0.7

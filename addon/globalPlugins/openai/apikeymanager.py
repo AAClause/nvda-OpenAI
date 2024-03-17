@@ -118,7 +118,7 @@ class Provider:
 		else:
 			self.api_key = key
 
-	def ready(self):
+	def isReady(self):
 		return (
 			self.base_url
 			and self.base_url.startswith("http")
@@ -158,4 +158,4 @@ def get(
 
 
 def getReadyProviders():
-	return [_managers[provider] for provider in _managers if _managers[provider].ready()]
+	return [_managers[provider] for provider in _managers if _managers[provider].isReady()]

@@ -35,7 +35,7 @@ from .imagehelper import (
 	resize_image,
 )
 from .model import get_models
-from .recordthread import RecordThread
+from .recordthread import RecordThread, WhisperTranscription
 from .resultevent import ResultEvent, EVT_RESULT_ID
 
 sys.path.insert(0, LIBS_DIR_PY)
@@ -47,6 +47,12 @@ addonHandler.initTranslation()
 
 TTS_FILE_NAME = os.path.join(DATA_DIR, "tts.wav")
 URL_PATTERN = re.compile(r"^(?:http)s?://(?:[A-Z0-9-]+\.)+[A-Z]{2,6}(?::\d+)?(?:/?|[/?]\S+)$", re.IGNORECASE)
+RESP_AUDIO_FORMATS = ("json", "srt", "vtt")
+RESP_AUDIO_FORMATS_LABELS = (
+	_("Text"),
+	_("SubRip (SRT)"),
+	_("Web Video Text Tracks (VTT)")
+)
 
 addToSession = None
 
@@ -153,7 +159,7 @@ class CompletionThread(threading.Thread):
 		block.prompt = prompt
 		model = wnd.getCurrentModel()
 		block.model = model.id
-		conf["model"] = model.id
+		conf["modelVision" if model.vision else "model"] = model.id
 		stream = conf["stream"]
 		debug = conf["debug"]
 		maxTokens = wnd.maxTokens.GetValue()
@@ -259,10 +265,10 @@ class CompletionThread(threading.Thread):
 			messages.append({"role": "system", "content": system})
 		wnd.getMessages(messages)
 		if wnd.pathList:
-			images = wnd.getImages()
+			images = wnd.getImages(prompt=prompt)
 			if images:
 				messages.append({"role": "user", "content": images})
-		if prompt:
+		elif prompt:
 			messages.append({"role": "user", "content": prompt})
 		return messages
 
@@ -507,7 +513,7 @@ class OpenAIDlg(wx.Dialog):
 			self.data.pop("system", None)
 		l = []
 		for manager in apikeymanager._managers.values():
-			if not manager.ready():
+			if not manager.isReady():
 				continue
 			e = manager.name
 			organization = manager.get_api_key(use_org=True)
@@ -602,8 +608,10 @@ class OpenAIDlg(wx.Dialog):
 			choices=models,
 			style=wx.LB_SINGLE | wx.LB_HSCROLL | wx.LB_NEEDED_SB
 		)
-		model = DEFAULT_MODEL_VISION if self.pathList else conf["model"]
-		idx = list(self._model_ids).index(model) if model in self._model_ids else 0
+		model = conf["modelVision" if self.pathList else "model"]
+		idx = list(self._model_ids).index(model) if model in self._model_ids else (
+			list(self._model_ids).index(DEFAULT_MODEL_VISION) if self.pathList else 0
+		)
 		self.modelListBox.SetSelection(idx)
 		self.modelListBox.Bind(wx.EVT_LISTBOX, self.onModelChange)
 		self.modelListBox.Bind(wx.EVT_KEY_DOWN, self.onModelKeyDown)
@@ -617,7 +625,6 @@ class OpenAIDlg(wx.Dialog):
 			parent=self,
 			min=0
 		)
-
 		if conf["advancedMode"]:
 			temperatureLabel = wx.StaticText(
 				parent=self,
@@ -637,6 +644,16 @@ class OpenAIDlg(wx.Dialog):
 				max=TOP_P_MAX,
 				initial=conf["topP"]
 			)
+
+			self.whisperResponseFormatLabel = wx.StaticText(
+				parent=self,
+				label=_("&Whisper Response Format:")
+			)
+			self.whisperResponseFormatListBox = wx.Choice(
+				parent=self,
+				choices=RESP_AUDIO_FORMATS_LABELS
+			)
+			self.whisperResponseFormatListBox.SetSelection(0)
 
 			self.streamModeCheckBox = wx.CheckBox(
 				parent=self,
@@ -670,6 +687,8 @@ class OpenAIDlg(wx.Dialog):
 			sizer1.Add(self.temperature, 0, wx.ALL, 5)
 			sizer1.Add(topPLabel, 0, wx.ALL, 5)
 			sizer1.Add(self.topP, 0, wx.ALL, 5)
+			sizer1.Add(self.whisperResponseFormatLabel, 0, wx.ALL, 5)
+			sizer1.Add(self.whisperResponseFormatListBox, 0, wx.ALL, 5)
 			sizer1.Add(self.streamModeCheckBox, 0, wx.ALL, 5)
 			sizer1.Add(self.debugModeCheckBox, 0, wx.ALL, 5)
 
@@ -885,7 +904,7 @@ class OpenAIDlg(wx.Dialog):
 				wx.OK | wx.ICON_ERROR
 			)
 			return
-		if not apikeymanager.get(model.provider).ready():
+		if not apikeymanager.get(model.provider).isReady():
 			gui.messageBox(
 				_("This model is only available with the %s provider. Please provide an API key for this provider in the add-on settings. Otherwise, please select another model with a different provider.") % (
 					model.provider
@@ -995,8 +1014,13 @@ class OpenAIDlg(wx.Dialog):
 			self.promptText.Clear()
 			return
 
-		if isinstance(event.data, openai.types.audio.transcription.Transcription):
-			self.promptText.AppendText(event.data.text)
+		if isinstance(event.data, (
+			openai.types.audio.transcription.Transcription,
+			WhisperTranscription
+		)):
+			self.promptText.AppendText(
+				event.data.text if event.data.text else ""
+			)
 			self.promptText.SetFocus()
 			self.promptText.SetInsertionPointEnd()
 			self.message(
@@ -1112,12 +1136,18 @@ class OpenAIDlg(wx.Dialog):
 
 	def getImages(
 		self,
-		pathList: list = None
+		pathList: list = None,
+		prompt: str = None
 	) -> list:
 		conf = self.conf
 		if not pathList:
 			pathList = self.pathList
 		images = []
+		if prompt:
+			images.append({
+				"type": "text",
+				"text": prompt
+			})
 		for imageFile in pathList:
 			path = imageFile.path
 			log.debug(f"Processing {path}")
@@ -1158,15 +1188,9 @@ class OpenAIDlg(wx.Dialog):
 		while block:
 			userContent = []
 			if block.pathList:
-				userContent.extend(self.getImages(block.pathList))
-				if block.prompt:
-					userContent.append({
-						"type": "text",
-						"text": block.prompt
-					})
-			else:
-				if block.prompt:
-					userContent = block.prompt
+				userContent.extend(self.getImages(block.pathList, block.prompt))
+			elif block.prompt:
+				userContent = block.prompt
 			if userContent:
 				messages.append({
 					"role": "user",
@@ -1493,7 +1517,7 @@ class OpenAIDlg(wx.Dialog):
 		Select the model for image description.
 		"""
 		self.modelListBox.SetSelection(
-			self._model_ids.index(DEFAULT_MODEL_VISION)
+			self._model_ids.index(self.conf["modelVision"])
 		)
 		self.imageListCtrl.SetSelection(evt.GetSelection())
 		evt.Skip()
@@ -1599,9 +1623,9 @@ class OpenAIDlg(wx.Dialog):
 					wx.OK | wx.ICON_ERROR
 				)
 		model = self.getCurrentModel()
-		if model.vision:
+		if not model.vision:
 			self.modelListBox.SetSelection(
-				self._model_ids.index(DEFAULT_MODEL_VISION)
+				self._model_ids.index(self.conf["modelVision"])
 			)
 		if not self.promptText.GetValue().strip():
 			self.promptText.SetValue(
@@ -1686,7 +1710,7 @@ class OpenAIDlg(wx.Dialog):
 			)
 		)
 		self.modelListBox.SetSelection(
-			self._model_ids.index(DEFAULT_MODEL_VISION)
+			self._model_ids.index(self.conf["modelVision"])
 		)
 		if not self.promptText.GetValue().strip():
 			self.promptText.SetValue(
@@ -1710,6 +1734,14 @@ class OpenAIDlg(wx.Dialog):
 			_("Screenshot reception enabled")
 		)
 
+	def getWhisperResponseFormat(self):
+		choiceIndex = 0
+		if self.conf["advancedMode"]:
+			choiceIndex = self.whisperResponseFormatListBox.GetSelection()
+		if choiceIndex == wx.NOT_FOUND:
+			choiceIndex = 0
+		return RESP_AUDIO_FORMATS[choiceIndex]
+
 	def onRecord(self, evt):
 		if self.worker:
 			self.onStopRecord(evt)
@@ -1721,7 +1753,8 @@ class OpenAIDlg(wx.Dialog):
 		self.worker = RecordThread(
 			self.client,
 			self,
-			conf=self.conf["audio"]
+			conf=self.conf["audio"],
+			responseFormat=self.getWhisperResponseFormat()
 		)
 		self.worker.start()
 
@@ -1743,7 +1776,9 @@ class OpenAIDlg(wx.Dialog):
 		self.worker = RecordThread(
 			self.client,
 			self,
-			fileName
+			fileName,
+			conf=self.conf["audio"],
+			responseFormat=self.getWhisperResponseFormat()
 		)
 		self.worker.start()
 
@@ -1790,6 +1825,7 @@ class OpenAIDlg(wx.Dialog):
 		if self.conf["advancedMode"]:
 			self.temperature.Disable()
 			self.topP.Disable()
+			self.whisperResponseFormatListBox.Disable()
 			self.streamModeCheckBox.Disable()
 			self.debugModeCheckBox.Disable()
 
@@ -1809,6 +1845,7 @@ class OpenAIDlg(wx.Dialog):
 		if self.conf["advancedMode"]:
 			self.temperature.Enable()
 			self.topP.Enable()
+			self.whisperResponseFormatListBox.Enable()
 			self.streamModeCheckBox.Enable()
 			self.debugModeCheckBox.Enable()
 		self.updateImageList(False)

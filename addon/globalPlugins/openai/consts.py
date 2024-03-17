@@ -19,7 +19,7 @@ TTS_VOICES = ["alloy", "echo", "fable", "onyx", "nova", "shimmer"]
 TTS_DEFAULT_VOICE = "nova"
 TTS_MODELS = ["tts-1", "tts-1-hd"]
 TTS_DEFAULT_MODEL = "tts-1"
-
+DEFAULT_MODEL = "gpt-3.5-turbo"
 DEFAULT_MODEL_VISION = "gpt-4-vision-preview"
 DEFAULT_SYSTEM_PROMPT = _(
 	"You are an accessibility assistant integrated in the NVDA screen reader that "
