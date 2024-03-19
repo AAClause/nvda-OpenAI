@@ -435,6 +435,10 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 			conf["chatFeedback"][key] = item.GetValue()
 
 
+		for key, item in self.chatFeedback.items():
+			conf["chatFeedback"][key] = item.GetValue()
+
+
 class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 
 	scriptCategory = "Open AI"

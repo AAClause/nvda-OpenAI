@@ -51,12 +51,6 @@ addonHandler.initTranslation()
 TTS_FILE_NAME = os.path.join(DATA_DIR, "tts.wav")
 DATA_JSON_FP = os.path.join(DATA_DIR, "data.json")
 URL_PATTERN = re.compile(r"^(?:http)s?://(?:[A-Z0-9-]+\.)+[A-Z]{2,6}(?::\d+)?(?:/?|[/?]\S+)$", re.IGNORECASE)
-RESP_AUDIO_FORMATS = ("json", "srt", "vtt")
-RESP_AUDIO_FORMATS_LABELS = (
-	_("Text"),
-	_("SubRip (SRT)"),
-	_("Web Video Text Tracks (VTT)")
-)
 SND_CHAT_RESPONSE_PENDING = os.path.join(
 	ADDON_DIR, "sounds", "chatResponsePending.wav"
 )
@@ -69,9 +63,14 @@ SND_CHAT_RESPONSE_SENT = os.path.join(
 SND_PROGRESS = os.path.join(
 	ADDON_DIR, "sounds", "progress.wav"
 )
-
 # Translators: This is a message emitted by the add-on when an operation is in progress.
 PROCESSING_MSG = _("Please wait...")
+RESP_AUDIO_FORMATS = ("json", "srt", "vtt")
+RESP_AUDIO_FORMATS_LABELS = (
+	_("Text"),
+	_("SubRip (SRT)"),
+	_("Web Video Text Tracks (VTT)")
+)
 
 addToSession = None
 
@@ -670,15 +669,6 @@ class OpenAIDlg(wx.Dialog):
 			parent=self,
 			min=0
 		)
-		self.whisperResponseFormatLabel = wx.StaticText(
-			parent=self,
-			label=_("&Whisper Response Format:")
-		)
-		self.whisperResponseFormatListBox = wx.Choice(
-			parent=self,
-			choices=RESP_AUDIO_FORMATS_LABELS
-		)
-		self.whisperResponseFormatListBox.SetSelection(0)
 
 		if conf["advancedMode"]:
 			temperatureLabel = wx.StaticText(
@@ -699,6 +689,16 @@ class OpenAIDlg(wx.Dialog):
 				max=TOP_P_MAX,
 				initial=conf["topP"]
 			)
+
+			self.whisperResponseFormatLabel = wx.StaticText(
+				parent=self,
+				label=_("&Whisper Response Format:")
+			)
+			self.whisperResponseFormatListBox = wx.Choice(
+				parent=self,
+				choices=RESP_AUDIO_FORMATS_LABELS
+			)
+			self.whisperResponseFormatListBox.SetSelection(0)
 
 			self.streamModeCheckBox = wx.CheckBox(
 				parent=self,
@@ -727,13 +727,13 @@ class OpenAIDlg(wx.Dialog):
 		sizer1.Add(self.modelListBox, 0, wx.ALL, 5)
 		sizer1.Add(maxTokensLabel, 0, wx.ALL, 5)
 		sizer1.Add(self.maxTokens, 0, wx.ALL, 5)
-		sizer1.Add(self.whisperResponseFormatLabel, 0, wx.ALL, 5)
-		sizer1.Add(self.whisperResponseFormatListBox, 0, wx.ALL, 5)
 		if conf["advancedMode"]:
 			sizer1.Add(temperatureLabel, 0, wx.ALL, 5)
 			sizer1.Add(self.temperature, 0, wx.ALL, 5)
 			sizer1.Add(topPLabel, 0, wx.ALL, 5)
 			sizer1.Add(self.topP, 0, wx.ALL, 5)
+			sizer1.Add(self.whisperResponseFormatLabel, 0, wx.ALL, 5)
+			sizer1.Add(self.whisperResponseFormatListBox, 0, wx.ALL, 5)
 			sizer1.Add(self.streamModeCheckBox, 0, wx.ALL, 5)
 			sizer1.Add(self.debugModeCheckBox, 0, wx.ALL, 5)
 
@@ -1851,12 +1851,12 @@ class OpenAIDlg(wx.Dialog):
 		)
 
 	def getWhisperResponseFormat(self):
-		choiceIndex = self.whisperResponseFormatListBox.GetSelection()
+		choiceIndex = 0
+		if self.conf["advancedMode"]:
+			choiceIndex = self.whisperResponseFormatListBox.GetSelection()
 		if choiceIndex == wx.NOT_FOUND:
 			choiceIndex = 0
-		return RESP_AUDIO_FORMATS[
-			choiceIndex
-		]
+		return RESP_AUDIO_FORMATS[choiceIndex]
 
 	def onRecord(self, evt):
 		if self.worker:
@@ -1938,6 +1938,7 @@ class OpenAIDlg(wx.Dialog):
 		if self.conf["advancedMode"]:
 			self.temperature.Disable()
 			self.topP.Disable()
+			self.whisperResponseFormatListBox.Disable()
 			self.streamModeCheckBox.Disable()
 			self.debugModeCheckBox.Disable()
 
@@ -1952,10 +1953,10 @@ class OpenAIDlg(wx.Dialog):
 		self.systemText.SetEditable(True)
 		self.promptText.SetEditable(True)
 		self.imageListCtrl.Enable()
-		self.whisperResponseFormatListBox.Enable()
 		if self.conf["advancedMode"]:
 			self.temperature.Enable()
 			self.topP.Enable()
+			self.whisperResponseFormatListBox.Enable()
 			self.streamModeCheckBox.Enable()
 			self.debugModeCheckBox.Enable()
 		self.updateImageList(False)

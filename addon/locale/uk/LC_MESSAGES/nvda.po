@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: nvda-translations@groups.io\n"
-"POT-Creation-Date: 2024-03-12 23:22+0100\n"
-"PO-Revision-Date: 2024-03-13 19:42+0200\n"
+"POT-Creation-Date: 2024-03-14 23:36+0100\n"
+"PO-Revision-Date: 2024-03-15 08:06+0200\n"
 "Last-Translator: Heorhii Halas <nvda.translation.uk@gmail.com>\n"
 "Language-Team: Heorhi Halas\n"
 "Language: uk\n"
@@ -333,27 +333,39 @@ msgstr ""
 
 #. Translators: This is a model description
 #: addon\globalPlugins\openai\consts.py:114
-msgid ""
-"Used for large batch processing tasks where cost is a significant factor but "
-"reasoning capabilities are not crucial. Uses the Mistral API."
-msgstr ""
-"Використовується для великих завдань пакетної обробки, де вартість є "
-"важливим фактором, але можливості міркування не мають вирішального значення. "
-"Використовує Mistral API."
-
-#. Translators: This is a model description
 #: addon\globalPlugins\openai\consts.py:123
-msgid ""
-"Higher reasoning capabilities and more capabilities. Use the Mistral API."
-msgstr ""
-"Вищі можливості міркування та більше можливостей. Використовуйте Mistral API."
+#, python-format
+msgid "aka %s"
+msgstr "також відомий як %s"
 
 #. Translators: This is a model description
 #: addon\globalPlugins\openai\consts.py:132
-msgid "Internal prototype model. Uses the Mistral API."
-msgstr "Внутрішній прототип моделі. Використовує Mistral API."
+msgid "Simple tasks (Classification, Customer Support, or Text Generation)"
+msgstr ""
+"Прості завдання (класифікація, підтримка клієнтів або генерація тексту)"
 
-#: addon\globalPlugins\openai\consts.py:146
+#. Translators: This is a model description
+#: addon\globalPlugins\openai\consts.py:141
+msgid ""
+"Intermediate tasks that require moderate reasoning (Data extraction, "
+"Summarizing a Document, Writing emails, Writing a Job Description, or "
+"Writing Product Descriptions)"
+msgstr ""
+"Проміжні завдання, які вимагають поміркованих обґрунтувань (витяг даних, "
+"узагальнення документа, написання електронних листів, написання посадових "
+"інструкцій або опис продукту)"
+
+#. Translators: This is a model description
+#: addon\globalPlugins\openai\consts.py:150
+msgid ""
+"Complex tasks that require large reasoning capabilities or are highly "
+"specialized (Synthetic Text Generation, Code Generation, RAG, or Agents)"
+msgstr ""
+"Складні завдання, які вимагають великих можливостей міркування або є "
+"вузькоспеціалізованими (генерація синтетичного тексту, генерація коду, RAG "
+"або агенти)"
+
+#: addon\globalPlugins\openai\consts.py:164
 msgid ""
 "You are an accessibility assistant integrated in the NVDA screen reader that "
 "helps blind screen reader users access visual information that may not be "
@@ -422,10 +434,8 @@ msgstr ""
 "unless the user specifically ask you."
 
 #: addon\globalPlugins\openai\maindialog.py:56
-#, fuzzy
-#| msgid "Text file"
 msgid "Text"
-msgstr "Текстовий файл"
+msgstr "Текст"
 
 #: addon\globalPlugins\openai\maindialog.py:57
 msgid "SubRip (SRT)"
@@ -465,7 +475,7 @@ msgstr "Режим &розмови"
 
 #: addon\globalPlugins\openai\maindialog.py:580
 msgid "S&ystem:"
-msgstr "S&ystem:"
+msgstr "&Системна підказка:"
 
 #: addon\globalPlugins\openai\maindialog.py:597
 msgid "&History:"
@@ -525,7 +535,7 @@ msgid "&Debug mode"
 msgstr "&Режим налагодження"
 
 #: addon\globalPlugins\openai\maindialog.py:742
-#: addon\globalPlugins\openai\maindialog.py:1924
+#: addon\globalPlugins\openai\maindialog.py:1918
 msgid "Start &recording"
 msgstr "&Почати запис"
 
@@ -659,150 +669,150 @@ msgstr "Користувач:"
 msgid "Assistant:"
 msgstr "Помічник:"
 
-#: addon\globalPlugins\openai\maindialog.py:1303
+#: addon\globalPlugins\openai\maindialog.py:1297
 msgid "Begin"
 msgstr "Початок"
 
-#: addon\globalPlugins\openai\maindialog.py:1323
+#: addon\globalPlugins\openai\maindialog.py:1317
 msgid "End"
 msgstr "Кінець"
 
-#: addon\globalPlugins\openai\maindialog.py:1364
+#: addon\globalPlugins\openai\maindialog.py:1358
 #, python-format
 msgid "Response copied to system: %s"
 msgstr "Відповідь скопійовано до system: %s"
 
-#: addon\globalPlugins\openai\maindialog.py:1373
+#: addon\globalPlugins\openai\maindialog.py:1367
 msgid "Copied to prompt"
 msgstr "Скопійовано до запиту"
 
-#: addon\globalPlugins\openai\maindialog.py:1377
+#: addon\globalPlugins\openai\maindialog.py:1371
 msgid "Copy"
 msgstr "Копіювати"
 
-#: addon\globalPlugins\openai\maindialog.py:1385
+#: addon\globalPlugins\openai\maindialog.py:1379
 msgid "Copy prompt"
 msgstr "Копіювати запит"
 
-#: addon\globalPlugins\openai\maindialog.py:1388
+#: addon\globalPlugins\openai\maindialog.py:1382
 msgid "Copy response"
 msgstr "Копіювати відповідь"
 
-#: addon\globalPlugins\openai\maindialog.py:1395
+#: addon\globalPlugins\openai\maindialog.py:1389
 msgid "as formatted HTML"
 msgstr "як форматований HTML"
 
-#: addon\globalPlugins\openai\maindialog.py:1421
+#: addon\globalPlugins\openai\maindialog.py:1415
 msgid "Block deleted"
 msgstr "Блокування видалено"
 
-#: addon\globalPlugins\openai\maindialog.py:1454
+#: addon\globalPlugins\openai\maindialog.py:1448
 msgid "Save history"
 msgstr "Зберегти історію"
 
-#: addon\globalPlugins\openai\maindialog.py:1456
+#: addon\globalPlugins\openai\maindialog.py:1450
 msgid "Text file"
 msgstr "Текстовий файл"
 
-#: addon\globalPlugins\openai\maindialog.py:1467
+#: addon\globalPlugins\openai\maindialog.py:1461
 msgid "History saved"
 msgstr "Історію збережено"
 
-#: addon\globalPlugins\openai\maindialog.py:1472
+#: addon\globalPlugins\openai\maindialog.py:1466
 msgid "Reset to default"
 msgstr "Скинути до початкових"
 
-#: addon\globalPlugins\openai\maindialog.py:1482
+#: addon\globalPlugins\openai\maindialog.py:1476
 msgid "Show message in web view as formatted HTML"
 msgstr "Показати повідомлення у веб-перегляді як форматований HTML"
 
-#: addon\globalPlugins\openai\maindialog.py:1485
+#: addon\globalPlugins\openai\maindialog.py:1479
 msgid "Show message in web view as HTML source"
 msgstr "Показати повідомлення у веб-перегляді як джерело HTML"
 
-#: addon\globalPlugins\openai\maindialog.py:1488
+#: addon\globalPlugins\openai\maindialog.py:1482
 msgid "Copy message as plain text"
 msgstr "Копіювати повідомлення як звичайний текст"
 
-#: addon\globalPlugins\openai\maindialog.py:1491
+#: addon\globalPlugins\openai\maindialog.py:1485
 msgid "Copy message as formatted HTML"
 msgstr "Копіювати повідомлення як форматований HTML"
 
-#: addon\globalPlugins\openai\maindialog.py:1494
+#: addon\globalPlugins\openai\maindialog.py:1488
 msgid "Copy response to system"
 msgstr "Копіювати відповідь до system"
 
-#: addon\globalPlugins\openai\maindialog.py:1497
+#: addon\globalPlugins\openai\maindialog.py:1491
 msgid "Copy prompt to prompt"
 msgstr "Копіювати запит до запиту"
 
-#: addon\globalPlugins\openai\maindialog.py:1500
+#: addon\globalPlugins\openai\maindialog.py:1494
 msgid "Delete block"
 msgstr "Видалити блок"
 
-#: addon\globalPlugins\openai\maindialog.py:1503
+#: addon\globalPlugins\openai\maindialog.py:1497
 msgid "Save history as text file"
 msgstr "Зберегти історію у текстовий файл"
 
-#: addon\globalPlugins\openai\maindialog.py:1506
+#: addon\globalPlugins\openai\maindialog.py:1500
 msgid "Say message"
 msgstr "Промовити повідомлення"
 
-#: addon\globalPlugins\openai\maindialog.py:1509
+#: addon\globalPlugins\openai\maindialog.py:1503
 msgid "Move to previous message"
 msgstr "Перейти до попереднього повідомлення"
 
-#: addon\globalPlugins\openai\maindialog.py:1512
+#: addon\globalPlugins\openai\maindialog.py:1506
 msgid "Move to next message"
 msgstr "Перейти до наступного повідомлення"
 
-#: addon\globalPlugins\openai\maindialog.py:1523
+#: addon\globalPlugins\openai\maindialog.py:1517
 msgid "Insert previous prompt"
 msgstr "Вставити попередній запит"
 
-#: addon\globalPlugins\openai\maindialog.py:1533
+#: addon\globalPlugins\openai\maindialog.py:1527
 msgid "Show model details"
 msgstr "Показати деталі моделі"
 
-#: addon\globalPlugins\openai\maindialog.py:1588
+#: addon\globalPlugins\openai\maindialog.py:1582
 msgid "From f&ile path..."
 msgstr "&Зі шляху до файлу..."
 
-#: addon\globalPlugins\openai\maindialog.py:1592
+#: addon\globalPlugins\openai\maindialog.py:1586
 msgid "From &URL..."
 msgstr "З &URL..."
 
-#: addon\globalPlugins\openai\maindialog.py:1596
+#: addon\globalPlugins\openai\maindialog.py:1590
 msgid "From &screenshot"
 msgstr "Зі &знімка екрана"
 
-#: addon\globalPlugins\openai\maindialog.py:1618
+#: addon\globalPlugins\openai\maindialog.py:1612
 msgid "&Remove selected images"
 msgstr "&Видалити вибрані зображення"
 
-#: addon\globalPlugins\openai\maindialog.py:1621
+#: addon\globalPlugins\openai\maindialog.py:1615
 msgid "Remove &all images"
 msgstr "Видалити &всі зображення"
 
-#: addon\globalPlugins\openai\maindialog.py:1625
+#: addon\globalPlugins\openai\maindialog.py:1619
 msgid "Add from f&ile path..."
 msgstr "&Додати зі шляху до файлу..."
 
-#: addon\globalPlugins\openai\maindialog.py:1628
+#: addon\globalPlugins\openai\maindialog.py:1622
 msgid "Add from &URL..."
 msgstr "Додати з &URL..."
 
 #. Translators: This is a message displayed in a dialog to select one or more images.
-#: addon\globalPlugins\openai\maindialog.py:1725
+#: addon\globalPlugins\openai\maindialog.py:1719
 msgid "Select image files"
 msgstr "Вибрати файли зображень"
 
-#: addon\globalPlugins\openai\maindialog.py:1727
+#: addon\globalPlugins\openai\maindialog.py:1721
 msgid "Image files"
 msgstr "Файли зображень"
 
 #. Translators: This message is displayed when the image has already been added.
-#: addon\globalPlugins\openai\maindialog.py:1743
+#: addon\globalPlugins\openai\maindialog.py:1737
 #, python-format
 msgid ""
 "The following image has already been added and will be ignored:\n"
@@ -812,50 +822,50 @@ msgstr ""
 "%s"
 
 #. Translators: This is a message displayed in a dialog to enter an image URL.
-#: addon\globalPlugins\openai\maindialog.py:1765
+#: addon\globalPlugins\openai\maindialog.py:1759
 msgid "Enter image URL"
 msgstr "Введіть URL зображення"
 
-#: addon\globalPlugins\openai\maindialog.py:1779
+#: addon\globalPlugins\openai\maindialog.py:1773
 msgid "Invalid URL, bad format."
 msgstr "Недійсна URL-адреса, неправильний формат."
 
 #. Translators: This message is displayed when the image URL returns an HTTP error.
-#: addon\globalPlugins\openai\maindialog.py:1790
+#: addon\globalPlugins\openai\maindialog.py:1784
 #, python-format
 msgid "HTTP error %s."
 msgstr "Помилка HTTP %s."
 
 #. Translators: This message is displayed when the image URL does not point to an image.
-#: addon\globalPlugins\openai\maindialog.py:1798
+#: addon\globalPlugins\openai\maindialog.py:1792
 msgid "The URL does not point to an image."
 msgstr "URL-адреса не вказує на зображення."
 
 #. Translators: This message is displayed when the add-on fails to get the image dimensions.
-#: addon\globalPlugins\openai\maindialog.py:1821
+#: addon\globalPlugins\openai\maindialog.py:1815
 #, python-format
 msgid "Failed to get image dimensions. %s"
 msgstr "Не вдалося отримати розміри зображення. %s"
 
 #. Translators: This message is displayed when a chat session stops receiving images.
-#: addon\globalPlugins\openai\maindialog.py:1850
+#: addon\globalPlugins\openai\maindialog.py:1844
 msgid "Screenshot reception disabled"
 msgstr "Отримання знімків екрана вимкнено"
 
 #. Translators: This message is displayed when a chat session starts to receive images.
-#: addon\globalPlugins\openai\maindialog.py:1856
+#: addon\globalPlugins\openai\maindialog.py:1850
 msgid "Screenshot reception enabled"
 msgstr "Отримання знімків екрана увімкнено"
 
-#: addon\globalPlugins\openai\maindialog.py:1871
+#: addon\globalPlugins\openai\maindialog.py:1865
 msgid "Stop &recording"
 msgstr "Зупинити &запис"
 
-#: addon\globalPlugins\openai\maindialog.py:1885
+#: addon\globalPlugins\openai\maindialog.py:1879
 msgid "Select audio file"
 msgstr "Вибрати аудіофайл"
 
-#: addon\globalPlugins\openai\maindialog.py:1887
+#: addon\globalPlugins\openai\maindialog.py:1881
 msgid ""
 "Audio files (*.mp3;*.mp4;*.mpeg;*.mpga;*.m4a;*.wav;*.webm)|*.mp3;*.mp4;*."
 "mpeg;*.mpga;*.m4a;*.wav;*.webm"
@@ -863,7 +873,7 @@ msgstr ""
 "Аудіофайли (*.mp3;*.mp4;*.mpeg;*.mpga;*.m4a;*.wav;*.webm)|*.mp3;*.mp4;*.mpeg;"
 "*.mpga;*. m4a;*.wav;*.webm"
 
-#: addon\globalPlugins\openai\maindialog.py:1907
+#: addon\globalPlugins\openai\maindialog.py:1901
 msgid "Please enter some text in the prompt field first."
 msgstr "Спочатку введіть текст у поле запиту."
 
@@ -985,6 +995,23 @@ msgstr ""
 "вичерпний текст, точно перекласти уривки, стисло підсумувати документи або "
 "навіть інтерпретувати й описати візуальний вміст, цей додаток легко "
 "впорається з усіма цими завданнями."
+
+#~ msgid ""
+#~ "Used for large batch processing tasks where cost is a significant factor "
+#~ "but reasoning capabilities are not crucial. Uses the Mistral API."
+#~ msgstr ""
+#~ "Використовується для великих завдань пакетної обробки, де вартість є "
+#~ "важливим фактором, але можливості міркування не мають вирішального "
+#~ "значення. Використовує Mistral API."
+
+#~ msgid ""
+#~ "Higher reasoning capabilities and more capabilities. Use the Mistral API."
+#~ msgstr ""
+#~ "Вищі можливості міркування та більше можливостей. Використовуйте Mistral "
+#~ "API."
+
+#~ msgid "Internal prototype model. Uses the Mistral API."
+#~ msgstr "Внутрішній прототип моделі. Використовує Mistral API."
 
 #~ msgid ""
 #~ "No authentication key provided. Please set it in the Preferences dialog."
