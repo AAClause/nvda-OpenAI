@@ -1618,7 +1618,7 @@ class OpenAIDlg(wx.Dialog):
 		menu.Append(item_id, _("Show model details") + " (Space)")
 		self.Bind(wx.EVT_MENU, self.showModelDetails, id=item_id)
 		menu.AppendSeparator()
-		self.modelListBox.PopupMenu(menu)
+		self.modelsListCtrl.PopupMenu(menu)
 		menu.Destroy()
 
 	def onSetFocus(self, evt):
