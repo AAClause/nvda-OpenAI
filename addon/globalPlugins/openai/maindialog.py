@@ -715,8 +715,8 @@ class OpenAIDlg(wx.Dialog):
 			# Translators: This is the label for the model max output token column in the model list control in the main dialog.
 			_("Max output token")
 		)
-		self.modelsListCtrl.SetColumnWidth(0, 200)
-		self.modelsListCtrl.SetColumnWidth(1, 100)
+		self.modelsListCtrl.SetColumnWidth(0, 250)
+		self.modelsListCtrl.SetColumnWidth(1, 125)
 		self.modelsListCtrl.SetColumnWidth(2, 100)
 		self.modelsListCtrl.SetColumnWidth(3, 100)
 		self.modelsListCtrl.SetColumnWidth(4, 100)
@@ -736,11 +736,13 @@ class OpenAIDlg(wx.Dialog):
 				str(model.maxOutputToken) if model.maxOutputToken > 1 else ""
 			)
 		model_id = conf["modelVision" if self.pathList else "model"]
+		model_index = self._getModelIndex(model_id)
 		self.modelsListCtrl.SetItemState(
-			self._getModelIndex(model_id),
+			model_index,
 			wx.LIST_STATE_SELECTED | wx.LIST_STATE_FOCUSED,
 			wx.LIST_STATE_SELECTED | wx.LIST_STATE_FOCUSED
 		)
+		self.modelsListCtrl.EnsureVisible(model_index)
 		mainSizer.Add(modelsLabel, 0, wx.ALL, 5)
 		mainSizer.Add(self.modelsListCtrl, 0, wx.ALL, 5)
 
@@ -1717,18 +1719,6 @@ class OpenAIDlg(wx.Dialog):
 		for i in range(self.imagesListCtrl.GetItemCount()):
 			self.imagesListCtrl.Select(i)
 
-	def onImageListChange(self, evt):
-		"""
-		Select the model for image description.
-		"""
-		self.modelsListCtrl.SetItemState(
-			self._model_ids.index(self.conf["modelVision"]),
-			wx.LIST_STATE_SELECTED | wx.LIST_STATE_FOCUSED,
-			wx.LIST_STATE_SELECTED | wx.LIST_STATE_FOCUSED
-		)
-		self.modelsListCtrl.SetFocus()
-		evt.Skip()
-
 	def onRemoveSelectedImages(self, evt):
 		if not self.pathList:
 			return
@@ -1798,6 +1788,25 @@ class OpenAIDlg(wx.Dialog):
 		self.imagesListCtrl.Show()
 		self.Layout()
 
+	def ensureModelVisionSelected(self):
+		if not self.getCurrentModel().vision:
+			model_index = self._getModelIndex(self.conf["modelVision"])
+			self.modelsListCtrl.SetItemState(
+				model_index,
+				wx.LIST_STATE_SELECTED | wx.LIST_STATE_FOCUSED,
+				wx.LIST_STATE_SELECTED | wx.LIST_STATE_FOCUSED
+			)
+			self.modelsListCtrl.EnsureVisible(model_index)
+
+	def focusLastImage(self):
+		index = self.imagesListCtrl.GetItemCount() - 1
+		self.imagesListCtrl.SetItemState(
+			index,
+			wx.LIST_STATE_SELECTED | wx.LIST_STATE_FOCUSED,
+			wx.LIST_STATE_SELECTED | wx.LIST_STATE_FOCUSED
+		)
+		self.imagesListCtrl.EnsureVisible(index)
+
 	def onImageDescriptionFromFilePath(self, evt):
 		"""
 		Open a file dialog to select one or more images.
@@ -1829,18 +1838,13 @@ class OpenAIDlg(wx.Dialog):
 					"OpenAI",
 					wx.OK | wx.ICON_ERROR
 				)
-		model = self.getCurrentModel()
-		if not model.vision:
-			self.modelsListCtrl.SetItemState(
-				self._getModelIndex(self.conf["modelVision"]),
-				wx.LIST_STATE_SELECTED | wx.LIST_STATE_FOCUSED,
-				wx.LIST_STATE_SELECTED | wx.LIST_STATE_FOCUSED
-			)
+		self.ensureModelVisionSelected()
 		if not self.promptTextCtrl.GetValue().strip():
 			self.promptTextCtrl.SetValue(
 				self.getDefaultImageDescriptionsPrompt()
 			)
 		self.updateImageList()
+		self.focusLastImage()
 
 	def onImageDescriptionFromURL(self, evt):
 		"""
@@ -1918,16 +1922,13 @@ class OpenAIDlg(wx.Dialog):
 				dimensions=dimensions
 			)
 		)
-		self.modelsListCtrl.SetItemState(
-			self._getModelIndex(self.conf["modelVision"]),
-			wx.LIST_STATE_SELECTED | wx.LIST_STATE_FOCUSED,
-			wx.LIST_STATE_SELECTED | wx.LIST_STATE_FOCUSED
-		)
+		self.ensureModelVisionSelected()
 		if not self.promptTextCtrl.GetValue().strip():
 			self.promptTextCtrl.SetValue(
 				self.getDefaultImageDescriptionsPrompt()
 			)
 		self.updateImageList()
+		self.focusLastImage()
 
 	def onImageDescriptionFromScreenshot(self, evt):
 		"""Define this session as a image receiving session."""
