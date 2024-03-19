@@ -233,6 +233,9 @@ class CompletionThread(threading.Thread):
 		else:
 			msg = PROCESSING_MSG
 		wnd.message(msg)
+		if conf["chatFeedback"]["sndTaskInProgress"]:
+			winsound.PlaySound(SND_PROGRESS, winsound.SND_ASYNC|winsound.SND_LOOP)
+
 		manager = apikeymanager.get(
 			model.provider
 		)
@@ -864,7 +867,7 @@ class OpenAIDlg(wx.Dialog):
 			# Translators: This is the label for the submit button in the main dialog.
 			label=_("Submit") + " (Ctrl+Enter)"
 		)
-		self.submitBtn.Bind(wx.EVT_BUTTON, self.onOk)
+		self.submitBtn.Bind(wx.EVT_BUTTON, self.onSubmit)
 		self.submitBtn.SetDefault()
 		submitCancelSizer.Add(self.submitBtn, 0, wx.ALL, 5)
 
@@ -1037,7 +1040,7 @@ class OpenAIDlg(wx.Dialog):
 			self.showModelDetails()
 		else:
 			evt.Skip()
-	def onOk(self, evt):
+	def onSubmit(self, evt):
 		if not self.promptTextCtrl.GetValue().strip() and not self.pathList:
 			self.promptTextCtrl.SetFocus()
 			return
@@ -1113,7 +1116,7 @@ class OpenAIDlg(wx.Dialog):
 				log.error("Unable to find the history object")
 		except BaseException as err:
 			log.error(err)
-			self.historyObj  = None
+			self.historyObj = None
 		self.stopRequest = threading.Event()
 		self.worker = CompletionThread(self)
 		self.worker.start()
@@ -2018,7 +2021,6 @@ class OpenAIDlg(wx.Dialog):
 		self.enableControls()
 
 	def disableControls(self):
-		winsound.PlaySound(SND_PROGRESS, winsound.SND_ASYNC|winsound.SND_LOOP)
 		self.submitBtn.Disable()
 		self.cancelBtn.Disable()
 		self.recordBtn.Disable()
