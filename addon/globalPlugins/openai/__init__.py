@@ -282,9 +282,95 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 
 		sHelper.addItem(imageSizer)
 
+		chatFeedback = _("Chat feedback")
+		chatFeedbackSizer = wx.StaticBoxSizer(wx.VERTICAL, self, label=chatFeedback)
+		chatFeedbackBox = chatFeedbackSizer.GetStaticBox()
+		chatFeedbackGroup = gui.guiHelper.BoxSizerHelper(self, sizer=chatFeedbackSizer)
+
+		self.chatFeedback = {
+			"sndTaskInProgress": chatFeedbackGroup.addItem(
+				wx.CheckBox(
+					chatFeedbackBox,
+					# Translators: This is a setting to play a sound when a task is in progress.
+					label=_("Play sound when a task is in progress")
+				)
+			),
+			"sndResponseSent": chatFeedbackGroup.addItem(
+				wx.CheckBox(
+					chatFeedbackBox,
+					# Translators: This is a setting to play a sound when a response is sent.
+					label=_("Play sound when a response is sent")
+				)
+			),
+			"sndResponsePending": chatFeedbackGroup.addItem(
+				wx.CheckBox(
+					chatFeedbackBox,
+					# Translators: This is a setting to play a sound when a response is pending.
+					label=_("Play sound when a response is pending")
+				)
+			),
+			"sndResponseReceived": chatFeedbackGroup.addItem(
+				wx.CheckBox(
+					chatFeedbackBox,
+					# Translators: This is a setting to play a sound when a response is received.
+					label=_("Play sound when a response is received")
+				)
+			),
+			"brailleAutoFocusHistory": chatFeedbackGroup.addItem(
+				wx.CheckBox(
+					chatFeedbackBox,
+					# Translators: This is a setting to attach braille to the history if the focus is in the prompt field.
+					label=_("Attach braille to the history if the focus is in the prompt field")
+				)
+			),
+			"speechResponseReceived": chatFeedbackGroup.addItem(
+				wx.CheckBox(
+					chatFeedbackBox,
+					label=_("Speak response when the focus is in the prompt field")
+				)
+			)
+		}
+		for key, item in self.chatFeedback.items():
+			item.SetValue(conf["chatFeedback"][key])
+
+		sHelper.addItem(chatFeedbackSizer)
+
+		# Translators: This is the name of a group of settings
+		whisperGroupLabel = _("Recording")
+		whisperSizer = wx.StaticBoxSizer(wx.VERTICAL, self, label=whisperGroupLabel)
+		whisperBox = whisperSizer.GetStaticBox()
+		whisperGroup = gui.guiHelper.BoxSizerHelper(self, sizer=whisperSizer)
+
+		# Translators: This is the name of a setting in the Recording group
+		label = _("Use &whisper.cpp for transcription")
+		self.whisperCheckbox = whisperGroup.addItem(
+			wx.CheckBox(
+				whisperBox,
+				label=label,
+			)
+		)
+		self.whisperCheckbox.SetValue(
+			conf["audio"]["whisper.cpp"]["enabled"]
+		)
+		self.whisperCheckbox.Bind(
+			wx.EVT_CHECKBOX,
+			self.onWhisperCheckbox
+		)
+
+		# Translators: This is the name of a setting in the Recording group
+		label = _("&Host:")
+		self.whisperHost = whisperGroup.addLabeledControl(
+			label,
+			wx.TextCtrl,
+			value=conf["audio"]["whisper.cpp"]["host"]
+		)
+
+		sHelper.addItem(whisperSizer)
+
 		sHelper.addItem(mainDialogSizer)
 
 		self.onResize(None)
+		self.onWhisperCheckbox(None)
 
 	def onAPIKeys(self, evt):
 		provider_name = evt.GetEventObject().GetName()
@@ -308,6 +394,12 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 		self.maxWidth.Enable(self.resize.GetValue())
 		self.maxHeight.Enable(self.resize.GetValue())
 		self.quality.Enable(self.resize.GetValue())
+
+	def onWhisperCheckbox(self, evt):
+		self.whisperHost.Enable(
+			self.whisperCheckbox.GetValue()
+		)
+
 	def onDefaultPrompt(self, evt):
 		if self.useCustomPrompt.GetValue():
 			self.customPromptText.Enable()
@@ -335,6 +427,13 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 			conf["images"]["customPromptText"] = self.customPromptText.GetValue()
 		else:
 			conf["images"]["useCustomPrompt"] = False
+		conf["audio"]["whisper.cpp"]["enabled"] = self.whisperCheckbox.GetValue()
+		conf["audio"]["whisper.cpp"]["host"] = self.whisperHost.GetValue()
+
+
+
+		for key, item in self.chatFeedback.items():
+			conf["chatFeedback"][key] = item.GetValue()
 
 
 class GlobalPlugin(globalPluginHandler.GlobalPlugin):
@@ -345,7 +444,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		super().__init__()
 		gui.settingsDialogs.NVDASettingsDialog.categoryClasses.append(SettingsDlg)
 		self.client = None
-		self.recordtThread = None
+		self.recordThread = None
 		self.createMenu()
 		apikeymanager.load(DATA_DIR)
 		log.info(
@@ -602,12 +701,12 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 	def script_toggleRecording(self, gesture):
 		if not self.getClient():
 			return ui.message(NO_AUTHENTICATION_KEY_PROVIDED_MSG)
-		if self.recordtThread:
-			self.recordtThread.stop()
-			self.recordtThread = None
+		if self.recordThread:
+			self.recordThread.stop()
+			self.recordThread = None
 		else:
-			self.recordtThread = RecordThread(
+			self.recordThread = RecordThread(
 				self.getClient(),
 				conf=conf["audio"]
 			)
-			self.recordtThreadg.start()
+			self.recordThread.start()

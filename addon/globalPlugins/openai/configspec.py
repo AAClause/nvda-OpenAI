@@ -40,9 +40,21 @@ confSpecs = {
 		"customPromptText": 'string(default="")'
 	},
 	"audio": {
+		"whisper.cpp": {
+			"enabled": "boolean(default=False)",
+			"host": "string(default='http://127.0.0.1:8081')"
+		},
 		"sampleRate": "integer(min=8000, max=48000, default=16000)",
 		"channels": "integer(min=1, max=2, default=1)",
 		"dtype": "string(default=int16)"
+	},
+	"chatFeedback": {
+		"sndResponsePending": "boolean(default=True)",
+		"sndResponseReceived": "boolean(default=True)",
+		"sndResponseSent": "boolean(default=True)",
+		"sndTaskInProgress": "boolean(default=True)",
+		"brailleAutoFocusHistory": "boolean(default=True)",
+		"speechResponseReceived": "boolean(default=True)",
 	},
 	"renewClient": "boolean(default=False)",
 	"debug": "boolean(default=False)"

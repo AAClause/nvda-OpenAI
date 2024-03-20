@@ -1,6 +1,9 @@
+import json
 import os
+import re
 import sys
 import threading
+import uuid
 import wave
 import winsound
 import wx
@@ -44,9 +47,22 @@ def retrieveTranscription(transcription):
 			speech.speakMessage(_("Transcription copied to clipboard"))
 
 
+class WhisperTranscription:
+
+	def __init__(self, text):
+		self.text = text
+
+
 class RecordThread(threading.Thread):
 
-	def __init__(self, client, notifyWindow=None, pathList=None, conf=None):
+	def __init__(
+		self,
+		client,
+		notifyWindow=None,
+		pathList=None,
+		conf=None,
+		responseFormat="json"
+	):
 		super(RecordThread, self).__init__()
 		provider = "OpenAI"
 		manager = apikeymanager.get(provider)
@@ -56,6 +72,7 @@ class RecordThread(threading.Thread):
 		self.client = client
 		self.pathList = pathList
 		self.conf = conf
+		self.responseFormat = responseFormat
 		self._stopRecord = False
 		self._notifyWindow = notifyWindow
 		self._wantAbort = 0
@@ -66,11 +83,7 @@ class RecordThread(threading.Thread):
 			self.process_transcription(self.pathList)
 			return
 		if not self.conf:
-			self.conf = {
-				"channels": 1,
-				"sampleRate": 16000,
-				"dtype": "int16",
-			}
+			raise ValueError("No configuration provided.")
 		self.audioData = np.array([], dtype=self.conf["dtype"])
 		filename = self.get_filename()
 		tones.beep(200, 100)
@@ -128,10 +141,60 @@ class RecordThread(threading.Thread):
 			return
 		try:
 			audio_file = open(filename, "rb")
-			transcription = self.client.audio.transcriptions.create(
-				model="whisper-1", 
-				file=audio_file
-			)
+			transcription = None
+			if self.conf["whisper.cpp"]["enabled"]:
+				from urllib.request import Request, urlopen
+				host = self.conf["whisper.cpp"]["host"].strip()
+				if not host:
+					host = "http://127.0.0.1:8081"
+				if not re.match(r"^https?://", host, re.I):
+					host = "http://" + host
+				url = host + "/inference"
+				boundary = uuid.uuid4().hex
+				content_type = 'multipart/form-data; boundary={}'.format(boundary)
+				body = '--{}\r\n'.format(boundary).encode('utf-8')
+				body += 'Content-Disposition: form-data; name="file"; filename="{}"\r\n'.format("tmp.wav").encode('utf-8')
+				body += 'Content-Type: {}\r\n\r\n'.format("audio/wav").encode('utf-8')
+				body += audio_file.read()
+				body += '\r\n'.encode('utf-8')
+				body += '--{}\r\n'.format(boundary).encode('utf-8')
+				body += 'Content-Disposition: form-data; name="temperature"\r\n\r\n'.encode('utf-8')
+				body += '{}\r\n'.format(0).encode('utf-8')
+				body += '--{}\r\n'.format(boundary).encode('utf-8')
+				body += 'Content-Disposition: form-data; name="response-format"\r\n\r\n'.encode('utf-8')
+				body += '{}\r\n'.format("json").encode('utf-8')
+				body += '--{}--\r\n'.format(boundary).encode('utf-8')
+
+				headers = {'Content-Type': 'multipart/form-data; boundary=' + boundary}
+
+				req = Request(url, body, headers)
+				response = urlopen(req, timeout=3600)
+				if response.getcode() != 200:
+					msg = "Error: {}".format(response.getcode())
+					if self._notifyWindow:
+						wx.PostEvent(self._notifyWindow, ResultEvent(msg))
+					else:
+						log.error(msg)
+						ui.message(_("Error!"))
+					return
+				data = json.loads(response.read().decode('utf-8'))
+				if "error" in data:
+					msg = "Error: {}".format(data["error"])
+					if self._notifyWindow:
+						wx.PostEvent(self._notifyWindow, ResultEvent(msg))
+					else:
+						log.error(msg)
+						ui.message(_("Error!"))
+					return
+				transcription = WhisperTranscription(
+					data["text"]
+				)
+			else:
+				transcription = self.client.audio.transcriptions.create(
+					model="whisper-1",
+					file=audio_file,
+					response_format=self.responseFormat
+				)
 		except BaseException as err:
 			if self._notifyWindow:
 				wx.PostEvent(self._notifyWindow, ResultEvent(repr(err)))
@@ -140,6 +203,10 @@ class RecordThread(threading.Thread):
 				ui.message(_("Error!"))
 			return
 		if self._notifyWindow:
+			if isinstance(transcription, str):
+				transcription = WhisperTranscription(
+					transcription
+				)
 			wx.PostEvent(self._notifyWindow, ResultEvent(transcription))
 		else:
 			winsound.PlaySound(None, winsound.SND_ASYNC)

@@ -2,8 +2,10 @@ import datetime
 import json
 import os
 import re
+import speech
 import sys
 import threading
+import time
 import winsound
 import gui
 import wx
@@ -11,7 +13,9 @@ from enum import Enum
 
 import addonHandler
 import api
+import braille
 import config
+import controlTypes
 import queueHandler
 import speech
 import tones
@@ -34,7 +38,7 @@ from .imagehelper import (
 	resize_image,
 )
 from .model import getOpenRouterModels
-from .recordthread import RecordThread
+from .recordthread import RecordThread, WhisperTranscription
 from .resultevent import ResultEvent, EVT_RESULT_ID
 
 sys.path.insert(0, LIBS_DIR_PY)
@@ -47,6 +51,26 @@ addonHandler.initTranslation()
 TTS_FILE_NAME = os.path.join(DATA_DIR, "tts.wav")
 DATA_JSON_FP = os.path.join(DATA_DIR, "data.json")
 URL_PATTERN = re.compile(r"^(?:http)s?://(?:[A-Z0-9-]+\.)+[A-Z]{2,6}(?::\d+)?(?:/?|[/?]\S+)$", re.IGNORECASE)
+SND_CHAT_RESPONSE_PENDING = os.path.join(
+	ADDON_DIR, "sounds", "chatResponsePending.wav"
+)
+SND_CHAT_RESPONSE_RECEIVED = os.path.join(
+	ADDON_DIR, "sounds", "chatResponseReceived.wav"
+)
+SND_CHAT_RESPONSE_SENT = os.path.join(
+	ADDON_DIR, "sounds", "chatRequestSent.wav"
+)
+SND_PROGRESS = os.path.join(
+	ADDON_DIR, "sounds", "progress.wav"
+)
+# Translators: This is a message emitted by the add-on when an operation is in progress.
+PROCESSING_MSG = _("Please wait...")
+RESP_AUDIO_FORMATS = ("json", "srt", "vtt")
+RESP_AUDIO_FORMATS_LABELS = (
+	_("Text"),
+	_("SubRip (SRT)"),
+	_("Web Video Text Tracks (VTT)")
+)
 
 addToSession = None
 
@@ -139,7 +163,8 @@ class CompletionThread(threading.Thread):
 	def __init__(self, notifyWindow):
 		threading.Thread.__init__(self)
 		self._notifyWindow = notifyWindow
-		self._wantAbort = 0
+		self._wantAbort = False
+		self.lastTime = int(time.time())
 
 	def run(self):
 		wnd = self._notifyWindow
@@ -206,8 +231,7 @@ class CompletionThread(threading.Thread):
 			# Translators: This is a message displayed when uploading multiple images to the API.
 			msg = _("Uploading %d images, please wait...") % nbImages
 		else:
-			# Translators: This is a message displayed when sending a request to the API.
-			msg = _("Processing, please wait...")
+			msg = PROCESSING_MSG
 		wnd.message(msg)
 		manager = apikeymanager.get(
 			model.provider
@@ -232,6 +256,8 @@ class CompletionThread(threading.Thread):
 
 		try:
 			response = client.chat.completions.create(**params)
+			if conf["chatFeedback"]["sndResponseSent"]:
+				winsound.PlaySound(SND_CHAT_RESPONSE_SENT, winsound.SND_ASYNC)
 		except BaseException as err:
 			wx.PostEvent(self._notifyWindow, ResultEvent(err))
 			return
@@ -250,7 +276,6 @@ class CompletionThread(threading.Thread):
 			self._responseWithoutStream(response, block, debug)
 		wnd.pathList.clear()
 		wx.PostEvent(self._notifyWindow, ResultEvent())
-		wnd.message(_("Ready"))
 
 	def _getMessages(self, system=None, prompt=None):
 		wnd = self._notifyWindow
@@ -272,7 +297,12 @@ class CompletionThread(threading.Thread):
 	def _responseWithStream(self, response, block, debug=False):
 		wnd = self._notifyWindow
 		text = ""
+		speechBuffer = ""
 		for i, event in enumerate(response):
+			if time.time() - self.lastTime > 4:
+				self.lastTime = int(time.time())
+				if wnd.conf["chatFeedback"]["sndResponsePending"]:
+					winsound.PlaySound(SND_CHAT_RESPONSE_PENDING, winsound.SND_ASYNC)
 			if wnd.stopRequest.is_set():
 				break
 			delta = event.choices[0].delta
@@ -280,7 +310,20 @@ class CompletionThread(threading.Thread):
 			text = ""
 			if delta and delta.content:
 				text = delta.content
+				speechBuffer += text
+				if (
+					speechBuffer.endswith('\n')
+					or speechBuffer.endswith(". ")
+					or speechBuffer.endswith("? ")
+					or speechBuffer.endswith("! ")
+					or speechBuffer.endswith(": ")
+				):
+					if speechBuffer.strip():
+						wnd.message(speechBuffer, speechOnly=True, onPromptFieldOnly=True)
+					speechBuffer = ""
 			block.responseText += text
+		if speechBuffer:
+			wnd.message(speechBuffer, speechOnly=True, onPromptFieldOnly=True)
 		block.responseTerminated = True
 
 	def _responseWithoutStream(self, response, block, debug=False):
@@ -300,6 +343,7 @@ class CompletionThread(threading.Thread):
 			responseType = type(response)
 			raise TypeError(f"Invalid response type: {responseType}")
 		block.responseText += text
+		wnd.message(text, speechOnly=True, onPromptFieldOnly=True)
 		block.responseTerminated = True
 
 
@@ -487,6 +531,9 @@ class OpenAIDlg(wx.Dialog):
 			self._models.extend(getOpenRouterModels())
 		self.pathList = []
 		self._fileToRemoveAfter = []
+		self.lastFocusedItem = None
+		self.historyObj = None
+		self.foregroundObj = None
 		if pathList:
 			addToSession = self
 			for path in pathList:
@@ -519,6 +566,8 @@ class OpenAIDlg(wx.Dialog):
 			l.append(e)
 		title = ", ".join(l)
 		super().__init__(parent, title=title)
+
+		self.Bind(wx.EVT_CHILD_FOCUS, self.onSetFocus)
 
 		self.conversationCheckBox = wx.CheckBox(
 			parent=self,
@@ -620,7 +669,6 @@ class OpenAIDlg(wx.Dialog):
 			parent=self,
 			min=0
 		)
-
 		if conf["advancedMode"]:
 			temperatureLabel = wx.StaticText(
 				parent=self,
@@ -640,6 +688,16 @@ class OpenAIDlg(wx.Dialog):
 				max=TOP_P_MAX,
 				initial=conf["topP"]
 			)
+
+			self.whisperResponseFormatLabel = wx.StaticText(
+				parent=self,
+				label=_("&Whisper Response Format:")
+			)
+			self.whisperResponseFormatListBox = wx.Choice(
+				parent=self,
+				choices=RESP_AUDIO_FORMATS_LABELS
+			)
+			self.whisperResponseFormatListBox.SetSelection(0)
 
 			self.streamModeCheckBox = wx.CheckBox(
 				parent=self,
@@ -673,6 +731,8 @@ class OpenAIDlg(wx.Dialog):
 			sizer1.Add(self.temperature, 0, wx.ALL, 5)
 			sizer1.Add(topPLabel, 0, wx.ALL, 5)
 			sizer1.Add(self.topP, 0, wx.ALL, 5)
+			sizer1.Add(self.whisperResponseFormatLabel, 0, wx.ALL, 5)
+			sizer1.Add(self.whisperResponseFormatListBox, 0, wx.ALL, 5)
 			sizer1.Add(self.streamModeCheckBox, 0, wx.ALL, 5)
 			sizer1.Add(self.debugModeCheckBox, 0, wx.ALL, 5)
 
@@ -948,9 +1008,22 @@ class OpenAIDlg(wx.Dialog):
 		if self.conf["saveSystem"] and system != self._lastSystem:
 			self.data["system"] = system
 			self._lastSystem = system
-		winsound.PlaySound(f"{ADDON_DIR}/sounds/progress.wav", winsound.SND_ASYNC|winsound.SND_LOOP)
 		self.disableButtons()
-		self.historyText.SetFocus()
+		self.promptText.SetFocus()
+		api.processPendingEvents()
+		self.foregroundObj = api.getForegroundObject()
+		if not self.foregroundObj:
+			log.error("Unable to retrieve the foreground object")
+		try:
+			obj = self.foregroundObj.children[4]
+			if obj and obj.role == controlTypes.ROLE_EDITABLETEXT:
+				self.historyObj = obj
+			else:
+				self.historyObj = None
+				log.error("Unable to find the history object")
+		except BaseException as err:
+			log.error(err)
+			self.historyObj  = None
 		self.stopRequest = threading.Event()
 		self.worker = CompletionThread(self)
 		self.worker.start()
@@ -975,12 +1048,14 @@ class OpenAIDlg(wx.Dialog):
 		if self.worker:
 			self.worker.abort()
 			self.worker = None
-			winsound.PlaySound(None, winsound.SND_ASYNC)
 		self.timer.Stop()
 		self.Destroy()
 
 	def OnResult(self, event):
-		winsound.PlaySound(None, winsound.SND_ASYNC)
+		if self.conf["chatFeedback"]["sndResponseReceived"]:
+			winsound.PlaySound(SND_CHAT_RESPONSE_RECEIVED, winsound.SND_ASYNC)
+		else:
+			winsound.PlaySound(None, winsound.SND_ASYNC)
 		self.enableButtons()
 		self.worker = None
 		if not event.data:
@@ -1013,8 +1088,13 @@ class OpenAIDlg(wx.Dialog):
 			self.promptText.Clear()
 			return
 
-		if isinstance(event.data, openai.types.audio.transcription.Transcription):
-			self.promptText.AppendText(event.data.text)
+		if isinstance(event.data, (
+			openai.types.audio.transcription.Transcription,
+			WhisperTranscription
+		)):
+			self.promptText.AppendText(
+				event.data.text if event.data.text else ""
+			)
 			self.promptText.SetFocus()
 			self.promptText.SetInsertionPointEnd()
 			self.message(
@@ -1076,6 +1156,15 @@ class OpenAIDlg(wx.Dialog):
 			l = len(block.responseText)
 			if block.lastLen == 0 and l > 0:
 				self.historyText.SetInsertionPointEnd()
+				if (
+					self.historyObj
+					and self.foregroundObj is api.getForegroundObject()
+				):
+					if braille.handler.buffer is braille.handler.messageBuffer:
+						braille.handler._dismissMessage()
+					self.focusHistoryBrl()
+				else:
+					log.error("Unable to focus the history object or the foreground object has changed")
 				block.responseText = block.responseText.lstrip()
 				l = len(block.responseText)
 			if l > block.lastLen:
@@ -1084,10 +1173,7 @@ class OpenAIDlg(wx.Dialog):
 				if block.segmentResponse is None:
 					block.segmentResponse = TextSegment(self.historyText, newText, block)
 				else:
-					block.segmentResponse.appendText (newText)
-			if not block.focused and (block.responseTerminated or "\n" in block.responseText or len (block.responseText) > 180):
-				self.historyText.SetFocus ()
-				block.focused = True
+					block.segmentResponse.appendText(newText)
 
 	def addEntry(self, accelEntries, modifiers, key, func):
 		id_ = wx.Window.NewControlId()
@@ -1242,8 +1328,8 @@ class OpenAIDlg(wx.Dialog):
 		self.historyText.SetInsertionPoint(start)
 		self.message(label + text)
 
-	def onCurrentMessage(self, evt):
 		"""Say the current message"""
+	def onCurrentMessage(self, evt):
 		segment = TextSegment.getCurrentSegment (self.historyText)
 		if segment is None:
 			return
@@ -1279,14 +1365,14 @@ class OpenAIDlg(wx.Dialog):
 			return
 		block = segment.owner
 		self.promptText.SetValue (block.segmentPrompt.getText ())
-		self.promptText.SetFocus ()
-		self.message(_("Compied to prompt"))
+		self.promptText.SetFocus()
+		self.message(_("Copied to prompt"))
 
 	def onCopyMessage(self, evt, isHtml=False):
 		text = self.historyText.GetStringSelection()
 		msg = _("Copy")
 		if not text:
-			segment = TextSegment.getCurrentSegment (self.historyText)
+			segment = TextSegment.getCurrentSegment(self.historyText)
 			if segment is None:
 				return
 			block = segment.owner
@@ -1308,7 +1394,7 @@ class OpenAIDlg(wx.Dialog):
 		self.message(msg)
 
 	def onDeleteBlock(self, evt):
-		segment = TextSegment.getCurrentSegment (self.historyText)
+		segment = TextSegment.getCurrentSegment(self.historyText)
 		if segment is None:
 			return
 		block = segment.owner
@@ -1437,6 +1523,48 @@ class OpenAIDlg(wx.Dialog):
 		self.promptText.PopupMenu(menu)
 		menu.Destroy()
 
+	def onSetFocus(self, evt):
+		self.lastFocusedItem = evt.GetEventObject()
+		evt.Skip()
+
+	def focusHistoryBrl(self, force=False):
+		if (
+			not force
+			and not self.conf["chatFeedback"]["brailleAutoFocusHistory"]
+		):
+			return
+		if (
+			self.historyObj
+			and self.foregroundObj is api.getForegroundObject()
+		):
+			if api.getNavigatorObject() is not self.historyObj:
+				api.setNavigatorObject(self.historyObj)
+			braille.handler.handleUpdate(self.historyObj)
+			braille.handler.handleReviewMove(True)
+
+	def message(
+		self,
+		msg: str,
+		speechOnly: bool = False,
+		onPromptFieldOnly: bool = False
+	):
+		if not msg:
+			return
+		if onPromptFieldOnly and self.lastFocusedItem is not self.promptText:
+			return
+		if (
+			not onPromptFieldOnly
+			or (
+				onPromptFieldOnly
+				and self.conf["chatFeedback"]["speechResponseReceived"]
+			)
+		):
+			queueHandler.queueFunction(queueHandler.eventQueue, speech.speakMessage, msg)
+		if not speechOnly:
+			queueHandler.queueFunction(queueHandler.eventQueue, braille.handler.message, msg)
+		if onPromptFieldOnly:
+			self.focusHistoryBrl()
+
 	def onModelContextMenu(self, evt):
 		menu = wx.Menu()
 		item_id = wx.NewIdRef()
@@ -1445,10 +1573,6 @@ class OpenAIDlg(wx.Dialog):
 		menu.AppendSeparator()
 		self.modelListBox.PopupMenu(menu)
 		menu.Destroy()
-
-	def message(self, msg, onlySpeech=False):
-		func = ui.message if not onlySpeech else speech.speakMessage
-		queueHandler.queueFunction(queueHandler.eventQueue, func, msg)
 
 	def onImageDescription(self, evt):
 		"""
@@ -1728,18 +1852,26 @@ class OpenAIDlg(wx.Dialog):
 			_("Screenshot reception enabled")
 		)
 
+	def getWhisperResponseFormat(self):
+		choiceIndex = 0
+		if self.conf["advancedMode"]:
+			choiceIndex = self.whisperResponseFormatListBox.GetSelection()
+		if choiceIndex == wx.NOT_FOUND:
+			choiceIndex = 0
+		return RESP_AUDIO_FORMATS[choiceIndex]
+
 	def onRecord(self, evt):
 		if self.worker:
 			self.onStopRecord(evt)
 			return
-		self.disableButtons()
 		self.recordBtn.SetLabel(_("Stop &recording") + " (Ctrl+R)")
 		self.recordBtn.Bind(wx.EVT_BUTTON, self.onStopRecord)
 		self.recordBtn.Enable()
 		self.worker = RecordThread(
 			self.client,
 			self,
-			conf=self.conf["audio"]
+			conf=self.conf["audio"],
+			responseFormat=self.getWhisperResponseFormat()
 		)
 		self.worker.start()
 
@@ -1754,14 +1886,14 @@ class OpenAIDlg(wx.Dialog):
 		if dlg.ShowModal() != wx.ID_OK:
 			return
 		fileName = dlg.GetPath()
-		self.message(_("Processing, please wait..."))
-		winsound.PlaySound(f"{ADDON_DIR}/sounds/progress.wav", winsound.SND_ASYNC|winsound.SND_LOOP)
+		self.message(PROCESSING_MSG)
 		self.disableButtons()
-		self.historyText.SetFocus()
 		self.worker = RecordThread(
 			self.client,
 			self,
-			fileName
+			fileName,
+			conf=self.conf["audio"],
+			responseFormat=self.getWhisperResponseFormat()
 		)
 		self.worker.start()
 
@@ -1774,18 +1906,16 @@ class OpenAIDlg(wx.Dialog):
 			)
 			self.promptText.SetFocus()
 			return
-		self.message(_("Processing, please wait..."))
-		winsound.PlaySound(f"{ADDON_DIR}/sounds/progress.wav", winsound.SND_ASYNC|winsound.SND_LOOP)
 		self.disableButtons()
 		self.promptText.SetFocus()
 		self.worker = TextToSpeechThread(self, self.promptText.GetValue())
 		self.worker.start()
 
 	def onStopRecord(self, evt):
+		self.disableButtons()
 		if self.worker:
 			self.worker.stop()
 			self.worker = None
-			winsound.PlaySound(None, winsound.SND_ASYNC)
 		self.recordBtn.SetLabel(
 			_("Start &recording") + " (Ctrl+R)"
 		)
@@ -1793,6 +1923,7 @@ class OpenAIDlg(wx.Dialog):
 		self.enableButtons()
 
 	def disableButtons(self):
+		winsound.PlaySound(SND_PROGRESS, winsound.SND_ASYNC|winsound.SND_LOOP)
 		self.okBtn.Disable()
 		self.cancelBtn.Disable()
 		self.recordBtn.Disable()
@@ -1808,25 +1939,26 @@ class OpenAIDlg(wx.Dialog):
 		if self.conf["advancedMode"]:
 			self.temperature.Disable()
 			self.topP.Disable()
+			self.whisperResponseFormatListBox.Disable()
 			self.streamModeCheckBox.Disable()
 			self.debugModeCheckBox.Disable()
 
 	def enableButtons(self):
-		self.okBtn.Enable()
-		self.cancelBtn.Enable()
+		self.conversationCheckBox.Enable()
 		self.recordBtn.Enable()
 		self.transcribeFromFileBtn.Enable()
 		self.imageDescriptionBtn.Enable()
 		self.TTSBtn.Enable()
 		self.modelListBox.Enable()
 		self.maxTokens.Enable()
-		self.conversationCheckBox.Enable()
-		self.promptText.SetEditable(True)
 		self.systemText.SetEditable(True)
-		self.imageListCtrl.Enable()
+		self.promptText.SetEditable(True)
 		if self.conf["advancedMode"]:
 			self.temperature.Enable()
 			self.topP.Enable()
+			self.whisperResponseFormatListBox.Enable()
 			self.streamModeCheckBox.Enable()
 			self.debugModeCheckBox.Enable()
 		self.updateImageList(False)
+		self.okBtn.Enable()
+		self.cancelBtn.Enable()
