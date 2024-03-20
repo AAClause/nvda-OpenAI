@@ -1275,13 +1275,13 @@ class OpenAIDlg(wx.Dialog):
 		accelEntries.append ( (modifiers, key, id_))
 
 	def addShortcuts(self):
+		self.messagesTextCtrl.Bind(wx.EVT_TEXT_COPY, self.onCopyMessage)
 		accelEntries  = []
 		self.addEntry(accelEntries, wx.ACCEL_NORMAL, ord("M"), self.onCurrentMessage)
 		self.addEntry(accelEntries, wx.ACCEL_NORMAL, ord("J"), self.onPreviousMessage)
 		self.addEntry(accelEntries, wx.ACCEL_CTRL + wx.ACCEL_SHIFT, wx.WXK_UP, self.onPreviousMessage)
 		self.addEntry(accelEntries, wx.ACCEL_NORMAL, ord("K"), self.onNextMessage)
 		self.addEntry(accelEntries, wx.ACCEL_CTRL + wx.ACCEL_SHIFT, wx.WXK_DOWN, self.onNextMessage)
-		self.addEntry(accelEntries, wx.ACCEL_CTRL, ord("C"), self.onCopyMessage)
 		self.addEntry(accelEntries, wx.ACCEL_CTRL + wx.ACCEL_SHIFT, ord("C"), lambda evt: self.onCopyMessage(evt, True))
 		self.addEntry(accelEntries, wx.ACCEL_CTRL, ord("D"), self.onDeleteBlock)
 		self.addEntry(accelEntries, wx.ACCEL_CTRL, ord("S"), self.onSaveHistory)
