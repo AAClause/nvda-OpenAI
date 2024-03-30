@@ -2,8 +2,8 @@ import os
 
 AVAILABLE_PROVIDERS = [
 	"OpenAI",
-	"OpenRouter",
-	"MistralAI"
+	"MistralAI",
+	"OpenRouter"
 ]
 
 _managers = {}
@@ -24,7 +24,7 @@ class APIKeyManager:
 		self.data_dir = data_dir
 		self.provider = provider
 		self.api_key_path = os.path.join(
-			data_dir, 
+			data_dir,
 			f"{provider}.key"
 		)
 		self.api_key_org_path = os.path.join(

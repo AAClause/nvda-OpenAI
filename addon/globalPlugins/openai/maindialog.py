@@ -546,7 +546,6 @@ class OpenAIDlg(wx.Dialog):
 				)
 		self.previousPrompt = None
 		self._lastSystem = None
-		self._model_ids = [model.id for model in self._models]
 		if self.conf["saveSystem"]:
 			# If the user has chosen to save the system prompt, use the last system prompt used by the user as the default value, otherwise use the default system prompt.
 			if "system" in self.data:
@@ -727,25 +726,7 @@ class OpenAIDlg(wx.Dialog):
 		self.modelsListCtrl.Bind(wx.EVT_CONTEXT_MENU, self.onModelContextMenu)
 		self.modelsListCtrl.Bind(wx.EVT_LIST_ITEM_RIGHT_CLICK, self.onModelContextMenu)
 		self.modelsListCtrl.Bind(wx.EVT_RIGHT_UP, self.onModelContextMenu)
-
-		for i, model in enumerate(self._models):
-			self.modelsListCtrl.InsertItem(i, model.name)
-			self.modelsListCtrl.SetItem(i, 1, model.provider)
-			self.modelsListCtrl.SetItem(i, 2, model.id)
-			self.modelsListCtrl.SetItem(i, 3, str(model.contextWindow))
-			self.modelsListCtrl.SetItem(
-				i,
-				4,
-				str(model.maxOutputToken) if model.maxOutputToken > 1 else ""
-			)
-		model_id = conf["modelVision" if self.pathList else "model"]
-		model_index = self._getModelIndex(model_id)
-		self.modelsListCtrl.SetItemState(
-			model_index,
-			wx.LIST_STATE_SELECTED | wx.LIST_STATE_FOCUSED,
-			wx.LIST_STATE_SELECTED | wx.LIST_STATE_FOCUSED
-		)
-		self.modelsListCtrl.EnsureVisible(model_index)
+		self._refreshModelsList()
 		mainSizer.Add(modelsLabel, 0, wx.ALL, 5)
 		mainSizer.Add(self.modelsListCtrl, 0, wx.ALL, 5)
 
@@ -1035,11 +1016,65 @@ class OpenAIDlg(wx.Dialog):
 			True
 		)
 
+	def _getModelIndex(self, model_id):
+		for i, model in enumerate(self._models):
+			if model.id == model_id:
+				return i
+		return -1
+
+	def _refreshModelsList(self, model_to_select=None):
+		self.modelsListCtrl.DeleteAllItems()
+		favorite_models = self.data.get("favorite_models", [])
+		self._models = sorted(
+			self._models,
+			key=lambda model: (
+				not model.id in favorite_models,
+				apikeymanager.AVAILABLE_PROVIDERS.index(model.provider),
+				model.id.lower()
+			),
+			reverse=False
+		)
+		for i, model in enumerate(self._models):
+			self.modelsListCtrl.InsertItem(i, model.name)
+			self.modelsListCtrl.SetItem(i, 1, model.provider)
+			self.modelsListCtrl.SetItem(i, 2, model.id)
+			self.modelsListCtrl.SetItem(i, 3, str(model.contextWindow))
+			self.modelsListCtrl.SetItem(
+				i,
+				4,
+				str(model.maxOutputToken) if model.maxOutputToken > 1 else ""
+			)
+		model_id = model_to_select or self.conf["modelVision" if self.pathList else "model"]
+		model_index = self._getModelIndex(model_id)
+		if model_index == -1:
+			model_index = 0
+		self.modelsListCtrl.SetItemState(
+			model_index,
+			wx.LIST_STATE_SELECTED | wx.LIST_STATE_FOCUSED,
+			wx.LIST_STATE_SELECTED | wx.LIST_STATE_FOCUSED
+		)
+		self.modelsListCtrl.EnsureVisible(model_index)
+
+	def onFavoriteModel(self, evt):
+		model = self.getCurrentModel()
+		if not "favorite_models" in self.data:
+			self.data["favorite_models"] = []
+		if model.id in self.data.get("favorite_models", []):
+			self.data["favorite_models"].remove(model.id)
+		else:
+			self.data["favorite_models"].append(model.id)
+		self.saveData(True)
+		self._refreshModelsList(model.id)
+
 	def onModelKeyDown(self, evt):
 		if evt.GetKeyCode() == wx.WXK_SPACE:
-			self.showModelDetails()
+			if evt.GetModifiers() == wx.MOD_SHIFT:
+				self.onFavoriteModel(evt)
+			elif evt.GetModifiers() == wx.MOD_NONE:
+				self.showModelDetails()
 		else:
 			evt.Skip()
+
 	def onSubmit(self, evt):
 		if not self.promptTextCtrl.GetValue().strip() and not self.pathList:
 			self.promptTextCtrl.SetFocus()
@@ -1615,15 +1650,6 @@ class OpenAIDlg(wx.Dialog):
 		self.promptTextCtrl.PopupMenu(menu)
 		menu.Destroy()
 
-	def onModelContextMenu(self, evt):
-		menu = wx.Menu()
-		item_id = wx.NewIdRef()
-		menu.Append(item_id, _("Show model details") + " (Space)")
-		self.Bind(wx.EVT_MENU, self.showModelDetails, id=item_id)
-		menu.AppendSeparator()
-		self.modelsListCtrl.PopupMenu(menu)
-		menu.Destroy()
-
 	def onSetFocus(self, evt):
 		self.lastFocusedItem = evt.GetEventObject()
 		evt.Skip()
@@ -1665,6 +1691,20 @@ class OpenAIDlg(wx.Dialog):
 			queueHandler.queueFunction(queueHandler.eventQueue, braille.handler.message, msg)
 		if onPromptFieldOnly:
 			self.focusHistoryBrl()
+
+	def onModelContextMenu(self, evt):
+		menu = wx.Menu()
+		item_id = wx.NewIdRef()
+		menu.Append(item_id, _("Show model &details") + " (Space)")
+		self.Bind(wx.EVT_MENU, self.showModelDetails, id=item_id)
+		isFavorite = self.getCurrentModel().id in self.data.get("favorite_models", [])
+		item_id = wx.NewIdRef()
+		label = _("Add to &favorites") if not isFavorite else _("Remove from &favorites")
+		menu.Append(item_id, f"{label} (Shift+Space)")
+		self.Bind(wx.EVT_MENU, self.onFavoriteModel, id=item_id)
+		menu.AppendSeparator()
+		self.modelsListCtrl.PopupMenu(menu)
+		menu.Destroy()
 
 	def onImageDescription(self, evt):
 		"""
