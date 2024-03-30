@@ -2,29 +2,24 @@
 
 This add-on designed to seamlessly integrate the capabilities of the Open AI API into your workflow. Whether you're looking to craft comprehensive text, translate passages with precision, concisely summarize documents, or even interpret and describe visual content, this add-on does it all with ease.
 
+The add-on also supports integration with Mistral and OpenRouter services, thanks to their shared API format.
+
 ## Installation Steps
 
 1. Navigate to the [releases page](https://github.com/aaclause/nvda-OpenAI/releases) to find the latest version of the add-on.
 2. Download the latest release from the provided link.
 3. Execute the installer to add the add-on to your NVDA environment.
 
-## Prerequisites for Use
+## API Key Configuration
 
-To fully unlock the capabilities of the OpenAI NVDA add-on, you must obtain an API key from OpenAI. Here's how to configure it for use:
+To use this add-on, you need to configure it with an API key from your selected service provider(s) ([OpenAI](https://platform.openai.com/), [Mistral AI](https://mistral.ai/), and/or [OpenRouter](https://openrouter.ai/). Each provider offers a straightforward process for API key acquisition and integration.
 
-1. Acquire an API key by registering for an OpenAI account at [https://platform.openai.com/api-keys](https://platform.openai.com/api-keys).
-2. With the API key ready, you have two options for configuration:
-	- Through the NVDA settings dialog:
-		1. Access the NVDA menu and navigate to the "Preferences" submenu.
-		2. Open the "Settings" dialog and select the "Open AI" category.
-		3. Input your API key in the provided field and click "OK" to confirm.
-	- Using environment variables:
-		1. Press `Windows+Pause` to open System Properties.
-		2. Click on "Advanced system settings" and select "Environment Variables".
-		3. Create a new variable under "User variables":
-			1. Click on "New".
-			2. Enter `OPENAI_API_KEY` as the variable name and paste your API key as the value.
-		4. Click "OK" to save your changes.
+Once you have your API key, the next step is to integrate it with the add-on:
+
+- Navigate through the NVDA menu to 'Preferences' and then 'Settings'. In the 'Settings' dialog, find the "Open AI" category.
+- In this category, you will notice a group labeled 'API Keys' which contains buttons named after the supported service providers (e.g., "OpenAI API keys...").
+- Click on the relevant button for your service. A dialogue will appear, prompting not only for your API key but also for an organization key if you have one. This is particularly useful for integrating with services that differentiate between personal and organizational usage.
+- Fill in your API key and, if applicable, your organization key in the respective fields and click 'OK' to save your settings.
 
 You are now equipped to explore the features of the OpenAI NVDA add-on!
 
@@ -45,7 +40,7 @@ Within this dialog, you will be able to:
 
 To further improve your interaction with the interface, please take note of the following:
 
-- The multiline "System", "History", and "Prompt" fields come equipped with context menus filled with commands that can be quickly executed using keyboard shortcuts.
+- The multiline "System prompt", "Messages", and "Prompt" fields come equipped with context menus filled with commands that can be quickly executed using keyboard shortcuts. It is the same for the models list.
   These shortcuts are active when the relevant field is in focus.
   For example, the keys 'j' and 'k' allow you to navigate to the previous and next messages, respectively, when the focus is on the History field.
 
@@ -63,13 +58,13 @@ Conversely, when the checkbox is left unticked, only the current user prompt is 
 
 You can switch between the two modes at any time during a session.
 
-#### About the `System` Field
+#### About the "System prompt" Field
 
-The `System` field is designed to fine-tune the AI model's behavior and personality to match your specific expectations.
+The "System prompt" field is designed to fine-tune the AI model's behavior and personality to match your specific expectations.
 
-- **Default Prompt**: Upon installation, the add-on includes a default system prompt ready to use.
+- **Default System Prompt**: Upon installation, the add-on includes a default system prompt ready to use.
 - **Customization**: You have the freedom to personalize the system prompt by modifying the text directly within the field. The add-on will remember the last system prompt you used and automatically load it the next time you launch the dialog. This behavior can be disabled in settings.
-- **Reset Option**: Want to go back to the standard configuration? Simply use the context menu to reset the `System` field to its default value effortlessly.
+- **Reset Option**: Want to go back to the standard configuration? Simply use the context menu to reset the "System promt" field to its default value effortlessly.
 
 Please be aware that the system prompt is included in the AI model's input data, consuming tokens accordingly.
 
