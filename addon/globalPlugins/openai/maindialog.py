@@ -172,28 +172,28 @@ class CompletionThread(threading.Thread):
 		conf = wnd.conf
 		data = wnd.data
 		block = HistoryBlock()
-		system = wnd.systemText.GetValue().strip()
+		system = wnd.systemTextCtrl.GetValue().strip()
 		block.system = system
-		prompt = wnd.promptText.GetValue().strip()
+		prompt = wnd.promptTextCtrl.GetValue().strip()
 		block.prompt = prompt
 		model = wnd.getCurrentModel()
 		block.model = model.id
 		conf["modelVision" if model.vision else "model"] = model.id
 		stream = conf["stream"]
 		debug = conf["debug"]
-		maxTokens = wnd.maxTokens.GetValue()
+		maxTokens = wnd.maxTokensSpinCtrl.GetValue()
 		block.maxTokens = maxTokens
 		key_maxTokens = "maxTokens_%s" % model.id
 		data[key_maxTokens] = maxTokens
 		temperature = 1
 		topP = 1
 		if conf["advancedMode"]:
-			temperature = wnd.temperature.GetValue() / 100
+			temperature = wnd.temperatureSpinCtrl.GetValue() / 100
 			key_temperature = "temperature_%s" % model.id
-			data[key_temperature] = wnd.temperature.GetValue()
+			data[key_temperature] = wnd.temperatureSpinCtrl.GetValue()
 
-			topP = wnd.topP.GetValue() / 100
-			conf["topP"] = wnd.topP.GetValue()
+			topP = wnd.topPSpinCtrl.GetValue() / 100
+			conf["topP"] = wnd.topPSpinCtrl.GetValue()
 
 			debug = wnd.debugModeCheckBox.IsChecked()
 			conf["debug"] = debug
@@ -233,6 +233,9 @@ class CompletionThread(threading.Thread):
 		else:
 			msg = PROCESSING_MSG
 		wnd.message(msg)
+		if conf["chatFeedback"]["sndTaskInProgress"]:
+			winsound.PlaySound(SND_PROGRESS, winsound.SND_ASYNC|winsound.SND_LOOP)
+
 		manager = apikeymanager.get(
 			model.provider
 		)
@@ -267,8 +270,8 @@ class CompletionThread(threading.Thread):
 			wnd.lastBlock.next = block
 			block.previous = wnd.lastBlock
 			wnd.lastBlock = block
-		wnd.previousPrompt = wnd.promptText.GetValue()
-		wnd.promptText.Clear()
+		wnd.previousPrompt = wnd.promptTextCtrl.GetValue()
+		wnd.promptTextCtrl.Clear()
 
 		if stream:
 			self._responseWithStream(response, block, debug)
@@ -568,239 +571,321 @@ class OpenAIDlg(wx.Dialog):
 		super().__init__(parent, title=title)
 
 		self.Bind(wx.EVT_CHILD_FOCUS, self.onSetFocus)
+		mainSizer = wx.BoxSizer(wx.VERTICAL)
 
 		self.conversationCheckBox = wx.CheckBox(
-			parent=self,
-			label=_("Conversati&on mode")
+			self,
+			# Translators: This is the label for the conversation mode checkbox in the main dialog.
+			label=_("&Conversation mode")
 		)
 		self.conversationCheckBox.SetValue(conf["conversationMode"])
+		mainSizer.Add(self.conversationCheckBox, 0, wx.ALL, 5)
+
 		systemLabel = wx.StaticText(
-			parent=self,
-			label=_("S&ystem:")
+			self,
+			# Translators: This is the label for the system prompt text control in the main dialog.
+			label=_("S&ystem prompt:")
 		)
-		self.systemText = wx.TextCtrl(
-			parent=self,
-			size=(550, -1),
+		self.systemTextCtrl = wx.TextCtrl(
+			self,
+			size=(700, -1),
 			style=wx.TE_MULTILINE,
 		)
+		mainSizer.Add(systemLabel, 0, wx.ALL, 5)
+		mainSizer.Add(self.systemTextCtrl, 0, wx.ALL, 5)
 		# Adds event handler to reset the system prompt to the default value when the user opens the context menu on the system prompt.
-		self.systemText.Bind(wx.EVT_CONTEXT_MENU, self.onSystemContextMenu)
+		self.systemTextCtrl.Bind(wx.EVT_CONTEXT_MENU, self.onSystemContextMenu)
 		# If the system prompt has been defined by the user, use it as the default value, otherwise use the default system prompt.
 		if conf["saveSystem"]:
-			self.systemText.SetValue(self._lastSystem)
+			self.systemTextCtrl.SetValue(self._lastSystem)
 		else:
-			self.systemText.SetValue(DEFAULT_SYSTEM_PROMPT)
+			self.systemTextCtrl.SetValue(DEFAULT_SYSTEM_PROMPT)
 
-		historyLabel = wx.StaticText(
-			parent=self,
-			label=_("&History:")
+		messagesLabel = wx.StaticText(
+			self,
+			# Translators: This is the label for the messages text control in the main dialog.
+			label=_("&Messages:")
 		)
-		self.historyText = wx.TextCtrl(
-			parent=self,
-			style=wx.TE_MULTILINE|wx.TE_READONLY,
-			size=(550, -1)
+		self.messagesTextCtrl = wx.TextCtrl(
+			self,
+			# Translators: This is the label for the messages text control in the main dialog.
+			style=wx.TE_MULTILINE | wx.TE_READONLY,
+			size=(700, -1)
 		)
-		self.historyText.Bind(wx.EVT_CONTEXT_MENU, self.onHistoryContextMenu)
+		mainSizer.Add(messagesLabel, 0, wx.ALL, 5)
+		mainSizer.Add(self.messagesTextCtrl, 0, wx.ALL, 5)
+		self.messagesTextCtrl.Bind(wx.EVT_CONTEXT_MENU, self.onHistoryContextMenu)
 
 		promptLabel = wx.StaticText(
-			parent=self,
+			self,
+			# Translators: This is the label for the prompt text control in the main dialog.
 			label=_("&Prompt:")
 		)
-		self.promptText = wx.TextCtrl(
-			parent=self,
-			size=(550, -1),
-			style=wx.TE_MULTILINE,
+		self.promptTextCtrl = wx.TextCtrl(
+			self,
+			size=(700, -1),
+		style=wx.TE_MULTILINE
 		)
-		self.promptText.Bind(wx.EVT_CONTEXT_MENU, self.onPromptContextMenu)
+		mainSizer.Add(promptLabel, 0, wx.ALL, 5)
+		mainSizer.Add(self.promptTextCtrl, 0, wx.ALL, 5)
+		self.promptTextCtrl.Bind(wx.EVT_CONTEXT_MENU, self.onPromptContextMenu)
 
-		self.imageListLabel = wx.StaticText(
-			parent=self,
-			# Translators: This is a label for a list of images attached to the prompt.
-			label=_("Attached ima&ges:")
+		self.imagesLabel = wx.StaticText(
+			self,
+			# Translators: This is the label for the images list control in the main dialog.
+			label=_("Images:")
 		)
-		self.imageListCtrl = wx.ListCtrl(
-			parent=self,
-			style=wx.LC_REPORT | wx.LC_HRULES | wx.LC_VRULES
+		self.imagesListCtrl = wx.ListCtrl(
+			self,
+			style=wx.LC_REPORT | wx.LC_HRULES | wx.LC_VRULES,
+			size=(700, 200)
 		)
-		self.imageListCtrl.InsertColumn(0, _("name"))
-		self.imageListCtrl.InsertColumn(1, _("path"))
-		self.imageListCtrl.InsertColumn(2, _("size"))
-		self.imageListCtrl.InsertColumn(3, _("Dimensions"))
-		self.imageListCtrl.InsertColumn(4, _("description"))
-		self.imageListCtrl.SetColumnWidth(0, 100)
-		self.imageListCtrl.SetColumnWidth(1, 200)
-		self.imageListCtrl.SetColumnWidth(2, 100)
-		self.imageListCtrl.SetColumnWidth(3, 100)
-		self.imageListCtrl.SetColumnWidth(4, 200)
-		self.imageListCtrl.Bind(wx.EVT_LIST_ITEM_RIGHT_CLICK, self.onImageListContextMenu)
-		self.imageListCtrl.Bind(wx.EVT_KEY_DOWN, self.onImageListKeyDown)
-		self.imageListCtrl.Bind(wx.EVT_CONTEXT_MENU, self.onImageListContextMenu)
-		self.imageListCtrl.Bind(wx.EVT_RIGHT_UP, self.onImageListContextMenu)
+		self.imagesListCtrl.InsertColumn(
+			0,
+			# Translators: This is the label for the name column in the image list control in the main dialog.
+			_("name")
+		)
+		self.imagesListCtrl.InsertColumn(
+			1,
+			# Translators: This is the label for the path column in the image list control in the main dialog.
+			_("path")
+		)
+		self.imagesListCtrl.InsertColumn(
+			2,
+			# Translators: This is the label for the size column in the image list control in the main dialog.
+			_("size")
+		)
+		self.imagesListCtrl.InsertColumn(
+			3,
+			# Translators: This is the label for the dimensions column in the image list control in the main dialog.
+			_("Dimensions")
+		)
+		self.imagesListCtrl.InsertColumn(
+			4,
+			# Translators: This is the label for the description column in the image list control in the main dialog.
+			_("description")
+		)
+		self.imagesListCtrl.SetColumnWidth(0, 100)
+		self.imagesListCtrl.SetColumnWidth(1, 200)
+		self.imagesListCtrl.SetColumnWidth(2, 100)
+		self.imagesListCtrl.SetColumnWidth(3, 100)
+		self.imagesListCtrl.SetColumnWidth(4, 200)
+		mainSizer.Add(self.imagesLabel, 0, wx.ALL, 5)
+		mainSizer.Add(self.imagesListCtrl, 0, wx.ALL, 5)
+		self.imagesListCtrl.Bind(wx.EVT_LIST_ITEM_RIGHT_CLICK, self.onImageListContextMenu)
+		self.imagesListCtrl.Bind(wx.EVT_KEY_DOWN, self.onImageListKeyDown)
+		self.imagesListCtrl.Bind(wx.EVT_CONTEXT_MENU, self.onImageListContextMenu)
+		self.imagesListCtrl.Bind(wx.EVT_RIGHT_UP, self.onImageListContextMenu)
 
 		if self.pathList:
-			self.promptText.SetValue(
+			self.promptTextCtrl.SetValue(
 				self.getDefaultImageDescriptionsPrompt()
 			)
 		self.updateImageList()
+
 		modelsLabel = wx.StaticText(
-			parent=self,
-			label=_("&Model:")
+			self,
+			# Translators: This is the label for the model list box in the main dialog.
+			label=_("M&odel:")
 		)
-		models = [str(model) for model in self._models]
-		self.modelListBox = wx.ListBox(
-			parent=self,
-			choices=models,
-			style=wx.LB_SINGLE | wx.LB_HSCROLL | wx.LB_NEEDED_SB
+		self.modelsListCtrl = wx.ListCtrl(
+			self,
+			style=wx.LC_REPORT | wx.LC_HRULES | wx.LC_VRULES,
+			size=(700, 200)
 		)
-		model = conf["modelVision" if self.pathList else "model"]
-		idx = list(self._model_ids).index(model) if model in self._model_ids else (
-			list(self._model_ids).index(DEFAULT_MODEL_VISION) if self.pathList else 0
+		self.modelsListCtrl.InsertColumn(
+			0,
+			# Translators: This is the label for the model name column in the model list control in the main dialog.
+			_("Name")
 		)
-		self.modelListBox.SetSelection(idx)
-		self.modelListBox.Bind(wx.EVT_LISTBOX, self.onModelChange)
-		self.modelListBox.Bind(wx.EVT_KEY_DOWN, self.onModelKeyDown)
-		self.modelListBox.Bind(wx.EVT_CONTEXT_MENU, self.onModelContextMenu)
+		self.modelsListCtrl.InsertColumn(
+			1,
+			# Translators: This is the label for the model provider column in the model list control in the main dialog.
+			_("Provider")
+		)
+		self.modelsListCtrl.InsertColumn(
+			2,
+			# Translators: This is the label for the model ID column in the model list control in the main dialog.
+			_("ID")
+		)
+		self.modelsListCtrl.InsertColumn(
+			3,
+			# Translators: This is the label for the model context window column in the model list control in the main dialog.
+			_("Context window")
+		)
+		self.modelsListCtrl.InsertColumn(
+			4,
+			# Translators: This is the label for the model max output token column in the model list control in the main dialog.
+			_("Max output token")
+		)
+		self.modelsListCtrl.SetColumnWidth(0, 250)
+		self.modelsListCtrl.SetColumnWidth(1, 125)
+		self.modelsListCtrl.SetColumnWidth(2, 100)
+		self.modelsListCtrl.SetColumnWidth(3, 100)
+		self.modelsListCtrl.SetColumnWidth(4, 100)
+		self.modelsListCtrl.Bind(wx.EVT_KEY_DOWN, self.onModelKeyDown)
+		self.modelsListCtrl.Bind(wx.EVT_CONTEXT_MENU, self.onModelContextMenu)
+		self.modelsListCtrl.Bind(wx.EVT_LIST_ITEM_RIGHT_CLICK, self.onModelContextMenu)
+		self.modelsListCtrl.Bind(wx.EVT_RIGHT_UP, self.onModelContextMenu)
+
+		for i, model in enumerate(self._models):
+			self.modelsListCtrl.InsertItem(i, model.name)
+			self.modelsListCtrl.SetItem(i, 1, model.provider)
+			self.modelsListCtrl.SetItem(i, 2, model.id)
+			self.modelsListCtrl.SetItem(i, 3, str(model.contextWindow))
+			self.modelsListCtrl.SetItem(
+				i,
+				4,
+				str(model.maxOutputToken) if model.maxOutputToken > 1 else ""
+			)
+		model_id = conf["modelVision" if self.pathList else "model"]
+		model_index = self._getModelIndex(model_id)
+		self.modelsListCtrl.SetItemState(
+			model_index,
+			wx.LIST_STATE_SELECTED | wx.LIST_STATE_FOCUSED,
+			wx.LIST_STATE_SELECTED | wx.LIST_STATE_FOCUSED
+		)
+		self.modelsListCtrl.EnsureVisible(model_index)
+		mainSizer.Add(modelsLabel, 0, wx.ALL, 5)
+		mainSizer.Add(self.modelsListCtrl, 0, wx.ALL, 5)
 
 		maxTokensLabel = wx.StaticText(
-			parent=self,
-			label=_("Maximum to&kens for the completion:")
+			self,
+			# Translators: This is the label for the max tokens spin control in the main dialog.
+			label=_("Max to&kens:")
 		)
-		self.maxTokens = wx.SpinCtrl(
-			parent=self,
+		self.maxTokensSpinCtrl = wx.SpinCtrl(
+			self,
 			min=0
 		)
+		mainSizer.Add(maxTokensLabel, 0, wx.ALL, 5)
+		mainSizer.Add(self.maxTokensSpinCtrl, 0, wx.ALL, 5)
+
 		if conf["advancedMode"]:
 			temperatureLabel = wx.StaticText(
-				parent=self,
+				self,
+				# Translators: This is the label for the temperature spin control in the main dialog.
 				label=_("&Temperature:")
 			)
-			self.temperature = wx.SpinCtrl(
-				parent=self
+			self.temperatureSpinCtrl = wx.SpinCtrl(
+				self,
+				min=0,
+				max=200
 			)
+			mainSizer.Add(temperatureLabel, 0, wx.ALL, 5)
+			mainSizer.Add(self.temperatureSpinCtrl, 0, wx.ALL, 5)
 
 			topPLabel = wx.StaticText(
-				parent=self,
-				label=_("Probability &mass (Top P):")
+				self,
+				# Translators: This is the label for the top P spin control in the main dialog.
+				label=_("Pro&bability Mass (top P):")
 			)
-			self.topP = wx.SpinCtrl(
-				parent=self,
+			self.topPSpinCtrl = wx.SpinCtrl(
+				self,
 				min=TOP_P_MIN,
 				max=TOP_P_MAX,
 				initial=conf["topP"]
 			)
+			mainSizer.Add(topPLabel, 0, wx.ALL, 5)
+			mainSizer.Add(self.topPSpinCtrl, 0, wx.ALL, 5)
 
 			self.whisperResponseFormatLabel = wx.StaticText(
-				parent=self,
+				self,
 				label=_("&Whisper Response Format:")
 			)
 			self.whisperResponseFormatListBox = wx.Choice(
-				parent=self,
+				self,
 				choices=RESP_AUDIO_FORMATS_LABELS
 			)
 			self.whisperResponseFormatListBox.SetSelection(0)
+			mainSizer.Add(self.whisperResponseFormatLabel, 0, wx.ALL, 5)
+			mainSizer.Add(self.whisperResponseFormatListBox, 0, wx.ALL, 5)
 
 			self.streamModeCheckBox = wx.CheckBox(
-				parent=self,
-				label=_("Stream mode")
+				self,
+				label=_("&Stream mode")
 			)
 			self.streamModeCheckBox.SetValue(conf["stream"])
+			mainSizer.Add(self.streamModeCheckBox, 0, wx.ALL, 5)
 
 			self.debugModeCheckBox = wx.CheckBox(
-				parent=self,
-				label=_("&Debug mode")
+				self,
+				label=_("Debu&g mode")
 			)
 			self.debugModeCheckBox.SetValue(conf["debug"])
+			mainSizer.Add(self.debugModeCheckBox, 0, wx.ALL, 5)
 
 		self.onModelChange(None)
-		sizer1 = wx.BoxSizer(wx.VERTICAL)
-		sizer1.Add(self.conversationCheckBox, 0, wx.ALL, 5)
-		sizer1.Add(systemLabel, 0, wx.ALL, 5)
-		sizer1.Add(self.systemText, 0, wx.ALL, 5)
-		sizer1.Add(historyLabel, 0, wx.ALL, 5)
-		sizer1.Add(self.historyText, 0, wx.ALL, 5)
-		sizer1.Add(promptLabel, 0, wx.ALL, 5)
-		sizer1.Add(self.promptText, 0, wx.ALL, 5)
-		sizer1.Add(self.imageListLabel, 0, wx.ALL, 5)
-		sizer1.Add(self.imageListCtrl, 0, wx.ALL, 5)
-		sizer1.Add(modelsLabel, 0, wx.ALL, 5)
-		sizer1.Add(self.modelListBox, 0, wx.ALL, 5)
-		sizer1.Add(maxTokensLabel, 0, wx.ALL, 5)
-		sizer1.Add(self.maxTokens, 0, wx.ALL, 5)
-		if conf["advancedMode"]:
-			sizer1.Add(temperatureLabel, 0, wx.ALL, 5)
-			sizer1.Add(self.temperature, 0, wx.ALL, 5)
-			sizer1.Add(topPLabel, 0, wx.ALL, 5)
-			sizer1.Add(self.topP, 0, wx.ALL, 5)
-			sizer1.Add(self.whisperResponseFormatLabel, 0, wx.ALL, 5)
-			sizer1.Add(self.whisperResponseFormatListBox, 0, wx.ALL, 5)
-			sizer1.Add(self.streamModeCheckBox, 0, wx.ALL, 5)
-			sizer1.Add(self.debugModeCheckBox, 0, wx.ALL, 5)
+
+		buttonsSizer = wx.BoxSizer(wx.HORIZONTAL)
 
 		self.recordBtn = wx.Button(
-			parent=self,
+			self,
+			# Translators: This is the label for the record button in the main dialog.
 			label=_("Start &recording") + " (Ctrl+R)"
 		)
 		self.recordBtn.Bind(wx.EVT_BUTTON, self.onRecord)
 		self.recordBtn.SetToolTip(_("Record audio from microphone"))
 
 		self.transcribeFromFileBtn = wx.Button(
-			parent=self,
+			self,
+			# Translators: This is the label for the transcribe from audio file button in the main dialog.
 			label=_("Transcribe from &audio file") + " (Ctrl+Shift+R)"
 		)
 		self.transcribeFromFileBtn.Bind(wx.EVT_BUTTON, self.onRecordFromFilePath)
 		self.transcribeFromFileBtn.SetToolTip(_("Transcribe audio from a file path"))
 
 		self.imageDescriptionBtn = wx.Button(
-			parent=self,
+			self,
+			# Translators: This is the label for the image description button in the main dialog.
 			label=_("&Image description")
 		)
 		self.imageDescriptionBtn.Bind(wx.EVT_BUTTON, self.onImageDescription)
 		self.imageDescriptionBtn.SetToolTip(_("Describe an image from a file path or an URL"))
 
 		self.TTSBtn = wx.Button(
-			parent=self,
+			self,
+			# Translators: This is the label for the text to speech button in the main dialog.
 			label=_("&Vocalize the prompt") + " (Ctrl+T)"
 		)
 		self.TTSBtn.Bind(wx.EVT_BUTTON, self.onTextToSpeech)
 
-		sizer2 = wx.BoxSizer(wx.HORIZONTAL)
-		sizer2.Add(self.recordBtn, 0, wx.ALL, 5)
-		sizer2.Add(self.imageDescriptionBtn, 0, wx.ALL, 5)
-		sizer2.Add(self.transcribeFromFileBtn, 0, wx.ALL, 5)
-		sizer2.Add(self.TTSBtn, 0, wx.ALL, 5)
+		for btn in (
+			self.recordBtn,
+			self.transcribeFromFileBtn,
+			self.imageDescriptionBtn,
+			self.TTSBtn
+		):
+			buttonsSizer.Add(btn, 0, wx.ALL, 5)
+		mainSizer.Add(buttonsSizer, 0, wx.ALL, 5)
 
-		self.okBtn = wx.Button(
-			parent=self,
-			id=wx.ID_OK
+		submitCancelSizer = wx.BoxSizer(wx.HORIZONTAL)
+
+		self.submitBtn = wx.Button(
+			self,
+			id=wx.ID_OK,
+			# Translators: This is the label for the submit button in the main dialog.
+			label=_("Submit") + " (Ctrl+Enter)"
 		)
-		self.okBtn.Bind(wx.EVT_BUTTON, self.onOk)
-		self.okBtn.SetDefault()
+		self.submitBtn.Bind(wx.EVT_BUTTON, self.onSubmit)
+		self.submitBtn.SetDefault()
+		submitCancelSizer.Add(self.submitBtn, 0, wx.ALL, 5)
 
 		self.cancelBtn = wx.Button(
-			parent=self,
+			self,
 			id=wx.ID_CANCEL
 		)
 		self.cancelBtn.Bind(wx.EVT_BUTTON, self.onCancel)
+		submitCancelSizer.Add(self.cancelBtn, 0, wx.ALL, 5)
 
-		sizer3 = wx.BoxSizer(wx.HORIZONTAL)
-		sizer3.Add(self.okBtn, 0, wx.ALL, 5)
-		sizer3.Add(self.cancelBtn, 0, wx.ALL, 5)
+		mainSizer.Add(submitCancelSizer, 0, wx.ALL | wx.ALIGN_CENTER, 5)
 
-		sizer4 = wx.BoxSizer(wx.VERTICAL)
-		sizer4.Add(sizer1, 0, wx.ALL, 5)
-		sizer4.Add(sizer2, 0, wx.ALL, 5)
-		sizer4.Add(sizer3, 0, wx.ALL, 5)
-
-		self.SetSizer(sizer4)
-		self.SetAutoLayout(True)
-		sizer4.Fit(self)
-		self.Layout()
-		self.Center()
-		self.SetSize((600, 600))
-		self.SetMinSize((600, 600))
+		self.SetSizerAndFit(mainSizer)
+		mainSizer.SetSizeHints(self)
+		self.CentreOnParent(wx.BOTH)
 
 		self.addShortcuts()
-		self.promptText.SetFocus()
+		self.promptTextCtrl.SetFocus()
 		EVT_RESULT(self, self.OnResult)
 		self.worker = None
 		self.firstBlock = None
@@ -810,6 +895,12 @@ class OpenAIDlg(wx.Dialog):
 		self.timer.Start (100)
 		self.Bind(wx.EVT_CHAR_HOOK, self.onCharHook)
 		self.Bind(wx.EVT_CLOSE, self.onCancel)
+
+
+	def _getModelIndex(self, model_id):
+		return list(self._model_ids).index(model_id) if model_id in self._model_ids else (
+			list(self._model_ids).index(DEFAULT_MODEL_VISION) if self.pathList else 0
+		)
 
 	def addImageToList(
 		self,
@@ -863,12 +954,12 @@ class OpenAIDlg(wx.Dialog):
 			f.write(json.dumps(self.data))
 
 	def getCurrentModel(self):
-		return self._models[self.modelListBox.GetSelection()]
+		return self._models[self.modelsListCtrl.GetFocusedItem()]
 
 	def onResetSystemPrompt(self, event):
-		self.systemText.SetValue(DEFAULT_SYSTEM_PROMPT)
+		self.systemTextCtrl.SetValue(DEFAULT_SYSTEM_PROMPT)
 	def onDelete(self, event):
-		self.systemText.SetValue('')
+		self.systemTextCtrl.SetValue('')
 
 	def addStandardMenuOptions(self, menu):
 		menu.Append(wx.ID_UNDO)
@@ -884,7 +975,7 @@ class OpenAIDlg(wx.Dialog):
 
 	def onModelChange(self, evt):
 		model = self.getCurrentModel()
-		self.maxTokens.SetRange(
+		self.maxTokensSpinCtrl.SetRange(
 			0,
 			model.maxOutputToken if model.maxOutputToken > 1 else model.contextWindow
 		)
@@ -902,19 +993,19 @@ class OpenAIDlg(wx.Dialog):
 				defaultMaxOutputToken  = model.contextWindow // 2
 		if defaultMaxOutputToken < 1:
 			defaultMaxOutputToken = 1024
-		self.maxTokens.SetValue(defaultMaxOutputToken)
+		self.maxTokensSpinCtrl.SetValue(defaultMaxOutputToken)
 		if self.conf["advancedMode"]:
-			self.temperature.SetRange(
+			self.temperatureSpinCtrl.SetRange(
 				0,
 				int(model.maxTemperature * 100)
 			)
 			key_temperature = "temperature_%s" % model.id
 			if key_temperature in self.data:
-				self.temperature.SetValue(
+				self.temperatureSpinCtrl.SetValue(
 					int(self.data[key_temperature])
 				)
 			else:
-				self.temperature.SetValue(
+				self.temperatureSpinCtrl.SetValue(
 					int(model.defaultTemperature * 100)
 				)
 
@@ -949,9 +1040,9 @@ class OpenAIDlg(wx.Dialog):
 			self.showModelDetails()
 		else:
 			evt.Skip()
-	def onOk(self, evt):
-		if not self.promptText.GetValue().strip() and not self.pathList:
-			self.promptText.SetFocus()
+	def onSubmit(self, evt):
+		if not self.promptTextCtrl.GetValue().strip() and not self.pathList:
+			self.promptTextCtrl.SetFocus()
 			return
 		if self.worker:
 			return
@@ -987,7 +1078,10 @@ class OpenAIDlg(wx.Dialog):
 		if not model.vision and self.pathList:
 			visionModels = [model.id for model in self._models if model.vision]
 			gui.messageBox(
-				_("This model does not support image description. Please select one of the following models: %s.") % ", ".join(visionModels),
+				_("This model (%s) does not support image description. Please select one of the following models: %s.") % (
+					model.id,
+					", ".join(visionModels)
+				),
 				_("Invalid model"),
 				wx.OK | wx.ICON_ERROR
 			)
@@ -1004,12 +1098,11 @@ class OpenAIDlg(wx.Dialog):
 				wx.OK | wx.ICON_INFORMATION
 			)
 			self.conf["images"]["resizeInfoDisplayed"] = True
-		system = self.systemText.GetValue().strip()
+		system = self.systemTextCtrl.GetValue().strip()
 		if self.conf["saveSystem"] and system != self._lastSystem:
 			self.data["system"] = system
 			self._lastSystem = system
-		self.disableButtons()
-		self.promptText.SetFocus()
+		self.disableControls()
 		api.processPendingEvents()
 		self.foregroundObj = api.getForegroundObject()
 		if not self.foregroundObj:
@@ -1023,7 +1116,7 @@ class OpenAIDlg(wx.Dialog):
 				log.error("Unable to find the history object")
 		except BaseException as err:
 			log.error(err)
-			self.historyObj  = None
+			self.historyObj = None
 		self.stopRequest = threading.Event()
 		self.worker = CompletionThread(self)
 		self.worker.start()
@@ -1056,24 +1149,25 @@ class OpenAIDlg(wx.Dialog):
 			winsound.PlaySound(SND_CHAT_RESPONSE_RECEIVED, winsound.SND_ASYNC)
 		else:
 			winsound.PlaySound(None, winsound.SND_ASYNC)
-		self.enableButtons()
+		self.enableControls()
 		self.worker = None
+
 		if not event.data:
 			return
 
 		if isinstance(event.data, openai.types.chat.chat_completion.Choice):
 			historyBlock = HistoryBlock()
-			historyBlock.system = self.systemText.GetValue().strip()
-			historyBlock.prompt = self.promptText.GetValue().strip()
+			historyBlock.system = self.systemTextCtrl.GetValue().strip()
+			historyBlock.prompt = self.promptTextCtrl.GetValue().strip()
 			model = self.getCurrentModel()
 			historyBlock.model = model.id
 			if self.conf["advancedMode"]:
-				historyBlock.temperature = self.temperature.GetValue() / 100
-				historyBlock.topP = self.topP.GetValue() / 100
+				historyBlock.temperature = self.temperatureSpinCtrl.GetValue() / 100
+				historyBlock.topP = self.topPSpinCtrl.GetValue() / 100
 			else:
 				historyBlock.temperature = model.defaultTemperature
 				historyBlock.topP = self.conf["topP"] / 100
-			historyBlock.maxTokens = self.maxTokens.GetValue()
+			historyBlock.maxTokens = self.maxTokensSpinCtrl.GetValue()
 			historyBlock.n = 1 # self.n.GetValue()
 			historyBlock.response = event.data
 			historyBlock.responseText = event.data.message.content
@@ -1084,19 +1178,18 @@ class OpenAIDlg(wx.Dialog):
 				self.lastBlock.next = historyBlock
 				historyBlock.previous = self.lastBlock
 				self.lastBlock = historyBlock
-			self.previousPrompt = self.promptText.GetValue()
-			self.promptText.Clear()
+			self.previousPrompt = self.promptTextCtrl.GetValue()
+			self.promptTextCtrl.Clear()
 			return
-
 		if isinstance(event.data, (
 			openai.types.audio.transcription.Transcription,
 			WhisperTranscription
 		)):
-			self.promptText.AppendText(
+			self.promptTextCtrl.AppendText(
 				event.data.text if event.data.text else ""
 			)
-			self.promptText.SetFocus()
-			self.promptText.SetInsertionPointEnd()
+			self.promptTextCtrl.SetFocus()
+			self.promptTextCtrl.SetInsertionPointEnd()
 			self.message(
 				_("Insertion of: %s") % event.data.text,
 				True
@@ -1132,9 +1225,9 @@ class OpenAIDlg(wx.Dialog):
 		if url and res == wx.YES:
 			os.startfile(url.group(0).rstrip("."))
 		if "model's maximum context length is " in errMsg:
-			self.modelListBox.SetFocus()
+			self.modelsListCtrl.SetFocus()
 		else:
-			self.promptText.SetFocus()
+			self.promptTextCtrl.SetFocus()
 		raise Exception(errMsg)
 
 	def onCharHook(self, evt):
@@ -1148,14 +1241,15 @@ class OpenAIDlg(wx.Dialog):
 			block = self.lastBlock
 			if block.displayHeader:
 				if block != self.firstBlock:
-					block.previous.segmentBreakLine = TextSegment(self.historyText, "\n", block)
-				block.segmentPromptLabel = TextSegment(self.historyText, _("User:") + ' ', block)
-				block.segmentPrompt = TextSegment(self.historyText, block.prompt + "\n", block)
-				block.segmentResponseLabel = TextSegment(self.historyText, _("Assistant:") + ' ', block)
+					block.previous.segmentBreakLine = TextSegment(self.messagesTextCtrl, "\n", block)
+				block.segmentPromptLabel = TextSegment(self.messagesTextCtrl, _("User:") + ' ', block)
+				block.segmentPrompt = TextSegment(self.messagesTextCtrl, block.prompt + "\n", block)
+				block.segmentResponseLabel = TextSegment(self.messagesTextCtrl, _("Assistant:") + ' ', block)
 				block.displayHeader = False
 			l = len(block.responseText)
 			if block.lastLen == 0 and l > 0:
-				self.historyText.SetInsertionPointEnd()
+
+				self.messagesTextCtrl.SetInsertionPointEnd()
 				if (
 					self.historyObj
 					and self.foregroundObj is api.getForegroundObject()
@@ -1171,7 +1265,7 @@ class OpenAIDlg(wx.Dialog):
 				newText = block.responseText[block.lastLen:]
 				block.lastLen = l
 				if block.segmentResponse is None:
-					block.segmentResponse = TextSegment(self.historyText, newText, block)
+					block.segmentResponse = TextSegment(self.messagesTextCtrl, newText, block)
 				else:
 					block.segmentResponse.appendText(newText)
 
@@ -1181,8 +1275,7 @@ class OpenAIDlg(wx.Dialog):
 		accelEntries.append ( (modifiers, key, id_))
 
 	def addShortcuts(self):
-		self.historyText.Bind(wx.EVT_TEXT_COPY, self.onCopyMessage)
-
+		self.messagesTextCtrl.Bind(wx.EVT_TEXT_COPY, self.onCopyMessage)
 		accelEntries  = []
 		self.addEntry(accelEntries, wx.ACCEL_NORMAL, ord("M"), self.onCurrentMessage)
 		self.addEntry(accelEntries, wx.ACCEL_NORMAL, ord("J"), self.onPreviousMessage)
@@ -1197,12 +1290,12 @@ class OpenAIDlg(wx.Dialog):
 		self.addEntry(accelEntries, wx.ACCEL_ALT, wx.WXK_LEFT, self.onCopyResponseToSystem)
 		self.addEntry(accelEntries, wx.ACCEL_ALT, wx.WXK_RIGHT, self.onCopyPromptToPrompt)
 		accelTable = wx.AcceleratorTable(accelEntries)
-		self.historyText.SetAcceleratorTable(accelTable)
+		self.messagesTextCtrl.SetAcceleratorTable(accelTable)
 
 		accelEntries  = []
 		self.addEntry (accelEntries, wx.ACCEL_CTRL, wx.WXK_UP, self.onPreviousPrompt)
 		accelTable = wx.AcceleratorTable(accelEntries)
-		self.promptText.SetAcceleratorTable(accelTable)
+		self.promptTextCtrl.SetAcceleratorTable(accelTable)
 
 		accelEntries  = []
 		self.addEntry(accelEntries, wx.ACCEL_CTRL, ord("r"), self.onRecord)
@@ -1286,10 +1379,10 @@ class OpenAIDlg(wx.Dialog):
 	def onPreviousPrompt(self, event):
 		value = self.previousPrompt
 		if value:
-			self.promptText.SetValue(value)
+			self.promptTextCtrl.SetValue(value)
 
 	def onPreviousMessage(self, evt):
-		segment = TextSegment.getCurrentSegment(self.historyText)
+		segment = TextSegment.getCurrentSegment(self.messagesTextCtrl)
 		if segment is None:
 			return
 		block = segment.owner
@@ -1305,11 +1398,11 @@ class OpenAIDlg(wx.Dialog):
 			start = block.segmentPrompt.start
 			text = block.segmentPrompt.getText ()
 			label = block.segmentPromptLabel.getText ()
-		self.historyText.SetInsertionPoint(start)
+		self.messagesTextCtrl.SetInsertionPoint(start)
 		self.message(label + text)
 
 	def onNextMessage(self, evt):
-		segment = TextSegment.getCurrentSegment (self.historyText)
+		segment = TextSegment.getCurrentSegment (self.messagesTextCtrl)
 		if segment is None:
 			return
 		block = segment.owner
@@ -1325,12 +1418,11 @@ class OpenAIDlg(wx.Dialog):
 			start = block.segmentResponse.start
 			text = block.segmentResponse.getText ()
 			label = block.segmentResponseLabel.getText ()
-		self.historyText.SetInsertionPoint(start)
+		self.messagesTextCtrl.SetInsertionPoint(start)
 		self.message(label + text)
 
-		"""Say the current message"""
 	def onCurrentMessage(self, evt):
-		segment = TextSegment.getCurrentSegment (self.historyText)
+		segment = TextSegment.getCurrentSegment(self.messagesTextCtrl)
 		if segment is None:
 			return
 		block = segment.owner
@@ -1342,37 +1434,37 @@ class OpenAIDlg(wx.Dialog):
 
 
 	def onEditBlock (self, evt):
-		segment = TextSegment.getCurrentSegment (self.historyText)
+		segment = TextSegment.getCurrentSegment (self.messagesTextCtrl)
 		if segment is None:
 			return
 		block = segment.owner
-		self.systemText.SetValue(block.system)
-		self.promptText.SetValue (block.userPrompt)
-		self.promptText.SetFocus ()
+		self.systemTextCtrl.SetValue(block.system)
+		self.promptTextCtrl.SetValue (block.userPrompt)
+		self.promptTextCtrl.SetFocus ()
 
 	def onCopyResponseToSystem (self, evt):
-		segment = TextSegment.getCurrentSegment(self.historyText)
+		segment = TextSegment.getCurrentSegment(self.messagesTextCtrl)
 		if segment is None:
 			return
 		block = segment.owner
 		text = block.segmentResponse.getText ()
-		self.systemText.SetValue(text)
+		self.systemTextCtrl.SetValue(text)
 		self.message(_("Response copied to system: %s") % text)
 
 	def onCopyPromptToPrompt(self, evt):
-		segment = TextSegment.getCurrentSegment(self.historyText)
+		segment = TextSegment.getCurrentSegment(self.messagesTextCtrl)
 		if segment is None:
 			return
 		block = segment.owner
-		self.promptText.SetValue (block.segmentPrompt.getText ())
-		self.promptText.SetFocus()
-		self.message(_("Copied to prompt"))
+		self.promptTextCtrl.SetValue (block.segmentPrompt.getText ())
+		self.promptTextCtrl.SetFocus ()
+		self.message(_("Compied to prompt"))
 
 	def onCopyMessage(self, evt, isHtml=False):
-		text = self.historyText.GetStringSelection()
+		text = self.messagesTextCtrl.GetStringSelection()
 		msg = _("Copy")
 		if not text:
-			segment = TextSegment.getCurrentSegment(self.historyText)
+			segment = TextSegment.getCurrentSegment(self.messagesTextCtrl)
 			if segment is None:
 				return
 			block = segment.owner
@@ -1394,7 +1486,7 @@ class OpenAIDlg(wx.Dialog):
 		self.message(msg)
 
 	def onDeleteBlock(self, evt):
-		segment = TextSegment.getCurrentSegment(self.historyText)
+		segment = TextSegment.getCurrentSegment(self.messagesTextCtrl)
 		if segment is None:
 			return
 		block = segment.owner
@@ -1417,7 +1509,7 @@ class OpenAIDlg(wx.Dialog):
 		self.message(_("Block deleted"))
 
 	def onWebviewMessage(self, evt, isHtml=False):
-		segment = TextSegment.getCurrentSegment (self.historyText)
+		segment = TextSegment.getCurrentSegment (self.messagesTextCtrl)
 		if segment is None:
 			return
 		block = segment.owner
@@ -1459,7 +1551,7 @@ class OpenAIDlg(wx.Dialog):
 			return
 		self._historyPath = path
 		with open(path, "w", encoding="utf-8") as f:
-			f.write(self.historyText.GetValue())
+			f.write(self.messagesTextCtrl.GetValue())
 		self.message(_("History saved"))
 
 	def onSystemContextMenu(self, event):
@@ -1469,7 +1561,7 @@ class OpenAIDlg(wx.Dialog):
 		self.Bind(wx.EVT_MENU, self.onResetSystemPrompt, id=item_id)
 		menu.AppendSeparator()
 		self.addStandardMenuOptions(menu)
-		self.systemText.PopupMenu(menu)
+		self.systemTextCtrl.PopupMenu(menu)
 		menu.Destroy()
 
 	def onHistoryContextMenu(self, evt):
@@ -1509,7 +1601,7 @@ class OpenAIDlg(wx.Dialog):
 		self.Bind(wx.EVT_MENU, self.onNextMessage, id=item_id)
 		menu.AppendSeparator()
 		self.addStandardMenuOptions(menu)
-		self.historyText.PopupMenu(menu)
+		self.messagesTextCtrl.PopupMenu(menu)
 		menu.Destroy()
 
 	def onPromptContextMenu(self, evt):
@@ -1520,7 +1612,7 @@ class OpenAIDlg(wx.Dialog):
 			self.Bind(wx.EVT_MENU, self.onPreviousPrompt, id=item_id)
 			menu.AppendSeparator()
 		self.addStandardMenuOptions(menu)
-		self.promptText.PopupMenu(menu)
+		self.promptTextCtrl.PopupMenu(menu)
 		menu.Destroy()
 
 	def onSetFocus(self, evt):
@@ -1550,7 +1642,7 @@ class OpenAIDlg(wx.Dialog):
 	):
 		if not msg:
 			return
-		if onPromptFieldOnly and self.lastFocusedItem is not self.promptText:
+		if onPromptFieldOnly and self.lastFocusedItem is not self.promptTextCtrl:
 			return
 		if (
 			not onPromptFieldOnly
@@ -1571,7 +1663,7 @@ class OpenAIDlg(wx.Dialog):
 		menu.Append(item_id, _("Show model details") + " (Space)")
 		self.Bind(wx.EVT_MENU, self.showModelDetails, id=item_id)
 		menu.AppendSeparator()
-		self.modelListBox.PopupMenu(menu)
+		self.modelsListCtrl.PopupMenu(menu)
 		menu.Destroy()
 
 	def onImageDescription(self, evt):
@@ -1609,7 +1701,7 @@ class OpenAIDlg(wx.Dialog):
 		"""
 		menu = wx.Menu()
 		if self.pathList:
-			if self.imageListCtrl.GetItemCount() > 0 and self.imageListCtrl.GetSelectedItemCount() > 0:
+			if self.imagesListCtrl.GetItemCount() > 0 and self.imagesListCtrl.GetSelectedItemCount() > 0:
 				item_id = wx.NewIdRef()
 				menu.Append(item_id, _("&Remove selected images") + " (Del)")
 				self.Bind(wx.EVT_MENU, self.onRemoveSelectedImages, id=item_id)
@@ -1627,28 +1719,18 @@ class OpenAIDlg(wx.Dialog):
 		menu.Destroy()
 
 	def onImageListSelectAll(self, evt):
-		for i in range(self.imageListCtrl.GetItemCount()):
-			self.imageListCtrl.Select(i)
-
-	def onImageListChange(self, evt):
-		"""
-		Select the model for image description.
-		"""
-		self.modelListBox.SetSelection(
-			self._model_ids.index(self.conf["modelVision"])
-		)
-		self.imageListCtrl.SetSelection(evt.GetSelection())
-		evt.Skip()
+		for i in range(self.imagesListCtrl.GetItemCount()):
+			self.imagesListCtrl.Select(i)
 
 	def onRemoveSelectedImages(self, evt):
 		if not self.pathList:
 			return
-		focused_item = self.imageListCtrl.GetFocusedItem()
+		focused_item = self.imagesListCtrl.GetFocusedItem()
 		items_to_remove = []
-		selectedItem = self.imageListCtrl.GetFirstSelected()
+		selectedItem = self.imagesListCtrl.GetFirstSelected()
 		while selectedItem != wx.NOT_FOUND:
 			items_to_remove.append(selectedItem)
-			selectedItem = self.imageListCtrl.GetNextSelected(selectedItem)
+			selectedItem = self.imagesListCtrl.GetNextSelected(selectedItem)
 
 		if not items_to_remove:
 			return
@@ -1659,10 +1741,10 @@ class OpenAIDlg(wx.Dialog):
 		self.updateImageList()
 		if focused_item == wx.NOT_FOUND:
 			return
-		if focused_item > self.imageListCtrl.GetItemCount() - 1:
+		if focused_item > self.imagesListCtrl.GetItemCount() - 1:
 			focused_item -= 1
-		self.imageListCtrl.Focus(focused_item)
-		self.imageListCtrl.Select(focused_item)
+		self.imagesListCtrl.Focus(focused_item)
+		self.imagesListCtrl.Select(focused_item)
 
 	def onRemoveAllImages(self, evt):
 		self.pathList.clear()
@@ -1684,30 +1766,49 @@ class OpenAIDlg(wx.Dialog):
 		return False
 
 	def updateImageList(self, focusPrompt=True):
-		self.imageListCtrl.DeleteAllItems()
+		self.imagesListCtrl.DeleteAllItems()
 		if not self.pathList:
-			self.imageListCtrl.Hide()
-			self.imageListLabel.Hide()
+			self.imagesLabel.Hide()
+			self.imagesListCtrl.Hide()
 			self.Layout()
 			if focusPrompt:
-				self.promptText.SetFocus()
+				self.promptTextCtrl.SetFocus()
 			return
 		for path in self.pathList:
-			self.imageListCtrl.Append([
+			self.imagesListCtrl.Append([
 				path.name,
 				path.path,
 				path.size,
 				f"{path.dimensions[0]}x{path.dimensions[1]}" if isinstance(path.dimensions, tuple) else "N/A",
 				path.description or "N/A"
 			])
-		self.imageListLabel.Show()
-		self.imageListCtrl.SetItemState(
+		self.imagesListCtrl.SetItemState(
 			0,
 			wx.LIST_STATE_FOCUSED,
 			wx.LIST_STATE_FOCUSED
 		)
-		self.imageListCtrl.Show()
+		self.imagesLabel.Show()
+		self.imagesListCtrl.Show()
 		self.Layout()
+
+	def ensureModelVisionSelected(self):
+		if not self.getCurrentModel().vision:
+			model_index = self._getModelIndex(self.conf["modelVision"])
+			self.modelsListCtrl.SetItemState(
+				model_index,
+				wx.LIST_STATE_SELECTED | wx.LIST_STATE_FOCUSED,
+				wx.LIST_STATE_SELECTED | wx.LIST_STATE_FOCUSED
+			)
+			self.modelsListCtrl.EnsureVisible(model_index)
+
+	def focusLastImage(self):
+		index = self.imagesListCtrl.GetItemCount() - 1
+		self.imagesListCtrl.SetItemState(
+			index,
+			wx.LIST_STATE_SELECTED | wx.LIST_STATE_FOCUSED,
+			wx.LIST_STATE_SELECTED | wx.LIST_STATE_FOCUSED
+		)
+		self.imagesListCtrl.EnsureVisible(index)
 
 	def onImageDescriptionFromFilePath(self, evt):
 		"""
@@ -1740,16 +1841,13 @@ class OpenAIDlg(wx.Dialog):
 					"OpenAI",
 					wx.OK | wx.ICON_ERROR
 				)
-		model = self.getCurrentModel()
-		if not model.vision:
-			self.modelListBox.SetSelection(
-				self._model_ids.index(self.conf["modelVision"])
-			)
-		if not self.promptText.GetValue().strip():
-			self.promptText.SetValue(
+		self.ensureModelVisionSelected()
+		if not self.promptTextCtrl.GetValue().strip():
+			self.promptTextCtrl.SetValue(
 				self.getDefaultImageDescriptionsPrompt()
 			)
 		self.updateImageList()
+		self.focusLastImage()
 
 	def onImageDescriptionFromURL(self, evt):
 		"""
@@ -1827,14 +1925,13 @@ class OpenAIDlg(wx.Dialog):
 				dimensions=dimensions
 			)
 		)
-		self.modelListBox.SetSelection(
-			self._model_ids.index(self.conf["modelVision"])
-		)
-		if not self.promptText.GetValue().strip():
-			self.promptText.SetValue(
+		self.ensureModelVisionSelected()
+		if not self.promptTextCtrl.GetValue().strip():
+			self.promptTextCtrl.SetValue(
 				self.getDefaultImageDescriptionsPrompt()
 			)
 		self.updateImageList()
+		self.focusLastImage()
 
 	def onImageDescriptionFromScreenshot(self, evt):
 		"""Define this session as a image receiving session."""
@@ -1864,6 +1961,7 @@ class OpenAIDlg(wx.Dialog):
 		if self.worker:
 			self.onStopRecord(evt)
 			return
+		self.disableControls()
 		self.recordBtn.SetLabel(_("Stop &recording") + " (Ctrl+R)")
 		self.recordBtn.Bind(wx.EVT_BUTTON, self.onStopRecord)
 		self.recordBtn.Enable()
@@ -1887,7 +1985,7 @@ class OpenAIDlg(wx.Dialog):
 			return
 		fileName = dlg.GetPath()
 		self.message(PROCESSING_MSG)
-		self.disableButtons()
+		self.disableControls()
 		self.worker = RecordThread(
 			self.client,
 			self,
@@ -1898,21 +1996,21 @@ class OpenAIDlg(wx.Dialog):
 		self.worker.start()
 
 	def onTextToSpeech(self, evt):
-		if not self.promptText.GetValue().strip():
+		if not self.promptTextCtrl.GetValue().strip():
 			gui.messageBox(
 				_("Please enter some text in the prompt field first."),
 				"OpenAI",
 				wx.OK | wx.ICON_ERROR
 			)
-			self.promptText.SetFocus()
+			self.promptTextCtrl.SetFocus()
 			return
-		self.disableButtons()
-		self.promptText.SetFocus()
-		self.worker = TextToSpeechThread(self, self.promptText.GetValue())
+		self.promptTextCtrl.SetFocus()
+		self.disableControls()
+		self.worker = TextToSpeechThread(self, self.promptTextCtrl.GetValue())
 		self.worker.start()
 
 	def onStopRecord(self, evt):
-		self.disableButtons()
+		self.disableControls()
 		if self.worker:
 			self.worker.stop()
 			self.worker = None
@@ -1920,45 +2018,45 @@ class OpenAIDlg(wx.Dialog):
 			_("Start &recording") + " (Ctrl+R)"
 		)
 		self.recordBtn.Bind(wx.EVT_BUTTON, self.onRecord)
-		self.enableButtons()
+		self.enableControls()
 
-	def disableButtons(self):
-		winsound.PlaySound(SND_PROGRESS, winsound.SND_ASYNC|winsound.SND_LOOP)
-		self.okBtn.Disable()
+	def disableControls(self):
+		self.submitBtn.Disable()
 		self.cancelBtn.Disable()
 		self.recordBtn.Disable()
 		self.transcribeFromFileBtn.Disable()
 		self.imageDescriptionBtn.Disable()
 		self.TTSBtn.Disable()
-		self.modelListBox.Disable()
-		self.maxTokens.Disable()
+		self.modelsListCtrl.Disable()
+		self.maxTokensSpinCtrl.Disable()
 		self.conversationCheckBox.Disable()
-		self.promptText.SetEditable(False)
-		self.systemText.SetEditable(False)
-		self.imageListCtrl.Disable()
+		self.promptTextCtrl.SetEditable(False)
+		self.systemTextCtrl.SetEditable(False)
+		self.imagesListCtrl.Disable()
 		if self.conf["advancedMode"]:
-			self.temperature.Disable()
-			self.topP.Disable()
+			self.temperatureSpinCtrl.Disable()
+			self.topPSpinCtrl.Disable()
 			self.whisperResponseFormatListBox.Disable()
 			self.streamModeCheckBox.Disable()
 			self.debugModeCheckBox.Disable()
 
-	def enableButtons(self):
-		self.conversationCheckBox.Enable()
+	def enableControls(self):
+		self.submitBtn.Enable()
+		self.cancelBtn.Enable()
 		self.recordBtn.Enable()
 		self.transcribeFromFileBtn.Enable()
 		self.imageDescriptionBtn.Enable()
 		self.TTSBtn.Enable()
-		self.modelListBox.Enable()
-		self.maxTokens.Enable()
-		self.systemText.SetEditable(True)
-		self.promptText.SetEditable(True)
+		self.modelsListCtrl.Enable()
+		self.maxTokensSpinCtrl.Enable()
+		self.conversationCheckBox.Enable()
+		self.promptTextCtrl.SetEditable(True)
+		self.systemTextCtrl.SetEditable(True)
+		self.imagesListCtrl.Enable()
 		if self.conf["advancedMode"]:
-			self.temperature.Enable()
-			self.topP.Enable()
+			self.temperatureSpinCtrl.Enable()
+			self.topPSpinCtrl.Enable()
 			self.whisperResponseFormatListBox.Enable()
 			self.streamModeCheckBox.Enable()
 			self.debugModeCheckBox.Enable()
 		self.updateImageList(False)
-		self.okBtn.Enable()
-		self.cancelBtn.Enable()
