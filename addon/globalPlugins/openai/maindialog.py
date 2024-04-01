@@ -43,6 +43,10 @@ from .resultevent import ResultEvent, EVT_RESULT_ID
 
 sys.path.insert(0, LIBS_DIR_PY)
 import openai
+try:
+	from openai._legacy_response import HttpxBinaryResponseContent as ClassyHttpxBinary
+except ImportError:
+	from openai._base_client import HttpxBinaryResponseContent as ClassyHttpxBinary
 import markdown2
 sys.path.remove(LIBS_DIR_PY)
 
@@ -1225,7 +1229,7 @@ class OpenAIDlg(wx.Dialog):
 			)
 			return
 
-		if isinstance(event.data, openai._base_client.HttpxBinaryResponseContent):
+		if isinstance(event.data, ClassyHttpxBinary):
 			if os.path.exists(TTS_FILE_NAME):
 				os.startfile(TTS_FILE_NAME)
 			return
