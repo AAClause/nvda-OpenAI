@@ -42,9 +42,10 @@ To further improve your interaction with the interface, please take note of the 
 
 - The multiline "System prompt", "Messages", and "Prompt" fields come equipped with context menus filled with commands that can be quickly executed using keyboard shortcuts. It is the same for the models list.
   These shortcuts are active when the relevant field is in focus.
-  For example, the keys 'j' and 'k' allow you to navigate to the previous and next messages, respectively, when the focus is on the History field.
+  For instance, within the Messages area, pressing 'j' moves to the previous message, and 'k' to the next one.)
 
-- Additionally, the interface includes keyboard shortcuts that are effective across the entire window. For instance, `CTRL + R` starts or stops a recording.
+- Additionally, the interface includes keyboard shortcuts that are effective across the entire window.
+  For instance, `CTRL + R` starts or stops a recording.
 
 All keyboard shortcuts are displayed next to the labels of their corresponding elements.
 
