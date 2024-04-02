@@ -43,6 +43,10 @@ from .resultevent import ResultEvent, EVT_RESULT_ID
 
 sys.path.insert(0, LIBS_DIR_PY)
 import openai
+try:
+	from openai._legacy_response import HttpxBinaryResponseContent as ClassyHttpxBinary
+except ImportError:
+	from openai._base_client import HttpxBinaryResponseContent as ClassyHttpxBinary
 import markdown2
 sys.path.remove(LIBS_DIR_PY)
 
@@ -877,12 +881,6 @@ class OpenAIDlg(wx.Dialog):
 		self.Bind(wx.EVT_CHAR_HOOK, self.onCharHook)
 		self.Bind(wx.EVT_CLOSE, self.onCancel)
 
-
-	def _getModelIndex(self, model_id):
-		return list(self._model_ids).index(model_id) if model_id in self._model_ids else (
-			list(self._model_ids).index(DEFAULT_MODEL_VISION) if self.pathList else 0
-		)
-
 	def addImageToList(
 		self,
 		path,
@@ -1072,6 +1070,8 @@ class OpenAIDlg(wx.Dialog):
 				self.onFavoriteModel(evt)
 			elif evt.GetModifiers() == wx.MOD_NONE:
 				self.showModelDetails()
+		elif evt.GetKeyCode() == wx.WXK_RETURN:
+			self.onSubmit(evt)
 		else:
 			evt.Skip()
 
@@ -1231,7 +1231,7 @@ class OpenAIDlg(wx.Dialog):
 			)
 			return
 
-		if isinstance(event.data, openai._base_client.HttpxBinaryResponseContent):
+		if isinstance(event.data, ClassyHttpxBinary):
 			if os.path.exists(TTS_FILE_NAME):
 				os.startfile(TTS_FILE_NAME)
 			return

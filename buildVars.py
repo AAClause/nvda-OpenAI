@@ -39,7 +39,9 @@ addon_info = {
 	# Add-on description
 	# Translators: Long description to be shown for this add-on on add-on information from add-ons manager
 	"addon_description": [
-		_("Open AI is an NVDA add-on designed to seamlessly integrate the capabilities of the Open AI API into your workflow. Whether you're looking to craft comprehensive text, translate passages with precision, concisely summarize documents, or even interpret and describe visual content, this add-on does it all with ease.")
+		_("Open AI is an NVDA add-on designed to seamlessly integrate the capabilities of the Open AI API into your workflow. Whether you're looking to craft comprehensive text, translate passages with precision, concisely summarize documents, or even interpret and describe visual content, this add-on does it all with ease."),
+		"\n",
+		_("The add-on also supports integration with Mistral and OpenRouter services, thanks to their shared API format.")
 	],
 	# version
 	"addon_version": time.strftime("%y.%m.%d"),
