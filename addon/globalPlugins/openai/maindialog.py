@@ -1070,6 +1070,8 @@ class OpenAIDlg(wx.Dialog):
 				self.onFavoriteModel(evt)
 			elif evt.GetModifiers() == wx.MOD_NONE:
 				self.showModelDetails()
+		elif evt.GetKeyCode() == wx.WXK_RETURN:
+			self.onSubmit(evt)
 		else:
 			evt.Skip()
 

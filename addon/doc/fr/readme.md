@@ -1,32 +1,27 @@
-# Module Open AI pour NVDA
+# Extension Open AI pour NVDA
 
-Ce module est conçu pour intégrer parfaitement les capacités de l’API Open AI dans votre travail. Que vous souhaitiez créer du texte complet, traduire des passages avec précision, résumer des documents de manière concise, ou même interpréter et décrire du contenu visuel, ce module complémentaire fait tout cela avec facilité.
+Cette extension est conçue pour intégrer de manière transparente les capacités de l'API Open AI dans votre flux de travail. Que vous cherchiez à rédiger des textes complets, traduire des passages avec précision, résumer concisément des documents, ou même interpréter et décrire du contenu visuel, cette extension le fait aisément.
 
-## Installation
+L'extension prend également en charge l'intégration avec les services Mistral et OpenRouter, grâce à leur format d'API commun.
 
-1. Allez sur la page des [versions](https://github.com/aaclause/nvda-OpenAI/releases) pour trouver la dernière version de l’extension.
-2. Téléchargez la dernière version à partir du lien fourni.
-3. Exécutez le programme d’installation pour ajouter le module complémentaire à votre environnement NVDA.
+## Étapes d'installation
 
-## Prérequis pour l’utilisation
+1. Allez sur la [page des versions](https://github.com/aaclause/nvda-OpenAI/releases) pour trouver la dernière version de l'extension.
+2. Téléchargez la dernière version depuis le lien fourni.
+3. Exécutez l'installateur pour ajouter l'extension à votre environnement NVDA.
 
-Pour utiliser toutes les fonctionnalités du module OpenAI pour NVDA, une clé API de OpenAI est requise. Suivez ces étapes pour la configurer :
+## Configuration des clés API
 
-1. Obtenez une clé API en vous inscrivant à un compte OpenAI à l’adresse suivante : [https://platform.openai.com/api-keys](https://platform.openai.com/api-keys).
-2. Avec la clé API prête, vous avez deux options de configuration :
-	- Par le biais de la boîte de dialogue des paramètres de NVDA :
-		1. Accédez au menu NVDA et naviguez vers le sous-menu "Préférences".
-		2. Ouvrez la boîte de dialogue "Paramètres" et sélectionnez la catégorie "Open AI".
-		3. Saisissez votre clé API dans le champ prévu à cet effet et cliquez sur "OK" pour confirmer.
-	- En utilisant des variables d’environnement :
-		1. Appuyez sur `Windows+Pause` pour ouvrir les Propriétés du système.
-		2. Cliquez sur "Paramètres avancés du système" et sélectionnez "Variables d’environnement".
-		3. Créez une nouvelle variable sous "Variables utilisateur" :
-			1. Cliquez sur "Nouveau".
-			2. Entrez `OPENAI_API_KEY` comme nom de la variable et collez votre clé API comme valeur.
-		4. Cliquez sur "OK" pour enregistrer vos modifications.
+Pour utiliser cette extension, vous devez la configurer avec une clé API de votre fournisseur de services sélectionné ([OpenAI](https://platform.openai.com/), [Mistral AI](https://mistral.ai/), et/ou [OpenRouter](https://openrouter.ai/)). Chaque fournisseur propose un processus simple pour l'acquisition et l'intégration de la clé API.
 
-Vous êtes maintenant prêt à explorer les fonctionnalités du module OpenAI pour NVDA !
+Une fois que vous avez votre clé API, l'étape suivante est de l'intégrer avec l'extension :
+
+- Ouvrez le menu NVDA, allez dans  'Préférences' puis 'Paramètres'. Dans la fenêtre de dialogue 'Paramètres', choisissez la catégorie "Open AI".
+- Dans cette catégorie, vous remarquerez un groupe étiqueté 'Clés API' qui contient des boutons nommés d'après les fournisseurs de services pris en charge (p.ex., "Clés API OpenAI...").
+- Cliquez sur le bouton pertinent pour votre service. Une boîte de dialogue apparaîtra, vous demandant non seulement votre clé API, mais aussi une clé d'organisation si vous en avez une. Ceci est particulièrement utile pour l'intégration avec les services qui différencient entre les usages personnels et organisationnels.
+- Remplissez votre clé API et, le cas échéant, votre clé d'organisation dans les champs respectifs et cliquez sur 'OK' pour enregistrer vos paramètres.
+
+Vous êtes maintenant prêt à explorer les fonctionnalités de l'extension OpenAI NVDA !
 
 ## Comment utiliser le module
 
@@ -34,7 +29,7 @@ Vous êtes maintenant prêt à explorer les fonctionnalités du module OpenAI po
 
 La majorité des fonctionnalités de l’extension sont facilement accessibles via une boîte de dialogue, qui peut être lancée en appuyant sur `NVDA+G`.  
 Vous pouvez également vous rendre dans le sous-menu "Open AI" du menu NVDA et sélectionner l’élément "Dialogue principal…".  
-Dans cette boîte de dialogue, vous pourrez :
+Dans cette boîte de dialogue, vous pourrez :
 
 - Entamer des conversations interactives avec les modèles d’IA pour obtenir de l’aide ou des informations.
 - Obtenir des descriptions d’images à partir de fichiers d’images.
@@ -43,7 +38,7 @@ Dans cette boîte de dialogue, vous pourrez :
 
 #### Augmentez votre productivité grâce aux raccourcis
 
-Pour améliorer votre interaction avec l’interface, veuillez prendre note de ce qui suit :
+Pour améliorer votre interaction avec l’interface, veuillez prendre note de ce qui suit :
 
 - Les champs multilignes "Système", "Historique" et "Prompt" sont dotés de menus contextuels contenant des commandes qui peuvent être exécutées rapidement à l’aide de raccourcis clavier.
   Ces raccourcis sont actifs lorsque le champ concerné a le focus.
