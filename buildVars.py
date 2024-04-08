@@ -39,12 +39,14 @@ addon_info = {
 	# Add-on description
 	# Translators: Long description to be shown for this add-on on add-on information from add-ons manager
 	"addon_description": [
-		_("Open AI is an NVDA add-on designed to seamlessly integrate the capabilities of the Open AI API into your workflow. Whether you're looking to craft comprehensive text, translate passages with precision, concisely summarize documents, or even interpret and describe visual content, this add-on does it all with ease.")
+		_("Open AI is an NVDA add-on designed to seamlessly integrate the capabilities of the Open AI API into your workflow. Whether you're looking to craft comprehensive text, translate passages with precision, concisely summarize documents, or even interpret and describe visual content, this add-on does it all with ease."),
+		"\n",
+		_("The add-on also supports integration with Mistral and OpenRouter services, thanks to their shared API format.")
 	],
 	# version
 	"addon_version": time.strftime("%y.%m.%d"),
 	# Author(s)
-	"addon_author": "André-Abush Clause <dev@andreabc.net>, GitHub Copilot, Nael Sayegh <naelousay@gmail.com>, Roberto Perez <robertoperez@microsoft.com>, Heorhii Halas <nvda.translation.uk@gmail.com>, Umut Korkmaz <umutkork@gmail.com>, Konsta Ranta <konsta.ranta@gmail.com>, and other contributors",
+	"addon_author": "André-Abush Clause <dev@andreabc.net>, GitHub Copilot, Nael Sayegh <infos@nael-accessvision.com>, Roberto Perez <robertoperez@microsoft.com>, Heorhii Halas <nvda.translation.uk@gmail.com>, Umut Korkmaz <umutkork@gmail.com>, Konsta Ranta <konsta.ranta@gmail.com>, Danil Kostenkov <danilkostenkov38@gmail.com>, and other contributors",
 	# URL for the add-on documentation support
 	"addon_url": "https://andreabc.net/projects/NVDA_addons/OpenAI",
 	# URL for the add-on repository where the source code can be found

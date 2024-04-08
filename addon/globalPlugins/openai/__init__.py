@@ -12,11 +12,11 @@ import wx
 import ui
 from logHandler import log
 from scriptHandler import script, getLastScriptRepeatCount
+from . import apikeymanager
 from . import configspec
 from . import updatecheck
-from .apikeymanager import APIKeyManager
 from .consts import (
-	ADDON_DIR, DATA_DIR,
+	ADDON_DIR, BASE_URLs, DATA_DIR,
 	LIBS_DIR_PY,
 	TTS_MODELS, TTS_VOICES
 )
@@ -33,16 +33,85 @@ ADDON_INFO = addonHandler.Addon(
 	ROOT_ADDON_DIR
 ).manifest
 
-NO_AUTHENTICATION_KEY_PROVIDED_MSG = _("No authentication key provided. Please set it in the Preferences dialog.")
+NO_AUTHENTICATION_KEY_PROVIDED_MSG = _("No API key provided for any provider, please provide at least one API key in the settings dialog")
 
 conf = config.conf["OpenAI"]
-api_key_manager = APIKeyManager(DATA_DIR)
+
+
+class APIAccessDialog(wx.Dialog):
+
+	def __init__(
+		self,
+		parent,
+		title: str,
+		APIKeyManager: apikeymanager.APIKeyManager,
+	):
+		super(APIAccessDialog, self).__init__(parent, title=title)
+		self.APIKeyManager = APIKeyManager
+		self.provider_name = APIKeyManager.provider
+		self.InitUI()
+		self.CenterOnParent()
+		self.SetSize((500, 200))
+
+	def InitUI(self):
+		pnl = wx.Panel(self)
+		vbox = wx.BoxSizer(wx.VERTICAL)
+		fgs = wx.FlexGridSizer(3, 2, 9, 25)  # 3 rows, 2 columns, vertical and horizontal gap
+
+		lblAPIKey = wx.StaticText(pnl, label=f"{self.provider_name} API Key:")
+		self.txtAPIKey = wx.TextCtrl(pnl)
+
+		lblOrgName = wx.StaticText(pnl, label="Organization name:")
+		self.txtOrgName = wx.TextCtrl(pnl)
+
+		lblOrgKey = wx.StaticText(pnl, label="Organization key:")
+		self.txtOrgKey = wx.TextCtrl(pnl)
+
+		# Adding Rows to the FlexGridSizer
+		fgs.AddMany(
+			[
+				lblAPIKey, (self.txtAPIKey, 1, wx.EXPAND),
+				lblOrgName, (self.txtOrgName, 1, wx.EXPAND),
+				lblOrgKey, (self.txtOrgKey, 1, wx.EXPAND),
+			])
+
+		# Configure an expanding column for text controls
+		fgs.AddGrowableCol(1, 1)
+
+		APIKey = self.APIKeyManager.get_api_key()
+		if APIKey:
+			self.txtAPIKey.SetValue(
+				APIKey
+			)
+		orgKey = self.APIKeyManager.get_organization_key()
+		orgName = self.APIKeyManager.get_organization_name()
+		if orgKey and orgName:
+			self.txtOrgName.SetValue(
+				orgName
+			)
+			self.txtOrgKey.SetValue(
+				orgKey
+			)
+
+		btnsizer = wx.StdDialogButtonSizer()
+		btnOK = wx.Button(pnl, wx.ID_OK)
+		btnOK.SetDefault()
+		btnsizer.AddButton(btnOK)
+		btnsizer.AddButton(wx.Button(pnl, wx.ID_CANCEL))
+		btnsizer.Realize()
+
+		# Layout sizers
+		vbox.Add(fgs, proportion=1, flag=wx.ALL|wx.EXPAND, border=10)
+		vbox.Add(btnsizer, flag=wx.ALIGN_CENTER|wx.TOP|wx.BOTTOM, border=10)
+		pnl.SetSizer(vbox)
+
 
 class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 
 	title = "Open AI"
 
 	def makeSettings(self, settingsSizer):
+
 		sHelper = gui.guiHelper.BoxSizerHelper(self, sizer=settingsSizer)
 
 		updateGroupLabel = _("Update")
@@ -69,50 +138,26 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 
 		sHelper.addItem(updateSizer)
 
-		APIKey = api_key_manager.get_api_key()
-		if not APIKey: APIKey = ''
-		APIKeyOrg = api_key_manager.get_api_key(use_org=True)
-		org_name = ""
-		org_key = ""
-		if APIKeyOrg and ":=" in APIKeyOrg :
-			org_name, org_key = APIKeyOrg.split(":=")
-		self.APIKey = sHelper.addLabeledControl(
-			_("API Key:"),
-			wx.TextCtrl,
-			value=APIKey
-		)
+		APIAccessGroupLabel = _("API Access Keys")
+		APIAccessSizer = wx.StaticBoxSizer(wx.HORIZONTAL, self, label=APIAccessGroupLabel)
+		APIAccessBox = APIAccessSizer.GetStaticBox()
+		APIAccessGroup = gui.guiHelper.BoxSizerHelper(self, sizer=APIAccessSizer)
 
-		orgGroupLabel = _("Organization")
-		orgSizer = wx.StaticBoxSizer(wx.VERTICAL, self, label=orgGroupLabel)
-		orgGroupBox = orgSizer.GetStaticBox()
-		orgGroup = gui.guiHelper.BoxSizerHelper(self, sizer=orgSizer)
+		for provider in apikeymanager.AVAILABLE_PROVIDERS:
+			item = APIAccessGroup.addItem(
+				wx.Button(
+					APIAccessBox,
+					label=_("%s API &keys...") % provider,
+					id=wx.ID_ANY,
+					name=provider
+				)
+			)
+			item.Bind(
+				wx.EVT_BUTTON,
+				self.onAPIKeys
+			)
 
-		self.use_org = orgGroup.addItem(
-			wx.CheckBox(
-				orgGroupBox,
-				label=_("Use or&ganization"))
-		)
-		self.use_org.SetValue(
-			conf["use_org"]
-		)
-		self.use_org.Bind(
-			wx.EVT_CHECKBOX,
-			self.onUseOrg
-		)
-
-		self.org_name = orgGroup.addLabeledControl(
-			_("Organization &name:"),
-			wx.TextCtrl,
-			value=org_name
-		)
-
-		self.org_key = orgGroup.addLabeledControl(
-			_("&Organization key:"),
-			wx.TextCtrl,
-			value=org_key
-		)
-
-		sHelper.addItem(orgSizer)
+		sHelper.addItem(APIAccessSizer)
 
 		mainDialogGroupLabel = _("Main dialog")
 		mainDialogSizer = wx.StaticBoxSizer(wx.VERTICAL, self, label=mainDialogGroupLabel)
@@ -237,19 +282,124 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 
 		sHelper.addItem(imageSizer)
 
+		chatFeedback = _("Chat feedback")
+		chatFeedbackSizer = wx.StaticBoxSizer(wx.VERTICAL, self, label=chatFeedback)
+		chatFeedbackBox = chatFeedbackSizer.GetStaticBox()
+		chatFeedbackGroup = gui.guiHelper.BoxSizerHelper(self, sizer=chatFeedbackSizer)
+
+		self.chatFeedback = {
+			"sndTaskInProgress": chatFeedbackGroup.addItem(
+				wx.CheckBox(
+					chatFeedbackBox,
+					# Translators: This is a setting to play a sound when a task is in progress.
+					label=_("Play sound when a task is in progress")
+				)
+			),
+			"sndResponseSent": chatFeedbackGroup.addItem(
+				wx.CheckBox(
+					chatFeedbackBox,
+					# Translators: This is a setting to play a sound when a response is sent.
+					label=_("Play sound when a response is sent")
+				)
+			),
+			"sndResponsePending": chatFeedbackGroup.addItem(
+				wx.CheckBox(
+					chatFeedbackBox,
+					# Translators: This is a setting to play a sound when a response is pending.
+					label=_("Play sound when a response is pending")
+				)
+			),
+			"sndResponseReceived": chatFeedbackGroup.addItem(
+				wx.CheckBox(
+					chatFeedbackBox,
+					# Translators: This is a setting to play a sound when a response is received.
+					label=_("Play sound when a response is received")
+				)
+			),
+			"brailleAutoFocusHistory": chatFeedbackGroup.addItem(
+				wx.CheckBox(
+					chatFeedbackBox,
+					# Translators: This is a setting to attach braille to the history if the focus is in the prompt field.
+					label=_("Attach braille to the history if the focus is in the prompt field")
+				)
+			),
+			"speechResponseReceived": chatFeedbackGroup.addItem(
+				wx.CheckBox(
+					chatFeedbackBox,
+					label=_("Speak response when the focus is in the prompt field")
+				)
+			)
+		}
+		for key, item in self.chatFeedback.items():
+			item.SetValue(conf["chatFeedback"][key])
+
+		sHelper.addItem(chatFeedbackSizer)
+
+		# Translators: This is the name of a group of settings
+		whisperGroupLabel = _("Recording")
+		whisperSizer = wx.StaticBoxSizer(wx.VERTICAL, self, label=whisperGroupLabel)
+		whisperBox = whisperSizer.GetStaticBox()
+		whisperGroup = gui.guiHelper.BoxSizerHelper(self, sizer=whisperSizer)
+
+		# Translators: This is the name of a setting in the Recording group
+		label = _("Use &whisper.cpp for transcription")
+		self.whisperCheckbox = whisperGroup.addItem(
+			wx.CheckBox(
+				whisperBox,
+				label=label,
+			)
+		)
+		self.whisperCheckbox.SetValue(
+			conf["audio"]["whisper.cpp"]["enabled"]
+		)
+		self.whisperCheckbox.Bind(
+			wx.EVT_CHECKBOX,
+			self.onWhisperCheckbox
+		)
+
+		# Translators: This is the name of a setting in the Recording group
+		label = _("&Host:")
+		self.whisperHost = whisperGroup.addLabeledControl(
+			label,
+			wx.TextCtrl,
+			value=conf["audio"]["whisper.cpp"]["host"]
+		)
+
+		sHelper.addItem(whisperSizer)
+
 		sHelper.addItem(mainDialogSizer)
 
-		self.onUseOrg(None)
 		self.onResize(None)
+		self.onWhisperCheckbox(None)
 
-	def onUseOrg(self, evt):
-		self.org_name.Enable(self.use_org.GetValue())
-		self.org_key.Enable(self.use_org.GetValue())
+	def onAPIKeys(self, evt):
+		provider_name = evt.GetEventObject().GetName()
+		manager = apikeymanager.get(provider_name)
+		dlg = APIAccessDialog(
+			self,
+			"%s API Access Keys" % provider_name,
+			manager
+		)
+		if dlg.ShowModal() == wx.ID_OK:
+			manager.save_api_key(
+				dlg.txtAPIKey.GetValue().strip()
+			)
+			manager.save_api_key(
+				dlg.txtOrgKey.GetValue().strip(),
+				org=True,
+				org_name=dlg.txtOrgName.GetValue()
+			)
 
 	def onResize(self, evt):
 		self.maxWidth.Enable(self.resize.GetValue())
 		self.maxHeight.Enable(self.resize.GetValue())
 		self.quality.Enable(self.resize.GetValue())
+
+	def onWhisperCheckbox(self, evt):
+		self.whisperHost.Enable(
+			self.whisperCheckbox.GetValue()
+		)
+
 	def onDefaultPrompt(self, evt):
 		if self.useCustomPrompt.GetValue():
 			self.customPromptText.Enable()
@@ -260,23 +410,6 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 	def onSave(self):
 		conf["update"]["check"] = self.updateCheck.GetValue()
 		conf["update"]["channel"] = self.updateChannel.GetString(self.updateChannel.GetSelection())
-		api_key = self.APIKey.GetValue().strip()
-		api_key_manager.save_api_key(api_key)
-		api_key_org = self.org_key.GetValue().strip()
-		conf["use_org"] = self.use_org.GetValue()
-		org_name = self.org_name.GetValue().strip()
-		if conf["use_org"]:
-			if not api_key_org:
-				self.org_key.SetFocus()
-				return
-			if not org_name:
-				self.org_name.SetFocus()
-				return
-		api_key_manager.save_api_key(
-			api_key_org,
-			org=True,
-			org_name=org_name
-		)
 		conf["blockEscapeKey"] = self.blockEscape.GetValue()
 		conf["renewClient"] = True
 		conf["saveSystem"] = self.saveSystem.GetValue()
@@ -294,6 +427,14 @@ class SettingsDlg(gui.settingsDialogs.SettingsPanel):
 			conf["images"]["customPromptText"] = self.customPromptText.GetValue()
 		else:
 			conf["images"]["useCustomPrompt"] = False
+		conf["audio"]["whisper.cpp"]["enabled"] = self.whisperCheckbox.GetValue()
+		conf["audio"]["whisper.cpp"]["host"] = self.whisperHost.GetValue()
+
+
+
+		for key, item in self.chatFeedback.items():
+			conf["chatFeedback"][key] = item.GetValue()
+
 
 class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 
@@ -301,11 +442,17 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 
 	def __init__(self):
 		super().__init__()
-		APIKey = api_key_manager.get_api_key()
 		gui.settingsDialogs.NVDASettingsDialog.categoryClasses.append(SettingsDlg)
 		self.client = None
-		self.recordtThread = None
+		self.recordThread = None
 		self.createMenu()
+		apikeymanager.load(DATA_DIR)
+		log.info(
+			"Open AI initialized. Version: %s. %d providers" % (
+				ADDON_INFO["version"],
+				len(apikeymanager._managers or [])
+			)
+		)
 
 	def createMenu(self):
 		self.submenu = wx.Menu()
@@ -409,20 +556,24 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			conf["renewClient"] = False
 		if self.client:
 			return self.client
-		api_key = api_key_manager.get_api_key()
-		organization = api_key_manager.get_api_key(use_org=True)
-		if not api_key or not api_key.strip():
-			return None
-		if conf["use_org"]:
-			if not organization or not organization.strip():
+
+		# initialize the client with the first available provider, will be adjusted on the fly if needed
+		for provider in apikeymanager.AVAILABLE_PROVIDERS:
+			manager = apikeymanager.get(provider)
+			if not manager.isReady():
+				continue
+			api_key = manager.get_api_key()
+			if not api_key or not api_key.strip():
 				return None
 			self.client = OpenAI(
-				organization=organization.split(":=")[1],
 				api_key=api_key
 			)
-		else:
-			self.client = OpenAI(api_key=api_key)
-		return self.client
+			organization = manager.get_api_key(use_org=True)
+			if organization and organization.count(":=") == 1:
+				self.client.organization = organization.split(":=")[1]
+			self.client.base_url = BASE_URLs[manager.provider]
+			return self.client
+		return None
 
 	def checkScreenCurtain(self):
 		from visionEnhancementProviders.screenCurtain import ScreenCurtainProvider
@@ -550,12 +701,12 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 	def script_toggleRecording(self, gesture):
 		if not self.getClient():
 			return ui.message(NO_AUTHENTICATION_KEY_PROVIDED_MSG)
-		if self.recordtThread:
-			self.recordtThread.stop()
-			self.recordtThread = None
+		if self.recordThread:
+			self.recordThread.stop()
+			self.recordThread = None
 		else:
-			self.recordtThread = RecordThread(
+			self.recordThread = RecordThread(
 				self.getClient(),
 				conf=conf["audio"]
 			)
-			self.recordtThreadg.start()
+			self.recordThread.start()
