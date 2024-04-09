@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: open ai\n"
 "Report-Msgid-Bugs-To: nvda-translations@groups.io\n"
-"POT-Creation-Date: 2024-02-08 00:19+0100\n"
-"PO-Revision-Date: 2024-02-08 17:22+0200\n"
+"POT-Creation-Date: 2024-04-02 19:30+0200\n"
+"PO-Revision-Date: 2024-04-08 21:31+0300\n"
 "Last-Translator: \n"
 "Language-Team: Konsta Suurhaukka\n"
 "Language: fi_FI\n"
@@ -16,79 +16,78 @@ msgstr ""
 "globalPlugins\n"
 "X-Poedit-SearchPath-0: .\n"
 
-#: addon\globalPlugins\openai\__init__.py:36
+#: addon/globalPlugins/openai/__init__.py:36
 msgid ""
 "No API key provided for any provider, please provide at least one API key in "
 "the settings dialog"
 msgstr "Yhtään API-avainta ei ole annettu."
 
-#: addon\globalPlugins\openai\__init__.py:117
+#: addon/globalPlugins/openai/__init__.py:117
 msgid "Update"
 msgstr "Päivitä"
 
-#: addon\globalPlugins\openai\__init__.py:125
+#: addon/globalPlugins/openai/__init__.py:125
 msgid "Check for &updates on startup and periodically"
 msgstr "Tarkista &päivitykset käynnistettäessä ja ajoittain"
 
-#: addon\globalPlugins\openai\__init__.py:131
+#: addon/globalPlugins/openai/__init__.py:131
 msgid "&Channel:"
 msgstr "&Kanava:"
 
-#: addon\globalPlugins\openai\__init__.py:141
+#: addon/globalPlugins/openai/__init__.py:141
 msgid "API Access Keys"
 msgstr "API-avaimet:"
 
-#: addon\globalPlugins\openai\__init__.py:150
+#: addon/globalPlugins/openai/__init__.py:150
 #, python-format
 msgid "%s API &keys..."
 msgstr "%s-API-&avaimet"
 
-#: addon\globalPlugins\openai\__init__.py:162
+#: addon/globalPlugins/openai/__init__.py:162
 msgid "Main dialog"
 msgstr "Pääikkuna"
 
-#: addon\globalPlugins\openai\__init__.py:167
+#: addon/globalPlugins/openai/__init__.py:167
 msgid "Block the closing using the &escape key"
 msgstr "Estä sulkeminen Esc-näppäimellä"
 
-#: addon\globalPlugins\openai\__init__.py:175
+#: addon/globalPlugins/openai/__init__.py:175
 msgid "Remember the content of the S&ystem field between sessions"
 msgstr "Muista &Järjestelmä-kohdan teksti istuntojen välissä"
 
-#: addon\globalPlugins\openai\__init__.py:183
+#: addon/globalPlugins/openai/__init__.py:183
 msgid "Enable &advanced settings (including temperature and probability mass)"
 msgstr "Ota käyttöön edistyneet asetukset (kuten temp ja probmass)"
 
-#: addon\globalPlugins\openai\__init__.py:191
+#: addon/globalPlugins/openai/__init__.py:191
 msgid "Text To Speech"
 msgstr "Tekstistä puheeksi"
 
-#: addon\globalPlugins\openai\__init__.py:197
+#: addon/globalPlugins/openai/__init__.py:197
 msgid "&Voice:"
 msgstr "&Ääni:"
 
-#: addon\globalPlugins\openai\__init__.py:207
-#: addon\globalPlugins\openai\maindialog.py:642
+#: addon/globalPlugins/openai/__init__.py:207
 msgid "&Model:"
 msgstr "&Malli:"
 
-#: addon\globalPlugins\openai\__init__.py:218
+#: addon/globalPlugins/openai/__init__.py:218
 msgid "Image description"
 msgstr "Kuvan kuvaus"
 
-#: addon\globalPlugins\openai\__init__.py:223
+#: addon/globalPlugins/openai/__init__.py:223
 msgid "&Resize images before sending them to the API"
 msgstr "&Skaalaa kuvat ennen lähettämistä"
 
-#: addon\globalPlugins\openai\__init__.py:236
+#: addon/globalPlugins/openai/__init__.py:236
 msgid "Maximum &width (0 to resize proportionally to the height):"
 msgstr "Suurin &leveys (0 skaalaa suhteessa korkeuteen):"
 
-#: addon\globalPlugins\openai\__init__.py:245
+#: addon/globalPlugins/openai/__init__.py:245
 msgid "Maximum &height (0 to resize proportionally to the width):"
 msgstr "Suurin &korkeus (0 skaalaa suhteessa leveyteen):"
 
-#: addon\globalPlugins\openai\__init__.py:254
+#: addon/globalPlugins/openai/__init__.py:254
 msgid ""
 "&Quality for JPEG images (0 [worst] to 95 [best], values above 95 should be "
 "avoided):"
@@ -96,159 +95,159 @@ msgstr ""
 "JPEG-kuvien &laatu (0 [huonoin] - 95 [paras], 95:tä suurempia arvoja tulee "
 "välttää):"
 
-#: addon\globalPlugins\openai\__init__.py:266
+#: addon/globalPlugins/openai/__init__.py:266
 msgid "Customize default text &prompt"
 msgstr "Mukauta oletus&kehotetta"
 
-#: addon\globalPlugins\openai\__init__.py:272
+#: addon/globalPlugins/openai/__init__.py:272
 msgid "Default &text prompt:"
 msgstr "Oletus&kehote:"
 
-#: addon\globalPlugins\openai\__init__.py:285
+#: addon/globalPlugins/openai/__init__.py:285
 msgid "Chat feedback"
 msgstr "Keskustelun ilmoittaminen"
 
 #. Translators: This is a setting to play a sound when a task is in progress.
-#: addon\globalPlugins\openai\__init__.py:295
+#: addon/globalPlugins/openai/__init__.py:295
 msgid "Play sound when a task is in progress"
 msgstr "Toista ääni tehtävää suoritettaessa"
 
 #. Translators: This is a setting to play a sound when a response is sent.
-#: addon\globalPlugins\openai\__init__.py:302
+#: addon/globalPlugins/openai/__init__.py:302
 msgid "Play sound when a response is sent"
 msgstr "Toista ääni vastausta lähetettäessä"
 
 #. Translators: This is a setting to play a sound when a response is pending.
-#: addon\globalPlugins\openai\__init__.py:309
+#: addon/globalPlugins/openai/__init__.py:309
 msgid "Play sound when a response is pending"
 msgstr "Toista ääni vastausta odotettaessa"
 
 #. Translators: This is a setting to play a sound when a response is received.
-#: addon\globalPlugins\openai\__init__.py:316
+#: addon/globalPlugins/openai/__init__.py:316
 msgid "Play sound when a response is received"
 msgstr "Toista ääni vastauksen saapuessa"
 
 #. Translators: This is a setting to attach braille to the history if the focus is in the prompt field.
-#: addon\globalPlugins\openai\__init__.py:323
+#: addon/globalPlugins/openai/__init__.py:323
 msgid "Attach braille to the history if the focus is in the prompt field"
 msgstr "Lisää historiaan pistekirjoitus, jos kohdistus on Kehote-kentässä"
 
-#: addon\globalPlugins\openai\__init__.py:329
+#: addon/globalPlugins/openai/__init__.py:329
 msgid "Speak response when the focus is in the prompt field"
 msgstr "Puhu vastaus, jos kohdistus on Kehote-kentässä"
 
 #. Translators: This is the name of a group of settings
-#: addon\globalPlugins\openai\__init__.py:339
+#: addon/globalPlugins/openai/__init__.py:339
 msgid "Recording"
 msgstr "&Nauhoitetaan"
 
 #. Translators: This is the name of a setting in the Recording group
-#: addon\globalPlugins\openai\__init__.py:345
+#: addon/globalPlugins/openai/__init__.py:345
 msgid "Use &whisper.cpp for transcription"
 msgstr "Käytä &whisper.cpp:tä äänen erotteluun"
 
 #. Translators: This is the name of a setting in the Recording group
-#: addon\globalPlugins\openai\__init__.py:361
+#: addon/globalPlugins/openai/__init__.py:361
 msgid "&Host:"
 msgstr "&Isäntä:"
 
-#: addon\globalPlugins\openai\__init__.py:460
+#: addon/globalPlugins/openai/__init__.py:464
 msgid "Docu&mentation"
 msgstr "&Ohje"
 
-#: addon\globalPlugins\openai\__init__.py:461
+#: addon/globalPlugins/openai/__init__.py:465
 msgid "Open the documentation of this addon"
 msgstr "Avaa tämän lisäosan ohje"
 
-#: addon\globalPlugins\openai\__init__.py:466
+#: addon/globalPlugins/openai/__init__.py:470
 msgid "Main d&ialog..."
 msgstr "Pää&ikkuna..."
 
-#: addon\globalPlugins\openai\__init__.py:467
+#: addon/globalPlugins/openai/__init__.py:471
 msgid "Show the Open AI dialog"
 msgstr "Näytä Open AI-ikkuna"
 
-#: addon\globalPlugins\openai\__init__.py:475
+#: addon/globalPlugins/openai/__init__.py:479
 msgid "API &keys"
 msgstr "API-&avaimet"
 
-#: addon\globalPlugins\openai\__init__.py:476
+#: addon/globalPlugins/openai/__init__.py:480
 msgid "Manage the API keys"
 msgstr "Hallitse API-avaimia"
 
-#: addon\globalPlugins\openai\__init__.py:481
+#: addon/globalPlugins/openai/__init__.py:485
 msgid "API &usage"
 msgstr "API:n &käyttö"
 
-#: addon\globalPlugins\openai\__init__.py:482
+#: addon/globalPlugins/openai/__init__.py:486
 msgid "Open the API usage webpage"
 msgstr "Avaa API:n käyttödatan web-sivu"
 
-#: addon\globalPlugins\openai\__init__.py:487
+#: addon/globalPlugins/openai/__init__.py:491
 msgid "Git&Hub repository"
 msgstr "&GitHub-koodivarasto"
 
-#: addon\globalPlugins\openai\__init__.py:488
+#: addon/globalPlugins/openai/__init__.py:492
 msgid "Open the GitHub repository of this addon"
 msgstr "Avaa tämän lisäosan GitHub-koodivarasto"
 
-#: addon\globalPlugins\openai\__init__.py:496
+#: addon/globalPlugins/openai/__init__.py:500
 msgid "Check for &updates..."
 msgstr "Tarkista &päivitykset..."
 
-#: addon\globalPlugins\openai\__init__.py:497
+#: addon/globalPlugins/openai/__init__.py:501
 msgid "Check for updates"
 msgstr "Tarkista päivitykset"
 
-#: addon\globalPlugins\openai\__init__.py:510
+#: addon/globalPlugins/openai/__init__.py:514
 #, python-brace-format
 msgid "Open A&I {addon_version}"
 msgstr "Open A&I {addon_version}"
 
-#: addon\globalPlugins\openai\__init__.py:584
+#: addon/globalPlugins/openai/__init__.py:588
 msgid "Please disable the screen curtain before taking a screenshot"
 msgstr "Poista näyttöverho käytöstä ennen näyttökuvan ottamista"
 
-#: addon\globalPlugins\openai\__init__.py:599
+#: addon/globalPlugins/openai/__init__.py:603
 msgid "Show Open AI dialog"
 msgstr "Näytä Open AI -ikkuna"
 
-#: addon\globalPlugins\openai\__init__.py:622
+#: addon/globalPlugins/openai/__init__.py:626
 msgid "Image added to an existing session"
 msgstr "Kuva lisätty olemassaolevaan istuntoon"
 
 #. Translators: This is the description of a command to take a screenshot and describe it.
-#: addon\globalPlugins\openai\__init__.py:635
+#: addon/globalPlugins/openai/__init__.py:639
 msgid "Take a screenshot and describe it"
 msgstr "Ota näyttökuva ja kuvaile se"
 
-#: addon\globalPlugins\openai\__init__.py:651
+#: addon/globalPlugins/openai/__init__.py:655
 #, python-format
 msgid "Screenshot %s"
 msgstr "Näyttökuva %s"
 
 #. Translators: This is the description of a command to grab the current navigator object and describe it.
-#: addon\globalPlugins\openai\__init__.py:659
+#: addon/globalPlugins/openai/__init__.py:663
 msgid "Grab the current navigator object and describe it"
 msgstr "Kuvaile nykyistä navigointiobjektia"
 
 #. Translators: This is the name of the screenshot to be described.
-#: addon\globalPlugins\openai\__init__.py:682
+#: addon/globalPlugins/openai/__init__.py:686
 #, python-format
 msgid "Navigator Object %s"
 msgstr "Navigointiobjekti %s"
 
-#: addon\globalPlugins\openai\__init__.py:698
+#: addon/globalPlugins/openai/__init__.py:702
 msgid "Toggle the microphone recording and transcribe the audio from anywhere"
 msgstr "Ota nauhoitus käyttöön ja erottele ääntä missä tahansa"
 
 #. Translators: This is a model description
-#: addon\globalPlugins\openai\consts.py:32
+#: addon/globalPlugins/openai/consts.py:32
 msgid "Points to one of the most recent iterations of gpt-3.5 model."
 msgstr "Käyttää yhtä GPT-3.5-mallin uusimmista versioista."
 
 #. Translators: This is a model description
-#: addon\globalPlugins\openai\consts.py:40
+#: addon/globalPlugins/openai/consts.py:40
 msgid ""
 "The latest GPT-3.5 Turbo model with higher accuracy at responding in "
 "requested formats and a fix for a bug which caused a text encoding issue for "
@@ -256,7 +255,7 @@ msgid ""
 msgstr "Uusin GPT-3.5 Turbo -malli, jolla on suurempi vastaamistarkkuus."
 
 #. Translators: This is a model description
-#: addon\globalPlugins\openai\consts.py:48
+#: addon/globalPlugins/openai/consts.py:48
 msgid ""
 "Updated GPT 3.5 Turbo. The latest GPT-3.5 Turbo model with improved "
 "instruction following, JSON mode, reproducible outputs, parallel function "
@@ -266,7 +265,7 @@ msgstr ""
 "ohjeiden seuraaminen, JSON-tila, rinnakkaistoimintokutsut ja paljon muuta."
 
 #. Translators: This is a model description
-#: addon\globalPlugins\openai\consts.py:56
+#: addon/globalPlugins/openai/consts.py:56
 msgid ""
 "Same capabilities as the standard gpt-3.5-turbo model but with 4 times the "
 "context"
@@ -275,12 +274,12 @@ msgstr ""
 "kertaisella kontekstilla"
 
 #. Translators: This is a model description
-#: addon\globalPlugins\openai\consts.py:64
+#: addon/globalPlugins/openai/consts.py:64
 msgid "Points to one of the most recent iterations of gpt-4 model."
 msgstr "Käyttää yhtä GPT-4-mallin uusimmista versioista."
 
 #. Translators: This is a model description
-#: addon\globalPlugins\openai\consts.py:72
+#: addon/globalPlugins/openai/consts.py:72
 msgid ""
 "The latest GPT-4 model intended to reduce cases of “laziness” where the "
 "model doesn’t complete a task."
@@ -289,7 +288,7 @@ msgstr ""
 "kun malli ei voi suorittaa tehtävää."
 
 #. Translators: This is a model description
-#: addon\globalPlugins\openai\consts.py:80
+#: addon/globalPlugins/openai/consts.py:80
 msgid ""
 "GPT-4 Turbo model featuring improved instruction following, JSON mode, "
 "reproducible outputs, parallel function calling, and more."
@@ -298,7 +297,7 @@ msgstr ""
 "rinnakkaistoimintokutsut ja paljon muuta."
 
 #. Translators: This is a model description
-#: addon\globalPlugins\openai\consts.py:89
+#: addon/globalPlugins/openai/consts.py:89
 msgid ""
 "GPT-4 Turbo with vision. Ability to understand images, in addition to all "
 "other GPT-4 Turbo capabilities."
@@ -307,7 +306,7 @@ msgstr ""
 "Turbo -ominaisuuksien lisäksi."
 
 #. Translators: This is a model description
-#: addon\globalPlugins\openai\consts.py:99
+#: addon/globalPlugins/openai/consts.py:99
 msgid ""
 "More capable than any GPT-3.5 model, able to do more complex tasks, and "
 "optimized for chat"
@@ -316,7 +315,7 @@ msgstr ""
 "ja on chatille"
 
 #. Translators: This is a model description
-#: addon\globalPlugins\openai\consts.py:106
+#: addon/globalPlugins/openai/consts.py:106
 msgid ""
 "Same capabilities as the standard gpt-4 mode but with 4x the context length."
 msgstr ""
@@ -324,26 +323,38 @@ msgstr ""
 "kontekstilla."
 
 #. Translators: This is a model description
-#: addon\globalPlugins\openai\consts.py:114
+#: addon/globalPlugins/openai/consts.py:114
+#: addon/globalPlugins/openai/consts.py:123
+#, python-format
+msgid "aka %s"
+msgstr "aka %s"
+
+#. Translators: This is a model description
+#: addon/globalPlugins/openai/consts.py:132
+msgid "Simple tasks (Classification, Customer Support, or Text Generation)"
+msgstr "Yksinkertaiset tehtävät (luokittelu, asiakastuki tai tekstin luominen)"
+
+#. Translators: This is a model description
+#: addon/globalPlugins/openai/consts.py:141
 msgid ""
-"Used for large batch processing tasks where cost is a significant factor but "
-"reasoning capabilities are not crucial. Uses the Mistral API."
+"Intermediate tasks that require moderate reasoning (Data extraction, "
+"Summarizing a Document, Writing emails, Writing a Job Description, or "
+"Writing Product Descriptions)"
 msgstr ""
-"Käytetään suuriin käsittelytehtäviin, joissa hinta on merkittävä tekijä, "
-"mutta päättelykyvyt eivät ole ratkaisevia. Käyttää Mistral API:a."
+"Kohtuullista päättelyä vaativat tehtävät (tiedon poimiminen, asiakirjan "
+"yhteenvedon tekeminen, sähköpostien, työnkuvauksen tai tuotekuvausten "
+"kirjoittaminen)"
 
 #. Translators: This is a model description
-#: addon\globalPlugins\openai\consts.py:123
+#: addon/globalPlugins/openai/consts.py:150
 msgid ""
-"Higher reasoning capabilities and more capabilities. Use the Mistral API."
-msgstr "Parempi päättelykyky ja enemmän ominaisuuksia. Käyttää Mistral API:a."
+"Complex tasks that require large reasoning capabilities or are highly "
+"specialized (Synthetic Text Generation, Code Generation, RAG, or Agents)"
+msgstr ""
+"Suurta päättelykykyä vaativat tehtävät (synteettisen tekstin luominen, "
+"koodin luominen, RAG tai agentit)"
 
-#. Translators: This is a model description
-#: addon\globalPlugins\openai\consts.py:132
-msgid "Internal prototype model. Uses the Mistral API."
-msgstr "Sisäinen prototyyppimalli. Käyttää Mistral API:a."
-
-#: addon\globalPlugins\openai\consts.py:146
+#: addon/globalPlugins/openai/consts.py:164
 msgid ""
 "You are an accessibility assistant integrated in the NVDA screen reader that "
 "helps blind screen reader users access visual information that may not be "
@@ -411,132 +422,199 @@ msgstr ""
 "ellei käyttäjä erikseen pyydä sinua niin tekemään."
 
 #. Translators: This is a message emitted by the add-on when an operation is in progress.
-#: addon\globalPlugins\openai\maindialog.py:68
+#: addon/globalPlugins/openai/maindialog.py:71
 msgid "Please wait..."
 msgstr "Odota..."
 
-#: addon\globalPlugins\openai\maindialog.py:206
+#: addon/globalPlugins/openai/maindialog.py:74
+msgid "Text"
+msgstr "Teksti"
+
+#: addon/globalPlugins/openai/maindialog.py:75
+msgid "SubRip (SRT)"
+msgstr "SubRip (SRT)"
+
+#: addon/globalPlugins/openai/maindialog.py:76
+msgid "Web Video Text Tracks (VTT)"
+msgstr "Web Video -tekstiraidat (VTT)"
+
+#: addon/globalPlugins/openai/maindialog.py:215
 msgid "Invalid temperature"
 msgstr "Epäkelpo temp"
 
-#: addon\globalPlugins\openai\maindialog.py:209
+#: addon/globalPlugins/openai/maindialog.py:218
 msgid "Invalid top P"
 msgstr "Epäkelpo Top P"
 
 #. Translators: This is a message displayed when uploading one image to the API.
-#: addon\globalPlugins\openai\maindialog.py:224
+#: addon/globalPlugins/openai/maindialog.py:233
 msgid "Uploading one image, please wait..."
 msgstr "Lähetetään kuvaa, odota..."
 
 #. Translators: This is a message displayed when uploading multiple images to the API.
-#: addon\globalPlugins\openai\maindialog.py:227
+#: addon/globalPlugins/openai/maindialog.py:236
 #, python-format
 msgid "Uploading %d images, please wait..."
 msgstr "Lähetetään %d kuvaa, odota..."
 
-#: addon\globalPlugins\openai\maindialog.py:569
-msgid "Conversati&on mode"
+#. Translators: This is the label for the conversation mode checkbox in the main dialog.
+#: addon/globalPlugins/openai/maindialog.py:582
+msgid "&Conversation mode"
 msgstr "&Keskustelutila"
 
-#: addon\globalPlugins\openai\maindialog.py:574
-msgid "S&ystem:"
+#. Translators: This is the label for the system prompt text control in the main dialog.
+#: addon/globalPlugins/openai/maindialog.py:590
+msgid "S&ystem prompt:"
 msgstr "&Järjestelmä:"
 
-#: addon\globalPlugins\openai\maindialog.py:591
-msgid "&History:"
-msgstr "&Historia:"
+#. Translators: This is the label for the messages text control in the main dialog.
+#: addon/globalPlugins/openai/maindialog.py:610
+msgid "&Messages:"
+msgstr "&Viestit:"
 
-#: addon\globalPlugins\openai\maindialog.py:602
+#. Translators: This is the label for the prompt text control in the main dialog.
+#: addon/globalPlugins/openai/maindialog.py:625
 msgid "&Prompt:"
 msgstr "&Kehote:"
 
-#. Translators: This is a label for a list of images attached to the prompt.
-#: addon\globalPlugins\openai\maindialog.py:614
-msgid "Attached ima&ges:"
-msgstr "Liitetyt &kuvat:"
+#. Translators: This is the label for the images list control in the main dialog.
+#: addon/globalPlugins/openai/maindialog.py:639
+msgid "Images:"
+msgstr "Kuvat"
 
-#: addon\globalPlugins\openai\maindialog.py:620
+#. Translators: This is the label for the name column in the image list control in the main dialog.
+#: addon/globalPlugins/openai/maindialog.py:649
 msgid "name"
 msgstr "nimi"
 
-#: addon\globalPlugins\openai\maindialog.py:621
+#. Translators: This is the label for the path column in the image list control in the main dialog.
+#: addon/globalPlugins/openai/maindialog.py:654
 msgid "path"
 msgstr "polku"
 
-#: addon\globalPlugins\openai\maindialog.py:622
+#. Translators: This is the label for the size column in the image list control in the main dialog.
+#: addon/globalPlugins/openai/maindialog.py:659
 msgid "size"
 msgstr "koko"
 
-#: addon\globalPlugins\openai\maindialog.py:623
+#. Translators: This is the label for the dimensions column in the image list control in the main dialog.
+#: addon/globalPlugins/openai/maindialog.py:664
 msgid "Dimensions"
 msgstr "Mitat"
 
-#: addon\globalPlugins\openai\maindialog.py:624
+#. Translators: This is the label for the description column in the image list control in the main dialog.
+#: addon/globalPlugins/openai/maindialog.py:669
 msgid "description"
 msgstr "kuvaus"
 
-#: addon\globalPlugins\openai\maindialog.py:659
-msgid "Maximum to&kens for the completion:"
-msgstr "&Suurin käytettävä merkkimäärä:"
+#. Translators: This is the label for the model list box in the main dialog.
+#: addon/globalPlugins/openai/maindialog.py:692
+msgid "M&odel:"
+msgstr "&Malli:"
 
-#: addon\globalPlugins\openai\maindialog.py:669
+#. Translators: This is the label for the model name column in the model list control in the main dialog.
+#: addon/globalPlugins/openai/maindialog.py:702
+msgid "Name"
+msgstr "Nimi"
+
+#. Translators: This is the label for the model provider column in the model list control in the main dialog.
+#: addon/globalPlugins/openai/maindialog.py:707
+msgid "Provider"
+msgstr "Toimittaja"
+
+#. Translators: This is the label for the model ID column in the model list control in the main dialog.
+#: addon/globalPlugins/openai/maindialog.py:712
+msgid "ID"
+msgstr "ID"
+
+#. Translators: This is the label for the model context window column in the model list control in the main dialog.
+#: addon/globalPlugins/openai/maindialog.py:717
+msgid "Context window"
+msgstr "Konteksti"
+
+#. Translators: This is the label for the model max output token column in the model list control in the main dialog.
+#: addon/globalPlugins/openai/maindialog.py:722
+msgid "Max output token"
+msgstr "Suurin tulostustokeneiden määrä"
+
+#. Translators: This is the label for the max tokens spin control in the main dialog.
+#: addon/globalPlugins/openai/maindialog.py:740
+msgid "Max to&kens:"
+msgstr "Suurin tokeneiden määrä:"
+
+#. Translators: This is the label for the temperature spin control in the main dialog.
+#: addon/globalPlugins/openai/maindialog.py:753
 msgid "&Temperature:"
 msgstr "&Temp:"
 
-#: addon\globalPlugins\openai\maindialog.py:677
-msgid "Probability &mass (Top P):"
+#. Translators: This is the label for the top P spin control in the main dialog.
+#: addon/globalPlugins/openai/maindialog.py:766
+msgid "Pro&bability Mass (top P):"
 msgstr "&Probmass (Top P):"
 
-#: addon\globalPlugins\openai\maindialog.py:688
-msgid "Stream mode"
+#: addon/globalPlugins/openai/maindialog.py:779
+msgid "&Whisper Response Format:"
+msgstr "&Whisper-vastausmuoto:"
+
+#: addon/globalPlugins/openai/maindialog.py:791
+msgid "&Stream mode"
 msgstr "&Livetila"
 
-#: addon\globalPlugins\openai\maindialog.py:694
-msgid "&Debug mode"
+#: addon/globalPlugins/openai/maindialog.py:798
+msgid "Debu&g mode"
 msgstr "&Vikasietotila"
 
-#: addon\globalPlugins\openai\maindialog.py:723
-#: addon\globalPlugins\openai\maindialog.py:1889
+#. Translators: This is the label for the record button in the main dialog.
+#: addon/globalPlugins/openai/maindialog.py:810
+#: addon/globalPlugins/openai/maindialog.py:2058
 msgid "Start &recording"
 msgstr "Aloita &nauhoitus"
 
-#: addon\globalPlugins\openai\maindialog.py:726
+#: addon/globalPlugins/openai/maindialog.py:813
 msgid "Record audio from microphone"
 msgstr "Nauhoita ääntä mikrofonista"
 
-#: addon\globalPlugins\openai\maindialog.py:730
+#. Translators: This is the label for the transcribe from audio file button in the main dialog.
+#: addon/globalPlugins/openai/maindialog.py:818
 msgid "Transcribe from &audio file"
 msgstr "Erottele ääni &tiedostosta"
 
-#: addon\globalPlugins\openai\maindialog.py:733
+#: addon/globalPlugins/openai/maindialog.py:821
 msgid "Transcribe audio from a file path"
 msgstr "Erottele ääni tiedostopolusta"
 
-#: addon\globalPlugins\openai\maindialog.py:737
+#. Translators: This is the label for the image description button in the main dialog.
+#: addon/globalPlugins/openai/maindialog.py:826
 msgid "&Image description"
 msgstr "&Kuvan kuvailu"
 
-#: addon\globalPlugins\openai\maindialog.py:740
+#: addon/globalPlugins/openai/maindialog.py:829
 msgid "Describe an image from a file path or an URL"
 msgstr "Kuvaile kuvaa tiedostosta tai URL-osoitteesta"
 
-#: addon\globalPlugins\openai\maindialog.py:744
+#. Translators: This is the label for the text to speech button in the main dialog.
+#: addon/globalPlugins/openai/maindialog.py:834
 msgid "&Vocalize the prompt"
 msgstr "&Puhu kehote"
 
-#: addon\globalPlugins\openai\maindialog.py:830
+#. Translators: This is the label for the submit button in the main dialog.
+#: addon/globalPlugins/openai/maindialog.py:853
+msgid "Submit"
+msgstr "Lähetä"
+
+#: addon/globalPlugins/openai/maindialog.py:918
 msgid "Describe the images in as much detail as possible."
 msgstr "Kuvaile kuvaa niin yksityiskohtaisesti kuin mahdollista."
 
-#: addon\globalPlugins\openai\maindialog.py:925
+#: addon/globalPlugins/openai/maindialog.py:1013
 msgid "Model details"
 msgstr "Tietoa mallista"
 
-#: addon\globalPlugins\openai\maindialog.py:943
+#: addon/globalPlugins/openai/maindialog.py:1087
 msgid "Please select a model."
 msgstr "Valitse malli."
 
-#: addon\globalPlugins\openai\maindialog.py:950
+#: addon/globalPlugins/openai/maindialog.py:1094
 #, python-format
 msgid ""
 "This model is only available with the %s provider. Please provide an API key "
@@ -546,12 +624,12 @@ msgstr ""
 "Tämä malli on saatavilla vain käyttäen %s-API-avainta. Ole hyvä ja anna API-"
 "avain tai käytä toista mallia."
 
-#: addon\globalPlugins\openai\maindialog.py:953
+#: addon/globalPlugins/openai/maindialog.py:1097
 #, python-format
 msgid "No API key for %s"
 msgstr "Ei %s-API-avainta."
 
-#: addon\globalPlugins\openai\maindialog.py:964
+#: addon/globalPlugins/openai/maindialog.py:1108
 msgid ""
 "Please use the Image Description button and select one or more images. "
 "Otherwise, please select another model."
@@ -559,23 +637,24 @@ msgstr ""
 "Käytä Kuvan kuvaus -painiketta ja valitse yksi tai useampi kuva. Muussa "
 "tapauksessa valitse toinen malli."
 
-#: addon\globalPlugins\openai\maindialog.py:965
+#: addon/globalPlugins/openai/maindialog.py:1109
 msgid "No image provided"
 msgstr "Ei kuvaa"
 
-#: addon\globalPlugins\openai\maindialog.py:972
+#: addon/globalPlugins/openai/maindialog.py:1116
 #, python-format
 msgid ""
-"This model does not support image description. Please select one of the "
+"This model (%s) does not support image description. Please select one of the "
 "following models: %s."
 msgstr ""
-"Tämä malli ei tue kuvan kuvausta. Valitse yksi seuraavista malleista: %s."
+"Tämä malli (%s) ei tue kuvan kuvausta. Valitse yksi seuraavista malleista: "
+"%s."
 
-#: addon\globalPlugins\openai\maindialog.py:973
+#: addon/globalPlugins/openai/maindialog.py:1120
 msgid "Invalid model"
 msgstr "Epäkelpo malli"
 
-#: addon\globalPlugins\openai\maindialog.py:982
+#: addon/globalPlugins/openai/maindialog.py:1129
 msgid ""
 "Be aware that the add-on may auto-resize images before API submission to "
 "lower request sizes and costs. Adjust this feature in the Open AI settings "
@@ -585,11 +664,11 @@ msgstr ""
 "lähetystä alentaakseen pyyntöjen kokoa ja kustannuksia. Säädä tätä "
 "ominaisuutta tarvittaessa Open AI -asetuksissa. Tämä viesti ei näy uudelleen."
 
-#: addon\globalPlugins\openai\maindialog.py:985
+#: addon/globalPlugins/openai/maindialog.py:1132
 msgid "Image resizing"
 msgstr "Kuvakoon muuttaminen"
 
-#: addon\globalPlugins\openai\maindialog.py:1025
+#: addon/globalPlugins/openai/maindialog.py:1171
 #, python-format
 msgid ""
 "Unable to delete the file: %s\n"
@@ -598,179 +677,187 @@ msgstr ""
 "Ei voida poistaa: %s\\n\n"
 "Poista se manuaalisesti."
 
-#: addon\globalPlugins\openai\maindialog.py:1083
+#: addon/globalPlugins/openai/maindialog.py:1229
 #, python-format
 msgid "Insertion of: %s"
 msgstr "Lisäys: %s"
 
-#: addon\globalPlugins\openai\maindialog.py:1092
+#: addon/globalPlugins/openai/maindialog.py:1238
 msgid "Unknown error"
 msgstr "Tuntematon virhe"
 
-#: addon\globalPlugins\openai\maindialog.py:1108
+#: addon/globalPlugins/openai/maindialog.py:1254
 msgid "Do you want to open the URL in your browser?"
 msgstr "Haluatko avata URL-osoitteen selaimessasi?"
 
-#: addon\globalPlugins\openai\maindialog.py:1111
+#: addon/globalPlugins/openai/maindialog.py:1257
 msgid "OpenAI Error"
 msgstr "Open AI -virhe"
 
-#: addon\globalPlugins\openai\maindialog.py:1121
+#: addon/globalPlugins/openai/maindialog.py:1270
 msgid "Press Alt+F4 to close the dialog"
 msgstr "Sulje valintaikkuna painamalla Alt+F4"
 
-#: addon\globalPlugins\openai\maindialog.py:1131
+#: addon/globalPlugins/openai/maindialog.py:1280
 msgid "User:"
 msgstr "Käyttäjä:"
 
-#: addon\globalPlugins\openai\maindialog.py:1133
+#: addon/globalPlugins/openai/maindialog.py:1282
 msgid "Assistant:"
 msgstr "Tekoäly:"
 
-#: addon\globalPlugins\openai\maindialog.py:1278
+#: addon/globalPlugins/openai/maindialog.py:1427
 msgid "Begin"
 msgstr "Aloita"
 
-#: addon\globalPlugins\openai\maindialog.py:1298
+#: addon/globalPlugins/openai/maindialog.py:1447
 msgid "End"
 msgstr "Lopeta"
 
-#: addon\globalPlugins\openai\maindialog.py:1339
+#: addon/globalPlugins/openai/maindialog.py:1487
 #, python-format
 msgid "Response copied to system: %s"
 msgstr "Vastaus kopioitu järjestelmään: %s"
 
-#: addon\globalPlugins\openai\maindialog.py:1348
-msgid "Copied to prompt"
+#: addon/globalPlugins/openai/maindialog.py:1496
+msgid "Compied to prompt"
 msgstr "Kopioitu kehotteeseen"
 
-#: addon\globalPlugins\openai\maindialog.py:1352
+#: addon/globalPlugins/openai/maindialog.py:1500
 msgid "Copy"
 msgstr "Kopioi"
 
-#: addon\globalPlugins\openai\maindialog.py:1360
+#: addon/globalPlugins/openai/maindialog.py:1508
 msgid "Copy prompt"
 msgstr "Kopioi kehote"
 
-#: addon\globalPlugins\openai\maindialog.py:1363
+#: addon/globalPlugins/openai/maindialog.py:1511
 msgid "Copy response"
 msgstr "Kopioi vastaus"
 
-#: addon\globalPlugins\openai\maindialog.py:1370
+#: addon/globalPlugins/openai/maindialog.py:1518
 msgid "as formatted HTML"
 msgstr "muotoiltuna HTML-datana"
 
-#: addon\globalPlugins\openai\maindialog.py:1396
+#: addon/globalPlugins/openai/maindialog.py:1544
 msgid "Block deleted"
 msgstr "Lohko poistettu"
 
-#: addon\globalPlugins\openai\maindialog.py:1429
+#: addon/globalPlugins/openai/maindialog.py:1577
 msgid "Save history"
 msgstr "Tallenna historia"
 
-#: addon\globalPlugins\openai\maindialog.py:1431
+#: addon/globalPlugins/openai/maindialog.py:1579
 msgid "Text file"
 msgstr "Tekstitiedostona"
 
-#: addon\globalPlugins\openai\maindialog.py:1442
+#: addon/globalPlugins/openai/maindialog.py:1590
 msgid "History saved"
 msgstr "Historia tallennettu"
 
-#: addon\globalPlugins\openai\maindialog.py:1447
+#: addon/globalPlugins/openai/maindialog.py:1595
 msgid "Reset to default"
 msgstr "Palauta oletukset"
 
-#: addon\globalPlugins\openai\maindialog.py:1457
+#: addon/globalPlugins/openai/maindialog.py:1605
 msgid "Show message in web view as formatted HTML"
 msgstr "Näytä viesti verkkonäkymässä muotoiltuna HTML-sivuksi"
 
-#: addon\globalPlugins\openai\maindialog.py:1460
+#: addon/globalPlugins/openai/maindialog.py:1608
 msgid "Show message in web view as HTML source"
 msgstr "Näytä viesti verkkonäkymässä HTML-lähdekoodina"
 
-#: addon\globalPlugins\openai\maindialog.py:1463
+#: addon/globalPlugins/openai/maindialog.py:1611
 msgid "Copy message as plain text"
 msgstr "Kopioi viesti pelkkänä tekstinä"
 
-#: addon\globalPlugins\openai\maindialog.py:1466
+#: addon/globalPlugins/openai/maindialog.py:1614
 msgid "Copy message as formatted HTML"
 msgstr "Kopioi viesti muotoiltuna HTML-muodossa"
 
-#: addon\globalPlugins\openai\maindialog.py:1469
+#: addon/globalPlugins/openai/maindialog.py:1617
 msgid "Copy response to system"
 msgstr "Kopioi vastaus järjestelmään"
 
-#: addon\globalPlugins\openai\maindialog.py:1472
+#: addon/globalPlugins/openai/maindialog.py:1620
 msgid "Copy prompt to prompt"
 msgstr "Kopioi kehote kehotteeseen"
 
-#: addon\globalPlugins\openai\maindialog.py:1475
+#: addon/globalPlugins/openai/maindialog.py:1623
 msgid "Delete block"
 msgstr "Poista lohko"
 
-#: addon\globalPlugins\openai\maindialog.py:1478
+#: addon/globalPlugins/openai/maindialog.py:1626
 msgid "Save history as text file"
 msgstr "Tallenna historia tekstitiedostona"
 
-#: addon\globalPlugins\openai\maindialog.py:1481
+#: addon/globalPlugins/openai/maindialog.py:1629
 msgid "Say message"
 msgstr "Puhu viesti"
 
-#: addon\globalPlugins\openai\maindialog.py:1484
+#: addon/globalPlugins/openai/maindialog.py:1632
 msgid "Move to previous message"
 msgstr "Siirry edelliseen viestiin"
 
-#: addon\globalPlugins\openai\maindialog.py:1487
+#: addon/globalPlugins/openai/maindialog.py:1635
 msgid "Move to next message"
 msgstr "Siirry seuraavaan viestiin"
 
-#: addon\globalPlugins\openai\maindialog.py:1498
+#: addon/globalPlugins/openai/maindialog.py:1646
 msgid "Insert previous prompt"
 msgstr "Lisää edellinen kehote"
 
-#: addon\globalPlugins\openai\maindialog.py:1508
-msgid "Show model details"
-msgstr "Näytä mallin tiedot"
+#: addon/globalPlugins/openai/maindialog.py:1698
+msgid "Show model &details"
+msgstr "Näytä mallin &tiedot"
 
-#: addon\globalPlugins\openai\maindialog.py:1563
+#: addon/globalPlugins/openai/maindialog.py:1702
+msgid "Add to &favorites"
+msgstr "Lisää &suosikkeihin"
+
+#: addon/globalPlugins/openai/maindialog.py:1702
+msgid "Remove from &favorites"
+msgstr "&Poista suosikeista"
+
+#: addon/globalPlugins/openai/maindialog.py:1716
 msgid "From f&ile path..."
 msgstr "&Tiedostosta..."
 
-#: addon\globalPlugins\openai\maindialog.py:1567
+#: addon/globalPlugins/openai/maindialog.py:1720
 msgid "From &URL..."
 msgstr "&URL-osoitteesta..."
 
-#: addon\globalPlugins\openai\maindialog.py:1571
+#: addon/globalPlugins/openai/maindialog.py:1724
 msgid "From &screenshot"
 msgstr "&Näyttökuvasta"
 
-#: addon\globalPlugins\openai\maindialog.py:1593
+#: addon/globalPlugins/openai/maindialog.py:1746
 msgid "&Remove selected images"
 msgstr "&Poista valitut kuvat"
 
-#: addon\globalPlugins\openai\maindialog.py:1596
+#: addon/globalPlugins/openai/maindialog.py:1749
 msgid "Remove &all images"
 msgstr "&Poista kaikki kuvat"
 
-#: addon\globalPlugins\openai\maindialog.py:1600
+#: addon/globalPlugins/openai/maindialog.py:1753
 msgid "Add from f&ile path..."
 msgstr "&Lisää tiedostosta..."
 
-#: addon\globalPlugins\openai\maindialog.py:1603
+#: addon/globalPlugins/openai/maindialog.py:1756
 msgid "Add from &URL..."
 msgstr "&Lisää URL-osoitteesta..."
 
 #. Translators: This is a message displayed in a dialog to select one or more images.
-#: addon\globalPlugins\openai\maindialog.py:1700
+#: addon/globalPlugins/openai/maindialog.py:1862
 msgid "Select image files"
 msgstr "Valitse kuvatiedostot"
 
-#: addon\globalPlugins\openai\maindialog.py:1702
+#: addon/globalPlugins/openai/maindialog.py:1864
 msgid "Image files"
 msgstr "Kuvatiedostot"
 
 #. Translators: This message is displayed when the image has already been added.
-#: addon\globalPlugins\openai\maindialog.py:1718
+#: addon/globalPlugins/openai/maindialog.py:1880
 #, python-format
 msgid ""
 "The following image has already been added and will be ignored:\n"
@@ -780,50 +867,50 @@ msgstr ""
 "%s"
 
 #. Translators: This is a message displayed in a dialog to enter an image URL.
-#: addon\globalPlugins\openai\maindialog.py:1740
+#: addon/globalPlugins/openai/maindialog.py:1899
 msgid "Enter image URL"
 msgstr "Anna kuvan URL-osoite"
 
-#: addon\globalPlugins\openai\maindialog.py:1754
+#: addon/globalPlugins/openai/maindialog.py:1913
 msgid "Invalid URL, bad format."
 msgstr "Epäkelpoi URL-osoite, väärä muoto."
 
 #. Translators: This message is displayed when the image URL returns an HTTP error.
-#: addon\globalPlugins\openai\maindialog.py:1765
+#: addon/globalPlugins/openai/maindialog.py:1924
 #, python-format
 msgid "HTTP error %s."
 msgstr "HTTP-virhe %s."
 
 #. Translators: This message is displayed when the image URL does not point to an image.
-#: addon\globalPlugins\openai\maindialog.py:1773
+#: addon/globalPlugins/openai/maindialog.py:1932
 msgid "The URL does not point to an image."
 msgstr "URL-osoite ei avaa kuvaa."
 
 #. Translators: This message is displayed when the add-on fails to get the image dimensions.
-#: addon\globalPlugins\openai\maindialog.py:1796
+#: addon/globalPlugins/openai/maindialog.py:1955
 #, python-format
 msgid "Failed to get image dimensions. %s"
 msgstr "Kuvan mittojen saaminen epäonnistui. %s"
 
 #. Translators: This message is displayed when a chat session stops receiving images.
-#: addon\globalPlugins\openai\maindialog.py:1825
+#: addon/globalPlugins/openai/maindialog.py:1983
 msgid "Screenshot reception disabled"
 msgstr "Kuvakaappauksen vastaanotto pois"
 
 #. Translators: This message is displayed when a chat session starts to receive images.
-#: addon\globalPlugins\openai\maindialog.py:1831
+#: addon/globalPlugins/openai/maindialog.py:1989
 msgid "Screenshot reception enabled"
 msgstr "Kuvakaappauksen vastaanotto käytössä"
 
-#: addon\globalPlugins\openai\maindialog.py:1838
+#: addon/globalPlugins/openai/maindialog.py:2005
 msgid "Stop &recording"
 msgstr "Pysäytä &nauhoitus"
 
-#: addon\globalPlugins\openai\maindialog.py:1851
+#: addon/globalPlugins/openai/maindialog.py:2019
 msgid "Select audio file"
 msgstr "Valitse äänitiedosto"
 
-#: addon\globalPlugins\openai\maindialog.py:1853
+#: addon/globalPlugins/openai/maindialog.py:2021
 msgid ""
 "Audio files (*.mp3;*.mp4;*.mpeg;*.mpga;*.m4a;*.wav;*.webm)|*.mp3;*.mp4;*."
 "mpeg;*.mpga;*.m4a;*.wav;*.webm"
@@ -831,49 +918,49 @@ msgstr ""
 "Äänitiedostot (*.mp3;*.mp4;*.mpeg;*.mpga;*.m4a;*.wav;*.webm)|*.mp3;*.mp4;*."
 "mpeg;*.mpga;*. m4a;*.wav;*.webm"
 
-#: addon\globalPlugins\openai\maindialog.py:1872
+#: addon/globalPlugins/openai/maindialog.py:2041
 msgid "Please enter some text in the prompt field first."
 msgstr "Kirjoita ensin tekstiä kehotekenttään."
 
-#: addon\globalPlugins\openai\model.py:41
+#: addon/globalPlugins/openai/model.py:41
 msgid "preview: not yet suited for production traffic"
 msgstr "esikatselu: ei vielä sovellu tuotantoon"
 
-#: addon\globalPlugins\openai\model.py:55
+#: addon/globalPlugins/openai/model.py:55
 #, python-brace-format
 msgid "provider: {provider}"
 msgstr "Toimittaja: {provider}"
 
-#: addon\globalPlugins\openai\model.py:60
+#: addon/globalPlugins/openai/model.py:60
 #, python-brace-format
 msgid "ID: {id}"
 msgstr "ID: {id}"
 
-#: addon\globalPlugins\openai\model.py:63
+#: addon/globalPlugins/openai/model.py:63
 #, python-brace-format
 msgid "context window: {contextWindow}"
 msgstr "Konteksti: {contextWindow}"
 
-#: addon\globalPlugins\openai\model.py:69
+#: addon/globalPlugins/openai/model.py:69
 #, python-brace-format
 msgid "max output tokens: {maxOutputToken}"
 msgstr "suurin tulostemerkkien määrä: {maxOutputToken}"
 
-#: addon\globalPlugins\openai\recordthread.py:47
+#: addon/globalPlugins/openai/recordthread.py:47
 msgid "Transcription copied to clipboard"
 msgstr "Eroteltu ääni kopioitu leikepöydälle"
 
-#: addon\globalPlugins\openai\recordthread.py:94
+#: addon/globalPlugins/openai/recordthread.py:102
 msgid "Transcribing..."
 msgstr "Erotellaan..."
 
-#: addon\globalPlugins\openai\recordthread.py:170
-#: addon\globalPlugins\openai\recordthread.py:179
-#: addon\globalPlugins\openai\recordthread.py:194
+#: addon/globalPlugins/openai/recordthread.py:178
+#: addon/globalPlugins/openai/recordthread.py:187
+#: addon/globalPlugins/openai/recordthread.py:203
 msgid "Error!"
 msgstr "Virhe!"
 
-#: addon\globalPlugins\openai\updatecheck.py:89
+#: addon/globalPlugins/openai/updatecheck.py:89
 #, python-format
 msgid ""
 "New version available: %s. Your version is %s. You can update from the add-"
@@ -884,18 +971,18 @@ msgstr ""
 
 #. Translators: This is the title of the message displayed when a new version of the add-on is available.
 #. Translators: This is the title of the message displayed when the user checks for updates manually and there are no updates available.
-#: addon\globalPlugins\openai\updatecheck.py:99
-#: addon\globalPlugins\openai\updatecheck.py:108
+#: addon/globalPlugins/openai/updatecheck.py:99
+#: addon/globalPlugins/openai/updatecheck.py:108
 msgid "OpenAI update"
 msgstr "Open AI -päivitys"
 
 #. Translators: This is the message displayed when the user checks for updates manually and there are no updates available.
-#: addon\globalPlugins\openai\updatecheck.py:104
+#: addon/globalPlugins/openai/updatecheck.py:104
 msgid "You have the latest version of OpenAI add-on installed."
 msgstr "Sinulla on asennettuna OpenAI-lisäosan uusin versio."
 
 #. Translators: This is the message displayed when a new version of the OpenAI dependencies is available.
-#: addon\globalPlugins\openai\updatecheck.py:146
+#: addon/globalPlugins/openai/updatecheck.py:146
 #, python-format
 msgid ""
 "New OpenAI dependencies revision available: %s. Your version is %s. Update "
@@ -904,22 +991,22 @@ msgstr ""
 "Uusi versio OpenAI-riippuvuuksista saatavilla: %s. Versiosi on %s. "
 "Päivitetäänkö nyt?"
 
-#: addon\globalPlugins\openai\updatecheck.py:148
+#: addon/globalPlugins/openai/updatecheck.py:148
 msgid "unknown"
 msgstr "tuntematon"
 
 #. Translators: This is the title of the message displayed when a new version of the OpenAI dependencies is available.
-#: addon\globalPlugins\openai\updatecheck.py:154
+#: addon/globalPlugins/openai/updatecheck.py:154
 msgid "OpenAI dependencies update"
 msgstr "OpenAI-riippuvuuspäivitys"
 
 #. Translators: This is the message emitted when updating the OpenAI dependencies.
-#: addon\globalPlugins\openai\updatecheck.py:164
+#: addon/globalPlugins/openai/updatecheck.py:164
 msgid "Updating OpenAI dependencies... Please wait"
 msgstr "Päivitetään OpenAI-riippuvuuksia... Odota"
 
 #. Translators: This is the message displayed when the OpenAI dependencies are updated successfully.
-#: addon\globalPlugins\openai\updatecheck.py:187
+#: addon/globalPlugins/openai/updatecheck.py:187
 msgid ""
 "Dependencies updated successfully. NVDA will now restart to apply the "
 "changes."
@@ -928,19 +1015,19 @@ msgstr ""
 "ottaa muutokset käyttöön."
 
 #. Translators: This is the title of the message displayed when the OpenAI dependencies are updated successfully.
-#: addon\globalPlugins\openai\updatecheck.py:189
+#: addon/globalPlugins/openai/updatecheck.py:189
 msgid "Success"
 msgstr "Onnistui"
 
 #. Translators: This is the message displayed when the OpenAI dependencies cannot be updated.
-#: addon\globalPlugins\openai\updatecheck.py:203
+#: addon/globalPlugins/openai/updatecheck.py:203
 msgid "Error updating dependencies. Please restart NVDA and try again."
 msgstr ""
 "Virhe päivitettäessä riippuvuuksia. Käynnistä NVDA uudelleen ja yritä "
 "uudelleen."
 
 #. Translators: This is the title of the message displayed when the OpenAI dependencies cannot be updated.
-#: addon\globalPlugins\openai\updatecheck.py:205
+#: addon/globalPlugins/openai/updatecheck.py:205
 msgid "Error"
 msgstr "Virhe"
 
@@ -956,6 +1043,38 @@ msgstr ""
 "saumattomasti käyttöösi. Haluatpa sitten luoda kattavaa tekstiä, kääntää "
 "tarkasti, tiivistää asiakirjoja tai jopa kuvata visuaalista sisältöä, tämä "
 "lisäosa tekee sen kaiken helpoksi."
+
+#: buildVars.py:44
+msgid ""
+"The add-on also supports integration with Mistral and OpenRouter services, "
+"thanks to their shared API format."
+msgstr ""
+"Lisäosa tukee myös Mistral- ja OpenRouter-palveluita niiden jaetun API-"
+"muodon ansiosta."
+
+#~ msgid ""
+#~ "Used for large batch processing tasks where cost is a significant factor "
+#~ "but reasoning capabilities are not crucial. Uses the Mistral API."
+#~ msgstr ""
+#~ "Käytetään suuriin käsittelytehtäviin, joissa hinta on merkittävä tekijä, "
+#~ "mutta päättelykyvyt eivät ole ratkaisevia. Käyttää Mistral API:a."
+
+#~ msgid ""
+#~ "Higher reasoning capabilities and more capabilities. Use the Mistral API."
+#~ msgstr ""
+#~ "Parempi päättelykyky ja enemmän ominaisuuksia. Käyttää Mistral API:a."
+
+#~ msgid "Internal prototype model. Uses the Mistral API."
+#~ msgstr "Sisäinen prototyyppimalli. Käyttää Mistral API:a."
+
+#~ msgid "&History:"
+#~ msgstr "&Historia:"
+
+#~ msgid "Attached ima&ges:"
+#~ msgstr "Liitetyt &kuvat:"
+
+#~ msgid "Maximum to&kens for the completion:"
+#~ msgstr "&Suurin käytettävä merkkimäärä:"
 
 #~ msgid ""
 #~ "No authentication key provided. Please set it in the Preferences dialog."
