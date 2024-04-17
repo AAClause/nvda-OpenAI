@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: OpenAI 24.04.02\n"
 "Report-Msgid-Bugs-To: nvda-translations@groups.io\n"
 "POT-Creation-Date: 2024-04-02 19:30+0200\n"
-"PO-Revision-Date: 2024-04-03 09:51+0300\n"
+"PO-Revision-Date: 2024-04-16 18:58+0300\n"
 "Last-Translator: Danil Kostenkov <danilkostenkov38@gmail.com>\n"
 "Language-Team: Danil Kostenkov\n"
 "Language: ru\n"
@@ -54,7 +54,7 @@ msgstr "Заблокировать закрытие с помощью клави
 
 #: addon/globalPlugins/openai/__init__.py:175
 msgid "Remember the content of the S&ystem field between sessions"
-msgstr "Запоминать содержимое поля &Система ная подсказка между сеансами"
+msgstr "Запоминать содержимое поля &Системная подсказка между сеансами"
 
 #: addon/globalPlugins/openai/__init__.py:183
 msgid "Enable &advanced settings (including temperature and probability mass)"
@@ -118,7 +118,7 @@ msgstr "Воспроизводить звук во время выполнени
 #. Translators: This is a setting to play a sound when a response is sent.
 #: addon/globalPlugins/openai/__init__.py:302
 msgid "Play sound when a response is sent"
-msgstr "Воспроизводить звук при получении ответа"
+msgstr "Воспроизводить звук при отправке ответа"
 
 #. Translators: This is a setting to play a sound when a response is pending.
 #: addon/globalPlugins/openai/__init__.py:309
@@ -134,7 +134,7 @@ msgstr "Воспроизводить звук при получении отве
 #: addon/globalPlugins/openai/__init__.py:323
 msgid "Attach braille to the history if the focus is in the prompt field"
 msgstr ""
-"Прикрепить шрифт Брайля к истории, если фокус находится в поле подсказка"
+"Выводить историю на дисплей Брайля, если фокус находится в поле подсказка"
 
 #: addon/globalPlugins/openai/__init__.py:329
 msgid "Speak response when the focus is in the prompt field"
@@ -148,7 +148,7 @@ msgstr "Запись"
 #. Translators: This is the name of a setting in the Recording group
 #: addon/globalPlugins/openai/__init__.py:345
 msgid "Use &whisper.cpp for transcription"
-msgstr "Использовать & whisper.cpp для расшифровки"
+msgstr "Использовать  для расшифровки &whisper.cpp"
 
 #. Translators: This is the name of a setting in the Recording group
 #: addon/globalPlugins/openai/__init__.py:361
@@ -211,7 +211,7 @@ msgstr "Open A&I {addon_version}"
 #: addon/globalPlugins/openai/__init__.py:588
 msgid "Please disable the screen curtain before taking a screenshot"
 msgstr ""
-"Пожалуйста, отключите затемнение экрана, прежде чем делать снимок экрана"
+"Пожалуйста, отключите затемнение экрана, прежде чем сделать снимок экрана"
 
 #: addon/globalPlugins/openai/__init__.py:603
 msgid "Show Open AI dialog"
@@ -492,7 +492,7 @@ msgstr "&Подсказка:"
 #. Translators: This is the label for the images list control in the main dialog.
 #: addon/globalPlugins/openai/maindialog.py:639
 msgid "Images:"
-msgstr "Фзображения:"
+msgstr "Изображения:"
 
 #. Translators: This is the label for the name column in the image list control in the main dialog.
 #: addon/globalPlugins/openai/maindialog.py:649
@@ -507,7 +507,7 @@ msgstr "путь"
 #. Translators: This is the label for the size column in the image list control in the main dialog.
 #: addon/globalPlugins/openai/maindialog.py:659
 msgid "size"
-msgstr "размер"
+msgstr "размер файла"
 
 #. Translators: This is the label for the dimensions column in the image list control in the main dialog.
 #: addon/globalPlugins/openai/maindialog.py:664
@@ -1017,7 +1017,7 @@ msgstr "Обновление зависимостей OpenAI"
 #. Translators: This is the message emitted when updating the OpenAI dependencies.
 #: addon/globalPlugins/openai/updatecheck.py:164
 msgid "Updating OpenAI dependencies... Please wait"
-msgstr "Обновление зависимостей OpenAI... Подождите"
+msgstr "Идёт обновление зависимостей OpenAI... Пожалуйста подождите"
 
 #. Translators: This is the message displayed when the OpenAI dependencies are updated successfully.
 #: addon/globalPlugins/openai/updatecheck.py:187
