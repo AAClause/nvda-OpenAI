@@ -1,9 +1,15 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the OpenAI package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: OpenAI 24.04.02\n"
+"Project-Id-Version: OpenAI 24.04.17\n"
 "Report-Msgid-Bugs-To: nvda-translations@groups.io\n"
-"POT-Creation-Date: 2024-04-02 19:30+0200\n"
-"PO-Revision-Date: 2024-04-16 18:58+0300\n"
+"POT-Creation-Date: 2024-04-17 19:20+0200\n"
+"PO-Revision-Date: 2024-04-17 21:14+0300\n"
 "Last-Translator: Danil Kostenkov <danilkostenkov38@gmail.com>\n"
 "Language-Team: Danil Kostenkov\n"
 "Language: ru\n"
@@ -578,7 +584,7 @@ msgstr "Режим отлад&ки"
 
 #. Translators: This is the label for the record button in the main dialog.
 #: addon/globalPlugins/openai/maindialog.py:810
-#: addon/globalPlugins/openai/maindialog.py:2058
+#: addon/globalPlugins/openai/maindialog.py:2047
 msgid "Start &recording"
 msgstr "&Начать запись"
 
@@ -642,19 +648,7 @@ msgstr ""
 msgid "No API key for %s"
 msgstr "Нет ключа API для %s"
 
-#: addon/globalPlugins/openai/maindialog.py:1108
-msgid ""
-"Please use the Image Description button and select one or more images. "
-"Otherwise, please select another model."
-msgstr ""
-"Пожалуйста, используйте кнопку \"описание изображения\" и выберите одно или "
-"несколько изображений. В противном случае, выберите другую модель."
-
-#: addon/globalPlugins/openai/maindialog.py:1109
-msgid "No image provided"
-msgstr "Изображение не предоставлено"
-
-#: addon/globalPlugins/openai/maindialog.py:1116
+#: addon/globalPlugins/openai/maindialog.py:1105
 #, python-format
 msgid ""
 "This model (%s) does not support image description. Please select one of the "
@@ -663,11 +657,11 @@ msgstr ""
 "Модель (%s) не поддерживает описание изображения. Выберите одну из следующих "
 "моделей: %s."
 
-#: addon/globalPlugins/openai/maindialog.py:1120
+#: addon/globalPlugins/openai/maindialog.py:1109
 msgid "Invalid model"
 msgstr "Неправильна модель"
 
-#: addon/globalPlugins/openai/maindialog.py:1129
+#: addon/globalPlugins/openai/maindialog.py:1118
 msgid ""
 "Be aware that the add-on may auto-resize images before API submission to "
 "lower request sizes and costs. Adjust this feature in the Open AI settings "
@@ -678,11 +672,11 @@ msgstr ""
 "При необходимости настройте эту функцию в настройках Open AI. Это сообщение "
 "больше не появится."
 
-#: addon/globalPlugins/openai/maindialog.py:1132
+#: addon/globalPlugins/openai/maindialog.py:1121
 msgid "Image resizing"
 msgstr "Изменение размера изображения"
 
-#: addon/globalPlugins/openai/maindialog.py:1171
+#: addon/globalPlugins/openai/maindialog.py:1160
 #, python-format
 msgid ""
 "Unable to delete the file: %s\n"
@@ -691,187 +685,187 @@ msgstr ""
 "Не удалось удалить файл: %s\n"
 "Удалите его вручную."
 
-#: addon/globalPlugins/openai/maindialog.py:1229
+#: addon/globalPlugins/openai/maindialog.py:1218
 #, python-format
 msgid "Insertion of: %s"
 msgstr "Вставка: %s"
 
-#: addon/globalPlugins/openai/maindialog.py:1238
+#: addon/globalPlugins/openai/maindialog.py:1227
 msgid "Unknown error"
 msgstr "Неизвестная ошибка"
 
-#: addon/globalPlugins/openai/maindialog.py:1254
+#: addon/globalPlugins/openai/maindialog.py:1243
 msgid "Do you want to open the URL in your browser?"
 msgstr "Хотите открыть URL-адрес в браузере?"
 
-#: addon/globalPlugins/openai/maindialog.py:1257
+#: addon/globalPlugins/openai/maindialog.py:1246
 msgid "OpenAI Error"
 msgstr "Ошибка OpenAI"
 
-#: addon/globalPlugins/openai/maindialog.py:1270
+#: addon/globalPlugins/openai/maindialog.py:1259
 msgid "Press Alt+F4 to close the dialog"
 msgstr "Нажмите Alt + F4, чтобы закрыть диалог"
 
-#: addon/globalPlugins/openai/maindialog.py:1280
+#: addon/globalPlugins/openai/maindialog.py:1269
 msgid "User:"
 msgstr "Пользователь:"
 
-#: addon/globalPlugins/openai/maindialog.py:1282
+#: addon/globalPlugins/openai/maindialog.py:1271
 msgid "Assistant:"
 msgstr "Помощник:"
 
-#: addon/globalPlugins/openai/maindialog.py:1427
+#: addon/globalPlugins/openai/maindialog.py:1416
 msgid "Begin"
 msgstr "Начало"
 
-#: addon/globalPlugins/openai/maindialog.py:1447
+#: addon/globalPlugins/openai/maindialog.py:1436
 msgid "End"
 msgstr "Конец"
 
-#: addon/globalPlugins/openai/maindialog.py:1487
+#: addon/globalPlugins/openai/maindialog.py:1476
 #, python-format
 msgid "Response copied to system: %s"
 msgstr "Ответ скопирован в поле системная подсказка: %s"
 
-#: addon/globalPlugins/openai/maindialog.py:1496
+#: addon/globalPlugins/openai/maindialog.py:1485
 msgid "Compied to prompt"
 msgstr "Составлена подсказка"
 
-#: addon/globalPlugins/openai/maindialog.py:1500
+#: addon/globalPlugins/openai/maindialog.py:1489
 msgid "Copy"
 msgstr "Копировать"
 
-#: addon/globalPlugins/openai/maindialog.py:1508
+#: addon/globalPlugins/openai/maindialog.py:1497
 msgid "Copy prompt"
 msgstr "Копировать подсказку"
 
-#: addon/globalPlugins/openai/maindialog.py:1511
+#: addon/globalPlugins/openai/maindialog.py:1500
 msgid "Copy response"
 msgstr "Копировать ответ"
 
-#: addon/globalPlugins/openai/maindialog.py:1518
+#: addon/globalPlugins/openai/maindialog.py:1507
 msgid "as formatted HTML"
 msgstr "как форматированный HTML"
 
-#: addon/globalPlugins/openai/maindialog.py:1544
+#: addon/globalPlugins/openai/maindialog.py:1533
 msgid "Block deleted"
 msgstr "Блок удалён"
 
-#: addon/globalPlugins/openai/maindialog.py:1577
+#: addon/globalPlugins/openai/maindialog.py:1566
 msgid "Save history"
 msgstr "Сохранить историю"
 
-#: addon/globalPlugins/openai/maindialog.py:1579
+#: addon/globalPlugins/openai/maindialog.py:1568
 msgid "Text file"
 msgstr "Текстовый файл"
 
-#: addon/globalPlugins/openai/maindialog.py:1590
+#: addon/globalPlugins/openai/maindialog.py:1579
 msgid "History saved"
 msgstr "История сохранена"
 
-#: addon/globalPlugins/openai/maindialog.py:1595
+#: addon/globalPlugins/openai/maindialog.py:1584
 msgid "Reset to default"
 msgstr "Сбросить к настройкам по умолчанию"
 
-#: addon/globalPlugins/openai/maindialog.py:1605
+#: addon/globalPlugins/openai/maindialog.py:1594
 msgid "Show message in web view as formatted HTML"
 msgstr "Показать сообщения в браузере как форматированный HTML"
 
-#: addon/globalPlugins/openai/maindialog.py:1608
+#: addon/globalPlugins/openai/maindialog.py:1597
 msgid "Show message in web view as HTML source"
 msgstr "Показать сообщения в браузере как исходный код HTML"
 
-#: addon/globalPlugins/openai/maindialog.py:1611
+#: addon/globalPlugins/openai/maindialog.py:1600
 msgid "Copy message as plain text"
 msgstr "Копировать сообщения как обычный текст"
 
-#: addon/globalPlugins/openai/maindialog.py:1614
+#: addon/globalPlugins/openai/maindialog.py:1603
 msgid "Copy message as formatted HTML"
 msgstr "Копировать сообщения как форматированный HTML"
 
-#: addon/globalPlugins/openai/maindialog.py:1617
+#: addon/globalPlugins/openai/maindialog.py:1606
 msgid "Copy response to system"
 msgstr "Копировать ответ в поле системная подсказка"
 
-#: addon/globalPlugins/openai/maindialog.py:1620
+#: addon/globalPlugins/openai/maindialog.py:1609
 msgid "Copy prompt to prompt"
 msgstr "Копировать подсказку в поле подсказка"
 
-#: addon/globalPlugins/openai/maindialog.py:1623
+#: addon/globalPlugins/openai/maindialog.py:1612
 msgid "Delete block"
 msgstr "Удалить блок"
 
-#: addon/globalPlugins/openai/maindialog.py:1626
+#: addon/globalPlugins/openai/maindialog.py:1615
 msgid "Save history as text file"
 msgstr "Сохранить историю в текстовый файл"
 
-#: addon/globalPlugins/openai/maindialog.py:1629
+#: addon/globalPlugins/openai/maindialog.py:1618
 msgid "Say message"
 msgstr "Произнести сообщение"
 
-#: addon/globalPlugins/openai/maindialog.py:1632
+#: addon/globalPlugins/openai/maindialog.py:1621
 msgid "Move to previous message"
 msgstr "Перейти к предыдущему сообщению"
 
-#: addon/globalPlugins/openai/maindialog.py:1635
+#: addon/globalPlugins/openai/maindialog.py:1624
 msgid "Move to next message"
 msgstr "Перейти к следующему сообщению"
 
-#: addon/globalPlugins/openai/maindialog.py:1646
+#: addon/globalPlugins/openai/maindialog.py:1635
 msgid "Insert previous prompt"
 msgstr "Вставить предыдущую подсказку"
 
-#: addon/globalPlugins/openai/maindialog.py:1698
+#: addon/globalPlugins/openai/maindialog.py:1687
 msgid "Show model &details"
 msgstr "Показать &подробную информацию о модели"
 
-#: addon/globalPlugins/openai/maindialog.py:1702
+#: addon/globalPlugins/openai/maindialog.py:1691
 msgid "Add to &favorites"
 msgstr "Добавить в &избранные"
 
-#: addon/globalPlugins/openai/maindialog.py:1702
+#: addon/globalPlugins/openai/maindialog.py:1691
 msgid "Remove from &favorites"
 msgstr "Удалить из &избранных"
 
-#: addon/globalPlugins/openai/maindialog.py:1716
+#: addon/globalPlugins/openai/maindialog.py:1705
 msgid "From f&ile path..."
 msgstr "&По пути к файлу..."
 
-#: addon/globalPlugins/openai/maindialog.py:1720
+#: addon/globalPlugins/openai/maindialog.py:1709
 msgid "From &URL..."
 msgstr "По &URL..."
 
-#: addon/globalPlugins/openai/maindialog.py:1724
+#: addon/globalPlugins/openai/maindialog.py:1713
 msgid "From &screenshot"
 msgstr "Со снимка экрана"
 
-#: addon/globalPlugins/openai/maindialog.py:1746
+#: addon/globalPlugins/openai/maindialog.py:1735
 msgid "&Remove selected images"
 msgstr "&Удалить выбранные изображения"
 
-#: addon/globalPlugins/openai/maindialog.py:1749
+#: addon/globalPlugins/openai/maindialog.py:1738
 msgid "Remove &all images"
 msgstr "Удалить & все изображения"
 
-#: addon/globalPlugins/openai/maindialog.py:1753
+#: addon/globalPlugins/openai/maindialog.py:1742
 msgid "Add from f&ile path..."
 msgstr "Добавить по &пути к файлу..."
 
-#: addon/globalPlugins/openai/maindialog.py:1756
+#: addon/globalPlugins/openai/maindialog.py:1745
 msgid "Add from &URL..."
 msgstr "Добавить по &URL..."
 
 #. Translators: This is a message displayed in a dialog to select one or more images.
-#: addon/globalPlugins/openai/maindialog.py:1862
+#: addon/globalPlugins/openai/maindialog.py:1851
 msgid "Select image files"
 msgstr "Выбрать файлы изображений"
 
-#: addon/globalPlugins/openai/maindialog.py:1864
+#: addon/globalPlugins/openai/maindialog.py:1853
 msgid "Image files"
 msgstr "Файлы изображений"
 
 #. Translators: This message is displayed when the image has already been added.
-#: addon/globalPlugins/openai/maindialog.py:1880
+#: addon/globalPlugins/openai/maindialog.py:1869
 #, python-format
 msgid ""
 "The following image has already been added and will be ignored:\n"
@@ -881,50 +875,50 @@ msgstr ""
 "%s"
 
 #. Translators: This is a message displayed in a dialog to enter an image URL.
-#: addon/globalPlugins/openai/maindialog.py:1899
+#: addon/globalPlugins/openai/maindialog.py:1888
 msgid "Enter image URL"
 msgstr "Введите URL изображения"
 
-#: addon/globalPlugins/openai/maindialog.py:1913
+#: addon/globalPlugins/openai/maindialog.py:1902
 msgid "Invalid URL, bad format."
 msgstr "Неверный URL, неправильный формат."
 
 #. Translators: This message is displayed when the image URL returns an HTTP error.
-#: addon/globalPlugins/openai/maindialog.py:1924
+#: addon/globalPlugins/openai/maindialog.py:1913
 #, python-format
 msgid "HTTP error %s."
 msgstr "Ошибка HTTP %s."
 
 #. Translators: This message is displayed when the image URL does not point to an image.
-#: addon/globalPlugins/openai/maindialog.py:1932
+#: addon/globalPlugins/openai/maindialog.py:1921
 msgid "The URL does not point to an image."
 msgstr "URL-адрес не указывает на изображение."
 
 #. Translators: This message is displayed when the add-on fails to get the image dimensions.
-#: addon/globalPlugins/openai/maindialog.py:1955
+#: addon/globalPlugins/openai/maindialog.py:1944
 #, python-format
 msgid "Failed to get image dimensions. %s"
 msgstr "Не удалось получить размеры изображения. %s"
 
 #. Translators: This message is displayed when a chat session stops receiving images.
-#: addon/globalPlugins/openai/maindialog.py:1983
+#: addon/globalPlugins/openai/maindialog.py:1972
 msgid "Screenshot reception disabled"
 msgstr "Получение снимков экрана отключено"
 
 #. Translators: This message is displayed when a chat session starts to receive images.
-#: addon/globalPlugins/openai/maindialog.py:1989
+#: addon/globalPlugins/openai/maindialog.py:1978
 msgid "Screenshot reception enabled"
 msgstr "Получение снимков экрана включено"
 
-#: addon/globalPlugins/openai/maindialog.py:2005
+#: addon/globalPlugins/openai/maindialog.py:1994
 msgid "Stop &recording"
 msgstr "Остановить & запись"
 
-#: addon/globalPlugins/openai/maindialog.py:2019
+#: addon/globalPlugins/openai/maindialog.py:2008
 msgid "Select audio file"
 msgstr "Выбрать аудиофайл"
 
-#: addon/globalPlugins/openai/maindialog.py:2021
+#: addon/globalPlugins/openai/maindialog.py:2010
 msgid ""
 "Audio files (*.mp3;*.mp4;*.mpeg;*.mpga;*.m4a;*.wav;*.webm)|*.mp3;*.mp4;*."
 "mpeg;*.mpga;*.m4a;*.wav;*.webm"
@@ -932,7 +926,7 @@ msgstr ""
 "Аудиофайлы (*.mp3;*.mp4;*.mpeg;*.mpga;*.m4a;*.wav;*.webm)|*.mp3;*.mp4;*.mpeg;"
 "*.mpga;*. m4a;*.wav;*.webm"
 
-#: addon/globalPlugins/openai/maindialog.py:2041
+#: addon/globalPlugins/openai/maindialog.py:2030
 msgid "Please enter some text in the prompt field first."
 msgstr "Сначала введите текст в поле подсказка."
 
@@ -1065,6 +1059,16 @@ msgid ""
 msgstr ""
 "Дополнение также поддерживает интеграцию с сервисами Mistral и OpenRouter "
 "благодаря общему формату API."
+
+#~ msgid ""
+#~ "Please use the Image Description button and select one or more images. "
+#~ "Otherwise, please select another model."
+#~ msgstr ""
+#~ "Пожалуйста, используйте кнопку \"описание изображения\" и выберите одно "
+#~ "или несколько изображений. В противном случае, выберите другую модель."
+
+#~ msgid "No image provided"
+#~ msgstr "Изображение не предоставлено"
 
 #~ msgid "&History:"
 #~ msgstr "&История:"
