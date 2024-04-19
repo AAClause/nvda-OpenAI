@@ -1099,17 +1099,6 @@ class OpenAIDlg(wx.Dialog):
 			)
 			return
 
-		if (
-			model.vision
-			and not self.conversationCheckBox.IsChecked()
-			and not self.pathList
-		):
-			gui.messageBox(
-				_("Please use the Image Description button and select one or more images. Otherwise, please select another model."),
-				_("No image provided"),
-				wx.OK | wx.ICON_ERROR
-			)
-			return
 		if not model.vision and self.pathList:
 			visionModels = [model.id for model in self._models if model.vision]
 			gui.messageBox(
