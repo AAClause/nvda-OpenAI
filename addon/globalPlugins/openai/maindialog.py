@@ -1,5 +1,6 @@
 import datetime
 import json
+import mimetypes
 import os
 import re
 import speech
@@ -1362,8 +1363,7 @@ class OpenAIDlg(wx.Dialog):
 					)
 					path = path_resized_image
 				base64_image = encode_image(path)
-				format = path.split(".")[-1]
-				mime_type = f"image/{format}"
+				mime_type, _ = mimetypes.guess_type(path)
 				images.append({
 					"type": "image_url",
 					"image_url": {
