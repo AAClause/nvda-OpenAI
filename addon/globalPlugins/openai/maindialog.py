@@ -1,5 +1,6 @@
 import datetime
 import json
+import mimetypes
 import os
 import re
 import speech
@@ -1099,17 +1100,6 @@ class OpenAIDlg(wx.Dialog):
 			)
 			return
 
-		if (
-			model.vision
-			and not self.conversationCheckBox.IsChecked()
-			and not self.pathList
-		):
-			gui.messageBox(
-				_("Please use the Image Description button and select one or more images. Otherwise, please select another model."),
-				_("No image provided"),
-				wx.OK | wx.ICON_ERROR
-			)
-			return
 		if not model.vision and self.pathList:
 			visionModels = [model.id for model in self._models if model.vision]
 			gui.messageBox(
@@ -1373,8 +1363,7 @@ class OpenAIDlg(wx.Dialog):
 					)
 					path = path_resized_image
 				base64_image = encode_image(path)
-				format = path.split(".")[-1]
-				mime_type = f"image/{format}"
+				mime_type, _ = mimetypes.guess_type(path)
 				images.append({
 					"type": "image_url",
 					"image_url": {
