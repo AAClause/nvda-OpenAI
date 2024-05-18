@@ -251,10 +251,11 @@ class CompletionThread(threading.Thread):
 			"model": model.id,
 			"messages": messages,
 			"temperature": temperature,
-			"max_tokens": maxTokens,
 			"top_p": topP,
 			"stream": stream
 		}
+		if maxTokens > 0:
+			params["max_tokens"] = maxTokens
 
 		if debug:
 			log.info("Client base URL: %s" % client.base_url)
@@ -968,11 +969,7 @@ class OpenAIDlg(wx.Dialog):
 		):
 			defaultMaxOutputToken = self.data[key_maxTokens]
 		else:
-			defaultMaxOutputToken = model.maxOutputToken // 2
-			if defaultMaxOutputToken < 1:
-				defaultMaxOutputToken  = model.contextWindow // 2
-		if defaultMaxOutputToken < 1:
-			defaultMaxOutputToken = 1024
+			defaultMaxOutputToken = 0
 		self.maxTokensSpinCtrl.SetValue(defaultMaxOutputToken)
 		if self.conf["advancedMode"]:
 			self.temperatureSpinCtrl.SetRange(
