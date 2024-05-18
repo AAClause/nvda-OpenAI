@@ -183,7 +183,6 @@ class CompletionThread(threading.Thread):
 		block.prompt = prompt
 		model = wnd.getCurrentModel()
 		block.model = model.id
-		conf["modelVision" if model.vision else "model"] = model.id
 		stream = conf["stream"]
 		debug = conf["debug"]
 		maxTokens = wnd.maxTokensSpinCtrl.GetValue()
@@ -237,6 +236,7 @@ class CompletionThread(threading.Thread):
 			msg = _("Uploading %d images, please wait...") % nbImages
 		else:
 			msg = PROCESSING_MSG
+		conf["modelVision" if nbImages else "model"] = model.id
 		wnd.message(msg)
 		if conf["chatFeedback"]["sndTaskInProgress"]:
 			winsound.PlaySound(SND_PROGRESS, winsound.SND_ASYNC|winsound.SND_LOOP)
