@@ -51,11 +51,21 @@ MODELS = [
 	),
 	Model(
 		"OpenAI",
-		"gpt-3.5-turbo-0613",
+		"gpt-4o",
 		# Translators: This is a model description
-		_("Same capabilities as the standard gpt-3.5-turbo model but with 4 times the context"),
-		16384,
-		4096
+		_("Our most advanced, multimodal flagship model that’s cheaper and faster than GPT-4 Turbo"),
+		128000,
+		4096,
+		vision=True
+	),
+	Model(
+		"OpenAI",
+		"gpt-4-turbo",
+		# Translators: This is a model description
+		_("The latest GPT-4 Turbo model with vision capabilities"),
+		128000,
+		4096,
+		vision=True,
 	),
 	Model(
 		"OpenAI",
