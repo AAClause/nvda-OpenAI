@@ -453,6 +453,18 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 				len(apikeymanager._managers or [])
 			)
 		)
+		wx.CallAfter(self.futureMessage)
+
+	def futureMessage(self):
+		if not conf["futureMessage"]:
+			msg = _("The future of this add-on is BasiliskLLM (a standalone application and a minimal NVDA add-on). We highly recommend you consider using BasiliskLLM instead of this one. Would you like to visit the BasiliskLLM website?")
+			if gui.messageBox(
+				msg,
+				"Open AI",
+				wx.YES_NO | wx.ICON_INFORMATION
+			) == wx.YES:
+				self.onBasiliskLLM(None)
+				conf["futureMessage"] = True
 
 	def createMenu(self):
 		self.submenu = wx.Menu()
@@ -503,6 +515,13 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			item
 		)
 
+		item = self.submenu.Append(
+			wx.ID_ANY,
+			_("BasiliskLLM"),
+			_("Open the BasiliskLLM website")
+		)
+		gui.mainFrame.sysTrayIcon.Bind(wx.EVT_MENU, self.onBasiliskLLM, item)
+
 		addon_name = ADDON_INFO["name"]
 		addon_version = ADDON_INFO["version"]
 		self.submenu_item = gui.mainFrame.sysTrayIcon.menu.InsertMenu(
@@ -544,6 +563,10 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			auto=False
 		)
 		updatecheck.update_last_check()
+
+	def onBasiliskLLM(self, evt):
+		url = "https://github.com/aaclause/basiliskLLM/"
+		os.startfile(url)
 
 	def terminate(self):
 		gui.settingsDialogs.NVDASettingsDialog.categoryClasses.remove(SettingsDlg)

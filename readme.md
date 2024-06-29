@@ -1,3 +1,5 @@
+NOTE: The future of this add-on is [BasiliskLLM](https://github.com/aaclause/basiliskLLM/) (a standalone application and a minimal NVDA add-on). We highly recommend you consider using BasiliskLLM instead of this one.
+
 # Open AI NVDA add-on
 
 This add-on designed to seamlessly integrate the capabilities of the Open AI API into your workflow. Whether you're looking to craft comprehensive text, translate passages with precision, concisely summarize documents, or even interpret and describe visual content, this add-on does it all with ease.
@@ -27,8 +29,8 @@ You are now equipped to explore the features of the OpenAI NVDA add-on!
 
 ### The Main Dialog
 
-The majority of the add-on's features can be easily accessed via a dialog box, which can be launched by pressing `NVDA+G`.  
-As an alternative, navigate to the "Open AI" submenu under the NVDA menu and select the "Main Dialog…" item.  
+The majority of the add-on's features can be easily accessed via a dialog box, which can be launched by pressing `NVDA+G`.
+As an alternative, navigate to the "Open AI" submenu under the NVDA menu and select the "Main Dialog…" item.
 Within this dialog, you will be able to:
 
 - Initiate interactive conversations with the AI models for assistance or information gathering.

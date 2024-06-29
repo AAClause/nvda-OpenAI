@@ -57,6 +57,7 @@ confSpecs = {
 		"speechResponseReceived": "boolean(default=True)",
 	},
 	"renewClient": "boolean(default=False)",
-	"debug": "boolean(default=False)"
+	"debug": "boolean(default=False)",
+	"futureMessage": "boolean(default=False)",
 }
 config.conf.spec["OpenAI"] = confSpecs
