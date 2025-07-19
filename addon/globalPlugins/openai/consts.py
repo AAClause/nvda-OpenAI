@@ -27,36 +27,127 @@ TTS_DEFAULT_MODEL = "tts-1"
 MODELS = [
 	Model(
 		"OpenAI",
-		"gpt-3.5-turbo",
+		"gpt-4.1",
 		# Translators: This is a model description
-		_("Points to one of the most recent iterations of gpt-3.5 model."),
-		16385,
-		4096
+		_("Flagship GPT model for complex tasks"),
+		1047576,
+		32768,
+		vision=True
 	),
 	Model(
 		"OpenAI",
-		"gpt-3.5-turbo-0125",
+		"gpt-4.1-mini",
 		# Translators: This is a model description
-		_("The latest GPT-3.5 Turbo model with higher accuracy at responding in requested formats and a fix for a bug which caused a text encoding issue for non-English language function calls."),
-		16385,
-		4096
+		_("Balanced for intelligence, speed, and cost"),
+		1047576,
+		32768,
+		vision=True
 	),
 	Model(
 		"OpenAI",
-		"gpt-3.5-turbo-1106",
+		"gpt-4.1-nano",
 		# Translators: This is a model description
-		_("Updated GPT 3.5 Turbo. The latest GPT-3.5 Turbo model with improved instruction following, JSON mode, reproducible outputs, parallel function calling, and more."),
-		16385,
-		4096
+		_("Fastest, most cost-effective GPT-4.1 model"),
+		1047576,
+		32768,
+		vision=True
+	),
+	Model(
+		"OpenAI",
+		"o4-mini",
+		# Translators: This is a model description
+		_("Faster, more affordable reasoning model"),
+		200000,
+		100000,
+		vision=True,
+		reasoning=True
+	),
+	Model(
+		"OpenAI",
+		"o3",
+		# Translators: This is a model description
+		_("Our most powerful reasoning model"),
+		200000,
+		100000,
+		vision=True,
+		reasoning=True
 	),
 	Model(
 		"OpenAI",
 		"gpt-4o",
 		# Translators: This is a model description
-		_("Our most advanced, multimodal flagship model that’s cheaper and faster than GPT-4 Turbo"),
+		_("Points to one of the most recent iterations of gpt-4o-mini model"),
 		128000,
-		4096,
+		16384,
 		vision=True
+	),
+	Model(
+		"OpenAI",
+		"gpt-4o-search-preview",
+		# Translators: This is a model description
+		_("GPT model for web search in Chat Completions"),
+		128000,
+		16384,
+		vision=True,
+		preview=True
+	),
+	Model(
+		"OpenAI",
+		"gpt-4o-mini-search-preview",
+		# Translators: This is a model description
+		_("Fast, affordable small model for web search"),
+		128000,
+		16384,
+		vision=True,
+		preview=True
+	),
+	Model(
+		"OpenAI",
+		"chatgpt-4o-latest",
+		# Translators: This is a model description
+		_("Dynamic model continuously updated to the current version of GPT-4o in ChatGPT"),
+		128000,
+		16384,
+		vision=True
+	),
+	Model(
+		"OpenAI",
+		"gpt-4o-mini",
+		# Translators: This is a model description
+		_("Points to one of the most recent iterations of gpt-4o-mini model"),
+		128000,
+		16384,
+		vision=True
+	),
+	Model(
+		"OpenAI",
+		"o3-mini",
+		# Translators: This is a model description
+		_("Our most recent small reasoning model, providing high intelligence at the same cost and latency targets of o1-mini. o3-mini also supports key developer features, like Structured Outputs, function calling, Batch API, and more. Like other models in the o-series, it is designed to excel at science, math, and coding tasks."),
+		200000,
+		100000,
+		vision=True,
+		reasoning=True
+	),
+	Model(
+		"OpenAI",
+		"o1",
+		# Translators: This is a model description
+		_("Points to the most recent snapshot of the o1 model"),
+		200000,
+		100000,
+		vision=True,
+		reasoning=True
+	),
+	Model(
+		"OpenAI",
+		"o1-mini",
+		# Translators: This is a model description
+		_("Points to the most recent o1-mini snapshot"),
+		128000,
+		65536,
+		vision=True,
+		reasoning=True
 	),
 	Model(
 		"OpenAI",
@@ -65,29 +156,74 @@ MODELS = [
 		_("The latest GPT-4 Turbo model with vision capabilities"),
 		128000,
 		4096,
-		vision=True,
+		vision=True
+	),
+	Model(
+		"OpenAI",
+		"gpt-3.5-turbo",
+		# Translators: This is a model description
+		_("Points to one of the most recent iterations of gpt-3.5 model"),
+		16385,
+		4096
+	),
+	Model(
+		"OpenAI",
+		"gpt-4o-2024-08-06",
+		# Translators: This is a model description
+		_("Latest snapshot that supports Structured Outputs"),
+		128000,
+		16384,
+		vision=True
+	),
+	Model(
+		"OpenAI",
+		"gpt-4o-2024-05-13",
+		# Translators: This is a model description
+		_("Our high-intelligence flagship model for complex, multi-step tasks"),
+		128000,
+		4096,
+		vision=True
+	),
+	Model(
+		"OpenAI",
+		"gpt-4o-mini-2024-07-18",
+		# Translators: This is a model description
+		_("Our affordable and intelligent small model for fast, lightweight tasks. GPT-4o mini is cheaper and more capable than GPT-3.5 Turbo"),
+		128000,
+		16384,
+		vision=True
+	),
+	Model(
+		"OpenAI",
+		"gpt-3.5-turbo-0125",
+		# Translators: This is a model description
+		_("The latest GPT-3.5 Turbo model with higher accuracy at responding in requested formats and a fix for a bug which caused a text encoding issue for non-English language function calls"),
+		16385,
+		4096
 	),
 	Model(
 		"OpenAI",
 		"gpt-4-turbo-preview",
 		# Translators: This is a model description
-		_("Points to one of the most recent iterations of gpt-4 model."),
+		_("Points to one of the most recent iterations of gpt-4 model"),
 		128000,
-		4096
+		4096,
+		preview=True
 	),
 	Model(
 		"OpenAI",
 		"gpt-4-0125-preview",
 		# Translators: This is a model description
-		_("The latest GPT-4 model intended to reduce cases of “laziness” where the model doesn’t complete a task."),
+		_("The latest GPT-4 model intended to reduce cases of 'laziness' where the model doesn't complete a task"),
 		128000,
-		4096
+		4096,
+		preview=True
 	),
 	Model(
 		"OpenAI",
 		"gpt-4-1106-preview",
 		# Translators: This is a model description
-		_("GPT-4 Turbo model featuring improved instruction following, JSON mode, reproducible outputs, parallel function calling, and more."),
+		_("GPT-4 Turbo model featuring improved instruction following, JSON mode, reproducible outputs, parallel function calling, and more"),
 		128000,
 		4096,
 		preview=True
@@ -96,7 +232,7 @@ MODELS = [
 		"OpenAI",
 		"gpt-4-vision-preview",
 		# Translators: This is a model description
-		_("GPT-4 Turbo with vision. Ability to understand images, in addition to all other GPT-4 Turbo capabilities."),
+		_("GPT-4 Turbo with vision. Ability to understand images, in addition to all other GPT-4 Turbo capabilities"),
 		128000,
 		4096,
 		vision=True,
@@ -107,16 +243,18 @@ MODELS = [
 		"gpt-4-0613",
 		# Translators: This is a model description
 		_("More capable than any GPT-3.5 model, able to do more complex tasks, and optimized for chat"),
+		8192,
 		8192
 	),
 	Model(
 		"OpenAI",
 		"gpt-4-32k-0613",
 		# Translators: This is a model description
-		_("Same capabilities as the standard gpt-4 mode but with 4x the context length."),
+		_("Same capabilities as the standard gpt-4 mode but with 4x the context length"),
 		32768,
 		8192
 	),
+	# Modèles MistralAI (conservés)
 	Model(
 		"MistralAI",
 		"open-mistral-7b",
@@ -126,7 +264,7 @@ MODELS = [
 		maxTemperature=1.0,
 		defaultTemperature=0.7
 	),
-Model(
+	Model(
 		"MistralAI",
 		"open-mixtral-8x7b",
 		# Translators: This is a model description
@@ -163,8 +301,8 @@ Model(
 		defaultTemperature=0.7
 	)
 ]
-DEFAULT_MODEL = MODELS[0]
-DEFAULT_MODEL_VISION = "gpt-4-vision-preview"
+DEFAULT_MODEL = MODELS[0]  # gpt-4.1
+DEFAULT_MODEL_VISION = "gpt-4o"  # Mise à jour vers un modèle plus récent avec vision
 BASE_URLs = {
 	"MistralAI": "https://api.mistral.ai/v1",
 	"OpenAI": "https://api.openai.com/v1",

@@ -21,6 +21,7 @@ class Model:
 		preview=False,
 		name: str='',
 		extraInfo=None,
+		reasoning: bool=False,
 		**kwargs
 	):
 		self.provider = provider
@@ -34,6 +35,7 @@ class Model:
 		self.vision = vision
 		self.preview = preview
 		self.extraInfo = extraInfo or {}
+		self.reasoning = reasoning
 
 	def getDescription(self):
 		description = self.description.rstrip('.')
