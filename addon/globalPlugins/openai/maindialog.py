@@ -275,8 +275,8 @@ class CompletionThread(threading.Thread):
 			if conf["chatFeedback"]["sndResponseSent"]:
 				winsound.PlaySound(SND_CHAT_RESPONSE_SENT, winsound.SND_ASYNC)
 		except BaseException as err:
-			log.error(f"Erreur lors de l'appel API pour le modèle {model.id}: {err}")
-			log.error(f"Paramètres utilisés: {params}")
+			log.error(f"Error when calling the API for model {model.id}: {err}")
+			log.error(f"Parameters used: {params}")
 			wx.PostEvent(self._notifyWindow, ResultEvent(err))
 			return
 		if wnd.lastBlock is None:
@@ -811,7 +811,7 @@ class OpenAIDlg(wx.Dialog):
 			self.debugModeCheckBox.SetValue(conf["debug"])
 			mainSizer.Add(self.debugModeCheckBox, 0, wx.ALL, 5)
 
-		# Initialiser l'état des contrôles selon le modèle sélectionné
+		# Initialize the state of the controls according to the selected model.
 		self.onModelChange(None)
 
 		buttonsSizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -982,7 +982,7 @@ class OpenAIDlg(wx.Dialog):
 			defaultMaxOutputToken = 0
 		self.maxTokensSpinCtrl.SetValue(defaultMaxOutputToken)
 		
-		# Gestion des contrôles de température et top_p selon le type de modèle
+		# Management of temperature and top_p controls according to the model type.
 		if self.conf["advancedMode"]:
 			is_search_model = model.id in ["gpt-4o-search-preview", "gpt-4o-mini-search-preview"]
 			if is_search_model:
@@ -1262,11 +1262,11 @@ class OpenAIDlg(wx.Dialog):
 		):
 			errMsg = event.data.message
 		else:
-			log.error(f"Type d'erreur inconnu: {type(event.data)}")
-			log.error(f"Contenu de l'erreur: {event.data}")
+			log.error(f"Unknown error type: {type(event.data)}")
+			log.error(f"Error content: {event.data}")
 			if hasattr(event.data, '__dict__'):
-				log.error(f"Attributs de l'erreur: {event.data.__dict__}")
-			errMsg = f"Erreur inconnue de type: {type(event.data).__name__}"
+				log.error(f"Error attr: {event.data.__dict__}")
+			errMsg = f"Unknown error of type: {type(event.data).__name__}"
 		# check if the error contains an URL, retrieve it to ask if the user wants to open it in the browser
 		url = re.search("https?://[^\s]+", errMsg)
 		if url:
