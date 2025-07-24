@@ -254,7 +254,6 @@ MODELS = [
 		32768,
 		8192
 	),
-	# Modèles MistralAI (conservés)
 	Model(
 		"MistralAI",
 		"open-mistral-7b",
@@ -302,7 +301,7 @@ MODELS = [
 	)
 ]
 DEFAULT_MODEL = MODELS[0]  # gpt-4.1
-DEFAULT_MODEL_VISION = "gpt-4o"  # Mise à jour vers un modèle plus récent avec vision
+DEFAULT_MODEL_VISION = "gpt-4o"
 BASE_URLs = {
 	"MistralAI": "https://api.mistral.ai/v1",
 	"OpenAI": "https://api.openai.com/v1",
@@ -333,7 +332,7 @@ DEFAULT_SYSTEM_PROMPT = _(
 	"organization of the interface. If the image does not correspond to a computer screen, just generate "
 	"a detailed visual description. If the user sends an image alone without additional instructions in text, "
 	"describe the image exactly as prescribed in this system prompt. Adhere strictly to the instructions in "
-	"this system prompt to describe images. Don’t add any additional details unless the user specifically ask you."
+	"this system prompt to describe images. Don't add any additional details unless the user specifically ask you."
 )
 LIBS_DIR = os.path.join(DATA_DIR, "libs")
 LIBS_DIR_PY = os.path.join(
