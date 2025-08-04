@@ -1,3 +1,4 @@
+# coding: UTF-8
 import datetime
 import json
 import mimetypes
@@ -250,12 +251,19 @@ class CompletionThread(threading.Thread):
 		params = {
 			"model": model.id,
 			"messages": messages,
-			"temperature": temperature,
-			"top_p": topP,
 			"stream": stream
 		}
+		
+		# GPT-Search models do not support temperature and top_p.
+		if model.id not in ["gpt-4o-search-preview", "gpt-4o-mini-search-preview"]:
+			params["temperature"] = temperature
+			params["top_p"] = topP
+		# The O1-O4 reasoning models use max_completion_tokens instead of max_tokens.
 		if maxTokens > 0:
-			params["max_tokens"] = maxTokens
+			if hasattr(model, 'reasoning') and model.reasoning:
+				params["max_completion_tokens"] = maxTokens
+			else:
+				params["max_tokens"] = maxTokens
 
 		if debug:
 			log.info("Client base URL: %s" % client.base_url)
@@ -268,6 +276,8 @@ class CompletionThread(threading.Thread):
 			if conf["chatFeedback"]["sndResponseSent"]:
 				winsound.PlaySound(SND_CHAT_RESPONSE_SENT, winsound.SND_ASYNC)
 		except BaseException as err:
+			log.error(f"Error when calling the API for model {model.id}: {err}")
+			log.error(f"Parameters used: {params}")
 			wx.PostEvent(self._notifyWindow, ResultEvent(err))
 			return
 		if wnd.lastBlock is None:
@@ -749,7 +759,7 @@ class OpenAIDlg(wx.Dialog):
 		mainSizer.Add(self.maxTokensSpinCtrl, 0, wx.ALL, 5)
 
 		if conf["advancedMode"]:
-			temperatureLabel = wx.StaticText(
+			self.temperatureLabel = wx.StaticText(
 				self,
 				# Translators: This is the label for the temperature spin control in the main dialog.
 				label=_("&Temperature:")
@@ -759,10 +769,10 @@ class OpenAIDlg(wx.Dialog):
 				min=0,
 				max=200
 			)
-			mainSizer.Add(temperatureLabel, 0, wx.ALL, 5)
+			mainSizer.Add(self.temperatureLabel, 0, wx.ALL, 5)
 			mainSizer.Add(self.temperatureSpinCtrl, 0, wx.ALL, 5)
 
-			topPLabel = wx.StaticText(
+			self.topPLabel = wx.StaticText(
 				self,
 				# Translators: This is the label for the top P spin control in the main dialog.
 				label=_("Pro&bability Mass (top P):")
@@ -773,7 +783,7 @@ class OpenAIDlg(wx.Dialog):
 				max=TOP_P_MAX,
 				initial=conf["topP"]
 			)
-			mainSizer.Add(topPLabel, 0, wx.ALL, 5)
+			mainSizer.Add(self.topPLabel, 0, wx.ALL, 5)
 			mainSizer.Add(self.topPSpinCtrl, 0, wx.ALL, 5)
 
 			self.whisperResponseFormatLabel = wx.StaticText(
@@ -802,6 +812,7 @@ class OpenAIDlg(wx.Dialog):
 			self.debugModeCheckBox.SetValue(conf["debug"])
 			mainSizer.Add(self.debugModeCheckBox, 0, wx.ALL, 5)
 
+		# Initialize the state of the controls according to the selected model.
 		self.onModelChange(None)
 
 		buttonsSizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -971,20 +982,33 @@ class OpenAIDlg(wx.Dialog):
 		else:
 			defaultMaxOutputToken = 0
 		self.maxTokensSpinCtrl.SetValue(defaultMaxOutputToken)
+		
+		# Management of temperature and top_p controls according to the model type.
 		if self.conf["advancedMode"]:
-			self.temperatureSpinCtrl.SetRange(
-				0,
-				int(model.maxTemperature * 100)
-			)
-			key_temperature = "temperature_%s" % model.id
-			if key_temperature in self.data:
-				self.temperatureSpinCtrl.SetValue(
-					int(self.data[key_temperature])
-				)
+			is_search_model = model.id in ["gpt-4o-search-preview", "gpt-4o-mini-search-preview"]
+			if is_search_model:
+				self.temperatureSpinCtrl.Enable(False)
+				self.topPSpinCtrl.Enable(False)
+				self.temperatureLabel.Enable(False)
+				self.topPLabel.Enable(False)
 			else:
-				self.temperatureSpinCtrl.SetValue(
-					int(model.defaultTemperature * 100)
+				self.temperatureSpinCtrl.Enable(True)
+				self.topPSpinCtrl.Enable(True)
+				self.temperatureLabel.Enable(True)
+				self.topPLabel.Enable(True)
+				self.temperatureSpinCtrl.SetRange(
+					0,
+					int(model.maxTemperature * 100)
 				)
+				key_temperature = "temperature_%s" % model.id
+				if key_temperature in self.data:
+					self.temperatureSpinCtrl.SetValue(
+						int(self.data[key_temperature])
+					)
+				else:
+					self.temperatureSpinCtrl.SetValue(
+						int(model.defaultTemperature * 100)
+					)
 
 	def showModelDetails(self, evt=None):
 		model = self.getCurrentModel()
@@ -1031,7 +1055,13 @@ class OpenAIDlg(wx.Dialog):
 			reverse=False
 		)
 		for i, model in enumerate(self._models):
-			self.modelsListCtrl.InsertItem(i, model.name)
+			display_name = model.name
+			if model.reasoning:
+				display_name = "🤔 " + display_name
+			if model.id in ["gpt-4o-search-preview", "gpt-4o-mini-search-preview"]:
+				display_name = "🔍 " + display_name
+			
+			self.modelsListCtrl.InsertItem(i, display_name)
 			self.modelsListCtrl.SetItem(i, 1, model.provider)
 			self.modelsListCtrl.SetItem(i, 2, model.id)
 			self.modelsListCtrl.SetItem(i, 3, str(model.contextWindow))
@@ -1233,8 +1263,11 @@ class OpenAIDlg(wx.Dialog):
 		):
 			errMsg = event.data.message
 		else:
-			log.error(errMsg)
-			log.error(type(event.data))
+			log.error(f"Unknown error type: {type(event.data)}")
+			log.error(f"Error content: {event.data}")
+			if hasattr(event.data, '__dict__'):
+				log.error(f"Error attr: {event.data.__dict__}")
+			errMsg = f"Unknown error of type: {type(event.data).__name__}"
 		# check if the error contains an URL, retrieve it to ask if the user wants to open it in the browser
 		url = re.search("https?://[^\s]+", errMsg)
 		if url:
