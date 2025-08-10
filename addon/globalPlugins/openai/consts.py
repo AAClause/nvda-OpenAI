@@ -27,6 +27,42 @@ TTS_DEFAULT_MODEL = "tts-1"
 MODELS = [
 	Model(
 		"OpenAI",
+		"gpt-5",
+		# Translators: This is a model description
+		_("Fastest, most cost-efficient version of GPT-5"),
+		400000,
+		128000,
+		vision=True
+	),
+	Model(
+		"OpenAI",
+		"gpt-5-mini",
+		# Translators: This is a model description
+		_("Fastest, most cost-efficient version of GPT-5"),
+		400000,
+		128000,
+		vision=True
+	),
+	Model(
+		"OpenAI",
+		"gpt-5-nano",
+		# Translators: This is a model description
+		_("Fastest, most cost-efficient version of GPT-5"),
+		400000,
+		128000,
+		vision=True
+	),
+	Model(
+		"OpenAI",
+		"gpt-5-chat-latest",
+		# Translators: This is a model description
+		_("GPT-5 model used in ChatGPT"),
+		400000,
+		128000,
+		vision=True
+	),
+	Model(
+		"OpenAI",
 		"gpt-4.1",
 		# Translators: This is a model description
 		_("Flagship GPT model for complex tasks"),
@@ -244,14 +280,6 @@ MODELS = [
 		# Translators: This is a model description
 		_("More capable than any GPT-3.5 model, able to do more complex tasks, and optimized for chat"),
 		8192,
-		8192
-	),
-	Model(
-		"OpenAI",
-		"gpt-4-32k-0613",
-		# Translators: This is a model description
-		_("Same capabilities as the standard gpt-4 mode but with 4x the context length"),
-		32768,
 		8192
 	),
 	Model(
