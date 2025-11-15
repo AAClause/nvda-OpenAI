@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OpenAI 24.04.02\n"
 "Report-Msgid-Bugs-To: nvda-translations@groups.io\n"
-"POT-Creation-Date: 2025-08-04 20:01+0500\n"
-"PO-Revision-Date: 2025-08-04 20:15+0500\n"
+"POT-Creation-Date: 2025-11-15 03:20+0300\n"
+"PO-Revision-Date: 2025-11-15 03:22+0300\n"
 "Last-Translator: Danil Kostenkov <danilkostenkov38@gmail.com>\n"
 "Language-Team: Russian translation team <nvda.ru>, Danil Kostenkov "
 "<danilkostenkov38@gmail.com>\n"
@@ -11,7 +11,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 3.6\n"
+"X-Generator: Poedit 3.8\n"
 "X-Poedit-Basepath: ../../../..\n"
 "X-Poedit-Bookmarks: -1,26,47,-1,-1,-1,-1,-1,-1,-1\n"
 "X-Poedit-SearchPath-0: .\n"
@@ -257,46 +257,56 @@ msgid "Toggle the microphone recording and transcribe the audio from anywhere"
 msgstr "Переключайте запись с микрофона и расшифровывайте звук из любого места"
 
 #: addon/globalPlugins/openai/consts.py:32
+#: addon/globalPlugins/openai/consts.py:41
+#: addon/globalPlugins/openai/consts.py:50
+msgid "Fastest, most cost-efficient version of GPT-5"
+msgstr "Самая быстрая и экономичная версия GPT-5"
+
+#: addon/globalPlugins/openai/consts.py:59
+msgid "GPT-5 model used in ChatGPT"
+msgstr "Модель GPT-5, используемая в ChatGPT"
+
+#: addon/globalPlugins/openai/consts.py:68
 msgid "Flagship GPT model for complex tasks"
 msgstr "Флагманская модель GPT для решения сложных задач"
 
-#: addon/globalPlugins/openai/consts.py:41
+#: addon/globalPlugins/openai/consts.py:77
 msgid "Balanced for intelligence, speed, and cost"
 msgstr "Сбалансированный по интеллекту, скорости и стоимости"
 
-#: addon/globalPlugins/openai/consts.py:50
+#: addon/globalPlugins/openai/consts.py:86
 msgid "Fastest, most cost-effective GPT-4.1 model"
 msgstr "Самая быстрая и экономичная модель GPT-4.1"
 
-#: addon/globalPlugins/openai/consts.py:59
+#: addon/globalPlugins/openai/consts.py:95
 msgid "Faster, more affordable reasoning model"
 msgstr "Более быстрая и доступная модель рассуждения"
 
-#: addon/globalPlugins/openai/consts.py:69
+#: addon/globalPlugins/openai/consts.py:105
 msgid "Our most powerful reasoning model"
 msgstr "Наша самая мощная модель рассуждения"
 
-#: addon/globalPlugins/openai/consts.py:79
-#: addon/globalPlugins/openai/consts.py:117
+#: addon/globalPlugins/openai/consts.py:115
+#: addon/globalPlugins/openai/consts.py:153
 msgid "Points to one of the most recent iterations of gpt-4o-mini model"
 msgstr "Указывает на одну из последних итераций модели gpt-4o-mini"
 
-#: addon/globalPlugins/openai/consts.py:88
+#: addon/globalPlugins/openai/consts.py:124
 msgid "GPT model for web search in Chat Completions"
 msgstr "GPT-модель для веб-поиска при заполнении чата"
 
-#: addon/globalPlugins/openai/consts.py:98
+#: addon/globalPlugins/openai/consts.py:134
 msgid "Fast, affordable small model for web search"
 msgstr "Быстрая и доступная по цене компактная модель для веб-поиска"
 
-#: addon/globalPlugins/openai/consts.py:108
+#: addon/globalPlugins/openai/consts.py:144
 msgid ""
 "Dynamic model continuously updated to the current version of GPT-4o in "
 "ChatGPT"
 msgstr ""
 "Динамическая модель постоянно обновляется до текущей версии GPT-4o в ChatGPT"
 
-#: addon/globalPlugins/openai/consts.py:126
+#: addon/globalPlugins/openai/consts.py:162
 msgid ""
 "Our most recent small reasoning model, providing high intelligence at the "
 "same cost and latency targets of o1-mini. o3-mini also supports key "
@@ -311,35 +321,35 @@ msgstr ""
 "она предназначена для решения задач в области естественных наук, математики "
 "и программирования."
 
-#: addon/globalPlugins/openai/consts.py:136
+#: addon/globalPlugins/openai/consts.py:172
 msgid "Points to the most recent snapshot of the o1 model"
 msgstr "Указывает на одну из последних итераций модели o1"
 
-#: addon/globalPlugins/openai/consts.py:146
+#: addon/globalPlugins/openai/consts.py:182
 msgid "Points to the most recent o1-mini snapshot"
 msgstr "Указывает на одну из последних итераций модели o1-mini"
 
-#: addon/globalPlugins/openai/consts.py:156
+#: addon/globalPlugins/openai/consts.py:192
 msgid "The latest GPT-4 Turbo model with vision capabilities"
 msgstr "Новейшая модель GPT-4 Turbo с возможностью зрения"
 
-#: addon/globalPlugins/openai/consts.py:165
+#: addon/globalPlugins/openai/consts.py:201
 msgid "Points to one of the most recent iterations of gpt-3.5 model"
 msgstr "Указывает на одну из последних итераций модели gpt-3.5"
 
-#: addon/globalPlugins/openai/consts.py:173
+#: addon/globalPlugins/openai/consts.py:209
 msgid "Latest snapshot that supports Structured Outputs"
 msgstr ""
 "Последняя предварительная версия, поддерживающая структурированные выходные "
 "данные"
 
-#: addon/globalPlugins/openai/consts.py:182
+#: addon/globalPlugins/openai/consts.py:218
 msgid "Our high-intelligence flagship model for complex, multi-step tasks"
 msgstr ""
 "Наша высокоинтеллектуальная флагманская модель для решения сложных, "
 "многоэтапных задач"
 
-#: addon/globalPlugins/openai/consts.py:191
+#: addon/globalPlugins/openai/consts.py:227
 msgid ""
 "Our affordable and intelligent small model for fast, lightweight tasks. "
 "GPT-4o mini is cheaper and more capable than GPT-3.5 Turbo"
@@ -348,7 +358,7 @@ msgstr ""
 "легких задач. GPT-4o mini дешевле и обладает большими возможностями, чем "
 "GPT-3.5 Turbo"
 
-#: addon/globalPlugins/openai/consts.py:200
+#: addon/globalPlugins/openai/consts.py:236
 msgid ""
 "The latest GPT-3.5 Turbo model with higher accuracy at responding in "
 "requested formats and a fix for a bug which caused a text encoding issue for "
@@ -358,11 +368,11 @@ msgstr ""
 "запрошенных форматах и исправлением ошибки, которая вызывала проблему с "
 "кодировкой текста при вызовах функций не на английском языке"
 
-#: addon/globalPlugins/openai/consts.py:208
+#: addon/globalPlugins/openai/consts.py:244
 msgid "Points to one of the most recent iterations of gpt-4 model"
 msgstr "Указывает на одну из последних итераций модели gpt-4"
 
-#: addon/globalPlugins/openai/consts.py:217
+#: addon/globalPlugins/openai/consts.py:253
 msgid ""
 "The latest GPT-4 model intended to reduce cases of 'laziness' where the "
 "model doesn't complete a task"
@@ -370,7 +380,7 @@ msgstr ""
 "Последняя модель GPT-4 предназначена для уменьшения случаев \"лени\", когда "
 "модель не выполняет задачу до конца"
 
-#: addon/globalPlugins/openai/consts.py:226
+#: addon/globalPlugins/openai/consts.py:262
 msgid ""
 "GPT-4 Turbo model featuring improved instruction following, JSON mode, "
 "reproducible outputs, parallel function calling, and more"
@@ -378,7 +388,7 @@ msgstr ""
 "Модель GPT-4 Turbo с улучшенным соблюдением инструкций, режимом JSON, "
 "воспроизводимыми выводами, параллельным вызовом функций и т. д"
 
-#: addon/globalPlugins/openai/consts.py:235
+#: addon/globalPlugins/openai/consts.py:271
 msgid ""
 "GPT-4 Turbo with vision. Ability to understand images, in addition to all "
 "other GPT-4 Turbo capabilities"
@@ -386,7 +396,7 @@ msgstr ""
 "GPT-4 Turbo с возможностями зрения. Способность понимать изображения в "
 "дополнение ко всем другим возможностям GPT-4 Turbo"
 
-#: addon/globalPlugins/openai/consts.py:245
+#: addon/globalPlugins/openai/consts.py:281
 msgid ""
 "More capable than any GPT-3.5 model, able to do more complex tasks, and "
 "optimized for chat"
@@ -394,25 +404,18 @@ msgstr ""
 "Более мощная, чем любая модель GPT-3.5, способна выполнять более сложные "
 "задачи и оптимизирована для общения в чате"
 
-#: addon/globalPlugins/openai/consts.py:253
-msgid ""
-"Same capabilities as the standard gpt-4 mode but with 4x the context length"
-msgstr ""
-"Те же возможности, что и в стандартном режиме gpt-4, но с 4-кратной длиной "
-"контекста."
-
-#: addon/globalPlugins/openai/consts.py:261
-#: addon/globalPlugins/openai/consts.py:270
+#: addon/globalPlugins/openai/consts.py:289
+#: addon/globalPlugins/openai/consts.py:298
 #, python-format
 msgid "aka %s"
 msgstr "aka %s"
 
-#: addon/globalPlugins/openai/consts.py:279
+#: addon/globalPlugins/openai/consts.py:307
 msgid "Simple tasks (Classification, Customer Support, or Text Generation)"
 msgstr ""
 "Простые задачи (классификация, поддержка клиентов или генерация текста)"
 
-#: addon/globalPlugins/openai/consts.py:288
+#: addon/globalPlugins/openai/consts.py:316
 msgid ""
 "Intermediate tasks that require moderate reasoning (Data extraction, "
 "Summarizing a Document, Writing emails, Writing a Job Description, or "
@@ -422,7 +425,7 @@ msgstr ""
 "обобщение документа, написание электронных писем, составление должностной "
 "инструкции или описания продукта)"
 
-#: addon/globalPlugins/openai/consts.py:297
+#: addon/globalPlugins/openai/consts.py:325
 msgid ""
 "Complex tasks that require large reasoning capabilities or are highly "
 "specialized (Synthetic Text Generation, Code Generation, RAG, or Agents)"
@@ -431,7 +434,7 @@ msgstr ""
 "узкоспециализированными (генерация синтетического текста, генерация кода, "
 "RAG или агенты)"
 
-#: addon/globalPlugins/openai/consts.py:311
+#: addon/globalPlugins/openai/consts.py:339
 msgid ""
 "You are an accessibility assistant integrated in the NVDA screen reader that "
 "helps blind screen reader users access visual information that may not be "
@@ -1074,6 +1077,13 @@ msgid ""
 msgstr ""
 "Дополнение также поддерживает интеграцию с сервисами Mistral и OpenRouter "
 "благодаря общему формату API."
+
+#~ msgid ""
+#~ "Same capabilities as the standard gpt-4 mode but with 4x the context "
+#~ "length"
+#~ msgstr ""
+#~ "Те же возможности, что и в стандартном режиме gpt-4, но с 4-кратной "
+#~ "длиной контекста."
 
 #~ msgid ""
 #~ "Updated GPT 3.5 Turbo. The latest GPT-3.5 Turbo model with improved "
