@@ -1057,9 +1057,9 @@ class OpenAIDlg(wx.Dialog):
 		for i, model in enumerate(self._models):
 			display_name = model.name
 			if model.reasoning:
-				display_name = "🤔 " + display_name
+				display_name = display_name + " 🤔"
 			if model.id in ["gpt-4o-search-preview", "gpt-4o-mini-search-preview"]:
-				display_name = "🔍 " + display_name
+				display_name = display_name + " 🔍"
 			
 			self.modelsListCtrl.InsertItem(i, display_name)
 			self.modelsListCtrl.SetItem(i, 1, model.provider)
