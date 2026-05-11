@@ -122,11 +122,12 @@ class AskQuestionThread(threading.Thread):
 		model_id = self._conf.get("model", "gpt-4o")
 		provider, model_id, model_obj = find_provider_for_ask(model_id, requires_audio_model)
 		if not provider:
-			msg = (
-				_("No audio-capable model found. Enable direct audio in settings.")
-				if requires_audio_model
-				else _("No API key configured. Please add one in AI-Hub settings.")
-			)
+			if requires_audio_model:
+				# Translators: Brief NVDA message when Ask Question was used with a recording but no model supports direct audio input.
+				msg = _("No audio-capable model found. Enable direct audio in settings.")
+			else:
+				# Translators: Brief NVDA message when Ask Question cannot run because no API account is configured.
+				msg = _("No API key configured. Please add one in AI-Hub settings.")
 			queueHandler.queueFunction(queueHandler.eventQueue, ui.message, msg)
 			return
 		client = configure_client_for_provider(self._client, provider, clone=True)
@@ -165,9 +166,11 @@ class AskQuestionThread(threading.Thread):
 						if mci_play_wav(audio_path):
 							if plugin_ref:
 								plugin_ref._askAudioPlaying = True
+							# Translators: Brief NVDA message when Ask Question starts playing the synthesized answer through NVDA’s audio path.
 							queueHandler.queueFunction(queueHandler.eventQueue, ui.message, _("Playing audio response"))
 						else:
 							os.startfile(audio_path)
+							# Translators: Brief NVDA message when Ask Question opens the answer WAV in the default application because in-process playback failed or was skipped.
 							queueHandler.queueFunction(queueHandler.eventQueue, ui.message, _("Playing audio response"))
 					except Exception as error:
 						log.error(f"Failed to play audio: {error}", exc_info=True)

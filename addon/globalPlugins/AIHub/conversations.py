@@ -305,6 +305,7 @@ def ensure_conversations_dir():
 def get_default_title(first_message: str) -> str:
 	"""Use start of first message as default conversation title."""
 	if not first_message or not first_message.strip():
+		# Translators: Text in conversation metadata/properties shown to the user.
 		return _("Untitled conversation")
 	text = first_message.strip()
 	# Collapse whitespace and newlines
@@ -519,15 +520,18 @@ def get_conversation_properties(conv_id: str) -> dict | None:
 	total_cache_write = total_input_audio = total_output_audio = 0
 	total_cost = 0.0
 	has_cost = False
+	usage_message_count = 0
 	model_counts = {}
 	for block in blocks:
 		if not isinstance(block, dict):
 			continue
+		# Translators: Text in conversation metadata/properties shown to the user.
 		model_name = block.get("model") or _("unknown")
 		model_counts[model_name] = model_counts.get(model_name, 0) + 1
 		usage = block.get("usage")
 		if not isinstance(usage, dict):
 			continue
+		usage_message_count += 1
 		try:
 			input_tokens = int(usage.get("input_tokens", 0) or 0)
 			output_tokens = int(usage.get("output_tokens", 0) or 0)
@@ -537,7 +541,10 @@ def get_conversation_properties(conv_id: str) -> dict | None:
 				output_tokens = int(usage.get("completion_tokens", 0) or 0)
 			total_input += input_tokens
 			total_output += output_tokens
-			total_tokens += int(usage.get("total_tokens", 0) or 0)
+			total_for_block = int(usage.get("total_tokens", 0) or 0)
+			if total_for_block == 0 and (input_tokens or output_tokens):
+				total_for_block = input_tokens + output_tokens
+			total_tokens += total_for_block
 			total_reasoning += int(usage.get("reasoning_tokens", 0) or 0)
 			total_cached += int(usage.get("cached_input_tokens", 0) or 0)
 			total_cache_write += int(usage.get("cache_creation_input_tokens", 0) or 0)
@@ -552,6 +559,7 @@ def get_conversation_properties(conv_id: str) -> dict | None:
 
 	return {
 		"id": data.get("id", conv_id),
+		# Translators: Text in conversation metadata/properties shown to the user.
 		"name": data.get("name", _("Untitled conversation")),
 		"created": data.get("created", 0),
 		"updated": data.get("updated", 0),
@@ -568,6 +576,8 @@ def get_conversation_properties(conv_id: str) -> dict | None:
 		"total_output_audio": total_output_audio,
 		"total_cost": total_cost,
 		"has_cost": has_cost,
+		"has_usage": bool(usage_message_count),
+		"usage_message_count": usage_message_count,
 		"model_counts": model_counts,
 		"format": normalize_conversation_format(data.get("format", ConversationFormat.GENERIC.value)).value,
 		"files": _collect_file_entries(data),
@@ -662,6 +672,7 @@ def load_conversation(conv_id: str) -> dict | None:
 		ui_state = raw_ui if isinstance(raw_ui, dict) else {}
 		return {
 			"id": data.get("id", conv_id),
+			# Translators: Text in conversation metadata/properties shown to the user.
 			"name": data.get("name", _("Untitled conversation")),
 			"system": data.get("system", ""),
 			"blocks": blocks,
@@ -753,6 +764,7 @@ def save_conversation(
 			name = get_default_title(prompt)
 		existing = {
 			"id": conv_id,
+			# Translators: Text in conversation metadata/properties shown to the user.
 			"name": name or _("Untitled conversation"),
 			"created": now,
 			"updated": now,
@@ -778,6 +790,7 @@ def save_conversation(
 	entries = {e["id"]: e for e in idx.get("entries", [])}
 	entries[conv_id] = {
 		"id": conv_id,
+		# Translators: Text in conversation metadata/properties shown to the user.
 		"name": existing.get("name", _("Untitled conversation")),
 		"created": existing.get("created", now),
 		"updated": now,
@@ -795,6 +808,7 @@ def rename_conversation(conv_id: str, new_name: str) -> bool:
 	try:
 		with open(path, "r", encoding="utf-8") as f:
 			data = json.load(f)
+		# Translators: Text in conversation metadata/properties shown to the user.
 		data["name"] = new_name.strip() or _("Untitled conversation")
 		data["updated"] = int(time.time())
 		_atomic_write_json(path, data)

@@ -36,6 +36,21 @@ class ModelHandlersMixin:
 		cb = getattr(self, "advancedSamplingCheckBox", None)
 		return bool(cb is not None and cb.IsChecked())
 
+	def _supported_param_set(self, model) -> set[str]:
+		return {
+			p.lower()
+			for p in (getattr(model, "supportedParameters", None) or [])
+			if isinstance(p, str)
+		}
+
+	def _set_labeled_visibility(self, label, ctrl, visible: bool, enabled: bool | None = None):
+		if enabled is None:
+			enabled = visible
+		label.Show(visible)
+		ctrl.Show(visible)
+		label.Enable(enabled)
+		ctrl.Enable(enabled)
+
 	def _modelKey(self, model):
 		return f"{model.provider}:{model.id}"
 
@@ -43,6 +58,7 @@ class ModelHandlersMixin:
 		return f"{account['provider'].lower()}/{account['id']}"
 
 	def _accountLabel(self, account):
+		# Translators: Fallback account name when no custom name is set.
 		name = account.get("name") or _("Account")
 		label = f"{account['provider']} / {name}"
 		if account.get("provider") in _USER_ENDPOINT_PROVIDERS and account.get("base_url"):
@@ -59,6 +75,7 @@ class ModelHandlersMixin:
 				account = {
 					"provider": provider,
 					"id": acc["id"],
+					# Translators: Fallback account name when loading account list.
 					"name": acc.get("name") or _("Account"),
 					"base_url": acc.get("base_url", ""),
 				}
@@ -78,6 +95,7 @@ class ModelHandlersMixin:
 		account = self.getCurrentAccount()
 		if account:
 			return account
+		# Translators: Error message shown when no account is selected.
 		msg = _("Please select an account.")
 		if modal:
 			gui.messageBox(msg, "OpenAI", wx.OK | wx.ICON_ERROR)
@@ -159,6 +177,7 @@ class ModelHandlersMixin:
 		model = self.getCurrentModel()
 		if model:
 			return model
+		# Translators: Error message shown when no model is selected.
 		msg = _("Please select a model.")
 		if modal:
 			gui.messageBox(msg, "OpenAI", wx.OK | wx.ICON_ERROR)
@@ -209,14 +228,19 @@ class ModelHandlersMixin:
 		return sorted(by_key, key=lambda m: not self._isModelFavorite(m))
 
 	def _formatModelLabel(self, model):
+		# Translators: Capability tags shown in model list labels.
 		capabilities = [_("text")]
 		if model.vision:
+			# Translators: Text in model/account selection UI and model context menus.
 			capabilities.append(_("image"))
 		if getattr(model, "audioInput", False) or getattr(model, "audioOutput", False):
+			# Translators: Text in model/account selection UI and model context menus.
 			capabilities.append(_("audio"))
 		if model.reasoning:
+			# Translators: Text in model/account selection UI and model context menus.
 			capabilities.append(_("reasoning"))
 		if model.supports_web_search:
+			# Translators: Text in model/account selection UI and model context menus.
 			capabilities.append(_("web search"))
 		cap_str = ", ".join(capabilities)
 		ctx_k = model.contextWindow // 1000
@@ -285,10 +309,25 @@ class ModelHandlersMixin:
 		if not model:
 			return
 		self._persistCurrentModelSelection(model)
-		self.maxTokensSpinCtrl.SetRange(0, model.maxOutputToken if model.maxOutputToken > 1 else model.contextWindow)
+		supported = self._supported_param_set(model)
+		supports_max_tokens = (
+			"max_tokens" in supported
+			or "max_completion_tokens" in supported
+			or (getattr(model, "maxOutputToken", -1) > 0)
+		)
+		self._set_labeled_visibility(self.maxTokensLabel, self.maxTokensSpinCtrl, supports_max_tokens)
+		if hasattr(self, "maxTokensRow"):
+			self.maxTokensRow.Show(supports_max_tokens)
+		if supports_max_tokens:
+			max_cap = model.maxOutputToken if model.maxOutputToken > 1 else model.contextWindow
+			self.maxTokensSpinCtrl.SetRange(0, max_cap)
 		key_maxTokens = "maxTokens_%s" % model.id
 		defaultMaxOutputToken = self.data.get(key_maxTokens, 0) if isinstance(self.data.get(key_maxTokens, 0), int) else 0
-		self.maxTokensSpinCtrl.SetValue(defaultMaxOutputToken)
+		if supports_max_tokens:
+			try:
+				self.maxTokensSpinCtrl.SetValue(defaultMaxOutputToken)
+			except Exception:
+				self.maxTokensSpinCtrl.SetValue(0)
 
 		if model.reasoning:
 			self.reasoningModeCheckBox.Enable(True)
@@ -302,13 +341,15 @@ class ModelHandlersMixin:
 				saved = self.conf.get("reasoningEffort", "medium")
 				idx = next((i for i, (v, _) in enumerate(opts) if v == saved), 0)
 				self.reasoningEffortChoice.SetSelection(idx)
-				self.reasoningEffortChoice.Enable(True)
-				self.reasoningEffortChoice.Show(True)
+				self._set_labeled_visibility(self.reasoningEffortLabel, self.reasoningEffortChoice, True)
+				if hasattr(self, "reasoningEffortRow"):
+					self.reasoningEffortRow.Show(True)
 			else:
 				self._reasoningEffortOptions = ()
 				self.reasoningEffortChoice.Clear()
-				self.reasoningEffortChoice.Enable(False)
-				self.reasoningEffortChoice.Show(False)
+				self._set_labeled_visibility(self.reasoningEffortLabel, self.reasoningEffortChoice, False)
+				if hasattr(self, "reasoningEffortRow"):
+					self.reasoningEffortRow.Show(False)
 			if model.adaptive_choice_visible and reasoning_on:
 				self.adaptiveThinkingCheckBox.Enable(True)
 				self.adaptiveThinkingCheckBox.Show(True)
@@ -323,8 +364,9 @@ class ModelHandlersMixin:
 			self.reasoningModeCheckBox.Show(False)
 			self.reasoningModeCheckBox.SetValue(False)
 			self.reasoningEffortChoice.Clear()
-			self.reasoningEffortChoice.Enable(False)
-			self.reasoningEffortChoice.Show(False)
+			self._set_labeled_visibility(self.reasoningEffortLabel, self.reasoningEffortChoice, False)
+			if hasattr(self, "reasoningEffortRow"):
+				self.reasoningEffortRow.Show(False)
 			self.adaptiveThinkingCheckBox.Enable(False)
 			self.adaptiveThinkingCheckBox.Show(False)
 			self.adaptiveThinkingCheckBox.SetValue(False)
@@ -338,11 +380,8 @@ class ModelHandlersMixin:
 			self.webSearchCheckBox.SetValue(False)
 
 		if self._effective_advanced_mode():
-			if "temperature" in model.supportedParameters:
-				self.temperatureSpinCtrl.Enable(True)
-				self.temperatureLabel.Enable(True)
-				self.temperatureSpinCtrl.Show(True)
-				self.temperatureLabel.Show(True)
+			if "temperature" in supported:
+				self._set_labeled_visibility(self.temperatureLabel, self.temperatureSpinCtrl, True)
 				self.temperatureSpinCtrl.SetRange(0, int(model.maxTemperature * 100))
 				key_temperature = "temperature_%s" % model.id
 				if key_temperature in self.data:
@@ -350,25 +389,13 @@ class ModelHandlersMixin:
 				else:
 					self.temperatureSpinCtrl.SetValue(int(model.defaultTemperature * 100))
 			else:
-				self.temperatureSpinCtrl.Enable(False)
-				self.temperatureLabel.Enable(False)
-				self.temperatureSpinCtrl.Show(False)
-				self.temperatureLabel.Show(False)
-			if "top_p" in model.supportedParameters:
-				self.topPLabel.Enable(True)
-				self.topPSpinCtrl.Enable(True)
-				self.topPLabel.Show(True)
-				self.topPSpinCtrl.Show(True)
+				self._set_labeled_visibility(self.temperatureLabel, self.temperatureSpinCtrl, False)
+			if "top_p" in supported:
+				self._set_labeled_visibility(self.topPLabel, self.topPSpinCtrl, True)
 			else:
-				self.topPLabel.Enable(False)
-				self.topPSpinCtrl.Enable(False)
-				self.topPLabel.Show(False)
-				self.topPSpinCtrl.Show(False)
-			if "seed" in model.supportedParameters:
-				self.advancedSeedSpinCtrl.Enable(True)
-				self.advancedSeedLabel.Enable(True)
-				self.advancedSeedSpinCtrl.Show(True)
-				self.advancedSeedLabel.Show(True)
+				self._set_labeled_visibility(self.topPLabel, self.topPSpinCtrl, False)
+			if "seed" in supported:
+				self._set_labeled_visibility(self.advancedSeedLabel, self.advancedSeedSpinCtrl, True)
 				key_seed = "seed_%s" % model.id
 				if key_seed in self.data:
 					try:
@@ -378,15 +405,9 @@ class ModelHandlersMixin:
 				else:
 					self.advancedSeedSpinCtrl.SetValue(-1)
 			else:
-				self.advancedSeedSpinCtrl.Enable(False)
-				self.advancedSeedLabel.Enable(False)
-				self.advancedSeedSpinCtrl.Show(False)
-				self.advancedSeedLabel.Show(False)
-			if "top_k" in model.supportedParameters:
-				self.advancedTopKSpinCtrl.Enable(True)
-				self.advancedTopKLabel.Enable(True)
-				self.advancedTopKSpinCtrl.Show(True)
-				self.advancedTopKLabel.Show(True)
+				self._set_labeled_visibility(self.advancedSeedLabel, self.advancedSeedSpinCtrl, False)
+			if "top_k" in supported:
+				self._set_labeled_visibility(self.advancedTopKLabel, self.advancedTopKSpinCtrl, True)
 				key_tk = "top_k_%s" % model.id
 				if key_tk in self.data:
 					try:
@@ -396,30 +417,18 @@ class ModelHandlersMixin:
 				else:
 					self.advancedTopKSpinCtrl.SetValue(0)
 			else:
-				self.advancedTopKSpinCtrl.Enable(False)
-				self.advancedTopKLabel.Enable(False)
-				self.advancedTopKSpinCtrl.Show(False)
-				self.advancedTopKLabel.Show(False)
-			if "stop" in model.supportedParameters:
-				self.advancedStopTextCtrl.Enable(True)
-				self.advancedStopLabel.Enable(True)
-				self.advancedStopTextCtrl.Show(True)
-				self.advancedStopLabel.Show(True)
+				self._set_labeled_visibility(self.advancedTopKLabel, self.advancedTopKSpinCtrl, False)
+			if "stop" in supported:
+				self._set_labeled_visibility(self.advancedStopLabel, self.advancedStopTextCtrl, True)
 				key_stop = "stop_%s" % model.id
 				if key_stop in self.data:
 					self.advancedStopTextCtrl.SetValue(str(self.data[key_stop]))
 				else:
 					self.advancedStopTextCtrl.SetValue("")
 			else:
-				self.advancedStopTextCtrl.Enable(False)
-				self.advancedStopLabel.Enable(False)
-				self.advancedStopTextCtrl.Show(False)
-				self.advancedStopLabel.Show(False)
-			if "frequency_penalty" in model.supportedParameters:
-				self.advancedFreqPenaltySpinCtrl.Enable(True)
-				self.advancedFreqPenaltyLabel.Enable(True)
-				self.advancedFreqPenaltySpinCtrl.Show(True)
-				self.advancedFreqPenaltyLabel.Show(True)
+				self._set_labeled_visibility(self.advancedStopLabel, self.advancedStopTextCtrl, False)
+			if "frequency_penalty" in supported:
+				self._set_labeled_visibility(self.advancedFreqPenaltyLabel, self.advancedFreqPenaltySpinCtrl, True)
 				key_fp = "frequency_penalty_%s" % model.id
 				if key_fp in self.data:
 					try:
@@ -429,15 +438,9 @@ class ModelHandlersMixin:
 				else:
 					self.advancedFreqPenaltySpinCtrl.SetValue(0)
 			else:
-				self.advancedFreqPenaltySpinCtrl.Enable(False)
-				self.advancedFreqPenaltyLabel.Enable(False)
-				self.advancedFreqPenaltySpinCtrl.Show(False)
-				self.advancedFreqPenaltyLabel.Show(False)
-			if "presence_penalty" in model.supportedParameters:
-				self.advancedPresPenaltySpinCtrl.Enable(True)
-				self.advancedPresPenaltyLabel.Enable(True)
-				self.advancedPresPenaltySpinCtrl.Show(True)
-				self.advancedPresPenaltyLabel.Show(True)
+				self._set_labeled_visibility(self.advancedFreqPenaltyLabel, self.advancedFreqPenaltySpinCtrl, False)
+			if "presence_penalty" in supported:
+				self._set_labeled_visibility(self.advancedPresPenaltyLabel, self.advancedPresPenaltySpinCtrl, True)
 				key_pp = "presence_penalty_%s" % model.id
 				if key_pp in self.data:
 					try:
@@ -447,24 +450,9 @@ class ModelHandlersMixin:
 				else:
 					self.advancedPresPenaltySpinCtrl.SetValue(0)
 			else:
-				self.advancedPresPenaltySpinCtrl.Enable(False)
-				self.advancedPresPenaltyLabel.Enable(False)
-				self.advancedPresPenaltySpinCtrl.Show(False)
-				self.advancedPresPenaltyLabel.Show(False)
-		else:
-			for w in (
-				self.temperatureLabel, self.temperatureSpinCtrl,
-				self.topPLabel, self.topPSpinCtrl,
-				self.advancedSeedLabel, self.advancedSeedSpinCtrl,
-				self.advancedTopKLabel, self.advancedTopKSpinCtrl,
-				self.advancedStopLabel, self.advancedStopTextCtrl,
-				self.advancedFreqPenaltyLabel, self.advancedFreqPenaltySpinCtrl,
-				self.advancedPresPenaltyLabel, self.advancedPresPenaltySpinCtrl,
-			):
-				try:
-					w.Hide()
-				except Exception:
-					pass
+				self._set_labeled_visibility(self.advancedPresPenaltyLabel, self.advancedPresPenaltySpinCtrl, False)
+		self._update_advanced_controls_visibility()
+		self.Layout()
 		if not getattr(self, "_sync_suppress_tab_capture", False):
 			if getattr(self, "notebook", None):
 				try:
@@ -477,6 +465,7 @@ class ModelHandlersMixin:
 		if not model:
 			return
 		html = build_model_details_html(model)
+		# Translators: Title for the browseable model details view.
 		ui.browseableMessage(html, _("Model details"), isHtml=True)
 
 	def _reloadModels(self):
@@ -533,24 +522,35 @@ class ModelHandlersMixin:
 			return
 		menu = wx.Menu()
 		item_id = wx.NewIdRef()
+		# Translators: Context-menu item for opening model details.
 		menu.Append(item_id, _("Show model &details") + " (Space)")
 		self.Bind(wx.EVT_MENU, lambda e, m=model: self.showModelDetails(e, m), id=item_id)
 		isFavorite = self._isModelFavorite(model)
 		item_id = wx.NewIdRef()
+		# Translators: Context-menu item labels to favorite/unfavorite a model.
 		label = _("Add to &favorites") if not isFavorite else _("Remove from &favorites")
 		menu.Append(item_id, f"{label} (Shift+Space)")
 		self.Bind(wx.EVT_MENU, lambda e, m=model: self.onFavoriteModel(e, model=m), id=item_id)
 		menu.AppendSeparator()
 		sort_menu = wx.Menu()
 		current_sort = self._getModelSortOrder()
+		# Translators: Labels for model sorting choices.
 		sort_labels = {
+			# Translators: Text in model/account selection UI and model context menus.
 			"created": _("Most recent first"),
+			# Translators: Text in model/account selection UI and model context menus.
 			"created_asc": _("Oldest first"),
+			# Translators: Text in model/account selection UI and model context menus.
 			"name": _("Name (A–Z)"),
+			# Translators: Text in model/account selection UI and model context menus.
 			"name_desc": _("Name (Z–A)"),
+			# Translators: Text in model/account selection UI and model context menus.
 			"context": _("Context window (largest first)"),
+			# Translators: Text in model/account selection UI and model context menus.
 			"context_asc": _("Context window (smallest first)"),
+			# Translators: Text in model/account selection UI and model context menus.
 			"max_tokens": _("Max output tokens (highest first)"),
+			# Translators: AI-Hub conversation — model list: entry in a context menu or submenu.
 			"max_tokens_asc": _("Max output tokens (lowest first)"),
 		}
 		for key in MODEL_SORT_OPTIONS:
@@ -560,9 +560,11 @@ class ModelHandlersMixin:
 			if key == current_sort:
 				sort_menu.Check(item_id, True)
 			self.Bind(wx.EVT_MENU, lambda e, k=key: self._onModelSortChoice(e, k), id=item_id)
+		# Translators: Submenu label for model sort options.
 		menu.AppendSubMenu(sort_menu, _("&Sort by"))
 		menu.AppendSeparator()
 		item_id = wx.NewIdRef()
+		# Translators: Context-menu item to refresh provider model list.
 		menu.Append(item_id, _("&Refresh model list"))
 		self.Bind(wx.EVT_MENU, lambda e: self._reloadModels(), id=item_id)
 		menu.AppendSeparator()

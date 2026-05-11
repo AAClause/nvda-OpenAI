@@ -25,10 +25,10 @@ from .consts import (
 )
 from .mediastore import build_media_path
 from .providertools_helpers import add_labeled_factory, safe_float
+from .thread_shutdown import stop_worker_thread
 from .tool_dialog_base import ToolDialogBase
 
 addonHandler.initTranslation()
-
 
 def _split_csv(text: str) -> list[str]:
 	if not isinstance(text, str):
@@ -58,6 +58,7 @@ class MistralSpeechToTextToolDialog(ToolDialogBase):
 	def __init__(self, parent, conversationData=None, parentDialog=None, plugin=None):
 		super().__init__(
 			parent,
+			# Translators: Window title of the AI-Hub Mistral Speech-to-Text tool dialog.
 			title=_("Tool: Mistral Speech to Text"),
 			provider=Provider.MistralAI,
 			size=(860, 820),
@@ -72,21 +73,27 @@ class MistralSpeechToTextToolDialog(ToolDialogBase):
 		main = wx.BoxSizer(wx.VERTICAL)
 
 		self.accountChoice = add_labeled_factory(
+			# Translators: Label before the Mistral account drop-down in the Mistral Speech-to-Text tool.
 			self.formPanel, main, _("&Account:"), lambda: self.build_account_choice(self.formPanel)
 		)
 		self.inputAudioPathText = add_labeled_factory(
+			# Translators: Label before the path field for the audio file to transcribe in the Mistral Speech-to-Text tool.
 			self.formPanel, main, _("&Input audio file:"), lambda: wx.TextCtrl(self.formPanel, value="")
 		)
 		self.inputAudioPathText.Bind(wx.EVT_TEXT, lambda evt: (self._syncOpenButtons(), evt.Skip()))
+		# Translators: Button that opens a file picker for the input recording in Mistral Speech-to-Text.
 		self.browseInputBtn = wx.Button(self.formPanel, label=_("Browse input audio..."))
 		self.browseInputBtn.Bind(wx.EVT_BUTTON, self.onBrowseInputAudio)
 		main.Add(self.browseInputBtn, 0, wx.LEFT | wx.RIGHT | wx.BOTTOM, UI_FORM_ROW_BORDER_PX)
+		# Translators: Button that opens the selected input audio file in the default application.
 		self.openInputBtn = wx.Button(self.formPanel, label=_("Open input audio"))
 		self.openInputBtn.Bind(wx.EVT_BUTTON, self.onOpenInputAudio)
 		main.Add(self.openInputBtn, 0, wx.LEFT | wx.RIGHT | wx.BOTTOM, UI_FORM_ROW_BORDER_PX)
+		# Translators: Button that opens the plain-text transcript file from the last Mistral Speech-to-Text run.
 		self.openTextResultBtn = wx.Button(self.formPanel, label=_("Open transcription text result"))
 		self.openTextResultBtn.Bind(wx.EVT_BUTTON, self.onOpenTextResult)
 		main.Add(self.openTextResultBtn, 0, wx.LEFT | wx.RIGHT | wx.BOTTOM, UI_FORM_ROW_BORDER_PX)
+		# Translators: Button that opens the raw JSON API dump from the last Mistral Speech-to-Text run.
 		self.openRawResultBtn = wx.Button(self.formPanel, label=_("Open raw transcription result"))
 		self.openRawResultBtn.Bind(wx.EVT_BUTTON, self.onOpenRawResult)
 		main.Add(self.openRawResultBtn, 0, wx.LEFT | wx.RIGHT | wx.BOTTOM, UI_FORM_ROW_BORDER_PX)
@@ -94,6 +101,7 @@ class MistralSpeechToTextToolDialog(ToolDialogBase):
 		self.modelChoice = add_labeled_factory(
 			self.formPanel,
 			main,
+			# Translators: Label before the Mistral speech-to-text model combo box in this tool window.
 			_("&Model:"),
 			lambda: wx.ComboBox(
 				self.formPanel,
@@ -105,31 +113,37 @@ class MistralSpeechToTextToolDialog(ToolDialogBase):
 		self.languageText = add_labeled_factory(
 			self.formPanel,
 			main,
+			# Translators: Label before the optional ISO-639 language code hint field for Mistral transcription.
 			_("&Language (ISO code, optional):"),
 			lambda: wx.TextCtrl(self.formPanel, value=""),
 		)
+		# Translators: Checkbox turning on speaker diarization in the Mistral Speech-to-Text request.
 		self.diarizeCheck = wx.CheckBox(self.formPanel, label=_("Enable speaker diarization"))
 		main.Add(self.diarizeCheck, 0, wx.LEFT | wx.RIGHT | wx.BOTTOM, UI_FORM_ROW_BORDER_PX)
 		self.contextBiasText = add_labeled_factory(
 			self.formPanel,
 			main,
+			# Translators: Label before the optional comma-separated vocabulary hints sent as context bias to Mistral.
 			_("Context bias terms (comma-separated, optional):"),
 			lambda: wx.TextCtrl(self.formPanel, value=""),
 		)
 		self.timestampGranularitiesText = add_labeled_factory(
 			self.formPanel,
 			main,
+			# Translators: Label before the optional segment/word timestamp granularity list for Mistral transcription.
 			_("Timestamp granularities (segment,word; optional):"),
 			lambda: wx.TextCtrl(self.formPanel, value=""),
 		)
 		self.temperatureText = add_labeled_factory(
 			self.formPanel,
 			main,
+			# Translators: Label before the optional sampling temperature text field for Mistral transcription.
 			_("&Temperature (optional):"),
 			lambda: wx.TextCtrl(self.formPanel, value=""),
 		)
 
 		buttons = wx.BoxSizer(wx.HORIZONTAL)
+		# Translators: Button that starts the Mistral Speech-to-Text HTTP request with the current form settings.
 		self.runBtn = wx.Button(self.formPanel, label=_("Run transcription"))
 		self.runBtn.Bind(wx.EVT_BUTTON, self.onRun)
 		self.bind_ctrl_enter_submit(self.onRun)
@@ -178,8 +192,10 @@ class MistralSpeechToTextToolDialog(ToolDialogBase):
 	def onBrowseInputAudio(self, evt):
 		dlg = wx.FileDialog(
 			self,
+			# Translators: Title of the file picker for the input recording in the Mistral speech-to-text tool.
 			message=_("Select audio file"),
 			defaultFile="",
+			# Translators: File-type filter in the Mistral transcription tool’s input-audio picker.
 			wildcard=_("Audio files (*.flac;*.mp3;*.mp4;*.mpeg;*.mpga;*.m4a;*.ogg;*.wav;*.webm)|*.flac;*.mp3;*.mp4;*.mpeg;*.mpga;*.m4a;*.ogg;*.wav;*.webm"),
 			style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST,
 		)
@@ -237,6 +253,7 @@ class MistralSpeechToTextToolDialog(ToolDialogBase):
 		try:
 			api_key = self.manager.get_api_key(account_id=account_id)
 			if not api_key:
+				# Translators: Error raised before the HTTP request when the chosen Mistral account has no API key.
 				raise ValueError(_("No API key available for the selected Mistral account."))
 			base_url = self.manager.get_base_url(account_id=account_id) or "https://api.mistral.ai/v1"
 			url = base_url.rstrip("/") + "/audio/transcriptions"
@@ -302,9 +319,11 @@ class MistralSpeechToTextToolDialog(ToolDialogBase):
 		self._worker = None
 		if err is not None:
 			if isinstance(err, (APIConnectionError, APIStatusError)):
+				# Translators: Error body when Mistral Speech-to-Text fails with a network or HTTP error; placeholder is the provider message (title is «OpenAI»).
 				wx.MessageBox(_("Mistral Speech to Text failed: %s") % err, "OpenAI", wx.OK | wx.ICON_ERROR)
 			else:
 				log.error(f"Mistral Speech to Text failed: {err}", exc_info=True)
+				# Translators: Error body for an unexpected Mistral Speech-to-Text failure (title is «OpenAI»; details in the log).
 				wx.MessageBox(_("Mistral Speech to Text failed. See NVDA log for details."), "OpenAI", wx.OK | wx.ICON_ERROR)
 			return
 		text = ""
@@ -318,17 +337,24 @@ class MistralSpeechToTextToolDialog(ToolDialogBase):
 			with open(raw_path, "w", encoding="utf-8") as f:
 				json.dump(result if isinstance(result, dict) else {}, f, ensure_ascii=False, indent=2)
 		except Exception as write_err:
+			# Translators: Error body when saving Mistral transcript or JSON dump fails; placeholder is the OS error (title is «OpenAI»).
 			wx.MessageBox(_("Unable to save transcription outputs: %s") % write_err, "OpenAI", wx.OK | wx.ICON_ERROR)
 			return
 		self._textResultPath = text_path
 		self._rawResultPath = raw_path
 		self._syncOpenButtons()
 		self.open_local_path(text_path, err_title="OpenAI")
+		if text:
+			response_text = text[:4000]
+		else:
+			# Translators: Short completion line stored with the tool run when Mistral transcription returns no text body.
+			response_text = _("Transcription completed.")
 		self.save_tool_conversation(
+			# Translators: Title stored on the synthetic «tool output» conversation tab after Mistral Speech-to-Text finishes successfully.
 			title=_("Tool output: Mistral Speech to Text"),
 			conversation_format=ConversationFormat.TOOL_MISTRAL_SPEECH_TO_TEXT,
 			prompt=file_path,
-			response_text=text[:4000] if text else _("Transcription completed."),
+			response_text=response_text,
 			model=model,
 			format_data={
 				"input_audio_path": file_path,
@@ -378,6 +404,7 @@ class MistralSpeechToTextToolDialog(ToolDialogBase):
 		self._markClosing()
 		stop_progress_sound()
 		self.end_long_task()
+		stop_worker_thread(self._worker)
 		self._worker = None
 		if isinstance(evt, wx.CloseEvent):
 			evt.Skip()
@@ -392,6 +419,7 @@ class MistralSpeechToTextToolDialog(ToolDialogBase):
 			return
 		file_path = self.inputAudioPathText.GetValue().strip()
 		if not file_path or not os.path.exists(file_path):
+			# Translators: Error body when Run is pressed without a valid on-disk audio file in the Mistral Speech-to-Text tool (title is «OpenAI»).
 			wx.MessageBox(_("Please select a valid audio file."), "OpenAI", wx.OK | wx.ICON_ERROR)
 			self.inputAudioPathText.SetFocus()
 			return
@@ -402,6 +430,7 @@ class MistralSpeechToTextToolDialog(ToolDialogBase):
 		timestamp_granularities = [v.lower() for v in _split_csv(self.timestampGranularitiesText.GetValue().strip())]
 		invalid_tg = [v for v in timestamp_granularities if v not in ("segment", "word")]
 		if invalid_tg:
+			# Translators: Error body when the comma-separated timestamp granularity field contains tokens other than segment or word (title is «OpenAI»).
 			wx.MessageBox(_("Timestamp granularities must only contain 'segment' and/or 'word'."), "OpenAI", wx.OK | wx.ICON_ERROR)
 			self.timestampGranularitiesText.SetFocus()
 			return
@@ -411,6 +440,7 @@ class MistralSpeechToTextToolDialog(ToolDialogBase):
 				self.timestampGranularitiesText.SetValue("segment")
 			elif timestamp_granularities != ["segment"]:
 				wx.MessageBox(
+					# Translators: Error body when diarization is on but the timestamp granularity list is not exactly the single value «segment» (title is «OpenAI»).
 					_("When diarization is enabled, timestamp granularities must be exactly 'segment'."),
 					"OpenAI",
 					wx.OK | wx.ICON_ERROR,
@@ -422,11 +452,13 @@ class MistralSpeechToTextToolDialog(ToolDialogBase):
 		if temp_raw:
 			temperature = safe_float(temp_raw, default=None)
 			if temperature is None:
+				# Translators: Error body when the optional temperature field is not a valid decimal number in Mistral Speech-to-Text (title is «OpenAI»).
 				wx.MessageBox(_("Temperature must be a valid number."), "OpenAI", wx.OK | wx.ICON_ERROR)
 				self.temperatureText.SetFocus()
 				return
 		if self.conf["chatFeedback"]["sndTaskInProgress"]:
 			winsound.PlaySound(SND_PROGRESS, winsound.SND_ASYNC | winsound.SND_LOOP)
+		# Translators: Status line on the modal progress window while Mistral is transcribing the selected audio file.
 		self.begin_long_task(_("Transcription in progress..."), self._setBusy)
 		self._worker = threading.Thread(
 			target=self._run_thread,

@@ -197,6 +197,7 @@ BASE_URLs = {
 	Provider.xAI: "https://api.x.ai/v1",
 	Provider.Google: "https://generativelanguage.googleapis.com/v1beta/openai",
 }
+# Translators: Default English system prompt text applied to new AI-Hub conversations until the user changes it.
 DEFAULT_SYSTEM_PROMPT = _(
 	"You are an accessibility assistant integrated in the NVDA screen reader that "
 	"helps blind screen reader users access visual information that may not be accessible "

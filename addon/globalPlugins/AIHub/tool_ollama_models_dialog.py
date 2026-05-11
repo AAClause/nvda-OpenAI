@@ -21,26 +21,35 @@ from .consts import (
 )
 from .model import clearModelCache
 from .providertools_helpers import add_labeled_factory
+from .thread_shutdown import stop_worker_thread
 from .tool_dialog_base import ToolDialogBase
 
 addonHandler.initTranslation()
 
-
 class OllamaModelManagerToolDialog(ToolDialogBase):
 	ACTIONS = (
+		# Translators: Ollama model manager — label in the Action drop-down for listing models installed on the local Ollama server.
 		("list_models", _("List installed models")),
+		# Translators: Ollama model manager — label in the Action drop-down for listing models currently loaded in Ollama memory.
 		("list_running", _("List running models")),
+		# Translators: Ollama model manager — label in the Action drop-down for fetching JSON details of one named model.
 		("show", _("Show model details")),
+		# Translators: Ollama model manager — label in the Action drop-down for downloading a model from a registry into Ollama.
 		("pull", _("Pull model (add)")),
+		# Translators: Ollama model manager — label in the Action drop-down for uploading a local model to a registry.
 		("push", _("Push model")),
+		# Translators: Ollama model manager — label in the Action drop-down for duplicating a model under a new name on the same machine.
 		("copy", _("Copy model")),
+		# Translators: Ollama model manager — label in the Action drop-down for creating a model from pasted Modelfile text.
 		("create", _("Create model from Modelfile")),
+		# Translators: Ollama model manager — label in the Action drop-down for removing one installed model from Ollama.
 		("delete", _("Delete model (remove)")),
 	)
 
 	def __init__(self, parent, conversationData=None, parentDialog=None, plugin=None):
 		super().__init__(
 			parent,
+			# Translators: Window title of the AI-Hub tool dialog for running Ollama admin commands (list, pull, delete, etc.).
 			title=_("Tool: Ollama model manager"),
 			provider=Provider.Ollama,
 			size=(860, 760),
@@ -55,11 +64,13 @@ class OllamaModelManagerToolDialog(ToolDialogBase):
 		main = wx.BoxSizer(wx.VERTICAL)
 
 		self.accountChoice = add_labeled_factory(
+			# Translators: Label before the account drop-down choosing which saved Ollama endpoint/credentials to use.
 			self.formPanel, main, _("&Account:"), lambda: self.build_account_choice(self.formPanel)
 		)
 		self.actionChoice = add_labeled_factory(
 			self.formPanel,
 			main,
+			# Translators: Label before the drop-down that selects which Ollama admin action to run (list, pull, delete, etc.).
 			_("&Action:"),
 			lambda: wx.Choice(self.formPanel, choices=[label for _, label in self.ACTIONS]),
 		)
@@ -69,35 +80,42 @@ class OllamaModelManagerToolDialog(ToolDialogBase):
 		self.modelText = add_labeled_factory(
 			self.formPanel,
 			main,
+			# Translators: Label before the primary model name or id text field in the Ollama models tool.
 			_("&Model name:"),
 			lambda: wx.TextCtrl(self.formPanel, value=""),
 		)
 		self.secondaryModelText = add_labeled_factory(
 			self.formPanel,
 			main,
+			# Translators: Label before the destination model name field used only for the Copy model action.
 			_("Destination model (for copy):"),
 			lambda: wx.TextCtrl(self.formPanel, value=""),
 		)
 		self.modelfileText = add_labeled_factory(
 			self.formPanel,
 			main,
+			# Translators: Label before the multiline Modelfile editor used only for the Create model from Modelfile action.
 			_("&Modelfile (for create):"),
 			lambda: wx.TextCtrl(self.formPanel, style=wx.TE_MULTILINE, size=(-1, 140)),
 		)
+		# Translators: Checkbox allowing non-TLS or otherwise insecure registry connections when pulling or pushing models.
 		self.insecureCheck = wx.CheckBox(self.formPanel, label=_("Allow insecure registry (pull/push)"))
 		main.Add(self.insecureCheck, 0, wx.LEFT | wx.RIGHT | wx.BOTTOM, UI_FORM_ROW_BORDER_PX)
 
 		self.resultText = add_labeled_factory(
 			self.formPanel,
 			main,
+			# Translators: Label before the read-only multiline area showing formatted command output from Ollama.
 			_("&Result:"),
 			lambda: wx.TextCtrl(self.formPanel, style=wx.TE_MULTILINE | wx.TE_READONLY, size=(-1, 280)),
 		)
 
 		buttons = wx.BoxSizer(wx.HORIZONTAL)
+		# Translators: Button that runs the Ollama HTTP action selected in the Action drop-down.
 		self.runBtn = wx.Button(self.formPanel, label=_("Run action"))
 		self.runBtn.Bind(wx.EVT_BUTTON, self.onRun)
 		self.bind_ctrl_enter_submit(self.onRun)
+		# Translators: Button opening a dialog with the raw JSON or text response from the last Ollama command.
 		self.openRawBtn = wx.Button(self.formPanel, label=_("Show raw result"))
 		self.openRawBtn.Bind(wx.EVT_BUTTON, self.onShowRaw)
 		self.closeBtn = wx.Button(self.formPanel, id=wx.ID_CLOSE)
@@ -168,16 +186,19 @@ class OllamaModelManagerToolDialog(ToolDialogBase):
 	def _build_payload(self, action: str) -> dict | None:
 		model_name = self.modelText.GetValue().strip()
 		if action in ("show", "pull", "push", "delete", "create") and not model_name:
+			# Translators: Validation error when the Ollama models tool action needs a model name but the field is empty.
 			raise ValueError(_("Model name is required for this action."))
 		if action == "copy":
 			source = model_name
 			dest = self.secondaryModelText.GetValue().strip()
 			if not source or not dest:
+				# Translators: Validation error when the copy action is chosen but source or destination model name is missing.
 				raise ValueError(_("Source and destination model names are required for copy."))
 			return {"source": source, "destination": dest}
 		if action == "create":
 			modelfile = self.modelfileText.GetValue().strip()
 			if not modelfile:
+				# Translators: Validation error when create-from-Modelfile is chosen but the Modelfile text box is empty.
 				raise ValueError(_("Modelfile content is required for create action."))
 			return {"model": model_name, "modelfile": modelfile, "stream": False}
 		if action in ("show",):
@@ -210,7 +231,9 @@ class OllamaModelManagerToolDialog(ToolDialogBase):
 			if not isinstance(models, list):
 				models = []
 			if not models:
+				# Translators: Result text when list_models succeeds but Ollama reports no locally installed models.
 				return _("No installed models found.")
+			# Translators: Heading line before the bullet list of installed Ollama models in the tool result view.
 			lines = [_("Installed models (%d):") % len(models)]
 			for item in models:
 				if isinstance(item, dict):
@@ -224,7 +247,9 @@ class OllamaModelManagerToolDialog(ToolDialogBase):
 			if not isinstance(models, list):
 				models = []
 			if not models:
+				# Translators: Result text when list_running succeeds but no model is currently loaded in Ollama.
 				return _("No running models.")
+			# Translators: Heading line before the bullet list of models currently loaded in Ollama.
 			lines = [_("Running models (%d):") % len(models)]
 			for item in models:
 				if isinstance(item, dict):
@@ -277,9 +302,11 @@ class OllamaModelManagerToolDialog(ToolDialogBase):
 			return
 		self._worker = None
 		if err:
+			# Translators: Error body after an Ollama HTTP call fails in the Ollama models tool; placeholder is the error text (title is «OpenAI»).
 			wx.MessageBox(_("Ollama action failed: %s") % err, "OpenAI", wx.OK | wx.ICON_ERROR)
 			return
 		self._rawResult = raw or formatted or ""
+		# Translators: Single line shown in the Ollama models tool result text box when the action succeeded but returned no printable output.
 		self.resultText.SetValue(formatted or _("Done."))
 		self.resultText.SetFocus()
 
@@ -295,6 +322,7 @@ class OllamaModelManagerToolDialog(ToolDialogBase):
 		except Exception as e:
 			wx.MessageBox(str(e), "OpenAI", wx.OK | wx.ICON_ERROR)
 			return
+		# Translators: Message on the modal progress bar while the Ollama models tool waits for the local Ollama HTTP action to finish.
 		self.begin_long_task(_("Running Ollama action..."), self._setBusy)
 		if self.conf["chatFeedback"]["sndTaskInProgress"]:
 			winsound.PlaySound(SND_PROGRESS, winsound.SND_ASYNC | winsound.SND_LOOP)
@@ -304,13 +332,17 @@ class OllamaModelManagerToolDialog(ToolDialogBase):
 	def onShowRaw(self, evt):
 		text = self._rawResult or self.resultText.GetValue()
 		if not text.strip():
+			# Translators: Information message when «Show raw» is used before any Ollama command has produced a response body (title is «OpenAI»).
 			wx.MessageBox(_("No raw result available yet."), "OpenAI", wx.OK | wx.ICON_INFORMATION)
 			return
+		# Translators: Title of the read-only dialog that shows up to the first 20 000 characters of the last Ollama JSON response (body is technical text).
 		wx.MessageBox(text[:20000], _("Raw result"), wx.OK | wx.ICON_INFORMATION)
 
 	def onClose(self, evt):
 		stop_progress_sound()
 		self._markClosing()
+		stop_worker_thread(self._worker)
+		self._worker = None
 		self._destroy_task_progress_dialog()
 		try:
 			self.Destroy()

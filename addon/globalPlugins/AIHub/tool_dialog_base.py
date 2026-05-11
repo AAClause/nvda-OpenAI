@@ -67,6 +67,7 @@ class ToolDialogBase(wx.Dialog):
 			return
 		try:
 			self._taskProgressDialog = wx.ProgressDialog(
+				# Translators: Title bar of the modal progress window shown during long AI-Hub tool requests (label kept as «OpenAI» for compatibility).
 				_("OpenAI"),
 				status_message,
 				parent=self,
@@ -100,6 +101,7 @@ class ToolDialogBase(wx.Dialog):
 		if not self._taskProgressDialog:
 			return
 		try:
+			# Translators: Short status text repeatedly pulsed in the tool progress dialog while the background HTTP task is still running.
 			keep_going, _ = self._taskProgressDialog.Pulse(_("Task in progress..."))
 		except Exception:
 			keep_going = True
@@ -116,6 +118,7 @@ class ToolDialogBase(wx.Dialog):
 		self._taskBusySetter = None
 		if self._isDialogAlive():
 			wx.MessageBox(
+				# Translators: Information message after the user stops a long tool task from the progress dialog; the tool window then closes.
 				_("Cancellation requested. The dialog will now close."),
 				"OpenAI",
 				wx.OK | wx.ICON_INFORMATION,
@@ -153,6 +156,7 @@ class ToolDialogBase(wx.Dialog):
 
 	def build_account_choice(self, parent):
 		labels = [acc.get("name", "Account") for acc in self._accounts]
+		# Translators: Sole visible entry in the tool’s account drop-down when no accounts exist for this provider (control is disabled).
 		choice = wx.Choice(parent, choices=labels or [_("No account configured")])
 		if labels:
 			active_id = self.manager.get_active_account_id()
@@ -178,12 +182,14 @@ class ToolDialogBase(wx.Dialog):
 	def require_account(self, choice_ctrl):
 		acc_id = self.get_selected_account_id(choice_ctrl)
 		if not acc_id:
+			# Translators: Error message when the user starts a tool action but no usable account id is selected (OK-only message box).
 			wx.MessageBox(_("No account configured for this tool/provider."), "OpenAI", wx.OK | wx.ICON_ERROR)
 			return None
 		return acc_id
 
 	def configure_client(self, account_id):
 		if self.client is None:
+			# Translators: Internal error message when a tool tries to use the API client but the parent conversation has no active client (user should configure accounts).
 			raise RuntimeError(_("No API client available. Configure at least one account first."))
 		self.client = configure_client_for_provider(self.client, self.provider, account_id=account_id, clone=True)
 
@@ -227,15 +233,18 @@ class ToolDialogBase(wx.Dialog):
 				os.startfile(path)
 				return True
 			except Exception as err:
+				# Translators: Error message when a tool tries to open an http(s) link in the browser and the OS reports a failure (placeholder is the system error).
 				wx.MessageBox(_("Unable to open URL: %s") % err, err_title, wx.OK | wx.ICON_ERROR)
 				return False
 		if not os.path.exists(path):
+			# Translators: Error message when a tool tries to open a local file path that no longer exists (placeholder is the full path).
 			wx.MessageBox(_("File not found:\n%s") % path, err_title, wx.OK | wx.ICON_ERROR)
 			return False
 		try:
 			os.startfile(path)
 			return True
 		except Exception as err:
+			# Translators: Error message when a tool tries to open an existing local file and the OS shell reports a failure (placeholder is the system error).
 			wx.MessageBox(_("Unable to open file: %s") % err, err_title, wx.OK | wx.ICON_ERROR)
 			return False
 

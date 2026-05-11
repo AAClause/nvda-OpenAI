@@ -10,6 +10,7 @@ from . import configspec
 from .apiclient import OpenAIClient
 from .consts import ADDON_DIR, BASE_URLs, DATA_DIR, Provider
 from .plugin_mixins import AskRecordingMixin, DialogSessionMixin, MenuMixin
+from .thread_shutdown import stop_worker_thread
 from .settings_dialog import AIHubSettingsPanel
 
 
@@ -40,17 +41,22 @@ class GlobalPlugin(MenuMixin, DialogSessionMixin, AskRecordingMixin, globalPlugi
 	def terminate(self):
 		from .consts import cleanup_temp_dir
 		from .ask_question import mci_stop_ask_audio
-		if self.recordThread:
+
+		dialogs = list(getattr(self, "_openMainDialogs", []) or [])
+		for dlg in dialogs:
 			try:
-				self.recordThread.stop()
+				if dlg is not None:
+					dlg._force_quiet_shutdown = True
+					dlg.onCancel(None)
 			except Exception:
-				log.warning("Failed to stop record thread during terminate", exc_info=True)
+				log.warning("Failed to close AI-Hub conversation dialog during addon terminate", exc_info=True)
+		self._openMainDialogs = []
+
+		if self.recordThread:
+			stop_worker_thread(self.recordThread)
 			self.recordThread = None
 		if self.askRecordThread:
-			try:
-				self.askRecordThread.stop()
-			except Exception:
-				log.warning("Failed to stop ask record thread during terminate", exc_info=True)
+			stop_worker_thread(self.askRecordThread)
 			self.askRecordThread = None
 		if self._askAudioPlaying:
 			mci_stop_ask_audio()
@@ -78,40 +84,52 @@ class GlobalPlugin(MenuMixin, DialogSessionMixin, AskRecordingMixin, globalPlugi
 			return OpenAIClient(api_key=api_key, base_url=base_url, organization=org_val)
 		return None
 
+	# Translators: Script description shown in NVDA input gestures for opening/focusing AI-Hub.
 	@script(
 		gesture="kb:nvda+g",
+		# Translators: AI-Hub Input Gestures (assignable scripts): description of an assignable NVDA script.
 		description=_("Show or focus the AI-Hub conversation window"),
 	)
 	def script_showMainDialog(self, gesture):
 		super().script_showMainDialog(gesture)
 
+	# Translators: Script description shown in NVDA input gestures for screenshot description.
 	@script(
 		gesture="kb:nvda+e",
+		# Translators: AI-Hub Input Gestures (assignable scripts): description of an assignable NVDA script.
 		description=_("Take a screenshot and describe it"),
 	)
 	def script_recognizeScreen(self, gesture):
 		super().script_recognizeScreen(gesture)
 
+	# Translators: Script description shown in NVDA input gestures for navigator object description.
 	@script(
 		gesture="kb:nvda+o",
+		# Translators: AI-Hub Input Gestures (assignable scripts): description of an assignable NVDA script.
 		description=_("Grab the current navigator object and describe it"),
 	)
 	def script_recognizeObject(self, gesture):
 		super().script_recognizeObject(gesture)
 
+	# Translators: Script description shown in NVDA input gestures for opening saved conversations manager.
 	@script(
+		# Translators: AI-Hub Input Gestures (assignable scripts): description of an assignable NVDA script.
 		description=_("Manage saved conversations"),
 	)
 	def script_showConversationsManager(self, gesture):
 		super().script_showConversationsManager(gesture)
 
+	# Translators: Script description shown in NVDA input gestures for voice question workflow.
 	@script(
+		# Translators: AI-Hub Input Gestures (assignable scripts): description of an assignable NVDA script.
 		description=_("Ask a question via voice: record, send to AI, and play the response"),
 	)
 	def script_askQuestion(self, gesture):
 		super().script_askQuestion(gesture)
 
+	# Translators: Script description shown in NVDA input gestures for global microphone toggle.
 	@script(
+		# Translators: AI-Hub Input Gestures (assignable scripts): description of an assignable NVDA script.
 		description=_("Toggle the microphone recording and transcribe the audio from anywhere"),
 	)
 	def script_toggleRecording(self, gesture):

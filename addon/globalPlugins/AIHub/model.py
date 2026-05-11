@@ -89,10 +89,15 @@ class Model:
 			# xhigh / max are Anthropic-only and intentionally not part of the
 			# ReasoningEffort enum (see consts.ReasoningEffort docstring).
 			labels = {
+				# Translators: Text in model labels and capability descriptions.
 				ReasoningEffort.LOW.value: _("Low"),
+				# Translators: Text in model labels and capability descriptions.
 				ReasoningEffort.MEDIUM.value: _("Medium"),
+				# Translators: Text in model labels and capability descriptions.
 				ReasoningEffort.HIGH.value: _("High"),
+				# Translators: Text in model labels and capability descriptions.
 				"xhigh": _("Extra high"),
+				# Translators: Text in model labels and capability descriptions.
 				"max": _("Maximum"),
 			}
 			levels = profile.get("effort_levels") or (
@@ -104,27 +109,37 @@ class Model:
 		# xAI grok-3-mini: only low, high
 		if self.provider == Provider.xAI and "grok-3-mini" in self.id:
 			return (
+				# Translators: Text in model labels and capability descriptions.
 				(ReasoningEffort.LOW.value, _("Low")),
+				# Translators: Text in model labels and capability descriptions.
 				(ReasoningEffort.HIGH.value, _("High")),
 			)
 		# OpenAI o1/o3: low, medium, high
 		if self.supports_adaptive_thinking or self.provider == Provider.OpenAI:
 			return (
+				# Translators: Text in model labels and capability descriptions.
 				(ReasoningEffort.LOW.value, _("Low")),
+				# Translators: Text in model labels and capability descriptions.
 				(ReasoningEffort.MEDIUM.value, _("Medium")),
+				# Translators: Text in model labels and capability descriptions.
 				(ReasoningEffort.HIGH.value, _("High")),
 			)
 		# Google, Mistral, OpenRouter: full range
 		return (
+			# Translators: Text in model labels and capability descriptions.
 			(ReasoningEffort.MINIMAL.value, _("Minimal")),
+			# Translators: Text in model labels and capability descriptions.
 			(ReasoningEffort.LOW.value, _("Low")),
+			# Translators: Text in model labels and capability descriptions.
 			(ReasoningEffort.MEDIUM.value, _("Medium")),
+			# Translators: Text in model labels and capability descriptions.
 			(ReasoningEffort.HIGH.value, _("High")),
 		)
 
 	def getDescription(self):
 		description = self.description.rstrip('.')
 		if self.preview:
+			# Translators: Text in model labels and capability descriptions.
 			description += " (" + _("preview: not yet suited for production traffic") + ")"
 		return description
 
@@ -142,13 +157,17 @@ class Model:
 		maxOutputToken = self.maxOutputToken
 		s = name + " ["
 		l = [
+			# Translators: Text in model labels and capability descriptions.
 			_("provider: {provider}").format(provider=self.provider),
 		]
 		if id_ != name:
+			# Translators: Text in model labels and capability descriptions.
 			l.append(_("ID: {id}").format(id=id_))
 		if contextWindow > 0:
+			# Translators: Text in model labels and capability descriptions.
 			l.append(_("context window: {contextWindow}").format(contextWindow=contextWindow))
 		if maxOutputToken > 0:
+			# Translators: Text in model labels and capability descriptions.
 			l.append(_("max output tokens: {maxOutputToken}").format(maxOutputToken=maxOutputToken))
 		s += ". ".join(l)
 		s += ']'

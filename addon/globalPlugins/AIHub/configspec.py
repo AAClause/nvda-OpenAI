@@ -58,7 +58,7 @@ confSpecs = {
 		"sndResponseReceived": "boolean(default=True)",
 		"sndResponseSent": "boolean(default=True)",
 		"sndTaskInProgress": "boolean(default=True)",
-		"brailleAutoFocusHistory": "boolean(default=True)",
+		"focusHistoryOnAssistantResponse": "boolean(default=False)",
 		"speechResponseReceived": "boolean(default=True)",
 	},
 	"renewClient": "boolean(default=False)",

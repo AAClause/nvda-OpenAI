@@ -79,6 +79,7 @@ def _format_value(value):
 	if value is None:
 		return None
 	if isinstance(value, bool):
+		# Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
 		return _("Yes") if value else _("No")
 	if isinstance(value, int):
 		return _format_number(value)
@@ -106,6 +107,7 @@ def _append_item(parts, label, value):
 
 def build_model_details_html(model):
 	"""Build user-facing model details HTML for browseable message."""
+	# Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
 	unknown = _("unknown")
 	max_output = _format_number(model.maxOutputToken) if model.maxOutputToken > 0 else unknown
 	created = _format_datetime(getattr(model, "created", 0))
@@ -113,35 +115,52 @@ def build_model_details_html(model):
 	parts = [
 		f"<h1>{escape(str(model.name))}</h1>",
 		f"<p><strong>{escape(str(model.id))}</strong></p>",
+		# Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
 		"<h2>%s</h2>" % escape(_("Overview")),
 		"<ul>",
+		# Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
 		_li(_("Provider"), model.provider),
+		# Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
 		_li(_("Context window"), _("%s tokens") % _format_number(model.contextWindow)),
+		# Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
 		_li(_("Max output tokens"), max_output),
 	]
+	# Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
 	_append_item(parts, _("Created"), created)
+	# Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
 	_append_item(parts, _("Max temperature"), model.maxTemperature)
+	# Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
 	_append_item(parts, _("Default temperature"), model.defaultTemperature)
 	parts.append("</ul>")
 
+	# Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
 	capabilities = [_("Text")]
 	if model.vision:
+		# Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
 		capabilities.append(_("Image input"))
 	if getattr(model, "audioInput", False):
+		# Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
 		capabilities.append(_("Audio input"))
 	if getattr(model, "audioOutput", False):
+		# Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
 		capabilities.append(_("Audio output"))
 	if model.reasoning:
+		# Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
 		capabilities.append(_("Reasoning"))
 	if model.supports_web_search:
+		# Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
 		capabilities.append(_("Web search"))
 
 	parts.extend([
+		# Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
 		"<h2>%s</h2>" % escape(_("Capabilities and parameters")),
 		"<ul>",
+		# Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
 		_li(_("Capabilities"), ", ".join(capabilities)),
 		_li(
+			# Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
 			_("Supported parameters"),
+			# Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
 			", ".join(model.supportedParameters) if model.supportedParameters else _("none")
 		),
 		"</ul>",
@@ -149,6 +168,7 @@ def build_model_details_html(model):
 
 	if model.description:
 		parts.extend([
+			# Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
 			"<h2>%s</h2>" % escape(_("Description")),
 			f"<p>{escape(str(model.description))}</p>",
 		])
@@ -156,16 +176,24 @@ def build_model_details_html(model):
 	pricing = model.extraInfo.get("pricing", {}) if isinstance(model.extraInfo, dict) else {}
 	if isinstance(pricing, dict) and pricing:
 		parts.extend([
+			# Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
 			"<h2>%s</h2>" % escape(_("Pricing")),
 			"<ul>",
 		])
 		price_labels = {
+			# Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
 			"prompt": _("Input tokens"),
+			# Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
 			"completion": _("Output tokens"),
+			# Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
 			"input_cache_read": _("Input cache read"),
+			# Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
 			"input_cache_write": _("Input cache write"),
+			# Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
 			"audio": _("Audio tokens"),
+			# Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
 			"image": _("Image"),
+			# Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
 			"request": _("Request"),
 		}
 		for key, value in pricing.items():
@@ -192,6 +220,7 @@ def build_model_details_html(model):
 		extra = _clean_value(extra) or {}
 	if extra:
 		parts.extend([
+			# Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
 			"<h2>%s</h2>" % escape(_("Additional information")),
 			"<ul>",
 		])

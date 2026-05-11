@@ -23,15 +23,18 @@ class AudioHandlersMixin:
 		self._audioPlayingPath = path
 		try:
 			os.startfile(path)
+			# Translators: AI-Hub — audio capture and playback: brief status feedback (speech/braille), not a full dialog.
 			self.message(_("Playing audio"))
 		except Exception as e:
 			log.error(f"Failed to play audio: {e}", exc_info=True)
 			self._audioPlayingPath = None
+			# Translators: AI-Hub — audio capture and playback: brief status feedback (speech/braille), not a full dialog.
 			self.message(_("An error occurred. More information is in the NVDA log."))
 
 	def _stopBlockAudio(self):
 		stop_progress_sound()
 		self._audioPlayingPath = None
+		# Translators: AI-Hub — audio capture and playback: brief status feedback (speech/braille), not a full dialog.
 		self.message(_("Audio stopped"))
 
 	def onAudioPlayPause(self, evt):
@@ -43,6 +46,7 @@ class AudioHandlersMixin:
 			return
 		path = getattr(block, "audioPath", None)
 		if not path or not os.path.exists(path):
+			# Translators: AI-Hub — audio capture and playback: brief status feedback (speech/braille), not a full dialog.
 			self.message(_("No audio in this message"))
 			return
 		if self._audioPlayingPath == path:
@@ -54,6 +58,7 @@ class AudioHandlersMixin:
 		self._stopBlockAudio()
 
 	def getDefaultAudioPrompt(self):
+		# Translators: Text in audio processing status and error messages.
 		return _("Transcribe and describe the content of this audio.")
 
 	def ensureModelAudioSelected(self):
@@ -93,8 +98,10 @@ class AudioHandlersMixin:
 	def onAddAudioFromFile(self, evt):
 		dlg = wx.FileDialog(
 			None,
+			# Translators: Text in audio processing status and error messages.
 			message=_("Select audio files"),
 			defaultFile="",
+			# Translators: Text in audio processing status and error messages.
 			wildcard=_("Audio files (*.mp3;*.mp4;*.mpeg;*.mpga;*.m4a;*.wav;*.webm)|*.mp3;*.mp4;*.mpeg;*.mpga;*.m4a;*.wav;*.webm"),
 			style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST | wx.FD_MULTIPLE
 		)
@@ -113,6 +120,7 @@ class AudioHandlersMixin:
 		if not self.promptTextCtrl.GetValue().strip():
 			self.promptTextCtrl.SetValue(self.getDefaultAudioPrompt())
 		self.updateAudioList()
+		# Translators: AI-Hub — audio capture and playback: brief status feedback (speech/braille), not a full dialog.
 		self.message(_("Audio file(s) added. Enter your prompt and submit."))
 
 	def onAudioListContextMenu(self, evt):
@@ -120,13 +128,16 @@ class AudioHandlersMixin:
 		if self.audioPathList:
 			if self.audioListCtrl.GetItemCount() > 0 and self.audioListCtrl.GetSelectedItemCount() > 0:
 				item_id = wx.NewIdRef()
+				# Translators: AI-Hub — audio capture and playback: entry in a context menu or submenu.
 				menu.Append(item_id, _("&Remove selected") + " (Del)")
 				self.Bind(wx.EVT_MENU, self.onRemoveSelectedAudio, id=item_id)
 			item_id = wx.NewIdRef()
+			# Translators: AI-Hub — audio capture and playback: entry in a context menu or submenu.
 			menu.Append(item_id, _("Remove &all"))
 			self.Bind(wx.EVT_MENU, self.onRemoveAllAudio, id=item_id)
 			menu.AppendSeparator()
 		item_id = wx.NewIdRef()
+		# Translators: AI-Hub — audio capture and playback: entry in a context menu or submenu.
 		menu.Append(item_id, _("Add from &file path..."))
 		self.Bind(wx.EVT_MENU, self.onAddAudioFromFile, id=item_id)
 		self.PopupMenu(menu)

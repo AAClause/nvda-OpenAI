@@ -18,11 +18,13 @@ from logHandler import log
 
 from . import apikeymanager
 from .consts import ADDON_DIR, TEMP_DIR, ensure_temp_dir
+from .thread_shutdown import stop_worker_thread
 
 addonHandler.initTranslation()
 
 ROOT_ADDON_DIR = "\\".join(ADDON_DIR.split(os.sep)[:-2])
 ADDON_INFO = addonHandler.Addon(ROOT_ADDON_DIR).manifest
+# Translators: Text in AI-Hub menu items and script prompts.
 NO_AUTHENTICATION_KEY_PROVIDED_MSG = _(
 	"No API key provided for any provider, please provide at least one API key in the settings dialog"
 )
@@ -36,9 +38,13 @@ class MenuMixin:
 		self.submenu = wx.Menu()
 		tray_menu = gui.mainFrame.sysTrayIcon
 		for title, help_text, handler in (
+			# Translators: Text in AI-Hub menu items and script prompts.
 			(_("Docu&mentation"), _("Open the documentation of this addon"), self.onDocumentation),
+			# Translators: AI-Hub NVDA menu / global scripts: entry in a context menu or submenu.
 			(_("API &accounts..."), _("Manage API keys and provider accounts"), self.onManageApiAccounts),
+			# Translators: AI-Hub NVDA menu / global scripts: entry in a context menu or submenu.
 			(_("&Conversation..."), _("Show or focus the AI-Hub conversation window"), self.onShowMainDialog),
+			# Translators: AI-Hub NVDA menu / global scripts: entry in a context menu or submenu.
 			(_("Conversation &history..."), _("Manage saved conversations"), self.onShowConversationsManager),
 		):
 			item = self.submenu.Append(wx.ID_ANY, title, help_text)
@@ -47,17 +53,20 @@ class MenuMixin:
 
 		self.submenu.AppendSeparator()
 
+		# Translators: AI-Hub NVDA menu / global scripts: entry in a context menu or submenu.
 		item = self.submenu.Append(wx.ID_ANY, _("Git&Hub repository"), _("Open the GitHub repository of this addon"))
 		tray_menu.Bind(wx.EVT_MENU, self.onGitRepo, item)
 
 		self.submenu.AppendSeparator()
 
+		# Translators: AI-Hub NVDA menu / global scripts: entry in a context menu or submenu.
 		item = self.submenu.Append(wx.ID_ANY, _("BasiliskLLM"), _("Open the BasiliskLLM website"))
 		tray_menu.Bind(wx.EVT_MENU, self.onBasiliskLLM, item)
 
 		self.submenu_item = tray_menu.menu.InsertMenu(
 			2,
 			wx.ID_ANY,
+			# Translators: Text in AI-Hub menu items and script prompts.
 			_("AI &Hub {addon_version}".format(addon_version=ADDON_INFO["version"])),
 			self.submenu
 		)
@@ -96,6 +105,7 @@ class MenuMixin:
 class DialogSessionMixin:
 	def _showNoAccountConfiguredDialog(self):
 		wx.MessageBox(
+			# Translators: Error dialog body when opening AI-Hub without any configured API account (menu path included for the user).
 			_("No account is configured yet. Use API accounts from the AI Hub menu or NVDA Preferences → AI-Hub."),
 			"OpenAI",
 			wx.OK | wx.ICON_ERROR,
@@ -201,6 +211,7 @@ class DialogSessionMixin:
 			except Exception:
 				log.debug("retitle tab from attachment failed", exc_info=True)
 			api.processPendingEvents()
+			# Translators: AI-Hub NVDA menu / global scripts: brief status feedback (speech/braille), not a full dialog.
 			ui.message(_("Image added to an existing session"))
 			return
 		wx.CallAfter(self._openMainDialog, [attachment], None, False)
@@ -241,7 +252,9 @@ class DialogSessionMixin:
 		if os.path.exists(tmpPath):
 			return
 		if not save_screenshot(tmpPath):
+			# Translators: AI-Hub NVDA menu / global scripts: brief status feedback (speech/braille), not a full dialog.
 			return ui.message(_("Failed to capture screenshot"))
+		# Translators: AI-Hub NVDA menu / global scripts: brief status feedback (speech/braille), not a full dialog.
 		name = _("Screenshot %s") % (now.split("_-_")[-1])
 		self.startChatSession((tmpPath, name))
 
@@ -260,7 +273,9 @@ class DialogSessionMixin:
 		location = nav.location
 		bbox = (location.left, location.top, location.left + location.width, location.top + location.height)
 		if not save_screenshot(tmpPath, bbox=bbox):
+			# Translators: AI-Hub NVDA menu / global scripts: brief status feedback (speech/braille), not a full dialog.
 			return ui.message(_("Failed to capture object region"))
+		# Translators: AI-Hub NVDA menu / global scripts: brief status feedback (speech/braille), not a full dialog.
 		default_name = _("Navigator Object %s") % (now.split("_-_")[-1])
 		name = nav.name
 		if (not name or not name.strip() or "\n" in name or len(name) > 80):
@@ -315,10 +330,11 @@ class AskRecordingMixin:
 		if self._askAudioPlaying:
 			mci_stop_ask_audio()
 			self._askAudioPlaying = False
+			# Translators: AI-Hub NVDA menu / global scripts: brief status feedback (speech/braille), not a full dialog.
 			ui.message(_("Audio stopped"))
 			return
 		if self.askRecordThread:
-			self.askRecordThread.stop()
+			stop_worker_thread(self.askRecordThread)
 			self.askRecordThread = None
 			return
 
@@ -327,6 +343,7 @@ class AskRecordingMixin:
 			model = dlg.getCurrentModel()
 			if model and self._useDirectAudioForAsk(model):
 				dlg._askQuestionPending = True
+				# Translators: AI-Hub NVDA menu / global scripts: brief status feedback (speech/braille), not a full dialog.
 				ui.message(_("Recording question (direct audio)"))
 				self.askRecordThread = RecordThread(
 					self.getClient(),
@@ -335,6 +352,7 @@ class AskRecordingMixin:
 					useDirectAudio=True,
 				)
 			else:
+				# Translators: AI-Hub NVDA menu / global scripts: brief status feedback (speech/braille), not a full dialog.
 				ui.message(_("Recording question"))
 				self.askRecordThread = RecordThread(
 					self.getClient(),
@@ -350,6 +368,7 @@ class AskRecordingMixin:
 			try:
 				for model in getModels(provider):
 					if getattr(model, "audioInput", False):
+						# Translators: AI-Hub NVDA menu / global scripts: brief status feedback (speech/braille), not a full dialog.
 						ui.message(_("Recording question (direct audio)"))
 						self.askRecordThread = RecordThread(
 							self.getClient(),
@@ -362,6 +381,7 @@ class AskRecordingMixin:
 			except Exception:
 				pass
 
+		# Translators: AI-Hub NVDA menu / global scripts: brief status feedback (speech/braille), not a full dialog.
 		ui.message(_("Recording question"))
 		self.askRecordThread = RecordThread(
 			self.getClient(),
@@ -376,7 +396,7 @@ class AskRecordingMixin:
 		if not self.getClient():
 			return ui.message(NO_AUTHENTICATION_KEY_PROVIDED_MSG)
 		if self.recordThread:
-			self.recordThread.stop()
+			stop_worker_thread(self.recordThread)
 			self.recordThread = None
 			return
 		self.recordThread = RecordThread(self.getClient(), conf=conf["audio"])

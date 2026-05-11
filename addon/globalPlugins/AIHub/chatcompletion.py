@@ -67,6 +67,10 @@ _STREAM_USAGE_PROVIDERS = (
 	Provider.CustomOpenAI,
 	Provider.OpenRouter,
 	Provider.xAI,
+	Provider.MistralAI,
+	Provider.DeepSeek,
+	Provider.Google,
+	Provider.Ollama,
 )
 
 # Providers that accept reasoning_effort directly on chat completions.
@@ -225,17 +229,16 @@ class CompletionThread(threading.Thread):
 			return
 		# OpenAI o-series, Anthropic (default off), xAI grok-*: nothing to send.
 
-	def _set_block_usage_from_response(self, block, response):
-		"""Copy normalized usage fields from response to HistoryBlock."""
-		usage = getattr(response, "usage", None)
+	def _usage_for_block(self, usage):
+		"""Normalize usage dict into the persisted HistoryBlock usage shape."""
 		if not isinstance(usage, dict) or not usage:
-			return
+			return None
 		def _to_int(value):
 			try:
 				return int(value or 0)
 			except (TypeError, ValueError):
 				return 0
-		block.usage = {
+		normalized = {
 			"input_tokens": _to_int(usage.get("input_tokens")),
 			"output_tokens": _to_int(usage.get("output_tokens")),
 			"total_tokens": _to_int(usage.get("total_tokens")),
@@ -249,9 +252,37 @@ class CompletionThread(threading.Thread):
 		}
 		if "cost" in usage:
 			try:
-				block.usage["cost"] = float(usage.get("cost"))
+				normalized["cost"] = float(usage.get("cost"))
 			except (TypeError, ValueError):
 				pass
+		if normalized.get("total_tokens", 0) <= 0:
+			in_tok = normalized.get("input_tokens", 0) or normalized.get("prompt_tokens", 0)
+			out_tok = normalized.get("output_tokens", 0) or normalized.get("completion_tokens", 0)
+			if in_tok or out_tok:
+				normalized["total_tokens"] = int(in_tok) + int(out_tok)
+		return normalized
+
+	def _log_usage_debug(self, debug, source, raw_usage, normalized_usage):
+		"""Debug-only snapshot of raw and normalized usage payloads."""
+		if not debug:
+			return
+		try:
+			log.info(
+				"OpenAI [usage] %s raw=%s normalized=%s",
+				source,
+				json.dumps(raw_usage or {}, ensure_ascii=False, sort_keys=True),
+				json.dumps(normalized_usage or {}, ensure_ascii=False, sort_keys=True),
+			)
+		except Exception:
+			log.info("OpenAI [usage] %s raw=%r normalized=%r", source, raw_usage, normalized_usage)
+
+	def _set_block_usage_from_response(self, block, response, debug=False):
+		"""Copy normalized usage fields from response to HistoryBlock."""
+		raw_usage = getattr(response, "usage", None)
+		normalized = self._usage_for_block(raw_usage)
+		if normalized:
+			block.usage = normalized
+		self._log_usage_debug(debug, "non-stream response", raw_usage, normalized)
 
 	def _apply_pricing_if_missing(self, block, model):
 		usage = getattr(block, "usage", None)
@@ -320,31 +351,37 @@ class CompletionThread(threading.Thread):
 		if not any(flag in lower for flag in indicators):
 			return None
 		if provider == Provider.Anthropic:
+			# Translators: Text in chat completion status and error messages.
 			hint = _(
 				"Anthropic accepts PDF as native document blocks and inlines plain-text files. "
 				"Other formats (.docx, .xlsx, .csv, …) must be converted to PDF or plain text."
 			)
 		elif provider == Provider.Google:
+			# Translators: Text in chat completion status and error messages.
 			hint = _(
 				"Google's chat-completions endpoint does not accept binary documents. "
 				"Plain-text files are inlined automatically; for PDFs use OpenAI, Anthropic, OpenRouter, Mistral, or xAI."
 			)
 		elif provider == Provider.OpenRouter:
+			# Translators: Text in chat completion status and error messages.
 			hint = _(
 				"OpenRouter parses PDFs into the underlying model. "
 				"If this file was rejected, the underlying model may not support documents — try another model."
 			)
 		elif provider == Provider.MistralAI:
+			# Translators: Text in chat completion status and error messages.
 			hint = _(
 				"Mistral expects documents via the document_url shape (URL or data URI). "
 				"For OCR of scanned files, use the Mistral OCR tool."
 			)
 		elif provider == Provider.OpenAI:
+			# Translators: Text in chat completion status and error messages.
 			hint = _(
 				"The selected OpenAI model rejected this document. "
 				"Try another OpenAI model with file-input support or use a supported document format."
 			)
 		else:
+			# Translators: Text in chat completion status and error messages.
 			hint = _(
 				"The selected provider does not natively accept binary documents on its chat endpoint. "
 				"Plain-text files are inlined automatically; for PDFs use OpenAI, Anthropic, OpenRouter, Mistral, or xAI."
@@ -392,6 +429,7 @@ class CompletionThread(threading.Thread):
 
 		current_audio_transcripts = None
 		if wnd.audioPathList:
+			# Translators: Text in chat completion status and error messages.
 			wnd.message(_("Transcribing audio..."))
 			try:
 				t_transcribe_start = time.perf_counter()
@@ -418,9 +456,11 @@ class CompletionThread(threading.Thread):
 				return
 
 		if not 0 <= temperature <= model.maxTemperature * 100:
+			# Translators: Text in chat completion status and error messages.
 			wx.PostEvent(self._notifyWindow, ResultEvent(_("Invalid temperature")))
 			return
 		if not TOP_P_MIN <= topP <= TOP_P_MAX:
+			# Translators: Text in chat completion status and error messages.
 			wx.PostEvent(self._notifyWindow, ResultEvent(_("Invalid top P")))
 			return
 		t_build_start = time.perf_counter()
@@ -439,10 +479,15 @@ class CompletionThread(threading.Thread):
 						nbAudio += 1
 					elif ctype == ContentType.INPUT_FILE:
 						nbDocuments += 1
+		# Translators: Text in chat completion status and error messages.
 		msg = _("Uploading %s, please wait...") % ", ".join(
+			# Translators: Text in chat completion status and error messages.
 			([_("%d image(s)") % nbImages] if nbImages else []) +
+			# Translators: Text in chat completion status and error messages.
 			([_("%d audio file(s)") % nbAudio] if nbAudio else []) +
+			# Translators: Text in chat completion status and error messages.
 			([_("%d document(s)") % nbDocuments] if nbDocuments else [])
+		# Translators: Text in chat completion status and error messages.
 		) if nbImages or nbAudio or nbDocuments else _("Please wait...")
 		conf["modelVision" if nbImages else "model"] = model.id
 		wnd.message(msg)
@@ -605,6 +650,10 @@ class CompletionThread(threading.Thread):
 	def abort(self):
 		self._wantAbort = True
 
+	def stop(self):
+		"""Same as ``abort``; matches ``RecordThread.stop`` for shared shutdown code."""
+		self.abort()
+
 	def _finalize_timing_metrics(self, block):
 		timing = getattr(block, "timing", None)
 		if not isinstance(timing, dict):
@@ -732,30 +781,17 @@ class CompletionThread(threading.Thread):
 			_emit_speech(speechBuffer)
 			speechBuffer = ""
 		if isinstance(latest_usage, dict) and latest_usage:
-			block.usage = {
-				"input_tokens": int(latest_usage.get("input_tokens", 0) or 0),
-				"output_tokens": int(latest_usage.get("output_tokens", 0) or 0),
-				"total_tokens": int(latest_usage.get("total_tokens", 0) or 0),
-				"prompt_tokens": int(latest_usage.get("prompt_tokens", 0) or 0),
-				"completion_tokens": int(latest_usage.get("completion_tokens", 0) or 0),
-				"reasoning_tokens": int(latest_usage.get("reasoning_tokens", 0) or 0),
-				"cached_input_tokens": int(latest_usage.get("cached_input_tokens", 0) or 0),
-				"cache_creation_input_tokens": int(latest_usage.get("cache_creation_input_tokens", 0) or 0),
-				"input_audio_tokens": int(latest_usage.get("input_audio_tokens", 0) or 0),
-				"output_audio_tokens": int(latest_usage.get("output_audio_tokens", 0) or 0),
-			}
-			if "cost" in latest_usage:
-				try:
-					block.usage["cost"] = float(latest_usage.get("cost"))
-				except (TypeError, ValueError):
-					pass
+			normalized = self._usage_for_block(latest_usage)
+			if normalized:
+				block.usage = normalized
+			self._log_usage_debug(debug, "stream final chunk", latest_usage, normalized)
 		block.responseTerminated = True
 
 	def _responseWithoutStream(self, response, block, debug=False):
 		wnd = self._notifyWindow
 		text = ""
 		played_audio = False
-		self._set_block_usage_from_response(block, response)
+		self._set_block_usage_from_response(block, response, debug=debug)
 		if "firstTokenAt" not in block.timing:
 			first_token_at = block.timing.get("responseReceivedAt")
 			if not isinstance(first_token_at, (int, float)):
@@ -787,7 +823,9 @@ class CompletionThread(threading.Thread):
 						log.error("Failed to save/play audio response: %s", e, exc_info=True)
 						wx.CallAfter(
 							lambda: gui.messageBox(
+								# Translators: Error message when the chat response included audio but NVDA could not play or save it (details in the log).
 								_("An error occurred playing the audio response. More information is in the NVDA log."),
+								# Translators: Title of the error message box for chat-completion failures in AI-Hub.
 								_("OpenAI Error"),
 								wx.OK | wx.ICON_ERROR
 							)

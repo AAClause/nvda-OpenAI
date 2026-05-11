@@ -17,7 +17,6 @@ import addonHandler
 import api
 import braille
 import config
-import controlTypes
 import queueHandler
 import speech
 import ui
@@ -49,6 +48,7 @@ from .history import HistoryBlock, TextSegment
 from .imagehelper import encode_image, get_image_dimensions, resize_image
 from .image_file import AttachmentFile, AttachmentFileTypes, get_display_size, URL_PATTERN
 from .recordthread import RecordThread, WhisperTranscription, AudioInputResult
+from .thread_shutdown import stop_worker_thread
 from .resultevent import ResultEvent, EVT_RESULT_ID
 from .transcription import get_transcription_provider
 from .toolsmenu import show_tools_menu
@@ -100,6 +100,10 @@ def render_markdown_html(text: str) -> str:
 
 def _labeled_control_row(parent, sizer, label_text, ctrl, proportion=0):
 	lbl = wx.StaticText(parent, label=label_text)
+	try:
+		ctrl.MoveAfterInTabOrder(lbl)
+	except Exception:
+		pass
 	sizer.Add(lbl, 0, wx.LEFT | wx.RIGHT | wx.TOP, UI_SECTION_SPACING_PX)
 	sizer.Add(ctrl, proportion, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.BOTTOM, UI_SECTION_SPACING_PX)
 	return lbl
@@ -113,17 +117,6 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 	"""NVDA AI-Hub conversation window (parallel sessions in a notebook)."""
 	_THINK_HISTORY_OPEN = "<think>\n"
 	_THINK_HISTORY_CLOSE = "\n</think>\n"
-
-	def _findHistoryObject(self):
-		"""Find the editable history object without relying on fixed child indices."""
-		foreground = api.getForegroundObject()
-		if not foreground:
-			return None
-		children = getattr(foreground, "children", []) or []
-		for child in children:
-			if getattr(child, "role", None) == controlTypes.ROLE_EDITABLETEXT:
-				return child
-		return None
 
 	def _onNotebookPageChanging(self, evt):
 		try:
@@ -240,23 +233,27 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 			prompt = draft_stripped
 		return conversations.get_default_title(prompt)
 
-	def _storage_kwargs_for_page(self, page, *, autosave_force=False, for_autosave=False, for_hub_session=False):
+	def _page_has_restorable_content(self, page, *, blocks=None, draft_prompt=None):
+		"""A page should be restored only when it has message history or a non-empty draft."""
+		if blocks is None:
+			blocks = self._collect_blocks_from_page(page)
+		if draft_prompt is None:
+			draft_prompt = page.promptTextCtrl.GetValue()
+		return bool(blocks) or bool((draft_prompt or "").strip())
+
+	def _storage_kwargs_for_page(self, page, *, autosave_force=False, for_autosave=False):
 		"""
 		Build arguments for conversations.save_conversation, or None if nothing should be written.
 		Persist allows draft-only tabs; periodic autosave skips draft-only unless autosave_force (manual save).
-		When for_hub_session is True (closing the hub), kwargs are built even for completely empty tabs so each
-		tab gets a saved conversation file and a stable id in hub_session.json.
+		A tab is persisted only when it has message history or a non-empty draft prompt.
 		"""
 		blocks = self._collect_blocks_from_page(page)
 		draft_prompt = page.promptTextCtrl.GetValue()
 		draft_stripped = draft_prompt.strip()
-		has_attachments = bool(page.filesList or page.audioPathList)
-		has_content = bool(blocks) or bool(draft_stripped) or has_attachments
-		if not for_hub_session:
-			if not has_content:
-				return None
-			if not blocks and for_autosave and not autosave_force:
-				return None
+		if not self._page_has_restorable_content(page, blocks=blocks, draft_prompt=draft_prompt):
+			return None
+		if not blocks and for_autosave and not autosave_force:
+			return None
 		if self.conf.get("saveSystem"):
 			system = (getattr(page, "conversationSystemText", None) or "").strip()
 		else:
@@ -446,15 +443,18 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 	def _syncWindowTitleFromActiveTab(self):
 		"""Window title: "<tab label> (n/N) – Conversation" so users hear which tab is active."""
 		if not getattr(self, "notebook", None) or self.notebook.GetPageCount() <= 0:
+			# Translators: Fallback title when no conversation tab exists.
 			self.SetTitle(_("Conversation"))
 			return
 		idx = self.notebook.GetSelection()
 		n = self.notebook.GetPageCount()
 		if idx < 0:
 			idx = 0
+		# Translators: Fallback active-tab label used in the window title.
 		label = self.notebook.GetPageText(idx).strip() or _("Conversation")
 		# Translators: Tab position in the notebook (e.g. second of three tabs).
 		pos = _("({cur}/{tot})").format(cur=idx + 1, tot=n)
+		# Translators: Final conversation window title pattern.
 		self.SetTitle(f"{label} {pos} – {_('Conversation')}")
 
 	def _deriveTabTitleFromAttachments(self, files) -> str:
@@ -479,6 +479,7 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 			primary = primary[:47].rstrip() + "…"
 		extra = len(files) - 1
 		if extra > 0:
+			# Translators: Tab title when first attachment name is followed by more attachments.
 			return _("{base} (+{n})").format(base=primary, n=extra)
 		return primary
 
@@ -509,9 +510,13 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		current = (self.notebook.GetPageText(idx) or "").strip()
 		# Untranslated defaults are listed too because users may run the addon
 		# in a locale other than the one in which the tab was first created.
+		# Translators: Built-in placeholder tab labels considered "untitled".
 		placeholders = {
+			# Translators: Notebook tab caption treated as an automatic placeholder until the conversation gets a real title.
 			_("Untitled conversation"),
+			# Translators: Generic notebook tab caption still treated as «no real title yet» when syncing the window title from the model.
 			_("Conversation"),
+			# Translators: Placeholder caption for a brand new conversation tab.
 			_("New conversation"),
 			"Untitled conversation",
 			"Conversation",
@@ -686,6 +691,7 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 
 	def _addConversationTab(self, title=None):
 		idx = self.notebook.GetPageCount()
+		# Translators: Default tab caption for a new empty conversation.
 		tab_title = title if title is not None else _("Untitled conversation")
 		prev_snapshot = ""
 		if idx > 0:
@@ -724,12 +730,17 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		"""Save one tab to conversation storage for hub session close; returns id or None on failure."""
 		if self.get_active_page() is page:
 			self._captureConversationChromeToPage(page)
-		kw = self._storage_kwargs_for_page(page, for_autosave=False, for_hub_session=True)
+		kw = self._storage_kwargs_for_page(page, for_autosave=False)
+		if kw is None:
+			return None
 		try:
 			new_id = self._saveConversationFromKw(kw)
 			page._conversationId = new_id
-			entry = next((e for e in conversations.list_conversations() if e.get("id") == new_id), None)
-			tab_name = entry.get("name", _("Untitled conversation")) if entry else _("Untitled conversation")
+			tab_name = kw.get("name")
+			if not tab_name:
+				entry = next((e for e in conversations.list_conversations() if e.get("id") == new_id), None)
+				# Translators: Fallback saved-conversation title when no explicit name is available.
+				tab_name = entry.get("name", _("Untitled conversation")) if entry else _("Untitled conversation")
 			idx = self._notebook_page_index(page)
 			if idx >= 0:
 				self.notebook.SetPageText(idx, tab_name)
@@ -757,6 +768,7 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		page.promptTextCtrl.Clear()
 		idx = self._notebook_page_index(page)
 		if idx >= 0:
+			# Translators: Fallback tab label for a lazily restored conversation tab.
 			self.notebook.SetPageText(idx, tab_title or _("Conversation"))
 
 	def _hydrateLazySessionTabIfNeeded(self, page):
@@ -805,11 +817,13 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		for i in range(self.notebook.GetPageCount()):
 			page = self.notebook.GetPage(i)
 			cid = self._persistPageConversation(page)
-			if not cid:
-				cid = getattr(page, "_conversationId", None) or ""
-			tab_entries.append({"id": cid})
+			if cid:
+				tab_entries.append({"id": cid})
 		try:
-			conversations.write_hub_session_snapshot(tabs=tab_entries)
+			if tab_entries:
+				conversations.write_hub_session_snapshot(tabs=tab_entries)
+			else:
+				conversations.write_hub_session_snapshot(tabs=[])
 		except Exception as err:
 			log.error(f"save hub session: {err}", exc_info=True)
 
@@ -828,10 +842,13 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		if not tabs:
 			return
 		while self.notebook.GetPageCount() < len(tabs):
+			# Translators: Temporary tab caption while restoring a previous session.
 			self._addConversationTab(_("Conversation"))
 		# Which tab gets full load last (others lazy/reset). No longer persisted (v2).
 		final_sel = 0
+		# Translators: Fallback conversation name during hub-session restoration.
 		name_by_id = {
+			# Translators: Fallback tab title when restoring a hub session if the saved conversation id has no stored display name.
 			e.get("id"): e.get("name") or _("Conversation")
 			for e in conversations.list_conversations()
 			if e.get("id")
@@ -846,6 +863,7 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 			page = self.notebook.GetPage(i)
 			cid = _entry_cid(tabs[i])
 			if cid and conversations.conversation_file_exists(cid):
+				# Translators: Fallback tab label when a restored conversation name is missing.
 				self._prepareLazySessionTab(page, cid, name_by_id.get(cid, _("Conversation")))
 			else:
 				self._resetTabPage(page, select_tab=False, sync_attachment_widgets=False)
@@ -866,6 +884,7 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 
 	def _openConversationFromHistory(self, data):
 		"""Open a saved conversation in a new tab (conversation list dialog)."""
+		# Translators: Fallback name when opening an untitled saved conversation from history.
 		name = data.get("name", _("Conversation")) if isinstance(data, dict) else _("Conversation")
 		self._addConversationTab(name)
 		self._loadConversation(data, focus_message_history=True)
@@ -881,22 +900,7 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 			sr = page.stopRequest
 			if sr:
 				sr.set()
-			w = page.worker
-			if w:
-				if hasattr(w, "stop"):
-					try:
-						w.stop()
-					except Exception:
-						pass
-				elif hasattr(w, "abort"):
-					try:
-						w.abort()
-					except Exception:
-						pass
-				try:
-					w.join(timeout=0.8)
-				except Exception:
-					pass
+			stop_worker_thread(page.worker)
 			page.worker = None
 		if getattr(self, "_worker_page", None) is page:
 			self._worker_page = None
@@ -926,33 +930,30 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 
 	def _update_advanced_controls_visibility(self):
 		on = self._effective_advanced_mode()
-		for w in (
-			self.temperatureLabel,
-			self.temperatureSpinCtrl,
-			self.topPLabel,
-			self.topPSpinCtrl,
-			self.advancedSeedLabel,
-			self.advancedSeedSpinCtrl,
-			self.advancedTopKLabel,
-			self.advancedTopKSpinCtrl,
-			self.advancedStopLabel,
-			self.advancedStopTextCtrl,
-			self.advancedFreqPenaltyLabel,
-			self.advancedFreqPenaltySpinCtrl,
-			self.advancedPresPenaltyLabel,
-			self.advancedPresPenaltySpinCtrl,
-		):
-			try:
-				if on:
-					w.Show()
-				else:
-					w.Hide()
-			except Exception:
-				pass
-		try:
-			self.Layout()
-		except Exception:
-			pass
+		if hasattr(self, "advancedSamplingGroupBox"):
+			self.advancedSamplingGroupBox.Show(on)
+		if not on:
+			for w in (
+				self.temperatureLabel,
+				self.temperatureSpinCtrl,
+				self.topPLabel,
+				self.topPSpinCtrl,
+				self.advancedSeedLabel,
+				self.advancedSeedSpinCtrl,
+				self.advancedTopKLabel,
+				self.advancedTopKSpinCtrl,
+				self.advancedStopLabel,
+				self.advancedStopTextCtrl,
+				self.advancedFreqPenaltyLabel,
+				self.advancedFreqPenaltySpinCtrl,
+				self.advancedPresPenaltyLabel,
+				self.advancedPresPenaltySpinCtrl,
+			):
+				w.Hide()
+		parent = self.temperatureSpinCtrl.GetParent() if hasattr(self, "temperatureSpinCtrl") else None
+		if parent:
+			parent.Layout()
+		self.Layout()
 
 	def __init__(
 		self,
@@ -981,8 +982,6 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		self._pending_session_paths = list(filesList) if filesList else []
 		self._fileToRemoveAfter = []
 		self.lastFocusedItem = None
-		self.historyObj = None
-		self.foregroundObj = None
 		self._lastSystem = None
 		if self.conf["saveSystem"]:
 			if "system" in self.data:
@@ -992,9 +991,12 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		else:
 			self.data.pop("system", None)
 		if conversationData:
+			# Translators: Default name when opening a saved conversation without title.
 			conv_name = conversationData.get("name", _("Untitled conversation"))
+			# Translators: Main dialog title suffix.
 			title = f"{conv_name} – {_('Conversation')}"
 		else:
+			# Translators: Title used when opening a fresh conversation window.
 			title = _("New conversation") + " – " + _("Conversation")
 		super().__init__(
 			parent,
@@ -1006,46 +1008,45 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		content_panel = wx.Panel(self)
 		mainSizer = wx.BoxSizer(wx.VERTICAL)
 
+		# Translators: Section title for top action buttons in the conversation window.
 		toolbar_box = wx.StaticBox(content_panel, label=_("Toolbar"))
 		toolbar_sz = wx.StaticBoxSizer(toolbar_box, wx.HORIZONTAL)
+		# Translators: Toolbar button labels in the conversation window.
 		self.conversationListBtn = wx.Button(
 			content_panel,
+			# Translators: AI-Hub conversation window: title of a bordered settings group.
 			label=_("Conversation &list...") + " (Ctrl+L)"
 		)
 		self.conversationListBtn.Bind(wx.EVT_BUTTON, self._onConversationList)
 		toolbar_sz.Add(self.conversationListBtn, 0, wx.ALL, UI_SECTION_SPACING_PX)
 		self.saveConversationBtn = wx.Button(
 			content_panel,
+			# Translators: Toolbar button to save current conversation immediately.
 			label=_("&Save conversation") + " (Ctrl+S)"
 		)
 		self.saveConversationBtn.Bind(wx.EVT_BUTTON, self._saveConversation)
 		toolbar_sz.Add(self.saveConversationBtn, 0, wx.ALL, UI_SECTION_SPACING_PX)
 		self.newConversationBtn = wx.Button(
 			content_panel,
+			# Translators: Toolbar button to open a new conversation tab.
 			label=_("&New conversation") + " (Ctrl+N)"
 		)
 		self.newConversationBtn.Bind(wx.EVT_BUTTON, self._newConversation)
 		toolbar_sz.Add(self.newConversationBtn, 0, wx.ALL, UI_SECTION_SPACING_PX)
 		self.renameConversationBtn = wx.Button(
 			content_panel,
+			# Translators: Toolbar button to rename the current saved conversation.
 			label=_("&Rename conversation") + " (F2)"
 		)
 		self.renameConversationBtn.Bind(wx.EVT_BUTTON, self._renameConversation)
 		toolbar_sz.Add(self.renameConversationBtn, 0, wx.ALL, UI_SECTION_SPACING_PX)
-		self.toolbarCloseBtn = wx.Button(
-			content_panel,
-			label=_("&Close"),
-		)
+		self.toolbarCloseBtn = wx.Button(content_panel, id=wx.ID_CLOSE)
 		self.toolbarCloseBtn.Bind(wx.EVT_BUTTON, self.onCancel)
-		self.toolbarCloseBtn.SetToolTip(_("Close the AI Hub window (same as the Close button below)."))
 		toolbar_sz.Add(self.toolbarCloseBtn, 0, wx.ALL, UI_SECTION_SPACING_PX)
 		mainSizer.Add(toolbar_sz, 0, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP, UI_SECTION_SPACING_PX)
 
-		sessions_box = wx.StaticBox(content_panel, label=_("Sessions"))
-		sessions_sz = wx.StaticBoxSizer(sessions_box, wx.VERTICAL)
 		self.notebook = ConversationNotebook(content_panel)
-		sessions_sz.Add(self.notebook, 1, wx.EXPAND | wx.ALL, UI_SECTION_SPACING_PX)
-		mainSizer.Add(sessions_sz, 1, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP, UI_SECTION_SPACING_PX)
+		mainSizer.Add(self.notebook, 1, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP, UI_SECTION_SPACING_PX)
 		self.notebook.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGING, self._onNotebookPageChanging)
 		self.notebook.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self._onNotebookPageChanged)
 		self._addConversationTab()
@@ -1084,11 +1085,14 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		else:
 			self.get_active_page().systemTextCtrl.SetValue(DEFAULT_SYSTEM_PROMPT)
 
+		# Translators: Section title for model generation options.
 		gen_box = wx.StaticBox(content_panel, label=_("Generation"))
 		gen_sz = wx.StaticBoxSizer(gen_box, wx.VERTICAL)
 		modelOptionsSizer = wx.BoxSizer(wx.HORIZONTAL)
+		# Translators: Checkbox labels for generation behavior toggles.
 		self.reasoningModeCheckBox = wx.CheckBox(
 			content_panel,
+			# Translators: AI-Hub conversation window: title of a bordered settings group.
 			label=_("&Reasoning mode")
 		)
 		self.reasoningModeCheckBox.SetValue(False)
@@ -1096,6 +1100,7 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		modelOptionsSizer.Add(self.reasoningModeCheckBox, 0, wx.ALL, UI_SECTION_SPACING_PX)
 		self.adaptiveThinkingCheckBox = wx.CheckBox(
 			content_panel,
+			# Translators: Checkbox to enable adaptive reasoning behavior when supported.
 			label=_("&Adaptive thinking")
 		)
 		self.adaptiveThinkingCheckBox.SetValue(conf.get("adaptiveThinking", True))
@@ -1103,6 +1108,7 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		modelOptionsSizer.Add(self.adaptiveThinkingCheckBox, 0, wx.ALL, UI_SECTION_SPACING_PX)
 		self.webSearchCheckBox = wx.CheckBox(
 			content_panel,
+			# Translators: Checkbox to allow built-in web search for supporting models.
 			label=_("&Web search")
 		)
 		self.webSearchCheckBox.SetValue(False)
@@ -1110,40 +1116,50 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		modelOptionsSizer.Add(self.webSearchCheckBox, 0, wx.ALL, UI_SECTION_SPACING_PX)
 		gen_sz.Add(modelOptionsSizer, 0, wx.ALL, 0)
 
-		self.reasoningEffortChoice = wx.Choice(content_panel, choices=[])
+		self.reasoningEffortRow = wx.Panel(content_panel)
+		reasoningEffortRowSz = wx.BoxSizer(wx.VERTICAL)
+		# Translators: Label for reasoning effort dropdown.
+		self.reasoningEffortLabel = wx.StaticText(self.reasoningEffortRow, label=_("Reasoning &effort:"))
+		self.reasoningEffortChoice = wx.Choice(self.reasoningEffortRow, choices=[])
 		self.reasoningEffortChoice.Bind(wx.EVT_CHOICE, self._onReasoningEffortChange)
-		self.reasoningEffortLabel = _labeled_control_row(
-			content_panel, gen_sz, _("Reasoning &effort:"), self.reasoningEffortChoice
-		)
+		reasoningEffortRowSz.Add(self.reasoningEffortLabel, 0, wx.LEFT | wx.RIGHT | wx.TOP, UI_SECTION_SPACING_PX)
+		reasoningEffortRowSz.Add(self.reasoningEffortChoice, 0, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.BOTTOM, UI_SECTION_SPACING_PX)
+		self.reasoningEffortRow.SetSizer(reasoningEffortRowSz)
+		gen_sz.Add(self.reasoningEffortRow, 0, wx.EXPAND, 0)
 
-		self.maxTokensSpinCtrl = wx.SpinCtrl(content_panel, min=0)
+		self.maxTokensRow = wx.Panel(content_panel)
+		maxTokensRowSz = wx.BoxSizer(wx.VERTICAL)
+		# Translators: Label for maximum output tokens numeric input.
+		self.maxTokensLabel = wx.StaticText(self.maxTokensRow, label=_("Max to&kens:"))
+		self.maxTokensSpinCtrl = wx.SpinCtrl(self.maxTokensRow, min=0)
 		self.maxTokensSpinCtrl.Bind(wx.EVT_SPINCTRL, self._onConversationChromeEdited)
-		self.maxTokensLabel = _labeled_control_row(
-			content_panel, gen_sz, _("Max to&kens:"), self.maxTokensSpinCtrl
-		)
-
-		self.streamModeCheckBox = wx.CheckBox(content_panel, label=_("&Stream mode"))
-		self.streamModeCheckBox.SetValue(conf["stream"])
-		self.streamModeCheckBox.Bind(wx.EVT_CHECKBOX, self._onConversationChromeEdited)
-		gen_sz.Add(self.streamModeCheckBox, 0, wx.ALL, UI_SECTION_SPACING_PX)
-
-		self.debugModeCheckBox = wx.CheckBox(content_panel, label=_("Debu&g mode"))
-		self.debugModeCheckBox.SetValue(conf["debug"])
-		self.debugModeCheckBox.Bind(wx.EVT_CHECKBOX, self._onConversationChromeEdited)
-		gen_sz.Add(self.debugModeCheckBox, 0, wx.ALL, UI_SECTION_SPACING_PX)
+		maxTokensRowSz.Add(self.maxTokensLabel, 0, wx.LEFT | wx.RIGHT | wx.TOP, UI_SECTION_SPACING_PX)
+		maxTokensRowSz.Add(self.maxTokensSpinCtrl, 0, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.BOTTOM, UI_SECTION_SPACING_PX)
+		self.maxTokensRow.SetSizer(maxTokensRowSz)
+		gen_sz.Add(self.maxTokensRow, 0, wx.EXPAND, 0)
 
 		self.advancedSamplingCheckBox = wx.CheckBox(
 			content_panel,
+			# Translators: Checkbox that reveals/hides advanced sampling controls.
 			label=_("Ad&vanced sampling (temperature, top-p, seed, stop, …)")
 		)
 		self.advancedSamplingCheckBox.SetValue(False)
 		self.advancedSamplingCheckBox.Bind(wx.EVT_CHECKBOX, self._onAdvancedSamplingToggle)
 		gen_sz.Add(self.advancedSamplingCheckBox, 0, wx.ALL, UI_SECTION_SPACING_PX)
 
+		# Translators: Group title for advanced sampling parameters.
+		self.advancedSamplingGroupBox = wx.StaticBox(content_panel, label=_("Advanced sampling options"))
+		advancedSamplingSz = wx.StaticBoxSizer(self.advancedSamplingGroupBox, wx.VERTICAL)
+
 		self.temperatureSpinCtrl = wx.SpinCtrl(content_panel, min=0, max=200)
 		self.temperatureSpinCtrl.Bind(wx.EVT_SPINCTRL, self._onConversationChromeEdited)
+		# Translators: Label for temperature spin control.
 		self.temperatureLabel = _labeled_control_row(
-			content_panel, gen_sz, _("&Temperature:"), self.temperatureSpinCtrl
+			content_panel,
+			advancedSamplingSz,
+			# Translators: Label before the temperature spin control (value is hundredths) in Advanced sampling on the conversation window.
+			_("&Temperature:"),
+			self.temperatureSpinCtrl,
 		)
 
 		self.topPSpinCtrl = wx.SpinCtrl(
@@ -1153,61 +1169,74 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 			initial=conf["topP"]
 		)
 		self.topPSpinCtrl.Bind(wx.EVT_SPINCTRL, self._onConversationChromeEdited)
+		# Translators: Label for top-p (probability mass) spin control.
 		self.topPLabel = _labeled_control_row(
-			content_panel, gen_sz, _("Pro&bability Mass (top P):"), self.topPSpinCtrl
+			content_panel,
+			advancedSamplingSz,
+			# Translators: Label before the top-P (probability mass) spin control in Advanced sampling on the conversation window.
+			_("Pro&bability Mass (top P):"),
+			self.topPSpinCtrl,
 		)
 
 		self.advancedSeedSpinCtrl = wx.SpinCtrl(content_panel, min=-1, max=2147483647, initial=-1)
 		self.advancedSeedSpinCtrl.Bind(wx.EVT_SPINCTRL, self._onConversationChromeEdited)
+		# Translators: Label for optional deterministic seed spin control.
 		self.advancedSeedLabel = _labeled_control_row(
 			content_panel,
-			gen_sz,
+			advancedSamplingSz,
+			# Translators: Label for optional deterministic seed spin control.
 			_("See&d (−1 = omit):"),
 			self.advancedSeedSpinCtrl,
-		)
-		self.advancedSeedSpinCtrl.SetToolTip(
-			_("When set (≥ 0), requests best-effort deterministic sampling where the provider supports it (e.g. OpenAI seed).")
 		)
 
 		self.advancedTopKSpinCtrl = wx.SpinCtrl(content_panel, min=0, max=1000000, initial=0)
 		self.advancedTopKSpinCtrl.Bind(wx.EVT_SPINCTRL, self._onConversationChromeEdited)
+		# Translators: Label for optional top-k spin control.
 		self.advancedTopKLabel = _labeled_control_row(
 			content_panel,
-			gen_sz,
+			advancedSamplingSz,
+			# Translators: Label for optional top-k spin control.
 			_("Top &K (0 = omit):"),
 			self.advancedTopKSpinCtrl,
 		)
 
-		self.advancedStopLabel = wx.StaticText(content_panel, label=_("St&op sequences (one per line):"))
-		gen_sz.Add(self.advancedStopLabel, 0, wx.LEFT | wx.RIGHT | wx.TOP, UI_SECTION_SPACING_PX)
 		self.advancedStopTextCtrl = wx.TextCtrl(
 			content_panel,
 			size=(700, 72),
 			style=wx.TE_MULTILINE,
 		)
 		self.advancedStopTextCtrl.Bind(wx.EVT_TEXT, self._onConversationChromeEdited)
-		gen_sz.Add(self.advancedStopTextCtrl, 0, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.BOTTOM, UI_SECTION_SPACING_PX)
-		self.advancedStopTextCtrl.SetToolTip(
-			_("Sent as the API “stop” field (OpenAI-compatible). Providers limit count and length; extra lines may be ignored.")
+		# Translators: Label for stop sequences multiline input.
+		self.advancedStopLabel = _labeled_control_row(
+			content_panel,
+			advancedSamplingSz,
+			# Translators: Label for stop sequences multiline input.
+			_("St&op sequences (one per line):"),
+			self.advancedStopTextCtrl,
 		)
 
 		self.advancedFreqPenaltySpinCtrl = wx.SpinCtrl(content_panel, min=-200, max=200, initial=0)
 		self.advancedFreqPenaltySpinCtrl.Bind(wx.EVT_SPINCTRL, self._onConversationChromeEdited)
+		# Translators: Label for frequency penalty spin control.
 		self.advancedFreqPenaltyLabel = _labeled_control_row(
 			content_panel,
-			gen_sz,
+			advancedSamplingSz,
+			# Translators: Label for frequency penalty spin control.
 			_("&Frequency penalty (−2..2, ×100):"),
 			self.advancedFreqPenaltySpinCtrl,
 		)
 
 		self.advancedPresPenaltySpinCtrl = wx.SpinCtrl(content_panel, min=-200, max=200, initial=0)
 		self.advancedPresPenaltySpinCtrl.Bind(wx.EVT_SPINCTRL, self._onConversationChromeEdited)
+		# Translators: Label for presence penalty spin control.
 		self.advancedPresPenaltyLabel = _labeled_control_row(
 			content_panel,
-			gen_sz,
+			advancedSamplingSz,
+			# Translators: Label for presence penalty spin control.
 			_("&Presence penalty (−2..2, ×100):"),
 			self.advancedPresPenaltySpinCtrl,
 		)
+		gen_sz.Add(advancedSamplingSz, 0, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.BOTTOM, UI_SECTION_SPACING_PX)
 
 		mainSizer.Add(gen_sz, 0, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.BOTTOM, UI_SECTION_SPACING_PX)
 		self._update_advanced_controls_visibility()
@@ -1218,12 +1247,24 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 
 		buttonsSizer = wx.BoxSizer(wx.HORIZONTAL)
 
+		# Translators: Bottom-row toggles and tools button labels.
+		self.streamModeCheckBox = wx.CheckBox(content_panel, label=_("&Stream mode"))
+		self.streamModeCheckBox.SetValue(conf["stream"])
+		self.streamModeCheckBox.Bind(wx.EVT_CHECKBOX, self._onConversationChromeEdited)
+		buttonsSizer.Add(self.streamModeCheckBox, 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL, UI_SECTION_SPACING_PX)
+
+		# Translators: Checkbox label to enable verbose debugging output.
+		self.debugModeCheckBox = wx.CheckBox(content_panel, label=_("Debu&g mode"))
+		self.debugModeCheckBox.SetValue(conf["debug"])
+		self.debugModeCheckBox.Bind(wx.EVT_CHECKBOX, self._onConversationChromeEdited)
+		buttonsSizer.Add(self.debugModeCheckBox, 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL, UI_SECTION_SPACING_PX)
+
 		self.toolsBtn = wx.Button(
 			content_panel,
+			# Translators: Button opening provider-specific tools/actions menu.
 			label=_("&Tools...")
 		)
 		self.toolsBtn.Bind(wx.EVT_BUTTON, self.onProviderTools)
-		self.toolsBtn.SetToolTip(_("Open tools menu (OpenAI, Mistral, Google)."))
 
 		for btn in (
 			self.toolsBtn,
@@ -1233,20 +1274,12 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 
 		submitCancelSizer = wx.BoxSizer(wx.HORIZONTAL)
 
-		self.submitBtn = wx.Button(
-			content_panel,
-			id=wx.ID_OK,
-			# Translators: This is the label for the submit button in the conversation window.
-			label=_("Submit") + " (Ctrl+Enter)"
-		)
+		self.submitBtn = wx.Button(content_panel, id=wx.ID_OK)
 		self.submitBtn.Bind(wx.EVT_BUTTON, self.onSubmit)
 		self.submitBtn.SetDefault()
 		submitCancelSizer.Add(self.submitBtn, 0, wx.ALL, UI_SECTION_SPACING_PX)
 
-		self.closeBtn = wx.Button(
-			content_panel,
-			id=wx.ID_CLOSE
-		)
+		self.closeBtn = wx.Button(content_panel, id=wx.ID_CLOSE)
 		self.closeBtn.Bind(wx.EVT_BUTTON, self.onCancel)
 		submitCancelSizer.Add(self.closeBtn, 0, wx.ALL, UI_SECTION_SPACING_PX)
 
@@ -1347,6 +1380,7 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		Assign segment refs to block so j/k navigation and context menu work."""
 		if block != self.firstBlock:
 			block.previous.segmentBreakLine = TextSegment(self.messagesTextCtrl, "\n", block)
+		# Translators: Prefix shown before user message content in history view.
 		block.segmentPromptLabel = TextSegment(self.messagesTextCtrl, _("User:") + " ", block)
 		prompt_text = block.prompt or ""
 		if not prompt_text:
@@ -1354,6 +1388,7 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 			if tlist and any(t for t in tlist):
 				prompt_text = "\n".join(t for t in tlist if t).strip()
 		block.segmentPrompt = TextSegment(self.messagesTextCtrl, (prompt_text or "") + "\n", block)
+		# Translators: Prefix shown before assistant response content in history view.
 		block.segmentResponseLabel = TextSegment(self.messagesTextCtrl, _("Assistant:") + " ", block)
 		if self._showThinkingInHistory and (block.reasoningText or "").strip():
 			block.segmentReasoningLabel = TextSegment(self.messagesTextCtrl, "", block)
@@ -1427,6 +1462,7 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		self._showThinkingInHistory = not self._showThinkingInHistory
 		self.data["showThinkingInHistory"] = self._showThinkingInHistory
 		self._rerenderMessages(anchor_block, anchor_part)
+		# Translators: Status message after toggling thinking text visibility in history.
 		self.message(_("Thinking content shown in history.") if self._showThinkingInHistory else _("Thinking content hidden in history."))
 
 	def _scheduleFocusMessageHistory(self):
@@ -1443,6 +1479,7 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		blocks = data.get("blocks", [])
 		if not isinstance(blocks, list):
 			blocks = []
+		# Translators: Fallback title for loaded conversations missing a name.
 		conv_name = data.get("name", _("Untitled conversation"))
 		idx_tab = self.notebook.GetSelection()
 		if idx_tab >= 0:
@@ -1549,13 +1586,17 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		blocks = self._getBlocksForSave()
 		draft_prompt = self.promptTextCtrl.GetValue().strip()
 		if not blocks and not draft_prompt:
+			# Translators: Message when manual save is requested for an empty conversation.
 			ui.message(_("No messages or prompt to save."))
 			return
 		if self._autoSaveConversation(force=True):
+			# Translators: Confirmation message after successful manual save.
 			ui.message(_("Conversation saved."))
 		else:
 			gui.messageBox(
+				# Translators: Error text when manual conversation save fails.
 				_("Unable to save conversation. Check the NVDA log for details."),
+				# Translators: Title for manual save error dialog.
 				_("Save conversation"),
 				wx.OK | wx.ICON_ERROR
 			)
@@ -1563,13 +1604,17 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 	def _renameConversation(self, evt=None):
 		"""Rename current conversation."""
 		if not self._conversationId:
+			# Translators: Message shown when trying to rename before first save.
 			ui.message(_("Save the conversation first before renaming."))
 			return
 		entry = next((e for e in conversations.list_conversations() if e.get("id") == self._conversationId), None)
+		# Translators: Default name suggested in rename dialog for untitled conversations.
 		current_name = entry.get("name", _("Untitled conversation")) if entry else ""
 		dlg = wx.TextEntryDialog(
 			self,
+			# Translators: Prompt text in rename conversation dialog.
 			_("Enter new name for this conversation:"),
+			# Translators: Title of rename conversation dialog.
 			_("Rename conversation"),
 			value=current_name
 		)
@@ -1596,6 +1641,7 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		"""Open a new conversation tab."""
 		self._addConversationTab()
 		wx.CallAfter(self.promptTextCtrl.SetFocus)
+		# Translators: Spoken status message after creating a new conversation tab.
 		ui.message(_("New conversation"))
 
 	def onSubmit(self, evt):
@@ -1609,7 +1655,9 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 			self._worker_page = None
 			self.enableControls()
 			gui.messageBox(
+				# Translators: Generic unexpected-error message in submit handler.
 				_("An error occurred. More information is in the NVDA log."),
+				# Translators: Title for generic add-on error dialog.
 				_("OpenAI Error"),
 				wx.OK | wx.ICON_ERROR
 			)
@@ -1628,6 +1676,7 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 			return
 		if account["provider"] != model.provider:
 			gui.messageBox(
+				# Translators: Error when selected account provider differs from selected model provider.
 				_(
 					"The selected account provider ({accountProvider}) does not match the selected model provider ({modelProvider}). "
 					"Please select a compatible account or model."
@@ -1635,18 +1684,21 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 					"accountProvider": account["provider"],
 					"modelProvider": model.provider,
 				}),
+				# Translators: Title for account/provider mismatch dialog.
 				_("Provider mismatch"),
 				wx.OK | wx.ICON_ERROR
 			)
 			return
 		if not apikeymanager.get(model.provider).isReady(account_id=account["id"]):
 			gui.messageBox(
+				# Translators: Error explaining that the selected account is not configured/ready.
 				_(
 					"This model is only available with the {provider} provider and the selected account is not ready. "
 					"Please verify your account API key in settings, or select another account/model."
 				).format(**{
 					"provider": model.provider,
 				}),
+				# Translators: Dynamic error dialog title when API key/account is missing for provider.
 				_("No API key for {provider}").format(**{
 					"provider": model.provider,
 				}),
@@ -1658,6 +1710,7 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		if not ok:
 			gui.messageBox(
 				validation_message,
+				# Translators: Title for unsupported-attachments validation error.
 				_("Unsupported attachments"),
 				wx.OK | wx.ICON_ERROR
 			)
@@ -1666,6 +1719,7 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		if not model.vision and self.filesList:
 			visionModels = [m.id for m in self._models if m.vision]
 			gui.messageBox(
+				# Translators: Error text when current model cannot process image attachments.
 				_(
 					"This model ({model}) does not support image description. "
 					"Please select one of the following models: {models}."
@@ -1673,6 +1727,7 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 					"model": model.id,
 					"models": ", ".join(visionModels),
 				}),
+				# Translators: Title for model capability validation errors.
 				_("Invalid model"),
 				wx.OK | wx.ICON_ERROR
 			)
@@ -1680,13 +1735,16 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		if self.audioPathList and not getattr(model, "audioInput", False):
 			audioModels = [m.id for m in self._models if getattr(m, "audioInput", False)]
 			gui.messageBox(
+				# Translators: Error text when current model cannot process audio attachments.
 				_(
 					"This model ({model}) does not support audio input. "
 					"Please select one of the following models: {models}."
 				).format(**{
 					"model": model.id,
+					# Translators: Fallback text when no audio-capable model is available.
 					"models": ", ".join(audioModels) if audioModels else _("none available"),
 				}),
+				# Translators: Title of the error dialog when the user attaches audio but the chosen chat model does not accept audio input.
 				_("Invalid model"),
 				wx.OK | wx.ICON_ERROR
 			)
@@ -1696,9 +1754,11 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 			and not self.conf["images"]["resize"]
 			and not self.conf["images"]["resizeInfoDisplayed"]
 		):
+			# Translators: Informational warning about automatic image resize behavior/cost impact.
 			msg = _("Be aware that the add-on may auto-resize images before API submission to lower request sizes and costs. Adjust this feature in the AI-Hub settings if needed. This message won't show again.")
 			gui.messageBox(
 				msg,
+				# Translators: Title for image-resize informational dialog.
 				_("Image resizing"),
 				wx.OK | wx.ICON_INFORMATION
 			)
@@ -1709,10 +1769,6 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 			self._lastSystem = system
 		self.disableControls(keep_prompt_editable=self.conf.get("stream", False))
 		api.processPendingEvents()
-		self.foregroundObj = api.getForegroundObject()
-		if not self.foregroundObj:
-			log.error("Unable to retrieve the foreground object", exc_info=True)
-		self.historyObj = self._findHistoryObject()
 		page = self.get_active_page()
 		page.conversationModelHint = model.id
 		page.conversationAccountKey = account["key"]
@@ -1731,14 +1787,7 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		plugin = getattr(self, "_plugin", None)
 		if plugin:
 			if getattr(plugin, "askRecordThread", None):
-				try:
-					plugin.askRecordThread.stop()
-				except Exception:
-					pass
-				try:
-					plugin.askRecordThread.join(timeout=0.8)
-				except Exception:
-					pass
+				stop_worker_thread(plugin.askRecordThread)
 				plugin.askRecordThread = None
 			if getattr(plugin, "_askAudioPlaying", False):
 				from .ask_question import mci_stop_ask_audio
@@ -1752,22 +1801,15 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 			sr = page.stopRequest
 			if sr:
 				sr.set()
-			if hasattr(w, "stop"):
-				try:
-					w.stop()
-				except Exception:
-					pass
-			elif hasattr(w, "abort"):
-				try:
-					w.abort()
-				except Exception:
-					pass
-			try:
-				w.join(timeout=0.8)
-			except Exception:
-				pass
+			stop_worker_thread(w)
 			page.worker = None
 		self._worker_page = None
+		if plugin and hasattr(plugin, "_openMainDialogs"):
+			try:
+				if self in plugin._openMainDialogs:
+					plugin._openMainDialogs.remove(self)
+			except Exception:
+				log.debug("Could not remove dialog from plugin open-dialog list", exc_info=True)
 		if self.conf.get("autoSaveConversation", True):
 			try:
 				self._saveHubSession()
@@ -1780,11 +1822,14 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 					os.remove(path)
 				except Exception as err:
 					log.error(f"onCancel delete file: {err}", exc_info=True)
-					gui.messageBox(
-						_("Unable to delete the file: %s\nPlease remove it manually.") % path,
-						"AI-Hub",
-						wx.OK | wx.ICON_ERROR
-					)
+					# Addon terminate sets _force_quiet_shutdown so NVDA shutdown is never blocked by a modal.
+					if not getattr(self, "_force_quiet_shutdown", False):
+						gui.messageBox(
+							# Translators: Error shown when a temporary file could not be deleted.
+							_("Unable to delete the file: %s\nPlease remove it manually.") % path,
+							"AI-Hub",
+							wx.OK | wx.ICON_ERROR
+						)
 		self.saveData()
 		self.timer.Stop()
 		self.Destroy()
@@ -1874,6 +1919,7 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 				if path not in self.audioPathList:
 					self.audioPathList.append(path)
 				self.updateAudioList(focusPrompt=False)
+				# Translators: Status message after attaching recorded/loaded audio input.
 				self.message(_("Audio added for direct model input"))
 				if getattr(self, "_askQuestionPending", False):
 					self._askQuestionPending = False
@@ -1886,11 +1932,13 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 				self.promptTextCtrl.SetFocus()
 				self.promptTextCtrl.SetInsertionPointEnd()
 				self.message(
+					# Translators: Status message after inserting transcribed text into prompt.
 					_("Insertion of: %s") % event.data.text,
 					True
 				)
 				return
 
+			# Translators: Generic fallback error text for API/result handling failures.
 			errMsg = _("An error occurred. More information is in the NVDA log.")
 			if isinstance(event.data, str):
 				log.error(f"OpenAI add-on error: {event.data}", exc_info=True)
@@ -1903,12 +1951,15 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 				if hasattr(event.data, 'message'):
 					errMsg = str(event.data.message)
 				else:
+					# Translators: Fallback error body when the background task failed with an exception object that has no message attribute (same wording as the generic API error).
 					errMsg = _("An error occurred. More information is in the NVDA log.")
 			url = re.search(r"https?://[^\s]+", errMsg)
 			if url:
+				# Translators: Prompt appended to error text when it contains a URL.
 				errMsg += "\n\n" + _("Do you want to open the URL in your browser?")
 			res = gui.messageBox(
 				errMsg,
+				# Translators: Title for runtime/API error dialog after submit.
 				_("OpenAI Error"),
 				wx.OK | wx.ICON_ERROR | wx.CENTRE if not url else wx.YES_NO | wx.ICON_ERROR | wx.CENTRE,
 			)
@@ -1935,6 +1986,7 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 			self._closeTabAt(self.notebook.GetSelection())
 			return
 		if self.conf["blockEscapeKey"] and evt.GetKeyCode() == wx.WXK_ESCAPE:
+			# Translators: Hint spoken when Escape key is blocked by settings.
 			self.message(_("Press Alt+F4 to close the dialog"))
 		else:
 			evt.Skip()
@@ -1945,6 +1997,7 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 			if block.displayHeader:
 				if block != self.firstBlock:
 					block.previous.segmentBreakLine = TextSegment(self.messagesTextCtrl, "\n", block)
+				# Translators: Prefix shown before user message content in streaming history updates.
 				block.segmentPromptLabel = TextSegment(self.messagesTextCtrl, _("User:") + ' ', block)
 				prompt_text = block.prompt
 				if not prompt_text:
@@ -1952,33 +2005,36 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 					if tlist and any(t for t in tlist):
 						prompt_text = "\n".join(t for t in tlist if t).strip()
 				block.segmentPrompt = TextSegment(self.messagesTextCtrl, (prompt_text or "") + "\n", block)
+				# Translators: Prefix shown before assistant response in streaming history updates.
+				# Translators: Prefix shown before assistant response in streaming history updates.
 				block.segmentResponseLabel = TextSegment(self.messagesTextCtrl, _("Assistant:") + ' ', block)
 				block.displayHeader = False
 			l = len(block.responseText)
 			if block.lastLen == 0 and l > 0:
-				cur_pos = self.messagesTextCtrl.GetInsertionPoint()
-				end_pos = self.messagesTextCtrl.GetLastPosition()
-				user_reading_history = self.messagesTextCtrl.HasFocus() and cur_pos < end_pos
-				if not user_reading_history:
-					self.messagesTextCtrl.SetInsertionPointEnd()
-					if (
-						self.historyObj
-						and self.foregroundObj is api.getForegroundObject()
-					):
-						if braille.handler.buffer is braille.handler.messageBuffer:
-							braille.handler._dismissMessage()
-						self.focusHistoryBrl()
-					else:
-						log.debug("Unable to focus the history object or the foreground object has changed")
 				block.responseText = block.responseText.lstrip()
 				l = len(block.responseText)
 			if l > block.lastLen:
 				newText = block.responseText[block.lastLen:]
+				first_assistant_content = block.lastLen == 0 and bool(newText.strip())
 				block.lastLen = l
 				if block.segmentResponse is None:
 					block.segmentResponse = TextSegment(self.messagesTextCtrl, newText, block)
 				else:
 					block.segmentResponse.appendText(newText)
+				if first_assistant_content:
+					ip_after_label = None
+					lbl = getattr(block, "segmentResponseLabel", None)
+					if lbl is not None:
+						try:
+							ip_after_label = int(lbl.end)
+						except Exception:
+							ip_after_label = None
+					if ip_after_label is None and block.segmentResponse is not None:
+						try:
+							ip_after_label = int(block.segmentResponse.start)
+						except Exception:
+							pass
+					self._schedule_focus_message_history_on_assistant_response(ip_after_label)
 			reasoning_len = len(block.reasoningText or "")
 			last_reasoning_len = getattr(block, "lastReasoningLen", 0)
 			if self._showThinkingInHistory and reasoning_len > last_reasoning_len:
@@ -2173,6 +2229,35 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		self.lastFocusedItem = evt.GetEventObject()
 		evt.Skip()
 
+	def _schedule_focus_message_history_on_assistant_response(self, insertion_point_after_label=None):
+		"""If the setting is on, focus Messages and place the caret after the ``Assistant:`` label (first content token)."""
+		try:
+			if not (self.conf.get("chatFeedback") or {}).get("focusHistoryOnAssistantResponse", False):
+				return
+			wx.CallAfter(self._focus_message_history_control_impl, insertion_point_after_label)
+		except Exception:
+			pass
+
+	def _focus_message_history_control_impl(self, insertion_point_after_label=None):
+		"""``insertion_point_after_label`` is ``TextSegment.end`` for ``segmentResponseLabel`` (after translated prefix)."""
+		try:
+			if not self.IsShown():
+				return
+		except Exception:
+			return
+		if not self._foreground_window_is_this_dialog():
+			return
+		try:
+			msgs = self.messagesTextCtrl
+			msgs.SetFocus()
+			if insertion_point_after_label is not None:
+				ip = int(insertion_point_after_label)
+				text_len = len(msgs.GetValue())
+				if 0 <= ip <= text_len:
+					msgs.SetInsertionPoint(ip)
+		except Exception:
+			pass
+
 	def _foreground_window_is_this_dialog(self) -> bool:
 		"""True when the foreground window's root top-level is this dialog (user did not switch away)."""
 		dlg_hwnd = getattr(self, "_cached_dialog_hwnd", None)
@@ -2193,21 +2278,6 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 			return user32.GetAncestor(fg, _GA_ROOT) == dlg_hwnd
 		except Exception:
 			return False
-
-	def focusHistoryBrl(self, force=False):
-		if (
-			not force
-			and not self.conf["chatFeedback"]["brailleAutoFocusHistory"]
-		):
-			return
-		if (
-			self.historyObj
-			and self.foregroundObj is api.getForegroundObject()
-		):
-			if api.getNavigatorObject() is not self.historyObj:
-				api.setNavigatorObject(self.historyObj)
-			braille.handler.handleUpdate(self.historyObj)
-			braille.handler.handleReviewMove(True)
 
 	def canAutoReadStreamingResponse(self) -> bool:
 		"""Return True when streamed response speech can be auto-read."""
@@ -2295,8 +2365,6 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 			queueHandler.queueFunction(queueHandler.eventQueue, speech.speakMessage, msg)
 		if not speechOnly:
 			queueHandler.queueFunction(queueHandler.eventQueue, braille.handler.message, msg)
-		if onPromptFieldOnly:
-			self.focusHistoryBrl()
 
 	def _resolveDictationConfig(self):
 		model = None
@@ -2371,10 +2439,7 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 	def onStopRecord(self, evt):
 		self.disableControls()
 		if self.worker:
-			try:
-				self.worker.stop()
-			except Exception:
-				pass
+			stop_worker_thread(self.worker)
 			wp = getattr(self, "_worker_page", None)
 			if wp:
 				wp.worker = None

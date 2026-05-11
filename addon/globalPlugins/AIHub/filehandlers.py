@@ -176,11 +176,13 @@ class FileHandlersMixin:
 				if attachment.type == AttachmentFileTypes.IMAGE_URL and self._is_url_attachment_supported_by_mime(provider, attachment):
 					continue
 				if ext not in support["images"]:
+					# Translators: Text in attachment/file handling messages.
 					unsupported.append((attachment.path, ext or _("unknown"), _("image")))
 			elif attachment.type in (AttachmentFileTypes.DOCUMENT_LOCAL, AttachmentFileTypes.DOCUMENT_URL):
 				if attachment.type == AttachmentFileTypes.DOCUMENT_URL and self._is_url_attachment_supported_by_mime(provider, attachment):
 					continue
 				if ext not in support["documents"]:
+					# Translators: Text in attachment/file handling messages.
 					unsupported.append((attachment.path, ext or _("unknown"), _("document")))
 		return unsupported
 
@@ -188,11 +190,13 @@ class FileHandlersMixin:
 		unsupported = self.getUnsupportedAttachments(provider=provider, filesList=filesList)
 		if not unsupported:
 			return True, ""
+		# Translators: Text in attachment/file handling messages.
 		provider_name = provider or _("selected provider")
 		details = "\n".join(
 			f"- {os.path.basename(path) or path} ({kind}, {ext})"
 			for path, ext, kind in unsupported
 		)
+		# Translators: Text in attachment/file handling messages.
 		msg = _(
 			"The following attachments are not supported by {provider} and cannot be sent:\n{details}"
 		).format(**{
@@ -231,17 +235,21 @@ class FileHandlersMixin:
 	def getDefaultFilesDescriptionPrompt(self):
 		if self.conf["images"]["useCustomPrompt"]:
 			return self.conf["images"]["customPromptText"]
+		# Translators: AI-Hub conversation — attachments and files: entry in a right-click or application context menu.
 		return _("Describe the images in as much detail as possible.")
 
 	def onFileDescription(self, evt):
 		menu = wx.Menu()
 		item_id = wx.NewIdRef()
+		# Translators: AI-Hub conversation — attachments and files: entry in a right-click or application context menu.
 		menu.Append(item_id, _("From f&ile path...") + " (Ctrl+I)")
 		self.Bind(wx.EVT_MENU, self.onFileDescriptionFromFilePath, id=item_id)
 		item_id = wx.NewIdRef()
+		# Translators: AI-Hub conversation — attachments and files: entry in a right-click or application context menu.
 		menu.Append(item_id, _("From &URL...") + " (Ctrl+U)")
 		self.Bind(wx.EVT_MENU, self.onFileDescriptionFromURL, id=item_id)
 		item_id = wx.NewIdRef()
+		# Translators: AI-Hub conversation — attachments and files: entry in a right-click or application context menu.
 		menu.Append(item_id, _("From &screenshot") + " (Ctrl+E)")
 		self.Bind(wx.EVT_MENU, self.onFileDescriptionFromScreenshot, id=item_id)
 		self.PopupMenu(menu)
@@ -260,16 +268,20 @@ class FileHandlersMixin:
 		if self.filesList:
 			if self.filesListCtrl.GetItemCount() > 0 and self.filesListCtrl.GetSelectedItemCount() > 0:
 				item_id = wx.NewIdRef()
+				# Translators: AI-Hub conversation — attachments and files: entry in a context menu or submenu.
 				menu.Append(item_id, _("&Remove selected files") + " (Del)")
 				self.Bind(wx.EVT_MENU, self.onRemoveSelectedFiles, id=item_id)
 			item_id = wx.NewIdRef()
+			# Translators: AI-Hub conversation — attachments and files: entry in a context menu or submenu.
 			menu.Append(item_id, _("Remove &all files"))
 			self.Bind(wx.EVT_MENU, self.onRemoveAllFiles, id=item_id)
 			menu.AppendSeparator()
 		item_id = wx.NewIdRef()
+		# Translators: AI-Hub conversation — attachments and files: entry in a context menu or submenu.
 		menu.Append(item_id, _("Add from f&ile path...") + " (Ctrl+I)")
 		self.Bind(wx.EVT_MENU, self.onFileDescriptionFromFilePath, id=item_id)
 		item_id = wx.NewIdRef()
+		# Translators: AI-Hub conversation — attachments and files: entry in a context menu or submenu.
 		menu.Append(item_id, _("Add from &URL...") + " (Ctrl+U)")
 		self.Bind(wx.EVT_MENU, self.onFileDescriptionFromURL, id=item_id)
 		self.PopupMenu(menu)
@@ -375,8 +387,10 @@ class FileHandlersMixin:
 		all_exts = "*.png;*.jpeg;*.jpg;*.gif;*.webp;*.bmp;*.pdf;*.txt;*.md;*.json;*.html;*.htm;*.xml;*.csv;*.tsv;*.doc;*.docx;*.rtf;*.odt;*.ppt;*.pptx;*.xls;*.xlsx;*.epub;*.ipynb"
 		dlg = wx.FileDialog(
 			None,
+			# Translators: Text in attachment/file handling messages.
 			message=_("Select files"),
 			defaultFile="",
+			# Translators: Text in attachment/file handling messages.
 			wildcard=_("Supported files") + f" ({all_exts})|{all_exts}",
 			style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST | wx.FD_MULTIPLE
 		)
@@ -401,13 +415,16 @@ class FileHandlersMixin:
 					added_image = True
 			else:
 				gui.messageBox(
+					# Translators: Error body when the user adds a local file that is already in the conversation’s attachment list (placeholder is the path).
 					_("The following file has already been added and will be ignored:\n%s") % path,
 					"OpenAI",
 					wx.OK | wx.ICON_ERROR
 				)
 		if rejected:
 			gui.messageBox(
+				# Translators: Warning body listing attachment paths skipped because the current model’s provider cannot use them (newline-separated list).
 				_("Some files are not supported by the selected provider and were ignored:\n%s") % "\n".join(rejected),
+				# Translators: Title of the warning dialog when some dropped or chosen files were skipped as unsupported.
 				_("Unsupported files"),
 				wx.OK | wx.ICON_WARNING
 			)
@@ -421,6 +438,7 @@ class FileHandlersMixin:
 	def onFileDescriptionFromURL(self, evt):
 		dlg = wx.TextEntryDialog(
 			None,
+			# Translators: Text in attachment/file handling messages.
 			message=_("Enter file URL"),
 			caption="OpenAI",
 			style=wx.OK | wx.CANCEL
@@ -432,6 +450,7 @@ class FileHandlersMixin:
 			return
 		if not re.match(URL_PATTERN, url):
 			gui.messageBox(
+				# Translators: Error body when the user entered an attachment URL that does not match the expected URL pattern.
 				_("Invalid URL, bad format."),
 				"OpenAI",
 				wx.OK | wx.ICON_ERROR
@@ -441,7 +460,9 @@ class FileHandlersMixin:
 			validate_http_fetch_url(url)
 		except ValueError:
 			gui.messageBox(
+				# Translators: Error message when adding an attachment URL that fails security or protocol checks in the conversation window.
 				_("This URL cannot be opened (unsupported scheme or blocked address)."),
+				# Translators: Title of the error dialog when the attachment URL failed security or protocol validation.
 				_("Invalid URL"),
 				wx.OK | wx.ICON_ERROR,
 			)
@@ -476,7 +497,9 @@ class FileHandlersMixin:
 				unsupported = self.getUnsupportedAttachments(provider=provider, filesList=[attachment])
 				if unsupported:
 					gui.messageBox(
+						# Translators: Error body when a fetched URL’s content type is not allowed for the current provider’s models.
 						_("This URL file type is not supported by the selected provider."),
+						# Translators: Title of the error dialog when the URL attachment’s MIME type is rejected.
 						_("Unsupported file type"),
 						wx.OK | wx.ICON_ERROR
 					)
@@ -487,6 +510,7 @@ class FileHandlersMixin:
 					except Exception as err:
 						log.error(f"get_image_dimensions: {err}", exc_info=True)
 						gui.messageBox(
+							# Translators: Error body when NVDA could not read image width/height from a URL attachment (placeholder is the technical error).
 							_("Failed to get image dimensions. %s") % err,
 							"OpenAI",
 							wx.OK | wx.ICON_ERROR
@@ -502,6 +526,7 @@ class FileHandlersMixin:
 				return
 		except urllib.error.HTTPError as err:
 			gui.messageBox(
+				# Translators: AI-Hub conversation — attachments and files: brief status feedback (speech/braille), not a full dialog.
 				_("HTTP error %s.") % err,
 				"OpenAI",
 				wx.OK | wx.ICON_ERROR
@@ -512,7 +537,9 @@ class FileHandlersMixin:
 		from . import conversation_dialog
 		if conversation_dialog.addToSession and conversation_dialog.addToSession is self:
 			conversation_dialog.addToSession = None
+			# Translators: AI-Hub conversation — attachments and files: brief status feedback (speech/braille), not a full dialog.
 			self.message(_("Screenshot reception disabled"))
 			return
 		conversation_dialog.addToSession = self
+		# Translators: AI-Hub conversation — attachments and files: brief status feedback (speech/braille), not a full dialog.
 		self.message(_("Screenshot reception enabled"))

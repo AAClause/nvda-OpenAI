@@ -33,6 +33,7 @@ _GROUP_MISTRAL = "Mistral"
 TOOLS_REGISTRY = (
 	{
 		"id": ToolId.VOXTRAL_TTS,
+		# Translators: AI-Hub Tools menu: label for a submenu or action that opens a provider tool.
 		"label": _("Voxtral TTS..."),
 		"group_label": _GROUP_MISTRAL,
 		"manager_provider": Provider.MistralAI,
@@ -41,6 +42,7 @@ TOOLS_REGISTRY = (
 	},
 	{
 		"id": ToolId.MISTRAL_OCR,
+		# Translators: AI-Hub Tools menu: label for a submenu or action that opens a provider tool.
 		"label": _("OCR..."),
 		"group_label": _GROUP_MISTRAL,
 		"manager_provider": Provider.MistralAI,
@@ -49,6 +51,7 @@ TOOLS_REGISTRY = (
 	},
 	{
 		"id": ToolId.MISTRAL_SPEECH_TO_TEXT,
+		# Translators: AI-Hub Tools menu: label for a submenu or action that opens a provider tool.
 		"label": _("Speech to Text..."),
 		"group_label": _GROUP_MISTRAL,
 		"manager_provider": Provider.MistralAI,
@@ -57,6 +60,7 @@ TOOLS_REGISTRY = (
 	},
 	{
 		"id": ToolId.LYRIA_3_PRO,
+		# Translators: AI-Hub Tools menu: label for a submenu or action that opens a provider tool.
 		"label": _("Lyria 3 Pro..."),
 		"group_label": Provider.Google,
 		"manager_provider": Provider.Google,
@@ -65,6 +69,7 @@ TOOLS_REGISTRY = (
 	},
 	{
 		"id": ToolId.OPENAI_TTS,
+		# Translators: AI-Hub Tools menu: label for a submenu or action that opens a provider tool.
 		"label": _("TTS..."),
 		"group_label": Provider.OpenAI,
 		"manager_provider": Provider.OpenAI,
@@ -73,6 +78,7 @@ TOOLS_REGISTRY = (
 	},
 	{
 		"id": ToolId.OPENAI_TRANSCRIPTION,
+		# Translators: AI-Hub Tools menu: label for a submenu or action that opens a provider tool.
 		"label": _("Transcription / Translation..."),
 		"group_label": Provider.OpenAI,
 		"manager_provider": Provider.OpenAI,
@@ -81,6 +87,7 @@ TOOLS_REGISTRY = (
 	},
 	{
 		"id": ToolId.OLLAMA_MODEL_MANAGER,
+		# Translators: AI-Hub Tools menu: label for a submenu or action that opens a provider tool.
 		"label": _("Model manager..."),
 		"group_label": Provider.Ollama,
 		"manager_provider": Provider.Ollama,
@@ -150,6 +157,7 @@ def open_tool_dialog(parent, tool_def, conversationData=None, plugin=None):
 		if manager and not manager.isReady():
 			provider_label = group_label or manager_provider
 			wx.MessageBox(
+				# Translators: AI-Hub Tools menu: label for a submenu or action that opens a provider tool.
 				_("No account configured for %s. Please add an account for this provider in AI-Hub settings.") % provider_label,
 				"AI-Hub",
 				wx.OK | wx.ICON_ERROR,
@@ -188,6 +196,7 @@ def append_tools_submenu(menu, parent=None, plugin=None, label=None):
 	tools_menu = wx.Menu()
 	plugin = _resolve_plugin(parent, plugin)
 	_populate_tools_provider_submenus(tools_menu, parent, plugin)
+	# Translators: AI-Hub main window — Tools menu: entry in a context menu or submenu.
 	menu.AppendSubMenu(tools_menu, label or _("&Tools"))
 
 

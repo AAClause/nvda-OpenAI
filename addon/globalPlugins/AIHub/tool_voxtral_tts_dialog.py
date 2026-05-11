@@ -23,10 +23,10 @@ from .consts import (
 )
 from .mediastore import build_media_path, persist_local_file
 from .providertools_helpers import add_labeled_factory
+from .thread_shutdown import stop_worker_thread
 from .tool_dialog_base import ToolDialogBase
 
 addonHandler.initTranslation()
-
 
 class VoxtralTTSToolDialog(ToolDialogBase):
 	SUGGESTED_MODELS = (
@@ -40,6 +40,7 @@ class VoxtralTTSToolDialog(ToolDialogBase):
 	def __init__(self, parent, conversationData=None, parentDialog=None, plugin=None):
 		super().__init__(
 			parent,
+			# Translators: Window title of the AI-Hub Mistral Voxtral text-to-speech tool dialog.
 			title=_("Tool: Voxtral TTS"),
 			provider=Provider.MistralAI,
 			size=(760, 650),
@@ -55,26 +56,33 @@ class VoxtralTTSToolDialog(ToolDialogBase):
 		dialogSizer = wx.BoxSizer(wx.VERTICAL)
 		self.formPanel = wx.Panel(self)
 		main = wx.BoxSizer(wx.VERTICAL)
+		# Translators: Group box title around the Mistral account selector in the Voxtral TTS tool.
 		accountBox = wx.StaticBoxSizer(wx.VERTICAL, self.formPanel, _("Account"))
+		# Translators: Group box title around the main synthesis request fields (text, model, output format) in Voxtral TTS.
 		requestBox = wx.StaticBoxSizer(wx.VERTICAL, self.formPanel, _("Synthesis"))
+		# Translators: Group box title around voice ID, reference audio, and voice refresh in the Voxtral TTS tool.
 		voiceBox = wx.StaticBoxSizer(wx.VERTICAL, self.formPanel, _("Voice"))
+		# Translators: Group box title around opening the generated file and the main action buttons in Voxtral TTS.
 		outputBox = wx.StaticBoxSizer(wx.VERTICAL, self.formPanel, _("Output"))
 
 		self.accountChoice = add_labeled_factory(
 			self.formPanel,
 			accountBox,
+			# Translators: Label before the Mistral account drop-down in the Voxtral TTS tool.
 			_("&Account:"),
 			lambda: self.build_account_choice(self.formPanel),
 		)
 		self.inputText = add_labeled_factory(
 			self.formPanel,
 			requestBox,
+			# Translators: Label before the multiline text to speak in the Voxtral TTS tool.
 			_("&Text input:"),
 			lambda: wx.TextCtrl(self.formPanel, style=wx.TE_MULTILINE, size=(-1, 140)),
 		)
 		self.modelText = add_labeled_factory(
 			self.formPanel,
 			requestBox,
+			# Translators: Label before the Voxtral TTS model combo box in this tool window.
 			_("&Model:"),
 			lambda: wx.ComboBox(
 				self.formPanel,
@@ -86,6 +94,7 @@ class VoxtralTTSToolDialog(ToolDialogBase):
 		self.voiceIdText = add_labeled_factory(
 			self.formPanel,
 			voiceBox,
+			# Translators: Label before the optional saved voice id combo box used for Voxtral voice selection or cloning.
 			_("Saved &voice ID (optional):"),
 			lambda: wx.ComboBox(
 				self.formPanel,
@@ -97,6 +106,7 @@ class VoxtralTTSToolDialog(ToolDialogBase):
 		self.formatChoice = add_labeled_factory(
 			self.formPanel,
 			requestBox,
+			# Translators: Label before the output audio format drop-down (wav, mp3, etc.) in the Voxtral TTS tool.
 			_("Output &format:"),
 			lambda: wx.Choice(self.formPanel, choices=["wav", "mp3", "flac", "opus", "pcm"]),
 		)
@@ -104,29 +114,36 @@ class VoxtralTTSToolDialog(ToolDialogBase):
 		self.refAudioText = add_labeled_factory(
 			self.formPanel,
 			voiceBox,
+			# Translators: Label before the optional path field for a reference audio clip used in voice cloning.
 			_("Reference &audio (optional):"),
 			lambda: wx.TextCtrl(self.formPanel, value=""),
 		)
 		self.refAudioText.Bind(wx.EVT_TEXT, lambda evt: (self._syncOpenButtons(), evt.Skip()))
+		# Translators: Button that opens a file picker for the optional Voxtral reference-audio clip.
 		self.browseRefAudioBtn = wx.Button(self.formPanel, label=_("Browse reference audio..."))
 		self.browseRefAudioBtn.Bind(wx.EVT_BUTTON, self.onBrowseRefAudio)
 		voiceBox.Add(self.browseRefAudioBtn, 0, wx.LEFT | wx.RIGHT | wx.BOTTOM, UI_FORM_ROW_BORDER_PX)
+		# Translators: Button that opens the selected reference audio file from disk or URL handler.
 		self.openRefAudioBtn = wx.Button(self.formPanel, label=_("Open reference audio"))
 		self.openRefAudioBtn.Bind(wx.EVT_BUTTON, self.onOpenReferenceAudio)
 		voiceBox.Add(self.openRefAudioBtn, 0, wx.LEFT | wx.RIGHT | wx.BOTTOM, UI_FORM_ROW_BORDER_PX)
 		voiceHint = wx.StaticText(
 			self.formPanel,
+			# Translators: Static hint under the voice section explaining how saved voice IDs and reference clips interact.
 			label=_("Use a saved voice ID or provide a reference audio clip for voice cloning."),
 		)
 		voiceBox.Add(voiceHint, 0, wx.LEFT | wx.RIGHT | wx.BOTTOM, UI_FORM_ROW_BORDER_PX)
+		# Translators: Button that re-fetches the list of saved voice IDs from the Mistral API for the combo box.
 		self.refreshVoicesBtn = wx.Button(self.formPanel, label=_("Refresh voices"))
 		self.refreshVoicesBtn.Bind(wx.EVT_BUTTON, self.onRefreshVoices)
 		voiceBox.Add(self.refreshVoicesBtn, 0, wx.LEFT | wx.RIGHT | wx.BOTTOM, UI_FORM_ROW_BORDER_PX)
+		# Translators: Button that opens the last synthesized audio file from the Voxtral TTS tool.
 		self.openGeneratedAudioBtn = wx.Button(self.formPanel, label=_("Open generated audio"))
 		self.openGeneratedAudioBtn.Bind(wx.EVT_BUTTON, self.onOpenGeneratedAudio)
 		outputBox.Add(self.openGeneratedAudioBtn, 0, wx.LEFT | wx.RIGHT | wx.BOTTOM, UI_FORM_ROW_BORDER_PX)
 
 		buttons = wx.BoxSizer(wx.HORIZONTAL)
+		# Translators: Button that starts Voxtral TTS synthesis with the current form settings.
 		self.runBtn = wx.Button(self.formPanel, label=_("Generate speech"))
 		self.runBtn.Bind(wx.EVT_BUTTON, self.onRun)
 		self.bind_ctrl_enter_submit(self.onRun)
@@ -156,8 +173,10 @@ class VoxtralTTSToolDialog(ToolDialogBase):
 	def onBrowseRefAudio(self, evt):
 		dlg = wx.FileDialog(
 			self,
+			# Translators: Title of the file picker for the optional Voxtral reference-voice clip.
 			message=_("Select reference audio file"),
 			defaultFile="",
+			# Translators: File-type filter in the reference-audio picker for Voxtral TTS.
 			wildcard=_("Audio files (*.wav;*.mp3;*.flac;*.opus)|*.wav;*.mp3;*.flac;*.opus"),
 			style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST,
 		)
@@ -216,9 +235,11 @@ class VoxtralTTSToolDialog(ToolDialogBase):
 		self._worker = None
 		if err is not None:
 			if isinstance(err, (APIConnectionError, APIStatusError)):
+				# Translators: Error body when Voxtral TTS fails with a network or HTTP error; placeholder is the provider error text (title is «OpenAI»).
 				wx.MessageBox(_("Voxtral TTS failed: %s") % err, "OpenAI", wx.OK | wx.ICON_ERROR)
 			else:
 				log.error(f"Voxtral TTS failed: {err}", exc_info=True)
+				# Translators: Error body when Voxtral TTS fails with an unexpected exception (title is «OpenAI»; details in the log).
 				wx.MessageBox(_("Voxtral TTS failed. See NVDA log for details."), "OpenAI", wx.OK | wx.ICON_ERROR)
 			return
 		self._generatedAudioPath = out_path
@@ -226,9 +247,11 @@ class VoxtralTTSToolDialog(ToolDialogBase):
 		self._syncOpenButtons()
 		self.suggest_open_audio(out_path)
 		self.save_tool_conversation(
+			# Translators: Title stored on the synthetic «tool output» conversation tab after Voxtral TTS finishes successfully.
 			title=_("Tool output: Voxtral TTS"),
 			conversation_format=ConversationFormat.TOOL_MISTRAL_VOXTRAL_TTS,
 			prompt=text,
+			# Translators: Short assistant reply stored with the tool run when Voxtral TTS produced an audio file (shown in chat history).
 			response_text=_("Audio generated with Voxtral TTS."),
 			model=model,
 			audio_paths=[out_path],
@@ -283,6 +306,8 @@ class VoxtralTTSToolDialog(ToolDialogBase):
 		self._markClosing()
 		stop_progress_sound()
 		self.end_long_task()
+		stop_worker_thread(self._worker)
+		stop_worker_thread(self._voiceFetchWorker)
 		self._worker = None
 		self._voiceFetchWorker = None
 		if isinstance(evt, wx.CloseEvent):
@@ -395,6 +420,7 @@ class VoxtralTTSToolDialog(ToolDialogBase):
 			return
 		text = self.inputText.GetValue().strip()
 		if not text:
+			# Translators: Error body when Generate is pressed with an empty main text field in the Voxtral TTS tool (title is «OpenAI»).
 			wx.MessageBox(_("Please enter text for speech synthesis."), "OpenAI", wx.OK | wx.ICON_ERROR)
 			self.inputText.SetFocus()
 			return
@@ -409,10 +435,12 @@ class VoxtralTTSToolDialog(ToolDialogBase):
 				with open(ref_audio, "rb") as f:
 					ref_b64 = base64.b64encode(f.read()).decode("ascii")
 			except Exception as err:
+				# Translators: Error body when the optional reference-audio file cannot be read before synthesis; placeholder is the OS error (title is «OpenAI»).
 				wx.MessageBox(_("Could not read reference audio: %s") % err, "OpenAI", wx.OK | wx.ICON_ERROR)
 				return
 		if self.conf["chatFeedback"]["sndTaskInProgress"]:
 			winsound.PlaySound(SND_PROGRESS, winsound.SND_ASYNC | winsound.SND_LOOP)
+		# Translators: Status line on the modal progress window while Voxtral TTS is synthesizing speech.
 		self.begin_long_task(_("Speech generation in progress..."), self._setBusy)
 		self._worker = threading.Thread(
 			target=self._run_thread,

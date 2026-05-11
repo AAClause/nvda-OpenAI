@@ -87,6 +87,7 @@ def retrieveTranscription(transcription):
 			queueHandler.queueFunction(queueHandler.eventQueue, speech.speakMessage, transcription.text)
 		else:
 			api.copyToClip(transcription.text)
+			# Translators: Text in recording thread status and error messages.
 			speech.speakMessage(_("Transcription copied to clipboard"))
 
 
@@ -207,6 +208,7 @@ class RecordThread(threading.Thread):
 			self._post_audio_path(filename)
 			return
 		if self._notifyWindow:
+			# Translators: Text in recording thread status and error messages.
 			self._notifyWindow.message(_("Transcribing..."))
 		self.process_transcription(filename)
 
@@ -355,6 +357,7 @@ class RecordThread(threading.Thread):
 		elif self._onAudioPath:
 			core.callLater(200, self._onAudioPath, path_str)
 		else:
+			# Translators: AI-Hub — global dictation recording: brief status feedback (speech/braille), not a full dialog.
 			ui.message(_("Audio file ready for direct input"))
 
 	def _get_transcription_provider(self):
@@ -397,6 +400,7 @@ class RecordThread(threading.Thread):
 		manager = apikeymanager.get(Provider.MistralAI)
 		api_key = manager.get_api_key(account_id=self._transcriptionAccountId)
 		if not api_key or not api_key.strip():
+			# Translators: Text in recording thread status and error messages.
 			raise ValueError(_("No Mistral API key configured. Please add one in AI-Hub settings."))
 		model = self._transcriptionModel or self.conf.get("voxtralModel", "voxtral-mini-latest")
 		return transcribe_audio_mistral(api_key=api_key, file_path=filename, model=model)
@@ -404,6 +408,7 @@ class RecordThread(threading.Thread):
 	def _transcribe_openai(self, filename):
 		"""Transcribe via OpenAI Whisper API."""
 		if not self.client:
+			# Translators: Text in recording thread status and error messages.
 			raise ValueError(_("OpenAI client is not available for transcription."))
 		client = configure_client_for_provider(
 			self.client,
@@ -439,7 +444,12 @@ class RecordThread(threading.Thread):
 				wx.PostEvent(self._notifyWindow, ResultEvent(msg))
 			else:
 				def _show_error():
-					gui.messageBox(msg, _("Transcription Error"), wx.OK | wx.ICON_ERROR)
+					gui.messageBox(
+						msg,
+						# Translators: Title of the error dialog when global dictation transcription fails; body text is a shortened technical error from the engine.
+						_("Transcription Error"),
+						wx.OK | wx.ICON_ERROR,
+					)
 				wx.CallAfter(_show_error)
 			return
 		if transcription is None:

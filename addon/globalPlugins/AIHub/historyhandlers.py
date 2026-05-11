@@ -81,9 +81,12 @@ class HistoryHandlersMixin:
 	def onMessageProperties(self, evt=None):
 		block = self._getCurrentBlock()
 		if not block:
+			# Translators: AI-Hub conversation — message history area: brief status feedback (speech/braille), not a full dialog.
 			ui.message(_("No message selected."))
 			return
+		# Translators: AI-Hub conversation — message history area: brief status feedback (speech/braille), not a full dialog.
 		html = build_message_properties_html(block, _("unknown"))
+		# Translators: AI-Hub conversation — message history area: brief status feedback (speech/braille), not a full dialog.
 		ui.browseableMessage(html, _("Message properties"), True)
 
 	def onConversationProperties(self, evt=None):
@@ -93,33 +96,48 @@ class HistoryHandlersMixin:
 			blocks.append(b)
 			b = b.next
 		if not blocks:
+			# Translators: AI-Hub conversation — message history area: brief status feedback (speech/braille), not a full dialog.
 			ui.message(_("No conversation messages yet."))
 			return
+		# Translators: Placeholder model name in the «Conversation properties» token summary when a message block has no model id.
 		agg = aggregate_blocks_usage(blocks, _("unknown"))
 		lines = [
+			# Translators: Text in history navigation and context-menu messages.
 			_("Conversation properties"),
 			"",
+			# Translators: Text in history navigation and context-menu messages.
 			_("Messages: %d") % len(blocks),
+			# Translators: Text in history navigation and context-menu messages.
 			_("Total input tokens: %d") % agg["total_input"],
+			# Translators: Text in history navigation and context-menu messages.
 			_("Total output tokens: %d") % agg["total_output"],
+			# Translators: Text in history navigation and context-menu messages.
 			_("Total tokens: %d") % agg["total_tokens"],
 		]
 		if agg["total_reasoning"]:
+			# Translators: Text in history navigation and context-menu messages.
 			lines.append(_("Total reasoning tokens: %d") % agg["total_reasoning"])
 		if agg["total_cached"]:
+			# Translators: Text in history navigation and context-menu messages.
 			lines.append(_("Total cached input tokens: %d") % agg["total_cached"])
 		if agg["total_cache_write"]:
+			# Translators: Text in history navigation and context-menu messages.
 			lines.append(_("Total cache write tokens: %d") % agg["total_cache_write"])
 		if agg["total_input_audio"]:
+			# Translators: Text in history navigation and context-menu messages.
 			lines.append(_("Total input audio tokens: %d") % agg["total_input_audio"])
 		if agg["total_output_audio"]:
+			# Translators: Text in history navigation and context-menu messages.
 			lines.append(_("Total output audio tokens: %d") % agg["total_output_audio"])
 		if agg["has_cost"]:
+			# Translators: Text in history navigation and context-menu messages.
 			lines.append(_("Total cost: $%.6f") % agg["total_cost"])
 		lines.append("")
+		# Translators: Text in history navigation and context-menu messages.
 		lines.append(_("Models used:"))
 		for model_name, count in sorted(agg["model_counts"].items(), key=lambda x: x[1], reverse=True):
 			lines.append(f"- {model_name}: {count}")
+		# Translators: Text in history navigation and context-menu messages.
 		ui.browseableMessage("\n".join(lines), _("Conversation properties"), False)
 
 	def onMessagesKeyDown(self, evt):
@@ -192,12 +210,14 @@ class HistoryHandlersMixin:
 			if attachment.type in (AttachmentFileTypes.IMAGE_LOCAL, AttachmentFileTypes.IMAGE_URL):
 				added_image = True
 		if rejected:
+			# Translators: AI-Hub conversation — message history area: brief status feedback (speech/braille), not a full dialog.
 			ui.message(_("Some files were skipped because they are not supported by the selected provider."))
 		if added_count <= 0:
 			return False
 		if added_image:
 			self.ensureModelVisionSelected()
 		self.updateFilesList()
+		# Translators: AI-Hub conversation — message history area: brief status feedback (speech/braille), not a full dialog.
 		ui.message(_("%d file(s) attached.") % added_count)
 		return True
 
@@ -234,6 +254,7 @@ class HistoryHandlersMixin:
 								if url_file.type in (AttachmentFileTypes.IMAGE_LOCAL, AttachmentFileTypes.IMAGE_URL):
 									self.ensureModelVisionSelected()
 								self.updateFilesList()
+								# Translators: AI-Hub conversation — message history area: brief status feedback (speech/braille), not a full dialog.
 								ui.message(_("URL attached."))
 								return
 						except Exception as err:
@@ -276,6 +297,7 @@ class HistoryHandlersMixin:
 				return
 		except Exception as e:
 			log.error(f"onPreviousMessage: {e}", exc_info=True)
+			# Translators: AI-Hub conversation — message history area: brief status feedback (speech/braille), not a full dialog.
 			self.message(_("An error occurred. More information is in the NVDA log."))
 			return
 		self.messagesTextCtrl.SetInsertionPoint(start)
@@ -309,6 +331,7 @@ class HistoryHandlersMixin:
 				return
 		except Exception as e:
 			log.error(f"onNextMessage: {e}", exc_info=True)
+			# Translators: AI-Hub conversation — message history area: brief status feedback (speech/braille), not a full dialog.
 			self.message(_("An error occurred. More information is in the NVDA log."))
 			return
 		self.messagesTextCtrl.SetInsertionPoint(start)
@@ -325,6 +348,7 @@ class HistoryHandlersMixin:
 			label_text, text = self._getBlockTextByKind(block, kind)
 		except Exception as e:
 			log.error(f"onCurrentMessage: {e}", exc_info=True)
+			# Translators: AI-Hub conversation — message history area: brief status feedback (speech/braille), not a full dialog.
 			self.message(_("An error occurred. More information is in the NVDA log."))
 			return
 		self.message(text)
@@ -335,10 +359,12 @@ class HistoryHandlersMixin:
 			return
 		think_segment = getattr(block, "segmentReasoning", None)
 		if think_segment is None:
+			# Translators: AI-Hub conversation — message history area: brief status feedback (speech/braille), not a full dialog.
 			self.message(_("No thinking block in the current message."))
 			return
 		target = max(think_segment.start, think_segment.end - 1)
 		self.messagesTextCtrl.SetInsertionPoint(target)
+		# Translators: AI-Hub conversation — message history area: brief status feedback (speech/braille), not a full dialog.
 		self.message(_("Moved to end of thinking block."))
 
 	def onMoveToStartOfThinking(self, evt=None):
@@ -347,9 +373,11 @@ class HistoryHandlersMixin:
 			return
 		think_segment = getattr(block, "segmentReasoning", None)
 		if think_segment is None:
+			# Translators: AI-Hub conversation — message history area: brief status feedback (speech/braille), not a full dialog.
 			self.message(_("No thinking block in the current message."))
 			return
 		self.messagesTextCtrl.SetInsertionPoint(think_segment.start)
+		# Translators: AI-Hub conversation — message history area: brief status feedback (speech/braille), not a full dialog.
 		self.message(_("Moved to start of thinking block."))
 
 	def onMoveToBeginOfContent(self, evt=None):
@@ -363,6 +391,7 @@ class HistoryHandlersMixin:
 		if target_segment is None:
 			return
 		self.messagesTextCtrl.SetInsertionPoint(target_segment.start)
+		# Translators: AI-Hub conversation — message history area: brief status feedback (speech/braille), not a full dialog.
 		self.message(_("Moved to beginning of content."))
 
 	def onMoveToEndOfContent(self, evt=None):
@@ -377,6 +406,7 @@ class HistoryHandlersMixin:
 			return
 		target = max(target_segment.start, target_segment.end - 1)
 		self.messagesTextCtrl.SetInsertionPoint(target)
+		# Translators: AI-Hub conversation — message history area: brief status feedback (speech/braille), not a full dialog.
 		self.message(_("Moved to end of content."))
 
 	def onCopyResponseToSystem(self, evt):
@@ -387,6 +417,7 @@ class HistoryHandlersMixin:
 		if not text:
 			return
 		self.systemTextCtrl.SetValue(text)
+		# Translators: AI-Hub conversation — message history area: brief status feedback (speech/braille), not a full dialog.
 		self.message(_("Response copied to system: %s") % text)
 
 	def onCopyPromptToPrompt(self, evt):
@@ -396,11 +427,13 @@ class HistoryHandlersMixin:
 		label_text, text = self._getBlockTextByKind(block, "prompt")
 		self.promptTextCtrl.SetValue(text)
 		self.promptTextCtrl.SetFocus()
+		# Translators: AI-Hub conversation — message history area: brief status feedback (speech/braille), not a full dialog.
 		self.message(_("Copied to prompt"))
 
 	def onCopyMessage(self, evt, isHtml=False):
 		from .conversation_dialog import copyToClipAsHTML, render_markdown_html
 		text = self.messagesTextCtrl.GetStringSelection()
+		# Translators: Text in history navigation and context-menu messages.
 		msg = _("Copy")
 		if not text:
 			segment, block = self._getCurrentSegmentBlock()
@@ -409,14 +442,17 @@ class HistoryHandlersMixin:
 			kind = self._segmentKind(block, segment)
 			if kind == "prompt":
 				label_text, text = self._getBlockTextByKind(block, "prompt")
+				# Translators: Text in history navigation and context-menu messages.
 				msg = _("Copy prompt")
 			else:
 				text = self._assistantClipboardPlainText(block)
 				has_reasoning = bool((getattr(block, "reasoningText", "") or "").strip())
+				# Translators: Text in history navigation and context-menu messages.
 				msg = _("Copy assistant message") if getattr(self, "_showThinkingInHistory", False) and has_reasoning else _("Copy response")
 		if isHtml:
 			text = render_markdown_html(text)
 			copyToClipAsHTML(text)
+			# Translators: AI-Hub conversation — message history area: brief status feedback (speech/braille), not a full dialog.
 			msg += ' ' + _("as formatted HTML")
 		else:
 			api.copyToClip(text)
@@ -448,6 +484,7 @@ class HistoryHandlersMixin:
 			block.next.previous = block.previous
 		else:
 			self.lastBlock = block.previous
+		# Translators: AI-Hub conversation — message history area: brief status feedback (speech/braille), not a full dialog.
 		self.message(_("Block deleted"))
 
 	def onWebviewMessage(self, evt, isHtml=False):
@@ -462,6 +499,7 @@ class HistoryHandlersMixin:
 			label_text, text = self._getBlockTextByKind(block, kind)
 		except Exception as e:
 			log.error(f"onWebviewMessage: {e}", exc_info=True)
+			# Translators: AI-Hub conversation — message history area: brief status feedback (speech/braille), not a full dialog.
 			self.message(_("An error occurred. More information is in the NVDA log."))
 			return
 		html = render_markdown_html(text)
@@ -481,8 +519,10 @@ class HistoryHandlersMixin:
 			defaultFile = "openai_history_%s.txt" % now_str
 			dlg = wx.FileDialog(
 				None,
+				# Translators: Text in history navigation and context-menu messages.
 				message=_("Save history"),
 				defaultFile=defaultFile,
+				# Translators: Text in history navigation and context-menu messages.
 				wildcard=_("Text file") + " (*.txt)|*.txt",
 				style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT
 			)
@@ -494,11 +534,13 @@ class HistoryHandlersMixin:
 		self._historyPath = path
 		with open(path, "w", encoding="utf-8") as f:
 			f.write(self.messagesTextCtrl.GetValue())
+		# Translators: AI-Hub conversation — message history area: brief status feedback (speech/braille), not a full dialog.
 		self.message(_("History saved"))
 
 	def onSystemContextMenu(self, event):
 		menu = wx.Menu()
 		item_id = wx.NewIdRef()
+		# Translators: AI-Hub conversation — message history area: entry in a right-click or application context menu.
 		resetItem = menu.Append(item_id, _("Reset to default"))
 		self.Bind(wx.EVT_MENU, self.onResetSystemPrompt, id=item_id)
 		menu.AppendSeparator()
@@ -516,71 +558,93 @@ class HistoryHandlersMixin:
 				has_audio = getattr(b, "audioPath", None) and os.path.exists(b.audioPath)
 		if has_audio:
 			item_id = wx.NewIdRef()
+			# Translators: AI-Hub conversation — message history area: entry in a context menu or submenu.
 			menu.Append(item_id, _("&Play / Pause audio") + " (Ctrl+P)")
 			self.Bind(wx.EVT_MENU, self.onAudioPlayPause, id=item_id)
 			item_id = wx.NewIdRef()
+			# Translators: AI-Hub conversation — message history area: entry in a context menu or submenu.
 			menu.Append(item_id, _("S&top audio"))
 			self.Bind(wx.EVT_MENU, self.onAudioStop, id=item_id)
 			menu.AppendSeparator()
 		item_id = wx.NewIdRef()
+		# Translators: AI-Hub conversation — message history area: entry in a context menu or submenu.
 		menu.Append(item_id, _("Show message in web view as formatted HTML") + " (Space)")
 		self.Bind(wx.EVT_MENU, lambda e: self.onWebviewMessage(e, True), id=item_id)
 		item_id = wx.NewIdRef()
+		# Translators: AI-Hub conversation — message history area: entry in a context menu or submenu.
 		menu.Append(item_id, _("Show message in web view as HTML source") + " (Shift+Space)")
 		self.Bind(wx.EVT_MENU, lambda evt: self.onWebviewMessage(evt, False), id=item_id)
 		item_id = wx.NewIdRef()
+		# Translators: AI-Hub conversation — message history area: entry in a context menu or submenu.
 		menu.Append(item_id, _("Copy message as plain text") + " (Ctrl+C)")
 		self.Bind(wx.EVT_MENU, lambda evt: self.onCopyMessage(evt, False), id=item_id)
 		item_id = wx.NewIdRef()
+		# Translators: AI-Hub conversation — message history area: entry in a context menu or submenu.
 		menu.Append(item_id, _("Copy message as formatted HTML") + " (Ctrl+Shift+C)")
 		self.Bind(wx.EVT_MENU, lambda evt: self.onCopyMessage(evt, True), id=item_id)
 		item_id = wx.NewIdRef()
+		# Translators: AI-Hub conversation — message history area: entry in a context menu or submenu.
 		toggle_label = _("Hide thinking in history") if getattr(self, "_showThinkingInHistory", True) else _("Show thinking in history")
 		menu.Append(item_id, toggle_label + " (R)")
 		self.Bind(wx.EVT_MENU, self.onToggleThinkingInHistory, id=item_id)
 		item_id = wx.NewIdRef()
+		# Translators: AI-Hub conversation — message history area: entry in a context menu or submenu.
 		menu.Append(item_id, _("Copy response to system") + " (Alt+Left)")
 		self.Bind(wx.EVT_MENU, self.onCopyResponseToSystem, id=item_id)
 		item_id = wx.NewIdRef()
+		# Translators: AI-Hub conversation — message history area: entry in a context menu or submenu.
 		menu.Append(item_id, _("Copy prompt to prompt") + " (Alt+Right)")
 		self.Bind(wx.EVT_MENU, self.onCopyPromptToPrompt, id=item_id)
 		item_id = wx.NewIdRef()
+		# Translators: AI-Hub conversation — message history area: entry in a context menu or submenu.
 		menu.Append(item_id, _("Delete block") + " (Ctrl+D)")
 		self.Bind(wx.EVT_MENU, self.onDeleteBlock, id=item_id)
 		item_id = wx.NewIdRef()
+		# Translators: AI-Hub conversation — message history area: entry in a context menu or submenu.
 		menu.Append(item_id, _("Save history as text file") + " (Ctrl+Shift+S)")
 		self.Bind(wx.EVT_MENU, self.onSaveHistory, id=item_id)
 		item_id = wx.NewIdRef()
+		# Translators: AI-Hub conversation — message history area: entry in a context menu or submenu.
 		menu.Append(item_id, _("Save conversation"))
 		self.Bind(wx.EVT_MENU, self._saveConversation, id=item_id)
 		item_id = wx.NewIdRef()
+		# Translators: AI-Hub conversation — message history area: entry in a context menu or submenu.
 		menu.Append(item_id, _("Rename conversation"))
 		self.Bind(wx.EVT_MENU, self._renameConversation, id=item_id)
 		item_id = wx.NewIdRef()
+		# Translators: AI-Hub conversation — message history area: entry in a context menu or submenu.
 		menu.Append(item_id, _("Message properties") + " (Alt+Enter)")
 		self.Bind(wx.EVT_MENU, self.onMessageProperties, id=item_id)
 		item_id = wx.NewIdRef()
+		# Translators: AI-Hub conversation — message history area: entry in a context menu or submenu.
 		menu.Append(item_id, _("Conversation properties") + " (Ctrl+Alt+Enter)")
 		self.Bind(wx.EVT_MENU, self.onConversationProperties, id=item_id)
 		item_id = wx.NewIdRef()
+		# Translators: AI-Hub conversation — message history area: entry in a context menu or submenu.
 		menu.Append(item_id, _("Say message") + " (M)")
 		self.Bind(wx.EVT_MENU, self.onCurrentMessage, id=item_id)
 		item_id = wx.NewIdRef()
+		# Translators: AI-Hub conversation — message history area: entry in a context menu or submenu.
 		menu.Append(item_id, _("Move to previous message") + " (j)")
 		self.Bind(wx.EVT_MENU, self.onPreviousMessage, id=item_id)
 		item_id = wx.NewIdRef()
+		# Translators: AI-Hub conversation — message history area: entry in a right-click or application context menu.
 		menu.Append(item_id, _("Move to next message") + " (k)")
 		self.Bind(wx.EVT_MENU, self.onNextMessage, id=item_id)
 		item_id = wx.NewIdRef()
+		# Translators: AI-Hub conversation — message history area: entry in a right-click or application context menu.
 		menu.Append(item_id, _("Move to start of thinking block") + " (Shift+B)")
 		self.Bind(wx.EVT_MENU, self.onMoveToStartOfThinking, id=item_id)
 		item_id = wx.NewIdRef()
+		# Translators: AI-Hub conversation — message history area: entry in a right-click or application context menu.
 		menu.Append(item_id, _("Move to end of thinking block") + " (Shift+N)")
 		self.Bind(wx.EVT_MENU, self.onMoveToEndOfThinking, id=item_id)
 		item_id = wx.NewIdRef()
+		# Translators: AI-Hub conversation — message history area: entry in a right-click or application context menu.
 		menu.Append(item_id, _("Move to beginning of content") + " (B)")
 		self.Bind(wx.EVT_MENU, self.onMoveToBeginOfContent, id=item_id)
 		item_id = wx.NewIdRef()
+		# Translators: AI-Hub conversation — message history area: entry in a right-click or application context menu.
 		menu.Append(item_id, _("Move to end of content") + " (N)")
 		self.Bind(wx.EVT_MENU, self.onMoveToEndOfContent, id=item_id)
 		menu.AppendSeparator()
@@ -591,28 +655,35 @@ class HistoryHandlersMixin:
 	def onPromptContextMenu(self, evt):
 		menu = wx.Menu()
 		item_id = wx.NewIdRef()
+		# Translators: AI-Hub conversation — message history area: entry in a context menu or submenu.
 		menu.Append(item_id, _("Dictate") + " (Ctrl+R)")
 		self.Bind(wx.EVT_MENU, self.onRecord, id=item_id)
 		menu.AppendSeparator()
 		item_id = wx.NewIdRef()
+		# Translators: AI-Hub conversation — message history area: entry in a context menu or submenu.
 		menu.Append(item_id, _("Attach image from f&ile...") + " (Ctrl+I)")
 		self.Bind(wx.EVT_MENU, self.onFileDescriptionFromFilePath, id=item_id)
 		item_id = wx.NewIdRef()
+		# Translators: AI-Hub conversation — message history area: entry in a context menu or submenu.
 		menu.Append(item_id, _("Attach image from &URL...") + " (Ctrl+U)")
 		self.Bind(wx.EVT_MENU, self.onFileDescriptionFromURL, id=item_id)
 		item_id = wx.NewIdRef()
+		# Translators: AI-Hub conversation — message history area: entry in a context menu or submenu.
 		menu.Append(item_id, _("Attach image from &screenshot") + " (Ctrl+E)")
 		self.Bind(wx.EVT_MENU, self.onFileDescriptionFromScreenshot, id=item_id)
 		item_id = wx.NewIdRef()
+		# Translators: AI-Hub conversation — message history area: entry in a context menu or submenu.
 		menu.Append(item_id, _("Attach audio from f&ile..."))
 		self.Bind(wx.EVT_MENU, self.onAddAudioFromFile, id=item_id)
 		menu.AppendSeparator()
 		item_id = wx.NewIdRef()
+		# Translators: AI-Hub conversation — message history area: entry in a context menu or submenu.
 		menu.Append(item_id, _("Paste (file or text)") + "\tCtrl+V")
 		self.Bind(wx.EVT_MENU, self.onPromptPasteSmart, id=item_id)
 		if self.previousPrompt:
 			menu.AppendSeparator()
 			item_id = wx.NewIdRef()
+			# Translators: AI-Hub conversation — message history area: entry in a context menu or submenu.
 			menu.Append(item_id, _("Insert previous prompt") + " (Ctrl+Up)")
 			self.Bind(wx.EVT_MENU, self.onPreviousPrompt, id=item_id)
 		menu.AppendSeparator()

@@ -24,15 +24,16 @@ from .consts import (
 )
 from .mediastore import build_media_path
 from .providertools_helpers import add_labeled_factory, extract_audio_b64, safe_float, safe_int
+from .thread_shutdown import stop_worker_thread
 from .tool_dialog_base import ToolDialogBase
 
 addonHandler.initTranslation()
-
 
 class Lyria3ProToolDialog(ToolDialogBase):
 	def __init__(self, parent, conversationData=None, parentDialog=None, plugin=None):
 		super().__init__(
 			parent,
+			# Translators: Window title of the AI-Hub Google Lyria 3 Pro music-generation tool dialog.
 			title=_("Tool: Lyria 3 Pro"),
 			provider=Provider.Google,
 			size=(760, 720),
@@ -48,81 +49,95 @@ class Lyria3ProToolDialog(ToolDialogBase):
 		self.accountChoice = add_labeled_factory(
 			self.formPanel,
 			main,
+			# Translators: Label before the Google account drop-down in the Lyria 3 Pro tool.
 			_("&Account:"),
 			lambda: self.build_account_choice(self.formPanel),
 		)
 		self.promptText = add_labeled_factory(
 			self.formPanel,
 			main,
+			# Translators: Label before the main multiline music prompt describing what Lyria should generate.
 			_("&Prompt:"),
 			lambda: wx.TextCtrl(self.formPanel, style=wx.TE_MULTILINE, size=(-1, 130)),
 		)
+		# Translators: Button that opens the last generated music audio file from Lyria 3 Pro.
 		self.openGeneratedAudioBtn = wx.Button(self.formPanel, label=_("Open generated audio"))
 		self.openGeneratedAudioBtn.Bind(wx.EVT_BUTTON, self.onOpenGeneratedAudio)
 		main.Add(self.openGeneratedAudioBtn, 0, wx.LEFT | wx.RIGHT | wx.BOTTOM, UI_FORM_ROW_BORDER_PX)
 		self.negativePromptText = add_labeled_factory(
 			self.formPanel,
 			main,
+			# Translators: Label before the optional multiline negative prompt listing what Lyria should avoid.
 			_("Negative prompt (&optional):"),
 			lambda: wx.TextCtrl(self.formPanel, style=wx.TE_MULTILINE, size=(-1, 80)),
 		)
 		self.modelText = add_labeled_factory(
 			self.formPanel,
 			main,
+			# Translators: Label before the Lyria model id text field (default lyria-3-pro-preview).
 			_("&Model:"),
 			lambda: wx.TextCtrl(self.formPanel, value="lyria-3-pro-preview"),
 		)
 		self.durationText = add_labeled_factory(
 			self.formPanel,
 			main,
+			# Translators: Label before the requested clip duration in seconds for Lyria generation.
 			_("&Duration seconds:"),
 			lambda: wx.TextCtrl(self.formPanel, value="180"),
 		)
 		self.seedText = add_labeled_factory(
 			self.formPanel,
 			main,
+			# Translators: Label before the optional random seed field for reproducible Lyria generations.
 			_("See&d:"),
 			lambda: wx.TextCtrl(self.formPanel, value=""),
 		)
 		self.temperatureText = add_labeled_factory(
 			self.formPanel,
 			main,
+			# Translators: Label before the optional sampling temperature field for Lyria music generation.
 			_("&Temperature:"),
 			lambda: wx.TextCtrl(self.formPanel, value=""),
 		)
 		self.topPText = add_labeled_factory(
 			self.formPanel,
 			main,
+			# Translators: Label before the optional nucleus sampling top-p parameter for Lyria.
 			_("Top &P:"),
 			lambda: wx.TextCtrl(self.formPanel, value=""),
 		)
 		self.topKText = add_labeled_factory(
 			self.formPanel,
 			main,
+			# Translators: Label before the optional top-k truncation parameter for Lyria.
 			_("Top &K:"),
 			lambda: wx.TextCtrl(self.formPanel, value=""),
 		)
 		self.cfgScaleText = add_labeled_factory(
 			self.formPanel,
 			main,
+			# Translators: Label before the optional classifier-free guidance scale field for Lyria.
 			_("&CFG scale:"),
 			lambda: wx.TextCtrl(self.formPanel, value=""),
 		)
 		self.sampleRateText = add_labeled_factory(
 			self.formPanel,
 			main,
+			# Translators: Label before the output audio sample rate in hertz (default 48000) for Lyria.
 			_("Sam&ple rate:"),
 			lambda: wx.TextCtrl(self.formPanel, value="48000"),
 		)
 		self.formatChoice = add_labeled_factory(
 			self.formPanel,
 			main,
+			# Translators: Label before the container format drop-down (wav, mp3, flac) for exported Lyria audio.
 			_("Output f&ormat:"),
 			lambda: wx.Choice(self.formPanel, choices=["wav", "mp3", "flac"]),
 		)
 		self.formatChoice.SetStringSelection("wav")
 
 		buttons = wx.BoxSizer(wx.HORIZONTAL)
+		# Translators: Button that starts Lyria 3 Pro music generation with the current form settings.
 		self.runBtn = wx.Button(self.formPanel, label=_("Generate music"))
 		self.runBtn.Bind(wx.EVT_BUTTON, self.onRun)
 		self.bind_ctrl_enter_submit(self.onRun)
@@ -284,15 +299,18 @@ class Lyria3ProToolDialog(ToolDialogBase):
 		self._worker = None
 		if err is not None:
 			log.error(f"Lyria generation failed: {err}", exc_info=True)
+			# Translators: Error body when Lyria 3 Pro music generation raises an exception; placeholder is the error text (title is «OpenAI»).
 			wx.MessageBox(_("Lyria 3 Pro generation failed: %s") % err, "OpenAI", wx.OK | wx.ICON_ERROR)
 			return
 		b64 = extract_audio_b64(result)
 		if not b64:
+			# Translators: Error body when the Lyria API JSON contained no usable base64 audio block after a nominally successful response (title is «OpenAI»).
 			wx.MessageBox(_("Lyria request completed but no audio payload was returned by the provider."), "OpenAI", wx.OK | wx.ICON_ERROR)
 			return
 		try:
 			audio_bytes = base64.b64decode(b64)
 		except Exception as decode_err:
+			# Translators: Error body when base64-decoding the Lyria audio chunk fails; placeholder is the decode error (title is «OpenAI»).
 			wx.MessageBox(_("Invalid audio payload: %s") % decode_err, "OpenAI", wx.OK | wx.ICON_ERROR)
 			return
 		actual_ext = self._get_audio_ext(result)
@@ -301,6 +319,7 @@ class Lyria3ProToolDialog(ToolDialogBase):
 			with open(out_path, "wb") as f:
 				f.write(audio_bytes)
 		except Exception as write_err:
+			# Translators: Error body when writing the decoded Lyria WAV/MP3 to the temp folder fails; placeholder is the OS error (title is «OpenAI»).
 			wx.MessageBox(_("Unable to save generated audio: %s") % write_err, "OpenAI", wx.OK | wx.ICON_ERROR)
 			return
 		self._generatedAudioPath = out_path
@@ -310,9 +329,11 @@ class Lyria3ProToolDialog(ToolDialogBase):
 		negative_text = self.negativePromptText.GetValue().strip()
 		model_text = self.modelText.GetValue().strip() or "lyria-3-pro-preview"
 		self.save_tool_conversation(
+			# Translators: Title stored on the synthetic «tool output» conversation tab after Lyria 3 Pro finishes successfully.
 			title=_("Tool output: Lyria 3 Pro"),
 			conversation_format=ConversationFormat.TOOL_GOOGLE_LYRIA_PRO,
 			prompt=prompt_text,
+			# Translators: Short assistant reply stored with the tool run when Lyria 3 Pro produced an audio file (shown in chat history).
 			response_text=_("Audio generated with Lyria 3 Pro."),
 			model=model_text,
 			audio_paths=[out_path],
@@ -379,6 +400,7 @@ class Lyria3ProToolDialog(ToolDialogBase):
 		self._markClosing()
 		stop_progress_sound()
 		self.end_long_task()
+		stop_worker_thread(self._worker)
 		self._worker = None
 		if isinstance(evt, wx.CloseEvent):
 			evt.Skip()
@@ -393,6 +415,7 @@ class Lyria3ProToolDialog(ToolDialogBase):
 			return
 		prompt = self.promptText.GetValue().strip()
 		if not prompt:
+			# Translators: Error body when Generate is pressed with an empty main prompt in the Lyria 3 Pro tool (title is «OpenAI»).
 			wx.MessageBox(_("Please enter a prompt for Lyria 3 Pro."), "OpenAI", wx.OK | wx.ICON_ERROR)
 			self.promptText.SetFocus()
 			return
@@ -412,10 +435,12 @@ class Lyria3ProToolDialog(ToolDialogBase):
 		options = {k: v for k, v in options.items() if v is not None}
 		api_key = self.manager.get_api_key(account_id=acc_id)
 		if not api_key:
+			# Translators: Error body when Lyria cannot run because the chosen Google API account has no key stored (title is «OpenAI»).
 			wx.MessageBox(_("No API key available for the selected Google account."), "OpenAI", wx.OK | wx.ICON_ERROR)
 			return
 		if self.conf["chatFeedback"]["sndTaskInProgress"]:
 			winsound.PlaySound(SND_PROGRESS, winsound.SND_ASYNC | winsound.SND_LOOP)
+		# Translators: Status line on the modal progress window while Lyria 3 Pro is generating music.
 		self.begin_long_task(_("Music generation in progress..."), self._setBusy)
 		self._worker = threading.Thread(
 			target=self._run_generation_thread,

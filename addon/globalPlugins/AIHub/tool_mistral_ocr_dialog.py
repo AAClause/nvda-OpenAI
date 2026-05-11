@@ -24,15 +24,16 @@ from .consts import (
 )
 from .mediastore import build_media_path
 from .providertools_helpers import add_labeled_factory, extract_ocr_text, safe_int
+from .thread_shutdown import stop_worker_thread
 from .tool_dialog_base import ToolDialogBase
 
 addonHandler.initTranslation()
-
 
 class MistralOCRToolDialog(ToolDialogBase):
 	def __init__(self, parent, conversationData=None, parentDialog=None, plugin=None):
 		super().__init__(
 			parent,
+			# Translators: Window title of the AI-Hub Mistral OCR tool dialog.
 			title=_("Tool: Mistral OCR"),
 			provider=Provider.MistralAI,
 			size=(800, 760),
@@ -49,76 +50,93 @@ class MistralOCRToolDialog(ToolDialogBase):
 		self.accountChoice = add_labeled_factory(
 			self.formPanel,
 			main,
+			# Translators: Label before the Mistral account drop-down in the Mistral OCR tool.
 			_("&Account:"),
 			lambda: self.build_account_choice(self.formPanel),
 		)
 		self.modelText = add_labeled_factory(
 			self.formPanel,
 			main,
+			# Translators: Label before the OCR model id text field (default mistral-ocr-latest).
 			_("&Model:"),
 			lambda: wx.TextCtrl(self.formPanel, value="mistral-ocr-latest"),
 		)
 		self.sourceText = add_labeled_factory(
 			self.formPanel,
 			main,
+			# Translators: Label before the path or https URL of the image or PDF to send to Mistral OCR.
 			_("Source file or &URL:"),
 			lambda: wx.TextCtrl(self.formPanel, value=""),
 		)
 		self.sourceText.Bind(wx.EVT_TEXT, lambda evt: (self._syncOpenButtons(), evt.Skip()))
+		# Translators: Button that opens a file picker for the local image or PDF used as OCR input.
 		self.browseSourceBtn = wx.Button(self.formPanel, label=_("Browse OCR source..."))
 		self.browseSourceBtn.Bind(wx.EVT_BUTTON, self.onBrowseSource)
 		main.Add(self.browseSourceBtn, 0, wx.LEFT | wx.RIGHT | wx.BOTTOM, UI_FORM_ROW_BORDER_PX)
+		# Translators: Button that opens the current source path or URL in the default application.
 		self.openSourceBtn = wx.Button(self.formPanel, label=_("Open source"))
 		self.openSourceBtn.Bind(wx.EVT_BUTTON, self.onOpenSource)
 		main.Add(self.openSourceBtn, 0, wx.LEFT | wx.RIGHT | wx.BOTTOM, UI_FORM_ROW_BORDER_PX)
+		# Translators: Button that opens the plain-text OCR output file from the last successful run.
 		self.openTextResultBtn = wx.Button(self.formPanel, label=_("Open OCR text result"))
 		self.openTextResultBtn.Bind(wx.EVT_BUTTON, self.onOpenTextResult)
 		main.Add(self.openTextResultBtn, 0, wx.LEFT | wx.RIGHT | wx.BOTTOM, UI_FORM_ROW_BORDER_PX)
+		# Translators: Button that opens the structured JSON OCR output file from the last successful run.
 		self.openJsonResultBtn = wx.Button(self.formPanel, label=_("Open OCR JSON result"))
 		self.openJsonResultBtn.Bind(wx.EVT_BUTTON, self.onOpenJsonResult)
 		main.Add(self.openJsonResultBtn, 0, wx.LEFT | wx.RIGHT | wx.BOTTOM, UI_FORM_ROW_BORDER_PX)
 		self.pagesText = add_labeled_factory(
 			self.formPanel,
 			main,
+			# Translators: Label before the optional PDF page index list sent to Mistral OCR (comma-separated page numbers).
 			_("&Pages (e.g. 0,1,2):"),
 			lambda: wx.TextCtrl(self.formPanel, value=""),
 		)
 		self.imageLimitText = add_labeled_factory(
 			self.formPanel,
 			main,
+			# Translators: Label before the optional maximum number of images Mistral should process from the document.
 			_("Image &limit:"),
 			lambda: wx.TextCtrl(self.formPanel, value=""),
 		)
 		self.imageMinSizeText = add_labeled_factory(
 			self.formPanel,
 			main,
+			# Translators: Label before the optional minimum image dimension filter for OCR preprocessing.
 			_("Image min si&ze:"),
 			lambda: wx.TextCtrl(self.formPanel, value=""),
 		)
 		self.tableFormatChoice = add_labeled_factory(
 			self.formPanel,
 			main,
+			# Translators: Label before the table output format drop-down (markdown, html, or none) for Mistral OCR.
 			_("Table f&ormat:"),
 			lambda: wx.Choice(self.formPanel, choices=["", "markdown", "html"]),
 		)
 		self.docAnnotationChoice = add_labeled_factory(
 			self.formPanel,
 			main,
+			# Translators: Label before the document-level annotation output format drop-down for Mistral OCR.
 			_("Document annotation for&mat:"),
 			lambda: wx.Choice(self.formPanel, choices=["", "text", "json", "json_schema"]),
 		)
 		self.bboxAnnotationChoice = add_labeled_factory(
 			self.formPanel,
 			main,
+			# Translators: Label before the bounding-box annotation output format drop-down for Mistral OCR.
 			_("BBo&x annotation format:"),
 			lambda: wx.Choice(self.formPanel, choices=["", "text", "json"]),
 		)
+		# Translators: Checkbox asking Mistral to embed base64 image data in the OCR JSON response.
 		self.includeImageB64Check = wx.CheckBox(self.formPanel, label=_("Include image base64 in response"))
+		# Translators: Checkbox enabling extraction of document header regions in Mistral OCR.
 		self.extractHeaderCheck = wx.CheckBox(self.formPanel, label=_("Extract header"))
+		# Translators: Checkbox enabling extraction of document footer regions in Mistral OCR.
 		self.extractFooterCheck = wx.CheckBox(self.formPanel, label=_("Extract footer"))
 		self.annotationPromptText = add_labeled_factory(
 			self.formPanel,
 			main,
+			# Translators: Label before the optional multiline instructions for document-level annotations in Mistral OCR.
 			_("Document annotation &prompt:"),
 			lambda: wx.TextCtrl(self.formPanel, style=wx.TE_MULTILINE, size=(-1, 100)),
 		)
@@ -129,6 +147,7 @@ class MistralOCRToolDialog(ToolDialogBase):
 		main.Add(self.extractFooterCheck, 0, wx.LEFT | wx.RIGHT | wx.BOTTOM, UI_FORM_ROW_BORDER_PX)
 
 		buttons = wx.BoxSizer(wx.HORIZONTAL)
+		# Translators: Button that sends the configured document to the Mistral OCR API and writes result files.
 		self.runBtn = wx.Button(self.formPanel, label=_("Run OCR"))
 		self.runBtn.Bind(wx.EVT_BUTTON, self.onRun)
 		self.bind_ctrl_enter_submit(self.onRun)
@@ -151,8 +170,10 @@ class MistralOCRToolDialog(ToolDialogBase):
 	def onBrowseSource(self, evt):
 		dlg = wx.FileDialog(
 			self,
+			# Translators: Title of the file picker for the source image or PDF in the Mistral OCR tool.
 			message=_("Select image or document file"),
 			defaultFile="",
+			# Translators: File-type filter in the Mistral OCR source file picker.
 			wildcard=_("Supported files (*.png;*.jpg;*.jpeg;*.gif;*.bmp;*.webp;*.pdf)|*.png;*.jpg;*.jpeg;*.gif;*.bmp;*.webp;*.pdf"),
 			style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST,
 		)
@@ -221,6 +242,7 @@ class MistralOCRToolDialog(ToolDialogBase):
 		self._worker = None
 		if err is not None:
 			log.error(f"Mistral OCR failed: {err}", exc_info=True)
+			# Translators: Error body for an unexpected Mistral OCR failure (title is «OpenAI»; technical details only in the NVDA log).
 			wx.MessageBox(_("Mistral OCR failed. See NVDA log for details."), "OpenAI", wx.OK | wx.ICON_ERROR)
 			return
 		self._restoredTextPath = txt_path
@@ -228,11 +250,17 @@ class MistralOCRToolDialog(ToolDialogBase):
 		self._syncOpenButtons()
 		self.open_local_path(txt_path, err_title="OpenAI")
 		preview = text[:4000] if isinstance(text, str) else ""
+		if preview:
+			response_text = preview
+		else:
+			# Translators: Short completion line stored with the tool run when Mistral OCR produced files but no inline text preview.
+			response_text = _("OCR completed. See attached output files.")
 		self.save_tool_conversation(
+			# Translators: Title stored on the synthetic «tool output» conversation tab after Mistral OCR finishes successfully.
 			title=_("Tool output: Mistral OCR"),
 			conversation_format=ConversationFormat.TOOL_MISTRAL_OCR,
 			prompt=self.sourceText.GetValue().strip(),
-			response_text=preview or _("OCR completed. See attached output files."),
+			response_text=response_text,
 			model=self.modelText.GetValue().strip() or "mistral-ocr-latest",
 			format_data={
 				"source": self.sourceText.GetValue().strip(),
@@ -318,6 +346,7 @@ class MistralOCRToolDialog(ToolDialogBase):
 		self._markClosing()
 		stop_progress_sound()
 		self.end_long_task()
+		stop_worker_thread(self._worker)
 		self._worker = None
 		if isinstance(evt, wx.CloseEvent):
 			evt.Skip()
@@ -332,18 +361,21 @@ class MistralOCRToolDialog(ToolDialogBase):
 			return
 		source = self.sourceText.GetValue().strip()
 		if not source:
+			# Translators: Error body when Run is pressed without a local path or http(s) URL in the Mistral OCR source field (title is «OpenAI»).
 			wx.MessageBox(_("Please provide a file path or URL for OCR."), "OpenAI", wx.OK | wx.ICON_ERROR)
 			self.sourceText.SetFocus()
 			return
 		model = self.modelText.GetValue().strip() or "mistral-ocr-latest"
 		api_key = self.manager.get_api_key(account_id=acc_id)
 		if not api_key:
+			# Translators: Error body when Mistral OCR cannot run because the selected Mistral account has no API key (title is «OpenAI»).
 			wx.MessageBox(_("No API key available for the selected Mistral account."), "OpenAI", wx.OK | wx.ICON_ERROR)
 			return
 		if source.startswith("http://") or source.startswith("https://"):
 			document = {"type": "document_url", "document_url": source}
 		else:
 			if not os.path.exists(source):
+				# Translators: Error body when the entered local OCR path is not found on disk (title is «OpenAI»).
 				wx.MessageBox(_("File does not exist."), "OpenAI", wx.OK | wx.ICON_ERROR)
 				return
 			try:
@@ -353,6 +385,7 @@ class MistralOCRToolDialog(ToolDialogBase):
 				data_url = "data:%s;base64,%s" % (mime, base64.b64encode(data).decode("ascii"))
 				document = {"type": "image_url", "image_url": data_url} if mime.startswith("image/") else {"type": "document_url", "document_url": data_url}
 			except Exception as err:
+				# Translators: Error body when the local image or PDF cannot be read for upload; placeholder is the OS error (title is «OpenAI»).
 				wx.MessageBox(_("Unable to read source file: %s") % err, "OpenAI", wx.OK | wx.ICON_ERROR)
 				return
 		body = {
@@ -387,6 +420,7 @@ class MistralOCRToolDialog(ToolDialogBase):
 			body["document_annotation_prompt"] = annotation_prompt
 		if self.conf["chatFeedback"]["sndTaskInProgress"]:
 			winsound.PlaySound(SND_PROGRESS, winsound.SND_ASYNC | winsound.SND_LOOP)
+		# Translators: Status line on the modal progress window while Mistral OCR is processing the selected file.
 		self.begin_long_task(_("OCR in progress..."), self._setBusy)
 		self._worker = threading.Thread(
 			target=self._run_thread,
