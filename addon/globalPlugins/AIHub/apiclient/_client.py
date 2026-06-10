@@ -131,8 +131,8 @@ class OpenAIClient:
 		reasoning_effort = kwargs.get("reasoning_effort")
 		if reasoning_effort is not None:
 			if provider == Provider.OpenRouter:
-				# Caller may have already supplied reasoning={enabled:false,...} to disable;
-				# only convert when no explicit reasoning dict is present.
+				# Caller may have already supplied a full ``reasoning`` dict (e.g.
+				# {effort: "none", exclude: true}); only convert reasoning_effort when absent.
 				if "reasoning" not in body:
 					body["reasoning"] = {"effort": reasoning_effort}
 			else:

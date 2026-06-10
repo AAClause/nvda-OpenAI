@@ -356,8 +356,12 @@ class ModelHandlersMixin:
 				self.maxTokensSpinCtrl.SetValue(0)
 
 		if model.reasoning:
-			self.reasoningModeCheckBox.Enable(True)
 			self.reasoningModeCheckBox.Show(True)
+			if model.reasoning_mandatory:
+				self.reasoningModeCheckBox.SetValue(True)
+				self.reasoningModeCheckBox.Enable(False)
+			else:
+				self.reasoningModeCheckBox.Enable(True)
 			reasoning_on = self.reasoningModeCheckBox.IsChecked()
 			opts = model.reasoning_effort_options
 			if opts and reasoning_on:

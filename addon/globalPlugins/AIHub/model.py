@@ -1,4 +1,5 @@
 import json
+import re
 import urllib.request
 import urllib.error
 import addonHandler
@@ -29,6 +30,7 @@ class Model:
 		name: str = '',
 		extraInfo=None,
 		reasoning: bool = False,
+		reasoningMandatory: bool = False,
 		audioInput: bool = False,
 		audioOutput: bool = False,
 		created: int = 0,
@@ -51,6 +53,7 @@ class Model:
 		self.supportedParameters = supportedParameters or []
 		self.extraInfo = extraInfo or {}
 		self.reasoning = reasoning
+		self.reasoningMandatory = bool(reasoningMandatory)
 		# Groups of mutually exclusive params, e.g. [["temperature", "top_p"]] from JSON
 		self.parameterConflicts = parameterConflicts if isinstance(parameterConflicts, list) else []
 
@@ -79,6 +82,11 @@ class Model:
 			return False
 		params = self._supported_param_set()
 		return "tools" in params or "tool_choice" in params
+
+	@property
+	def reasoning_mandatory(self):
+		"""True when the provider/API does not allow turning reasoning off."""
+		return bool(getattr(self, "reasoningMandatory", False))
 
 	@property
 	def supports_adaptive_thinking(self):
@@ -279,6 +287,98 @@ def _models_from_ollama_tags(tags_index: dict) -> list:
 	return models
 
 
+def _openai_is_o_series(model_id: str) -> bool:
+	"""OpenAI o1/o3/o4 chat-completions models do not support reasoning_effort=none."""
+	mid = (model_id or "").lower()
+	return bool(re.search(r"(?:^|/)(o[134])(?:[-/]|$)", mid))
+
+
+def _openai_supports_reasoning_effort_none(model_id: str) -> bool:
+	"""True when OpenAI docs allow reasoning_effort=none (gpt-5.1+, not o-series or gpt-5-pro)."""
+	mid = (model_id or "").lower()
+	if _openai_is_o_series(mid):
+		return False
+	if "gpt-5-pro" in mid:
+		return False
+	return bool(re.search(r"gpt-5(?:\.|[-/]|$)", mid))
+
+
+def _mistral_supports_adjustable_reasoning(model_id: str) -> bool:
+	mid = (model_id or "").lower()
+	if "magistral" in mid:
+		return False
+	return "mistral-small" in mid or "mistral-medium-3" in mid or "medium-3-5" in mid
+
+
+def _xai_supports_reasoning_effort(model_id: str) -> bool:
+	"""xAI models that accept reasoning_effort (including none)."""
+	mid = (model_id or "").lower()
+	if "grok-3-mini" in mid:
+		return True
+	return "grok-4.3" in mid or "grok-4.20" in mid
+
+
+def _detect_openrouter_reasoning_mandatory(model_id: str, extra_info: dict) -> bool:
+	"""Heuristic: OpenRouter models that reject reasoning.enabled=false (see OR docs/issues)."""
+	extra = extra_info if isinstance(extra_info, dict) else {}
+	if extra.get("reasoning_mandatory") is True:
+		return True
+	mid = (model_id or "").lower()
+	if not mid:
+		return False
+	arch = extra.get("architecture")
+	if isinstance(arch, dict):
+		instruct = (arch.get("instruct_type") or "").lower()
+		if instruct in ("deepseek-r1",):
+			return True
+	# StepFun endpoints require reasoning and reject explicit disable.
+	if mid.startswith("stepfun/"):
+		return True
+	# Slugs that denote always-on reasoning / thinking variants on OpenRouter.
+	slug = mid.rsplit("/", 1)[-1]
+	for token in ("-thinking", ":thinking", "-reasoning", ":reasoning"):
+		if token in slug or token in mid:
+			return True
+	if "deepseek-r1" in mid or "deepseek/deepseek-r1" in mid:
+		return True
+	if "kimi-k2-thinking" in mid or "kimi-k2.5-thinking" in mid:
+		return True
+	return False
+
+
+def _detect_reasoning_mandatory(provider: str, model_id: str, extra_info: dict) -> bool:
+	"""True when official API docs say reasoning/thinking cannot be turned off."""
+	if not model_id:
+		return False
+	mid = (model_id or "").lower()
+	if provider == Provider.OpenRouter:
+		return _detect_openrouter_reasoning_mandatory(model_id, extra_info)
+	if provider == Provider.Anthropic:
+		profile = get_anthropic_thinking_profile(model_id)
+		if profile.get("adaptive_only"):
+			return True
+		if "claude-fable" in mid or "claude-mythos" in mid:
+			return True
+		return False
+	if provider in (Provider.OpenAI, Provider.CustomOpenAI):
+		return _openai_is_o_series(mid) or "gpt-5-pro" in mid
+	if provider == Provider.Google:
+		if "gemini-3" in mid:
+			return True
+		if "gemini-2.5-pro" in mid:
+			return True
+		return False
+	if provider == Provider.MistralAI:
+		return "magistral" in mid
+	if provider == Provider.DeepSeek:
+		return "reasoner" in mid or "deepseek-r1" in mid or mid.endswith("/r1")
+	if provider == Provider.xAI:
+		if not _xai_supports_reasoning_effort(mid):
+			return "grok" in mid
+		return False
+	return False
+
+
 def _parse_model_obj(provider: str, model: dict) -> Model:
 	"""Parse a single model dict from SigmaNight or OpenRouter format."""
 	# Support both SigmaNight (models) and OpenRouter (data) structures
@@ -335,8 +435,13 @@ def _parse_model_obj(provider: str, model: dict) -> Model:
 	# Reasoning: from supported_parameters (reasoning, include_reasoning, etc.)
 	reasoning = "reasoning" in supported or "include_reasoning" in supported
 
-	# Web search: Google Gemini 2.5+ and 3 support grounding with Google Search
 	model_id = model.get("id", "")
+
+	exclude_keys_pre = {"id", "name", "description", "context_length", "top_provider", "parameter_conflicts"}
+	extra_info_pre = {k: v for k, v in model.items() if k not in exclude_keys_pre}
+	reasoning_mandatory = _detect_reasoning_mandatory(provider, model_id, extra_info_pre) if reasoning else False
+
+	# Web search: Google Gemini 2.5+ and 3 support grounding with Google Search
 	if provider == Provider.Google and ("gemini-2.5" in model_id or "gemini-3" in model_id):
 		if "google_search" not in supported:
 			supported = list(supported) + ["google_search"]
@@ -372,6 +477,7 @@ def _parse_model_obj(provider: str, model: dict) -> Model:
 		supportedParameters=supported,
 		extraInfo=extra_info,
 		reasoning=reasoning,
+		reasoningMandatory=reasoning_mandatory,
 		audioInput=audio_input,
 		audioOutput=audio_output,
 		created=created,

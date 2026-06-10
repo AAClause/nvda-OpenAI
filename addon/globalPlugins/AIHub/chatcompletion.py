@@ -29,6 +29,12 @@ from .consts import (
 	stop_progress_sound,
 )
 from .history import HistoryBlock
+from .model import (
+	_mistral_supports_adjustable_reasoning,
+	_openai_is_o_series,
+	_openai_supports_reasoning_effort_none,
+	_xai_supports_reasoning_effort,
+)
 from .mediastore import persist_local_file
 from .recordthread import transcribe_audio_file
 from .resultevent import ResultEvent
@@ -73,14 +79,14 @@ _STREAM_USAGE_PROVIDERS = (
 	Provider.Ollama,
 )
 
-# Providers that accept reasoning_effort directly on chat completions.
+# Providers that accept top-level reasoning_effort on chat completions (others use
+# provider-specific shapes such as OpenRouter's ``reasoning`` object or DeepSeek's
+# ``thinking`` field).
 _REASONING_EFFORT_PROVIDERS = (
 	Provider.OpenAI,
 	Provider.CustomOpenAI,
 	Provider.MistralAI,
-	Provider.OpenRouter,
 	Provider.Google,
-	Provider.DeepSeek,
 )
 
 # Providers that cap stop sequences at 4 (per OpenAI chat-completions docs);
@@ -189,8 +195,9 @@ class CompletionThread(threading.Thread):
 		appropriate disable signal whenever the official API exposes one:
 
 		* Anthropic — extended thinking is opt-in (no ``thinking`` param = OFF).
-		* OpenRouter — ``reasoning: {enabled: false, exclude: true}`` works for
-		  every upstream model and also suppresses the tokens from the response.
+		* OpenRouter — use ``reasoning: {effort: "none", exclude: true}`` to
+		  disable when allowed; omit/disable signals for mandatory-reasoning
+		  models (``enabled: false`` is rejected by some endpoints).
 		* Google — gemini-2.5 supports ``reasoning_effort: "none"``; gemini-3
 		  cannot be disabled per Google's docs.
 		* MistralAI — adjustable models (mistral-small/medium-3-5) accept
@@ -201,6 +208,8 @@ class CompletionThread(threading.Thread):
 		* OpenAI o-series / xAI grok — always reason; no API-level disable.
 		"""
 		model_supports_reasoning = bool(getattr(model, "reasoning", False))
+		if getattr(model, "reasoning_mandatory", False):
+			checkbox_enabled = True
 		use_reasoning = model_supports_reasoning and checkbox_enabled
 		provider = model.provider
 		effort = conf.get("reasoningEffort", ReasoningEffort.MEDIUM.value)
@@ -212,56 +221,97 @@ class CompletionThread(threading.Thread):
 
 	def _applyReasoningEnabled(self, params: dict, model, provider, effort: str, conf) -> None:
 		"""Send the "please reason" signal in whatever shape the provider expects."""
-		if "include_reasoning" in getattr(model, "supportedParameters", []):
-			params["include_reasoning"] = True
 		if provider == Provider.Anthropic:
 			params["reasoning_enabled"] = True
 			params["reasoning_effort"] = effort
 			params["adaptive_thinking"] = conf.get("adaptiveThinking", True)
 			return
+		if provider in (Provider.OpenAI, Provider.CustomOpenAI):
+			if _openai_is_o_series(model.id):
+				return
+			if "gpt-5-pro" in (model.id or "").lower():
+				params["reasoning_effort"] = ReasoningEffort.HIGH.value
+				return
+			params["reasoning_effort"] = effort
+			return
+		if provider == Provider.Google:
+			params["reasoning_effort"] = effort
+			return
+		if provider == Provider.MistralAI:
+			if _mistral_supports_adjustable_reasoning(model.id):
+				params["reasoning_effort"] = effort
+			return
+		if provider == Provider.DeepSeek:
+			mid = (model.id or "").lower()
+			if "reasoner" in mid or "deepseek-r1" in mid:
+				return
+			params["thinking"] = {"type": "enabled"}
+			params["reasoning_effort"] = (
+				ReasoningEffort.HIGH.value
+				if effort in (ReasoningEffort.MEDIUM.value, ReasoningEffort.HIGH.value)
+				else ReasoningEffort.LOW.value
+			)
+			return
 		if provider == Provider.xAI:
-			if "grok-3-mini" in model.id:
-				params["reasoning_effort"] = (
-					ReasoningEffort.HIGH.value
-					if effort in (ReasoningEffort.MEDIUM.value, ReasoningEffort.HIGH.value)
-					else ReasoningEffort.LOW.value
-				)
-			# grok-4 has no reasoning_effort param; it always reasons.
+			if _xai_supports_reasoning_effort(model.id):
+				if "grok-3-mini" in (model.id or "").lower():
+					params["reasoning_effort"] = (
+						ReasoningEffort.HIGH.value
+						if effort in (ReasoningEffort.MEDIUM.value, ReasoningEffort.HIGH.value)
+						else ReasoningEffort.LOW.value
+					)
+				else:
+					params["reasoning_effort"] = effort
 			return
 		if provider == Provider.Ollama:
 			params["think"] = True
 			return
+		if provider == Provider.OpenRouter:
+			# https://openrouter.ai/docs/guides/best-practices/reasoning-tokens
+			params["reasoning"] = {"enabled": True, "effort": effort}
+			return
 		if provider in _REASONING_EFFORT_PROVIDERS:
 			params["reasoning_effort"] = effort
-			return
 
 	def _applyReasoningDisabled(self, params: dict, model, provider) -> None:
 		"""Send the right "no reasoning" signal so providers don't reason by default."""
 		if not getattr(model, "reasoning", False):
-			# Non-reasoning model: nothing to disable.
 			return
-		if provider == Provider.OpenRouter:
-			params["reasoning"] = {"enabled": False, "exclude": True}
+		if getattr(model, "reasoning_mandatory", False):
+			return
+		if provider == Provider.Anthropic:
+			return
+		if provider in (Provider.OpenAI, Provider.CustomOpenAI):
+			if _openai_supports_reasoning_effort_none(model.id):
+				params["reasoning_effort"] = "none"
 			return
 		if provider == Provider.Google:
-			# gemini-3 cannot disable thinking per Google docs.
-			if "gemini-2.5" in model.id:
+			mid = (model.id or "").lower()
+			if "gemini-2.5-pro" in mid or "gemini-3" in mid:
+				return
+			if "gemini-2.5" in mid:
 				params["reasoning_effort"] = "none"
 			return
 		if provider == Provider.MistralAI:
-			# magistral-* is a "native" reasoning model and cannot be disabled.
-			if "magistral" not in model.id:
+			if _mistral_supports_adjustable_reasoning(model.id):
 				params["reasoning_effort"] = "none"
 			return
 		if provider == Provider.DeepSeek:
-			# deepseek-reasoner always reasons; newer models accept thinking.type=disabled.
-			if "reasoner" not in model.id:
+			mid = (model.id or "").lower()
+			if "reasoner" not in mid and "deepseek-r1" not in mid:
 				params["thinking"] = {"type": "disabled"}
+			return
+		if provider == Provider.xAI:
+			if _xai_supports_reasoning_effort(model.id):
+				params["reasoning_effort"] = "none"
 			return
 		if provider == Provider.Ollama:
 			params["think"] = False
 			return
-		# OpenAI o-series, Anthropic (default off), xAI grok-*: nothing to send.
+		if provider == Provider.OpenRouter:
+			# Do not send enabled:false — use effort none per OpenRouter docs.
+			params["reasoning"] = {"effort": "none", "exclude": True}
+			return
 
 	def _usage_for_block(self, usage):
 		"""Normalize usage dict into the persisted HistoryBlock usage shape."""

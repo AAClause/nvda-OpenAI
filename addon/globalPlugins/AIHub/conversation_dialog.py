@@ -2667,7 +2667,11 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 			model = self.getCurrentModel()
 			if model:
 				if model.reasoning:
-					self.reasoningModeCheckBox.Enable()
+					if model.reasoning_mandatory:
+						self.reasoningModeCheckBox.SetValue(True)
+						self.reasoningModeCheckBox.Enable(False)
+					else:
+						self.reasoningModeCheckBox.Enable()
 					reasoning_on = self.reasoningModeCheckBox.IsChecked()
 					if model.reasoning_effort_options and reasoning_on:
 						self.reasoningEffortChoice.Enable()
