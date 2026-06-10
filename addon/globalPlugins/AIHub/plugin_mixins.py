@@ -391,10 +391,15 @@ class AskRecordingMixin:
 		self.askRecordThread.start()
 
 	def script_toggleRecording(self, gesture):
+		from . import conversation_dialog
 		from .recordthread import RecordThread
 
 		if not self.getClient():
 			return ui.message(NO_AUTHENTICATION_KEY_PROVIDED_MSG)
+		dlg = conversation_dialog.activeChatDlg
+		if dlg and dlg.IsShown() and hasattr(dlg, "_prompt_ctrl_has_focus") and dlg._prompt_ctrl_has_focus():
+			dlg.onRecord(None)
+			return
 		if self.recordThread:
 			stop_worker_thread(self.recordThread)
 			self.recordThread = None

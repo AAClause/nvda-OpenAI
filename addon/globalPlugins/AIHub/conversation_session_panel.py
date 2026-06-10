@@ -61,6 +61,8 @@ class ConversationSessionPanel(wx.Panel):
 		self.conversationSystemText = ""
 		self.conversationUiState = {}
 		self.session_lazy_load = False
+		# When True, this tab is not auto-saved, excluded from hub session, and any prior save is purged.
+		self.ephemeral = False
 
 		root = wx.BoxSizer(wx.VERTICAL)
 

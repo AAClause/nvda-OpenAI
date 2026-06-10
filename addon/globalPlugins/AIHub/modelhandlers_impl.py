@@ -43,6 +43,16 @@ class ModelHandlersMixin:
 			if isinstance(p, str)
 		}
 
+	def _updateWebSearchCheckbox(self, model):
+		"""Show/enable web search chrome in sync with model.supports_web_search."""
+		if model and model.supports_web_search:
+			self.webSearchCheckBox.Enable(True)
+			self.webSearchCheckBox.Show(True)
+		else:
+			self.webSearchCheckBox.Enable(False)
+			self.webSearchCheckBox.Show(False)
+			self.webSearchCheckBox.SetValue(False)
+
 	def _set_labeled_visibility(self, label, ctrl, visible: bool, enabled: bool | None = None):
 		if enabled is None:
 			enabled = visible
@@ -371,13 +381,7 @@ class ModelHandlersMixin:
 			self.adaptiveThinkingCheckBox.Show(False)
 			self.adaptiveThinkingCheckBox.SetValue(False)
 
-		if model.supports_web_search:
-			self.webSearchCheckBox.Enable(True)
-			self.webSearchCheckBox.Show(True)
-		else:
-			self.webSearchCheckBox.Enable(False)
-			self.webSearchCheckBox.Show(False)
-			self.webSearchCheckBox.SetValue(False)
+		self._updateWebSearchCheckbox(model)
 
 		if self._effective_advanced_mode():
 			if "temperature" in supported:

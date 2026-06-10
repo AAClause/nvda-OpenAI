@@ -56,12 +56,18 @@ class Model:
 
 	@property
 	def supports_web_search(self):
-		"""True if model supports web search (web_search_options, web_search, or google_search in supported_parameters)."""
-		return (
-			"web_search_options" in self.supportedParameters
-			or "web_search" in self.supportedParameters
-			or "google_search" in self.supportedParameters
-		)
+		"""True when model metadata declares web search (or provider-specific equivalents)."""
+		params = {
+			p.lower()
+			for p in (self.supportedParameters or [])
+			if isinstance(p, str)
+		}
+		if params & {"web_search_options", "web_search", "google_search"}:
+			return True
+		# SigmaNight Anthropic metadata lists generic tools support; web search uses that API.
+		if self.provider == Provider.Anthropic and "tools" in params:
+			return True
+		return False
 
 	@property
 	def supports_adaptive_thinking(self):

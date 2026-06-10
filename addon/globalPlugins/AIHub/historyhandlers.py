@@ -605,12 +605,15 @@ class HistoryHandlersMixin:
 		self.Bind(wx.EVT_MENU, self.onSaveHistory, id=item_id)
 		item_id = wx.NewIdRef()
 		# Translators: AI-Hub conversation — message history area: entry in a context menu or submenu.
-		menu.Append(item_id, _("Save conversation"))
-		self.Bind(wx.EVT_MENU, self._saveConversation, id=item_id)
+		save_item = menu.Append(item_id, _("Save conversation"))
+		self.Bind(wx.EVT_MENU, self._onManualSaveRequested, id=item_id)
 		item_id = wx.NewIdRef()
 		# Translators: AI-Hub conversation — message history area: entry in a context menu or submenu.
-		menu.Append(item_id, _("Rename conversation"))
+		rename_item = menu.Append(item_id, _("Rename conversation"))
 		self.Bind(wx.EVT_MENU, self._renameConversation, id=item_id)
+		if getattr(self.get_active_page(), "ephemeral", False):
+			save_item.Enable(False)
+			rename_item.Enable(False)
 		item_id = wx.NewIdRef()
 		# Translators: AI-Hub conversation — message history area: entry in a context menu or submenu.
 		menu.Append(item_id, _("Message properties") + " (Alt+Enter)")

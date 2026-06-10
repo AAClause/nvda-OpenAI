@@ -122,7 +122,9 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		try:
 			old = evt.GetOldSelection()
 			if old >= 0 and getattr(self, "notebook", None):
-				self._captureConversationChromeToPage(self.notebook.GetPage(old))
+				old_page = self.notebook.GetPage(old)
+				self._captureEphemeralToPage(old_page)
+				self._captureConversationChromeToPage(old_page)
 		except Exception:
 			pass
 		evt.Skip()
@@ -162,13 +164,39 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 			text = (combined or "").strip()
 			if not text:
 				return
-			cur = self.promptTextCtrl.GetValue().strip()
-			if cur:
-				self.promptTextCtrl.AppendText("\n" + text)
-			else:
-				self.promptTextCtrl.SetValue(text)
+			page = getattr(self, "_dictation_page", None) or self.get_active_page()
+			self._insert_transcription_on_page(page, text)
 		except Exception:
 			log.exception("merge audio transcripts into prompt")
+
+	def _prompt_ctrl_has_focus(self):
+		"""True when the active tab's prompt field owns keyboard focus."""
+		try:
+			focused = wx.Window.FindFocus()
+		except Exception:
+			return False
+		page = self._page_from_control(focused)
+		return page is not None and focused is page.promptTextCtrl
+
+	def _insert_transcription_on_page(self, page, text):
+		"""Insert dictated text into a tab prompt and focus it."""
+		if not page:
+			return
+		text = (text or "").strip()
+		if not text:
+			return
+		prompt = page.promptTextCtrl
+		cur = prompt.GetValue().strip()
+		if cur:
+			prompt.AppendText("\n" + text)
+		else:
+			prompt.SetValue(text)
+		idx = self._notebook_page_index(page)
+		if idx >= 0 and self.notebook.GetSelection() != idx:
+			self.notebook.SetSelection(idx)
+			self._syncSharedChromeForActiveTab()
+		prompt.SetFocus()
+		prompt.SetInsertionPointEnd()
 
 	def _collect_blocks_from_page(self, page):
 		blocks = []
@@ -247,6 +275,8 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		Persist allows draft-only tabs; periodic autosave skips draft-only unless autosave_force (manual save).
 		A tab is persisted only when it has message history or a non-empty draft prompt.
 		"""
+		if getattr(page, "ephemeral", False):
+			return None
 		blocks = self._collect_blocks_from_page(page)
 		draft_prompt = page.promptTextCtrl.GetValue()
 		draft_stripped = draft_prompt.strip()
@@ -357,12 +387,13 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		model = self.getCurrentModel()
 		if "reasoningMode" in st and self.reasoningModeCheckBox.IsShown():
 			self.reasoningModeCheckBox.SetValue(bool(st["reasoningMode"]))
-		if self.webSearchCheckBox.IsShown() and "webSearch" in st:
-			self.webSearchCheckBox.SetValue(bool(st["webSearch"]))
 		try:
 			self.onModelChange(None)
 		except Exception:
 			pass
+		model = self.getCurrentModel()
+		if model and model.supports_web_search and "webSearch" in st:
+			self.webSearchCheckBox.SetValue(bool(st["webSearch"]))
 		if "maxTokens" in st:
 			try:
 				self.maxTokensSpinCtrl.SetValue(int(st["maxTokens"]))
@@ -435,6 +466,7 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 			self._applyConversationUiStateToChrome(page)
 		finally:
 			self._sync_suppress_tab_capture = False
+		self._syncEphemeralChromeFromPage(page)
 		try:
 			self.Layout()
 		except Exception:
@@ -714,11 +746,14 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		return -1
 
 	def _onCloseConversationTab(self, evt=None):
-		"""Ctrl+W / browser-style: close tab or exit hub when only one tab."""
-		if getattr(self, "notebook", None) and self.notebook.GetPageCount() > 1:
+		"""Ctrl+W: close the current tab; reset the last tab instead of closing the hub."""
+		if not getattr(self, "notebook", None):
+			return
+		if self.notebook.GetPageCount() > 1:
 			self._closeTabAt(self.notebook.GetSelection())
 			return
-		self.onCancel(evt)
+		self._resetTabPage(self.get_active_page())
+		wx.CallAfter(self.promptTextCtrl.SetFocus)
 
 	def _clearMessagesSegmentsOnPage(self, page):
 		page.messagesTextCtrl.Clear()
@@ -726,9 +761,84 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 			page.messagesTextCtrl.firstSegment = None
 			page.messagesTextCtrl.lastSegment = None
 
+	def _captureEphemeralToPage(self, page):
+		if page is None or not hasattr(self, "ephemeralCheckBox"):
+			return
+		page.ephemeral = bool(self.ephemeralCheckBox.IsChecked())
+
+	def _syncEphemeralChromeFromPage(self, page):
+		if page is None or not hasattr(self, "ephemeralCheckBox"):
+			return
+		ephemeral = bool(getattr(page, "ephemeral", False))
+		self.ephemeralCheckBox.SetValue(ephemeral)
+		self._syncSaveControlsForEphemeral(ephemeral)
+
+	def _is_active_tab_ephemeral(self):
+		return bool(getattr(self.get_active_page(), "ephemeral", False))
+
+	def _syncSaveControlsForEphemeral(self, ephemeral=None):
+		if ephemeral is None:
+			ephemeral = self._is_active_tab_ephemeral()
+		if ephemeral:
+			self.saveConversationBtn.Disable()
+			self.saveConversationBtn.Show(False)
+			self.renameConversationBtn.Disable()
+		else:
+			self.saveConversationBtn.Show(True)
+			self.saveConversationBtn.Enable()
+			self.renameConversationBtn.Enable()
+		try:
+			self.Layout()
+		except Exception:
+			pass
+
+	def _onManualSaveRequested(self, evt=None):
+		"""Ctrl+S / menu save — no-op while the active tab is ephemeral."""
+		if self._is_active_tab_ephemeral():
+			return
+		self._saveConversation(evt)
+
+	def _purgeSavedConversationForPage(self, page):
+		"""Remove on-disk history for a tab entering ephemeral mode."""
+		cid = getattr(page, "_conversationId", None)
+		if not cid:
+			return
+		try:
+			conversations.delete_conversation(cid)
+		except Exception as err:
+			log.error(f"purge ephemeral conversation {cid}: {err}", exc_info=True)
+		try:
+			conversations.prune_hub_session_references([cid])
+		except Exception as err:
+			log.error(f"prune hub session for ephemeral {cid}: {err}", exc_info=True)
+		page._conversationId = None
+
+	def _onEphemeralToggle(self, evt):
+		if getattr(self, "_sync_suppress_tab_capture", False):
+			evt.Skip()
+			return
+		page = self.get_active_page()
+		ephemeral = bool(self.ephemeralCheckBox.IsChecked())
+		if ephemeral == bool(getattr(page, "ephemeral", False)):
+			evt.Skip()
+			return
+		page.ephemeral = ephemeral
+		if ephemeral:
+			self._purgeSavedConversationForPage(page)
+			# Translators: Status after enabling ephemeral (no-save) mode on the current tab.
+			self.message(_("Ephemeral mode: this conversation will not be saved."))
+		else:
+			# Translators: Status after disabling ephemeral mode; saving is available again.
+			self.message(_("Saving is enabled for this conversation."))
+		self._syncSaveControlsForEphemeral(ephemeral)
+		evt.Skip()
+
 	def _persistPageConversation(self, page):
 		"""Save one tab to conversation storage for hub session close; returns id or None on failure."""
+		if getattr(page, "ephemeral", False):
+			return None
 		if self.get_active_page() is page:
+			self._captureEphemeralToPage(page)
 			self._captureConversationChromeToPage(page)
 		kw = self._storage_kwargs_for_page(page, for_autosave=False)
 		if kw is None:
@@ -762,6 +872,7 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		page.conversationAccountKey = ""
 		page.conversationSystemText = ""
 		page.conversationUiState = {}
+		page.ephemeral = False
 		self._clearMessagesSegmentsOnPage(page)
 		page.filesList = []
 		page.audioPathList = []
@@ -796,23 +907,32 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		page.conversationAccountKey = ""
 		page.conversationSystemText = ""
 		page.conversationUiState = {}
+		page.ephemeral = False
 		self._clearMessagesSegmentsOnPage(page)
 		page.filesList = []
 		page.audioPathList = []
 		page.promptTextCtrl.Clear()
 		idx = self._notebook_page_index(page)
-		if idx >= 0 and select_tab:
-			self.notebook.SetSelection(idx)
+		if idx >= 0:
+			# Translators: Default tab caption after clearing a conversation tab.
+			self.notebook.SetPageText(idx, _("Untitled conversation"))
+			if select_tab:
+				self.notebook.SetSelection(idx)
 		if sync_attachment_widgets:
 			self.updateFilesList(focusPrompt=False)
 			self.updateAudioList(focusPrompt=False)
+		self._syncWindowTitleFromActiveTab()
+		if self.get_active_page() is page:
+			self._syncEphemeralChromeFromPage(page)
 
 	def _saveHubSession(self):
 		"""Persist every tab and write hub_session.json for restore on next open."""
 		if not self.conf.get("autoSaveConversation", True):
 			conversations.remove_hub_session_file()
 			return
-		self._captureConversationChromeToPage(self.get_active_page())
+		active = self.get_active_page()
+		self._captureEphemeralToPage(active)
+		self._captureConversationChromeToPage(active)
 		tab_entries = []
 		for i in range(self.notebook.GetPageCount()):
 			page = self.notebook.GetPage(i)
@@ -827,7 +947,7 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		except Exception as err:
 			log.error(f"save hub session: {err}", exc_info=True)
 
-	def _restoreHubSessionIfNeeded(self):
+	def _restoreHubSessionIfNeeded(self, *, append_fresh_tab=False):
 		if not self.conf.get("autoSaveConversation", True):
 			return
 		if not os.path.isfile(conversations.HUB_SESSION_JSON):
@@ -879,7 +999,8 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 				self._resetTabPage(active_page)
 		else:
 			self._resetTabPage(active_page)
-		self._addConversationTab()
+		if append_fresh_tab:
+			self._addConversationTab()
 		wx.CallAfter(self.promptTextCtrl.SetFocus)
 
 	def _openConversationFromHistory(self, data):
@@ -910,6 +1031,10 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		if n:
 			self.notebook.SetSelection(min(new_sel, n - 1))
 		self._cached_messages_hwnd = None
+		try:
+			self.Layout()
+		except Exception:
+			pass
 		self.updateFilesList(False)
 		self.updateAudioList(False)
 		self._syncWindowTitleFromActiveTab()
@@ -1024,8 +1149,16 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 			# Translators: Toolbar button to save current conversation immediately.
 			label=_("&Save conversation") + " (Ctrl+S)"
 		)
-		self.saveConversationBtn.Bind(wx.EVT_BUTTON, self._saveConversation)
+		self.saveConversationBtn.Bind(wx.EVT_BUTTON, self._onManualSaveRequested)
 		toolbar_sz.Add(self.saveConversationBtn, 0, wx.ALL, UI_SECTION_SPACING_PX)
+		self.ephemeralCheckBox = wx.CheckBox(
+			content_panel,
+			# Translators: Checkbox to keep the current tab out of history and disable auto-save.
+			label=_("&Ephemeral conversation"),
+		)
+		self.ephemeralCheckBox.SetValue(False)
+		self.ephemeralCheckBox.Bind(wx.EVT_CHECKBOX, self._onEphemeralToggle)
+		toolbar_sz.Add(self.ephemeralCheckBox, 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL, UI_SECTION_SPACING_PX)
 		self.newConversationBtn = wx.Button(
 			content_panel,
 			# Translators: Toolbar button to open a new conversation tab.
@@ -1059,7 +1192,7 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		self._hub_session_restored = False
 		if self._pending_session_paths and not conversationData:
 			try:
-				self._restoreHubSessionIfNeeded()
+				self._restoreHubSessionIfNeeded(append_fresh_tab=True)
 				self._hub_session_restored = True
 			except Exception:
 				log.error("restore hub session before pending attachment", exc_info=True)
@@ -1310,7 +1443,8 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		if conversationData:
 			self._loadConversation(conversationData, focus_message_history=True)
 		elif not self._hub_session_restored:
-			self._restoreHubSessionIfNeeded()
+			# After restoring saved tabs, always add a blank tab for a new conversation.
+			self._restoreHubSessionIfNeeded(append_fresh_tab=True)
 		self._syncWindowTitleFromActiveTab()
 		wx.CallAfter(self._syncSharedChromeForActiveTab)
 
@@ -1489,6 +1623,7 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		active_pg.conversationAccountKey = (data.get("accountKey") or "").strip()
 		raw_ui = data.get("uiState")
 		active_pg.conversationUiState = raw_ui if isinstance(raw_ui, dict) else {}
+		active_pg.ephemeral = False
 		active_pg.conversationSystemText = data.get("system", "") if isinstance(data.get("system"), str) else ""
 		self._clearMessagesSegments()
 		self.firstBlock = None
@@ -1553,6 +1688,8 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		self._syncWindowTitleFromActiveTab()
 		if focus_message_history:
 			self._scheduleFocusMessageHistory()
+		if self.get_active_page() is active_pg:
+			self._syncEphemeralChromeFromPage(active_pg)
 
 	def _getBlocksForSave(self):
 		"""Collect all blocks from firstBlock to lastBlock for saving."""
@@ -1560,10 +1697,12 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 
 	def _autoSaveConversation(self, force=False):
 		"""Save conversation state. Auto-save obeys setting unless forced (manual save)."""
+		pg = self.get_active_page()
+		if getattr(pg, "ephemeral", False):
+			return False
 		if not force and not self.conf.get("autoSaveConversation", True):
 			return False
-		self._captureConversationChromeToPage(self.get_active_page())
-		pg = self.get_active_page()
+		self._captureConversationChromeToPage(pg)
 		kw = self._storage_kwargs_for_page(pg, for_autosave=True, autosave_force=force)
 		if kw is None:
 			return False
@@ -1583,6 +1722,8 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 
 	def _saveConversation(self, evt=None):
 		"""Save current conversation to storage (manual, from menu)."""
+		if self._is_active_tab_ephemeral():
+			return
 		blocks = self._getBlocksForSave()
 		draft_prompt = self.promptTextCtrl.GetValue().strip()
 		if not blocks and not draft_prompt:
@@ -1603,6 +1744,10 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 
 	def _renameConversation(self, evt=None):
 		"""Rename current conversation."""
+		if getattr(self.get_active_page(), "ephemeral", False):
+			# Translators: Message when rename is blocked because ephemeral mode is on.
+			ui.message(_("Ephemeral conversations cannot be renamed. Uncheck Ephemeral to save first."))
+			return
 		if not self._conversationId:
 			# Translators: Message shown when trying to rename before first save.
 			ui.message(_("Save the conversation first before renaming."))
@@ -1926,14 +2071,16 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 					wx.CallAfter(self.onSubmit, None)
 				return
 			if isinstance(event.data, (Transcription, WhisperTranscription)):
-				self.promptTextCtrl.AppendText(
-					event.data.text if event.data.text else ""
+				page = (
+					getattr(self, "_dictation_page", None)
+					or getattr(self, "_result_snapshot_page", None)
+					or self.get_active_page()
 				)
-				self.promptTextCtrl.SetFocus()
-				self.promptTextCtrl.SetInsertionPointEnd()
+				text = event.data.text if event.data.text else ""
+				self._insert_transcription_on_page(page, text)
 				self.message(
 					# Translators: Status message after inserting transcribed text into prompt.
-					_("Insertion of: %s") % event.data.text,
+					_("Insertion of: %s") % text,
 					True
 				)
 				return
@@ -1976,15 +2123,13 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 
 		finally:
 			self._result_snapshot_page = None
+			self._dictation_page = None
 			wp_done = getattr(self, "_worker_page", None)
 			if wp_done:
 				wp_done.worker = None
 			self._worker_page = None
 
 	def onCharHook(self, evt):
-		if evt.GetKeyCode() == wx.WXK_ESCAPE and getattr(self, "notebook", None) and self.notebook.GetPageCount() > 1:
-			self._closeTabAt(self.notebook.GetSelection())
-			return
 		if self.conf["blockEscapeKey"] and evt.GetKeyCode() == wx.WXK_ESCAPE:
 			# Translators: Hint spoken when Escape key is blocked by settings.
 			self.message(_("Press Alt+F4 to close the dialog"))
@@ -2097,13 +2242,14 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 
 		accelEntries = []
 		self.addEntry(accelEntries, wx.ACCEL_CTRL, wx.WXK_UP, self.onPreviousPrompt)
+		self.addEntry(accelEntries, wx.ACCEL_CTRL, ord("r"), self.onRecord)
 		accelTable = wx.AcceleratorTable(accelEntries)
 		page.promptTextCtrl.SetAcceleratorTable(accelTable)
 
 		accelEntries = []
 		self.addEntry(accelEntries, wx.ACCEL_NORMAL, wx.WXK_F2, self._renameConversation)
 		self.addEntry(accelEntries, wx.ACCEL_CTRL, ord("N"), self._newConversation)
-		self.addEntry(accelEntries, wx.ACCEL_CTRL, ord("S"), self._saveConversation)
+		self.addEntry(accelEntries, wx.ACCEL_CTRL, ord("S"), self._onManualSaveRequested)
 		self.addEntry(accelEntries, wx.ACCEL_CTRL, ord("L"), self._onConversationList)
 		self.addEntry(accelEntries, wx.ACCEL_CTRL, ord("r"), self.onRecord)
 		self.addEntry(accelEntries, wx.ACCEL_CTRL, ord("i"), self.onFileDescriptionFromFilePath)
@@ -2414,12 +2560,15 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		}
 
 	def onRecord(self, evt):
-		if self.worker:
+		if isinstance(self.worker, RecordThread):
 			self.onStopRecord(evt)
+			return
+		if self.worker:
 			return
 		cfg = self._resolveDictationConfig()
 		self.disableControls()
 		page = self.get_active_page()
+		self._dictation_page = page
 		self._worker_page = page
 		page.worker = RecordThread(
 			self.client,
@@ -2438,12 +2587,10 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 
 	def onStopRecord(self, evt):
 		self.disableControls()
-		if self.worker:
-			stop_worker_thread(self.worker)
-			wp = getattr(self, "_worker_page", None)
-			if wp:
-				wp.worker = None
-			self._worker_page = None
+		wp = getattr(self, "_worker_page", None)
+		if wp and isinstance(wp.worker, RecordThread):
+			stop_worker_thread(wp.worker)
+			wp.worker = None
 		self.enableControls()
 
 	def disableControls(self, keep_prompt_editable=False):
@@ -2508,15 +2655,13 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 						self.reasoningEffortChoice.Enable()
 					if model.adaptive_choice_visible and reasoning_on:
 						self.adaptiveThinkingCheckBox.Enable()
-				if model.supports_web_search:
-					self.webSearchCheckBox.Enable()
+				self._updateWebSearchCheckbox(model)
 		except (IndexError, TypeError):
 			pass
 		self.maxTokensSpinCtrl.Enable()
-		self.renameConversationBtn.Enable()
 		self.newConversationBtn.Enable()
 		self.conversationListBtn.Enable()
-		self.saveConversationBtn.Enable()
+		self._syncSaveControlsForEphemeral()
 		if getattr(self, "notebook", None):
 			for ti in range(self.notebook.GetPageCount()):
 				p = self.notebook.GetPage(ti)
@@ -2550,4 +2695,8 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 						_w.Enable()
 					except Exception:
 						pass
+		try:
+			self.Layout()
+		except Exception:
+			pass
 		self.updateFilesList(False)
