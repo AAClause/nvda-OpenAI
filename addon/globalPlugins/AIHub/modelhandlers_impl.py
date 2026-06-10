@@ -44,7 +44,7 @@ class ModelHandlersMixin:
 		}
 
 	def _updateWebSearchCheckbox(self, model):
-		"""Show/enable web search chrome in sync with model.supports_web_search."""
+		"""Show/enable provider-native web search chrome."""
 		if model and model.supports_web_search:
 			self.webSearchCheckBox.Enable(True)
 			self.webSearchCheckBox.Show(True)
@@ -52,6 +52,19 @@ class ModelHandlersMixin:
 			self.webSearchCheckBox.Enable(False)
 			self.webSearchCheckBox.Show(False)
 			self.webSearchCheckBox.SetValue(False)
+
+	def _updateOpenRouterWebSearchCheckbox(self, model):
+		"""Show/enable OpenRouter universal web search server tool."""
+		cb = getattr(self, "openRouterWebSearchCheckBox", None)
+		if cb is None:
+			return
+		if model and model.supports_openrouter_web_search:
+			cb.Enable(True)
+			cb.Show(True)
+		else:
+			cb.Enable(False)
+			cb.Show(False)
+			cb.SetValue(False)
 
 	def _set_labeled_visibility(self, label, ctrl, visible: bool, enabled: bool | None = None):
 		if enabled is None:
@@ -252,6 +265,9 @@ class ModelHandlersMixin:
 		if model.supports_web_search:
 			# Translators: Text in model/account selection UI and model context menus.
 			capabilities.append(_("web search"))
+		if getattr(model, "supports_openrouter_web_search", False):
+			# Translators: Text in model/account selection UI and model context menus.
+			capabilities.append(_("OpenRouter web search"))
 		cap_str = ", ".join(capabilities)
 		ctx_k = model.contextWindow // 1000
 		suffix = " *" if self._isModelFavorite(model) else ""
@@ -382,6 +398,7 @@ class ModelHandlersMixin:
 			self.adaptiveThinkingCheckBox.SetValue(False)
 
 		self._updateWebSearchCheckbox(model)
+		self._updateOpenRouterWebSearchCheckbox(model)
 
 		if self._effective_advanced_mode():
 			if "temperature" in supported:

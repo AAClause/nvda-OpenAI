@@ -348,6 +348,9 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 				st["adaptiveThinking"] = self.adaptiveThinkingCheckBox.IsChecked()
 			if self.webSearchCheckBox.IsShown():
 				st["webSearch"] = self.webSearchCheckBox.IsChecked()
+			or_cb = getattr(self, "openRouterWebSearchCheckBox", None)
+			if or_cb is not None and or_cb.IsShown():
+				st["openRouterWebSearch"] = or_cb.IsChecked()
 			try:
 				st["advancedSampling"] = self.advancedSamplingCheckBox.IsChecked()
 			except Exception:
@@ -394,6 +397,9 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		model = self.getCurrentModel()
 		if model and model.supports_web_search and "webSearch" in st:
 			self.webSearchCheckBox.SetValue(bool(st["webSearch"]))
+		or_cb = getattr(self, "openRouterWebSearchCheckBox", None)
+		if or_cb is not None and model and model.supports_openrouter_web_search and "openRouterWebSearch" in st:
+			or_cb.SetValue(bool(st["openRouterWebSearch"]))
 		if "maxTokens" in st:
 			try:
 				self.maxTokensSpinCtrl.SetValue(int(st["maxTokens"]))
@@ -1247,6 +1253,14 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		self.webSearchCheckBox.SetValue(False)
 		self.webSearchCheckBox.Bind(wx.EVT_CHECKBOX, self._onConversationChromeEdited)
 		modelOptionsSizer.Add(self.webSearchCheckBox, 0, wx.ALL, UI_SECTION_SPACING_PX)
+		self.openRouterWebSearchCheckBox = wx.CheckBox(
+			content_panel,
+			# Translators: Checkbox for OpenRouter universal web search server tool (any tool-calling model).
+			label=_("OpenRouter &web search"),
+		)
+		self.openRouterWebSearchCheckBox.SetValue(False)
+		self.openRouterWebSearchCheckBox.Bind(wx.EVT_CHECKBOX, self._onConversationChromeEdited)
+		modelOptionsSizer.Add(self.openRouterWebSearchCheckBox, 0, wx.ALL, UI_SECTION_SPACING_PX)
 		gen_sz.Add(modelOptionsSizer, 0, wx.ALL, 0)
 
 		self.reasoningEffortRow = wx.Panel(content_panel)
@@ -2602,6 +2616,10 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		self.reasoningEffortChoice.Disable()
 		self.adaptiveThinkingCheckBox.Disable()
 		self.webSearchCheckBox.Disable()
+		try:
+			self.openRouterWebSearchCheckBox.Disable()
+		except Exception:
+			pass
 		self.maxTokensSpinCtrl.Disable()
 		self.renameConversationBtn.Disable()
 		self.newConversationBtn.Disable()
@@ -2656,6 +2674,7 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 					if model.adaptive_choice_visible and reasoning_on:
 						self.adaptiveThinkingCheckBox.Enable()
 				self._updateWebSearchCheckbox(model)
+				self._updateOpenRouterWebSearchCheckbox(model)
 		except (IndexError, TypeError):
 			pass
 		self.maxTokensSpinCtrl.Enable()

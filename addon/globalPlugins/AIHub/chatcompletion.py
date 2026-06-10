@@ -87,6 +87,40 @@ _REASONING_EFFORT_PROVIDERS = (
 # every other provider supports the more generous Anthropic 16-sequence cap.
 _STOP_SEQUENCE_CAP_4_PROVIDERS = (Provider.OpenAI, Provider.CustomOpenAI)
 
+# OpenRouter server tool: https://openrouter.ai/docs/guides/features/server-tools/web-search
+_OPENROUTER_WEB_SEARCH_TOOL = {"type": "openrouter:web_search"}
+
+
+def _apply_web_search_settings(params: dict, model, wnd, provider: str) -> None:
+	"""Apply provider-native and/or OpenRouter universal web search to the request."""
+	tools = list(params.get("tools") or [])
+
+	native_on = (
+		model.supports_web_search
+		and hasattr(wnd, "webSearchCheckBox")
+		and wnd.webSearchCheckBox.IsChecked()
+	)
+	if native_on:
+		if provider == Provider.Anthropic:
+			params["web_search_options"] = {}
+		elif provider == Provider.Google:
+			tools.append({"google_search": {}})
+		elif provider in (Provider.OpenAI, Provider.OpenRouter):
+			# OpenRouter passes web_search_options to the upstream provider when supported.
+			params["web_search_options"] = {}
+
+	or_cb = getattr(wnd, "openRouterWebSearchCheckBox", None)
+	or_on = (
+		getattr(model, "supports_openrouter_web_search", False)
+		and or_cb is not None
+		and or_cb.IsChecked()
+	)
+	if or_on and provider == Provider.OpenRouter:
+		tools.append(dict(_OPENROUTER_WEB_SEARCH_TOOL))
+
+	if tools:
+		params["tools"] = tools
+
 
 def _strip_markdown_for_speech(fragment: str) -> str:
 	"""Remove common markdown syntax so streamed TTS does not read *, #, etc. Chunks may be incomplete."""
@@ -560,11 +594,7 @@ class CompletionThread(threading.Thread):
 		# request shaping below AND for the error path further down (so it must be
 		# defined regardless of which optional branches fire).
 		provider = model.provider
-		if model.supports_web_search and wnd.webSearchCheckBox.IsChecked():
-			if provider == Provider.Anthropic:
-				params["web_search_options"] = {}
-			elif provider == Provider.Google:
-				params["tools"] = [{"google_search": {}}]
+		_apply_web_search_settings(params, model, wnd, provider)
 		if debug:
 			log.info("Client base URL: %s", client.base_url)
 			log.info("OpenAI [timing] Messages in request: %d", len(messages))

@@ -54,20 +54,31 @@ class Model:
 		# Groups of mutually exclusive params, e.g. [["temperature", "top_p"]] from JSON
 		self.parameterConflicts = parameterConflicts if isinstance(parameterConflicts, list) else []
 
-	@property
-	def supports_web_search(self):
-		"""True when model metadata declares web search (or provider-specific equivalents)."""
-		params = {
+	def _supported_param_set(self) -> set[str]:
+		return {
 			p.lower()
 			for p in (self.supportedParameters or [])
 			if isinstance(p, str)
 		}
+
+	@property
+	def supports_web_search(self):
+		"""True when model metadata declares provider-native web search."""
+		params = self._supported_param_set()
 		if params & {"web_search_options", "web_search", "google_search"}:
 			return True
 		# SigmaNight Anthropic metadata lists generic tools support; web search uses that API.
 		if self.provider == Provider.Anthropic and "tools" in params:
 			return True
 		return False
+
+	@property
+	def supports_openrouter_web_search(self):
+		"""True when OpenRouter can attach the openrouter:web_search server tool (tool-calling models)."""
+		if self.provider != Provider.OpenRouter:
+			return False
+		params = self._supported_param_set()
+		return "tools" in params or "tool_choice" in params
 
 	@property
 	def supports_adaptive_thinking(self):
