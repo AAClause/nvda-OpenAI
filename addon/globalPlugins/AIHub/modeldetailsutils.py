@@ -145,7 +145,7 @@ def build_model_details_html(model):
 		# Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
 		capabilities.append(_("Audio output"))
 	if model.reasoning:
-		if getattr(model, "reasoning_mandatory", False):
+		if getattr(model, "reasoning_always_on", False):
 			# Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
 			capabilities.append(_("Reasoning (required)"))
 		else:

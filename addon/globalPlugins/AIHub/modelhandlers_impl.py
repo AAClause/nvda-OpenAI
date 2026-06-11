@@ -357,7 +357,7 @@ class ModelHandlersMixin:
 
 		if model.reasoning:
 			self.reasoningModeCheckBox.Show(True)
-			if model.reasoning_mandatory:
+			if getattr(model, "reasoning_always_on", False):
 				self.reasoningModeCheckBox.SetValue(True)
 				self.reasoningModeCheckBox.Enable(False)
 			else:

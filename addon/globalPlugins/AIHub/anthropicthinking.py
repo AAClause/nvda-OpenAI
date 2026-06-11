@@ -15,7 +15,15 @@ _PROFILES = (
 		"effort_levels": ("low", "medium", "high", "xhigh", "max"),
 	},
 	{
-		"match": "claude-mythos-preview",
+		"match": "claude-mythos",
+		"adaptive_only": True,
+		"adaptive_supported": True,
+		"adaptive_choice_visible": False,
+		"effort_supported": True,
+		"effort_levels": ("low", "medium", "high", "max"),
+	},
+	{
+		"match": "claude-fable",
 		"adaptive_only": True,
 		"adaptive_supported": True,
 		"adaptive_choice_visible": False,

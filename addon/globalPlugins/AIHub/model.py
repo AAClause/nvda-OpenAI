@@ -1,5 +1,4 @@
 import json
-import re
 import urllib.request
 import urllib.error
 import addonHandler
@@ -85,8 +84,33 @@ class Model:
 
 	@property
 	def reasoning_mandatory(self):
-		"""True when the provider/API does not allow turning reasoning off."""
-		return bool(getattr(self, "reasoningMandatory", False))
+		"""True when model metadata marks reasoning as required."""
+		if bool(getattr(self, "reasoningMandatory", False)):
+			return True
+		extra = self.extraInfo if isinstance(self.extraInfo, dict) else {}
+		return extra.get("reasoning_mandatory") is True
+
+	@property
+	def supports_reasoning_disable(self) -> bool:
+		"""True when the API accepts an explicit reasoning-off signal for this model."""
+		if not self.reasoning or self.reasoning_mandatory:
+			return False
+		params = self._supported_param_set()
+		if self.provider == Provider.Anthropic:
+			return True
+		if self.provider == Provider.Ollama:
+			return True
+		if self.provider == Provider.OpenRouter:
+			# OpenRouter documents effort "none" only for models listing reasoning_effort.
+			return "reasoning_effort" in params
+		if self.provider == Provider.DeepSeek:
+			return bool(params & {"thinking", "reasoning"})
+		return "reasoning_effort" in params
+
+	@property
+	def reasoning_always_on(self) -> bool:
+		"""True when the user cannot turn reasoning off (mandatory or no disable API)."""
+		return bool(self.reasoning and (self.reasoning_mandatory or not self.supports_reasoning_disable))
 
 	@property
 	def supports_adaptive_thinking(self):
@@ -287,95 +311,13 @@ def _models_from_ollama_tags(tags_index: dict) -> list:
 	return models
 
 
-def _openai_is_o_series(model_id: str) -> bool:
-	"""OpenAI o1/o3/o4 chat-completions models do not support reasoning_effort=none."""
-	mid = (model_id or "").lower()
-	return bool(re.search(r"(?:^|/)(o[134])(?:[-/]|$)", mid))
-
-
-def _openai_supports_reasoning_effort_none(model_id: str) -> bool:
-	"""True when OpenAI docs allow reasoning_effort=none (gpt-5.1+, not o-series or gpt-5-pro)."""
-	mid = (model_id or "").lower()
-	if _openai_is_o_series(mid):
-		return False
-	if "gpt-5-pro" in mid:
-		return False
-	return bool(re.search(r"gpt-5(?:\.|[-/]|$)", mid))
-
-
-def _mistral_supports_adjustable_reasoning(model_id: str) -> bool:
-	mid = (model_id or "").lower()
-	if "magistral" in mid:
-		return False
-	return "mistral-small" in mid or "mistral-medium-3" in mid or "medium-3-5" in mid
-
-
-def _xai_supports_reasoning_effort(model_id: str) -> bool:
-	"""xAI models that accept reasoning_effort (including none)."""
-	mid = (model_id or "").lower()
-	if "grok-3-mini" in mid:
-		return True
-	return "grok-4.3" in mid or "grok-4.20" in mid
-
-
-def _detect_openrouter_reasoning_mandatory(model_id: str, extra_info: dict) -> bool:
-	"""Heuristic: OpenRouter models that reject reasoning.enabled=false (see OR docs/issues)."""
+def _detect_reasoning_mandatory(provider: str, model_id: str, extra_info: dict) -> bool:
+	"""True when model metadata marks reasoning as required (no model-id heuristics)."""
 	extra = extra_info if isinstance(extra_info, dict) else {}
 	if extra.get("reasoning_mandatory") is True:
 		return True
-	mid = (model_id or "").lower()
-	if not mid:
-		return False
-	arch = extra.get("architecture")
-	if isinstance(arch, dict):
-		instruct = (arch.get("instruct_type") or "").lower()
-		if instruct in ("deepseek-r1",):
-			return True
-	# StepFun endpoints require reasoning and reject explicit disable.
-	if mid.startswith("stepfun/"):
-		return True
-	# Slugs that denote always-on reasoning / thinking variants on OpenRouter.
-	slug = mid.rsplit("/", 1)[-1]
-	for token in ("-thinking", ":thinking", "-reasoning", ":reasoning"):
-		if token in slug or token in mid:
-			return True
-	if "deepseek-r1" in mid or "deepseek/deepseek-r1" in mid:
-		return True
-	if "kimi-k2-thinking" in mid or "kimi-k2.5-thinking" in mid:
-		return True
-	return False
-
-
-def _detect_reasoning_mandatory(provider: str, model_id: str, extra_info: dict) -> bool:
-	"""True when official API docs say reasoning/thinking cannot be turned off."""
-	if not model_id:
-		return False
-	mid = (model_id or "").lower()
-	if provider == Provider.OpenRouter:
-		return _detect_openrouter_reasoning_mandatory(model_id, extra_info)
 	if provider == Provider.Anthropic:
-		profile = get_anthropic_thinking_profile(model_id)
-		if profile.get("adaptive_only"):
-			return True
-		if "claude-fable" in mid or "claude-mythos" in mid:
-			return True
-		return False
-	if provider in (Provider.OpenAI, Provider.CustomOpenAI):
-		return _openai_is_o_series(mid) or "gpt-5-pro" in mid
-	if provider == Provider.Google:
-		if "gemini-3" in mid:
-			return True
-		if "gemini-2.5-pro" in mid:
-			return True
-		return False
-	if provider == Provider.MistralAI:
-		return "magistral" in mid
-	if provider == Provider.DeepSeek:
-		return "reasoner" in mid or "deepseek-r1" in mid or mid.endswith("/r1")
-	if provider == Provider.xAI:
-		if not _xai_supports_reasoning_effort(mid):
-			return "grok" in mid
-		return False
+		return bool(get_anthropic_thinking_profile(model_id).get("adaptive_only"))
 	return False
 
 
