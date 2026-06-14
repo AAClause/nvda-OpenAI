@@ -139,11 +139,6 @@ def anthropic_reasoning_always_on(model_id: str) -> bool:
 	return bool(get_anthropic_thinking_profile(model_id).get("reasoning_always_on"))
 
 
-def anthropic_requires_adaptive_thinking(model_id: str) -> bool:
-	"""True when ``thinking.type: enabled`` is rejected (Opus 4.7+, Fable, Mythos)."""
-	return bool(get_anthropic_thinking_profile(model_id).get("adaptive_only"))
-
-
 def normalize_effort(effort: str, allowed_efforts: Iterable[str], default: str = "high") -> str:
 	"""Normalize effort value to an allowed Anthropic effort level."""
 	allowed = set(allowed_efforts or ())

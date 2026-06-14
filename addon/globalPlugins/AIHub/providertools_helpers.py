@@ -66,21 +66,6 @@ def extract_ocr_text(payload):
 	return "\n\n".join(lines).strip()
 
 
-def add_labeled_control(parent, sizer, label_text, control, border=UI_FORM_ROW_BORDER_PX, expand=True):
-	"""
-	Add a label and control stacked vertically.
-	This layout mirrors the conversation window pattern and improves SR label association.
-	"""
-	label = wx.StaticText(parent, label=label_text)
-	sizer.Add(label, 0, wx.LEFT | wx.RIGHT | wx.TOP, border)
-	flags = wx.LEFT | wx.RIGHT | wx.BOTTOM
-	if expand:
-		flags |= wx.EXPAND
-	proportion = 1 if expand and isinstance(control, wx.TextCtrl) and control.IsMultiLine() else 0
-	sizer.Add(control, proportion, flags, border)
-	return label
-
-
 def add_labeled_factory(parent, sizer, label_text, control_factory, border=UI_FORM_ROW_BORDER_PX, expand=True):
 	"""
 	Create label first, then control, then add to sizer.

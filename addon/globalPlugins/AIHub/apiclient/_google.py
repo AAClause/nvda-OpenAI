@@ -11,9 +11,8 @@ Official references:
 from __future__ import annotations
 
 import base64
-import json
 import urllib.parse
-from typing import Any, Iterator, Optional
+from typing import Any, Optional
 
 from ..consts import ContentType, Role
 from ._content import _decode_data_url_to_bytes, _input_file_to_data_url, _is_text_media_type
@@ -40,10 +39,6 @@ _OPENAI_TO_GEMINI_VOICE = {
 	"onyx": "Orus",
 	"alloy": "Puck",
 }
-
-
-def google_native_api_root() -> str:
-	return GEMINI_API_ROOT
 
 
 def build_google_native_headers(api_key: str) -> dict[str, str]:

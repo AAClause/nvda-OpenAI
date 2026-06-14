@@ -137,9 +137,6 @@ class ModelHandlersMixin:
 				return True
 		return False
 
-	def _selectAccount(self, account_key):
-		return self._selectAccountOnList(self.accountListCtrl, account_key)
-
 	def _refreshAccountsList(self, account_to_select=None):
 		self._loadAccounts()
 		notebook = getattr(self, "notebook", None)

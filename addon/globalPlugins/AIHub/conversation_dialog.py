@@ -2295,7 +2295,6 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 			})
 		for attachment in filesList:
 			path = attachment.path
-			log.debug(f"Processing {path}")
 			if attachment.type == AttachmentFileTypes.IMAGE_URL:
 				parts.append({"type": ContentType.IMAGE_URL, "image_url": {"url": path}})
 			elif attachment.type == AttachmentFileTypes.DOCUMENT_URL:

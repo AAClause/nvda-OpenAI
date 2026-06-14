@@ -54,14 +54,3 @@ def encode_image(image_path):
 	with open(image_path, "rb") as f:
 		return base64.b64encode(f.read()).decode("utf-8")
 
-
-def describeFromImageFileList(client, messages: list, max_tokens: int = 700):
-	"""Describe images from file paths via vision API."""
-	if not messages:
-		return None
-	response = client.chat.completions.create(
-		model="gpt-4-vision-preview",
-		messages=messages,
-		max_tokens=max_tokens
-	)
-	return response.choices[0]

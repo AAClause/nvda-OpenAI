@@ -205,13 +205,6 @@ class Model:
 			(ReasoningEffort.HIGH.value, _("High")),
 		)
 
-	def getDescription(self):
-		description = self.description.rstrip('.')
-		if self.preview:
-			# Translators: Text in model labels and capability descriptions.
-			description += " (" + _("preview: not yet suited for production traffic") + ")"
-		return description
-
 	def __repr__(self):
 		return (
 			f"Model(id={self.id}, name={self.name}, description={self.description}, "

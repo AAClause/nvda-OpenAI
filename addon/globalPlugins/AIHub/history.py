@@ -48,14 +48,12 @@ def get_textctrl_selected_text(control) -> str:
 class TextSegment:
 	previous = None
 	next = None
-	originalText = ""
 	start = 0
 	end = 0
 	owner = None
 
 	def __init__(self, control, text, owner):
 		self.control = control
-		self.originalText = text
 		self.owner = owner
 		if not hasattr(control, "lastSegment") or control.lastSegment is None:
 			control.firstSegment = self
@@ -116,22 +114,6 @@ class TextSegment:
 			segment = segment.next
 		return control.lastSegment
 
-	def delete(self):
-		self.control.Remove(self.start, self.end)
-		if self.previous is not None:
-			self.previous.next = self.next
-		else:
-			self.control.firstSegment = self.next
-		if self.next is not None:
-			self.next.previous = self.previous
-		else:
-			self.control.lastSegment = self.previous
-		segment = self.next
-		while segment is not None:
-			segment.start -= (self.end - self.start)
-			segment.end -= (self.end - self.start)
-			segment = segment.next
-
 
 class HistoryBlock:
 	previous = None
@@ -157,7 +139,6 @@ class HistoryBlock:
 	frequencyPenalty = None
 	presencePenalty = None
 	displayHeader = True
-	focused = False
 	responseTerminated = False
 	# In-code attribute uses the neutral name; on-disk JSON key is still
 	# ``pathList`` for backward compatibility with previously saved conversations.

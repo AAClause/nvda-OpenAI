@@ -403,12 +403,6 @@ class APIKeyManager:
 			return None
 		return organization.split(":=", 1)[1]
 
-	def get_organization_name(self, account_id=None):
-		organization = self.get_api_key(use_org=True, account_id=account_id)
-		if not organization or organization.count(":=") != 1:
-			return None
-		return organization.split(":=", 1)[0]
-
 	def get_base_url(self, account_id=None):
 		account = self.get_account(account_id) if account_id else self.get_active_account()
 		if self.provider == Provider.Ollama:
@@ -422,18 +416,6 @@ class APIKeyManager:
 			return None
 		# Fixed cloud URLs from consts (BASE_URLs); ignore any stray base_url in JSON.
 		return None
-
-	def save_api_key(self, key, org=False, org_name=None, account_id=None):
-		# Backward-compatible API: update active account if exists, else create one.
-		active = self.get_account(account_id) if account_id else self.get_active_account()
-		if active and active.get("id") != "__env__":
-			if org:
-				self.update_account(active["id"], org_name=(org_name or ""), org_key=(key or ""))
-			else:
-				self.update_account(active["id"], api_key=(key or ""))
-			return
-		if not org:
-			self.add_account(name="Account", api_key=key, set_active=True)
 
 	def isReady(self, account_id=None):
 		if self.provider == Provider.Ollama:
@@ -467,18 +449,3 @@ def get(provider_name) -> APIKeyManager:
 	if provider_name not in AVAILABLE_PROVIDERS:
 		raise ValueError(f"Unknown provider: {provider_name}. Available: {AVAILABLE_PROVIDERS}")
 	return _managers[provider_name]
-
-
-def list_configured_accounts(include_env=True):
-	"""Return configured accounts across providers."""
-	accounts = []
-	for provider in AVAILABLE_PROVIDERS:
-		manager = get(provider)
-		for acc in manager.list_accounts(include_env=include_env):
-			accounts.append({
-				"provider": provider,
-				"id": acc["id"],
-				"name": acc["name"],
-				"label": f"{provider}/{acc['name']}",
-			})
-	return accounts

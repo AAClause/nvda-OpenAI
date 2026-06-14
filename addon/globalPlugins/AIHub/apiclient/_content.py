@@ -104,44 +104,6 @@ def _file_path_to_data_url(path: str) -> Optional[str]:
 	return f"data:{mime};base64,{b64}"
 
 
-def _inline_input_file_paths(messages: list) -> list:
-	"""Replace ``input_file.file_path`` with an inline ``file_data`` data URL.
-
-	Kept for callers that need a raw (provider-agnostic) inline; new code
-	should use :func:`_normalize_input_files_for_provider` instead.
-	"""
-	if not isinstance(messages, list):
-		return messages
-	converted = []
-	for msg in messages:
-		if not isinstance(msg, dict):
-			converted.append(msg)
-			continue
-		content = msg.get("content")
-		if not isinstance(content, list):
-			converted.append(msg)
-			continue
-		new_parts = []
-		for part in content:
-			if not isinstance(part, dict) or part.get("type") != ContentType.INPUT_FILE:
-				new_parts.append(part)
-				continue
-			new_part = dict(part)
-			file_path = new_part.get("file_path")
-			if isinstance(file_path, str) and file_path:
-				data_url = _file_path_to_data_url(file_path)
-				if data_url:
-					new_part["file_data"] = data_url
-					new_part.pop("file_path", None)
-					if not new_part.get("filename"):
-						new_part["filename"] = os.path.basename(file_path)
-			new_parts.append(new_part)
-		new_msg = dict(msg)
-		new_msg["content"] = new_parts
-		converted.append(new_msg)
-	return converted
-
-
 # ---------------------------------------------------------------------------
 # Provider-aware document transformation (replaces blind inlining).
 # ---------------------------------------------------------------------------

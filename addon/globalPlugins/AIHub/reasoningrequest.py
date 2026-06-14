@@ -144,10 +144,6 @@ def supports_reasoning_disable(
 	return "reasoning_effort" in supported_params
 
 
-def reasoning_effort_body_providers() -> frozenset[str]:
-	return _REASONING_EFFORT_BODY_PROVIDERS
-
-
 def _deepseek_effort(effort: str) -> str:
 	# https://api-docs.deepseek.com/guides/thinking_mode — only high/max are native.
 	if effort in ("high", "max"):

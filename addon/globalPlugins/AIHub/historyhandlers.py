@@ -11,7 +11,7 @@ from logHandler import log
 
 from .history import TextSegment, get_textctrl_selected_text, update_textctrl_saved_selection
 from .image_file import AttachmentFile, AttachmentFileTypes, URL_PATTERN
-from .propertiesutils import aggregate_blocks_usage, build_message_properties_html, format_token_usage_lines
+from .propertiesutils import aggregate_blocks_usage, build_message_properties_html
 
 addonHandler.initTranslation()
 
@@ -34,8 +34,6 @@ class HistoryHandlersMixin:
 			return "response"
 		if segment in (block.segmentReasoningLabel, block.segmentReasoning):
 			return "reasoning"
-		if segment == block.segmentBreakLine:
-			return "break"
 		return None
 
 	def _getBlockTextByKind(self, block, kind):
@@ -74,9 +72,6 @@ class HistoryHandlersMixin:
 		if not reasoning:
 			return response_text
 		return f"{self._formatThinkingForHistory(block.reasoningText)}{response_text}"
-
-	def _formatTokenUsage(self, usage: dict) -> list:
-		return format_token_usage_lines(usage, include_unavailable=True)
 
 	def onMessageProperties(self, evt=None):
 		block = self._getCurrentBlock()
@@ -292,7 +287,7 @@ class HistoryHandlersMixin:
 					return
 				start = prev.segmentResponseLabel.start
 				label, text = self._getBlockTextByKind(prev, "response")
-			elif kind in ("response", "break", "reasoning"):
+			elif kind in ("response", "reasoning"):
 				if block.segmentPrompt is None or block.segmentPromptLabel is None:
 					return
 				start = block.segmentPromptLabel.start
@@ -313,7 +308,7 @@ class HistoryHandlersMixin:
 			return
 		try:
 			kind = self._segmentKind(block, segment)
-			if kind in ("response", "break", "reasoning"):
+			if kind in ("response", "reasoning"):
 				next = block.next
 				if next is None:
 					wx.Bell()

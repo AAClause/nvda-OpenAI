@@ -67,18 +67,6 @@ def _build_anthropic_headers(api_key: str) -> dict:
 	}
 
 
-def _build_request(
-	url: str,
-	*,
-	method: str = "POST",
-	body: Optional[dict] = None,
-	headers: Optional[dict] = None,
-) -> urllib.request.Request:
-	"""Construct a urllib Request with JSON body."""
-	data = json.dumps(body).encode("utf-8") if body is not None else None
-	return urllib.request.Request(url, data=data, headers=headers or {}, method=method)
-
-
 def _open_streaming(opener, req, *, timeout: int) -> Any:
 	"""Open a request that will be consumed as a stream.
 
