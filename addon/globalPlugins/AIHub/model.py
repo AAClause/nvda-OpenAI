@@ -403,8 +403,10 @@ def _parse_model_obj(provider: str, model: dict) -> Model:
 	extra_info_pre = {k: v for k, v in model.items() if k not in exclude_keys_pre}
 	reasoning_mandatory = _detect_reasoning_mandatory(provider, model_id, extra_info_pre) if reasoning else False
 
-	# Web search: Google Gemini 2.5+ and 3 support grounding with Google Search
-	if provider == Provider.Google and ("gemini-2.5" in model_id or "gemini-3" in model_id):
+	# Web search: supported Gemini models per https://ai.google.dev/gemini-api/docs/google-search
+	if provider == Provider.Google and (
+		"gemini-2.0" in model_id or "gemini-2.5" in model_id or "gemini-3" in model_id
+	):
 		if "google_search" not in supported:
 			supported = list(supported) + ["google_search"]
 

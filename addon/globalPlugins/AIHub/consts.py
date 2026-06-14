@@ -195,7 +195,7 @@ BASE_URLs = {
 	Provider.OpenRouter: "https://openrouter.ai/api/v1",
 	Provider.Anthropic: "https://api.anthropic.com/v1",
 	Provider.xAI: "https://api.x.ai/v1",
-	Provider.Google: "https://generativelanguage.googleapis.com/v1beta/openai",
+	Provider.Google: "https://generativelanguage.googleapis.com/v1beta",
 }
 # Translators: Default English system prompt text applied to new AI-Hub conversations until the user changes it.
 DEFAULT_SYSTEM_PROMPT = _(

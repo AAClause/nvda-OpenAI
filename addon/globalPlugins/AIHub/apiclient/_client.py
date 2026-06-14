@@ -36,8 +36,9 @@ from ._http import (
 	_open_json,
 	_open_streaming,
 )
-from ._parsers import parse_anthropic, parse_chat_completion, parse_responses
-from ._streams import stream_anthropic, stream_chat_completions, stream_responses
+from ._google import create_gemini_generate_content_request
+from ._parsers import parse_anthropic, parse_chat_completion, parse_gemini_generate_content, parse_responses
+from ._streams import stream_anthropic, stream_chat_completions, stream_gemini_generate_content, stream_responses
 from ._types import ChatCompletion, Transcription
 
 
@@ -97,6 +98,10 @@ class OpenAIClient:
 			return self._openai_responses_create(
 				model=model, messages=messages, stream=stream, **kwargs
 			)
+		if provider == Provider.Google:
+			return self._google_generate_content_create(
+				model=model, messages=messages, stream=stream, **kwargs
+			)
 		if has_input_files:
 			# Each provider expects a different on-the-wire shape for documents
 			# on its chat-completions endpoint; the helper rewrites the
@@ -144,6 +149,26 @@ class OpenAIClient:
 				if v is not None:
 					body[k] = v
 		return body
+
+	def _google_generate_content_create(
+		self,
+		*,
+		model: str,
+		messages: list,
+		stream: bool = False,
+		**kwargs,
+	) -> ChatCompletion | Generator:
+		"""Google chat via native ``generateContent`` (not OpenAI-compat)."""
+		url, headers, body = create_gemini_generate_content_request(
+			self.api_key, model, messages, stream, kwargs
+		)
+		data = json.dumps(body).encode("utf-8")
+		req = urllib.request.Request(url, data=data, headers=headers, method="POST")
+		if stream:
+			resp = _open_streaming(self._opener, req, timeout=180)
+			return stream_gemini_generate_content(resp)
+		payload = _open_json(self._opener, req, timeout=180)
+		return parse_gemini_generate_content(payload)
 
 	def _json_request(
 		self,

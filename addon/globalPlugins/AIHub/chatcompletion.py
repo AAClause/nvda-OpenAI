@@ -98,7 +98,9 @@ def _apply_web_search_settings(params: dict, model, wnd, provider: str) -> None:
 		if provider == Provider.Anthropic:
 			params["web_search_options"] = {}
 		elif provider == Provider.Google:
-			tools.append({"google_search": {}})
+			# Google Search grounding uses the native generateContent API; see
+			# apiclient._google and https://ai.google.dev/gemini-api/docs/google-search
+			params["web_search_options"] = {}
 		elif provider in (Provider.OpenAI, Provider.OpenRouter):
 			# OpenRouter passes web_search_options to the upstream provider when supported.
 			params["web_search_options"] = {}
@@ -325,8 +327,8 @@ class CompletionThread(threading.Thread):
 		elif provider == Provider.Google:
 			# Translators: Text in chat completion status and error messages.
 			hint = _(
-				"Google's chat-completions endpoint does not accept binary documents. "
-				"Plain-text files are inlined automatically; for PDFs use OpenAI, Anthropic, OpenRouter, Mistral, or xAI."
+				"Google accepts images and PDFs as native inline attachments on the Gemini API. "
+				"Plain-text files are inlined automatically."
 			)
 		elif provider == Provider.OpenRouter:
 			# Translators: Text in chat completion status and error messages.

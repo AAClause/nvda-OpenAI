@@ -169,3 +169,79 @@ def parse_anthropic(data: dict) -> ChatCompletion:
 		[Choice(ChoiceMessage(text, reasoning=reasoning))],
 		usage=_normalize_usage(data.get("usage")),
 	)
+
+
+def _gemini_audio_from_part(part: dict) -> Optional[dict]:
+	inline = part.get("inline_data") or part.get("inlineData")
+	if not isinstance(inline, dict):
+		return None
+	data_b64 = inline.get("data")
+	mime = (inline.get("mime_type") or inline.get("mimeType") or "").lower()
+	if not data_b64 or not mime.startswith("audio/"):
+		return None
+	fmt = "wav"
+	if "mpeg" in mime or "mp3" in mime:
+		fmt = "mp3"
+	elif "pcm" in mime or "l16" in mime:
+		fmt = "pcm"
+	elif "ogg" in mime:
+		fmt = "ogg"
+	elif "flac" in mime:
+		fmt = "flac"
+	return {"data": data_b64, "format": fmt}
+
+
+def _gemini_parts_from_payload(data: dict) -> tuple[str, str, Optional[dict]]:
+	"""Extract visible answer, thinking text, and optional audio from Gemini JSON."""
+	if not isinstance(data, dict):
+		return "", "", None
+	text_parts: list[str] = []
+	reasoning_parts: list[str] = []
+	audio_out: Optional[dict] = None
+	for candidate in data.get("candidates") or []:
+		if not isinstance(candidate, dict):
+			continue
+		content = candidate.get("content")
+		if not isinstance(content, dict):
+			continue
+		for part in content.get("parts") or []:
+			if not isinstance(part, dict):
+				continue
+			audio_part = _gemini_audio_from_part(part)
+			if audio_part:
+				audio_out = audio_part
+				continue
+			text = part.get("text")
+			if not isinstance(text, str) or not text:
+				continue
+			if part.get("thought") is True:
+				reasoning_parts.append(text)
+			else:
+				text_parts.append(text)
+	return "".join(text_parts), "".join(reasoning_parts), audio_out
+
+
+def _gemini_parts_text(data: dict) -> tuple[str, str]:
+	"""Extract visible answer and thinking text from a Gemini generateContent payload."""
+	text, reasoning, _ = _gemini_parts_from_payload(data)
+	return text, reasoning
+
+
+def parse_gemini_generate_content(data: dict) -> ChatCompletion:
+	"""Parse a native Gemini ``generateContent`` JSON response."""
+	if not isinstance(data, dict):
+		data = {}
+	text, reasoning, audio = _gemini_parts_from_payload(data)
+	if text:
+		visible, think_inline, _ = _split_ollama_think_inline(text, in_think=False)
+		text = visible
+		if think_inline:
+			reasoning = _merge_reasoning(reasoning, think_inline)
+	if audio and audio.get("data"):
+		message = ChoiceMessage(text, audio=audio, reasoning=reasoning)
+	else:
+		message = ChoiceMessage(text, reasoning=reasoning)
+	return ChatCompletion(
+		[Choice(message)],
+		usage=_normalize_usage_from_payload(data),
+	)

@@ -3,8 +3,9 @@
 We implement three distinct stream parsers because the on-the-wire shapes
 differ enough that a generic parser would be a maintenance liability:
 
-* ``stream_chat_completions``: OpenAI Chat Completions / Mistral / Google
-  Gemini (OpenAI-compat) / OpenRouter / xAI / DeepSeek / Ollama (OpenAI-compat).
+* ``stream_chat_completions``: OpenAI Chat Completions / Mistral / OpenRouter /
+  xAI / DeepSeek / Ollama (OpenAI-compat).
+* ``stream_gemini_generate_content``: native Gemini ``streamGenerateContent``.
 * ``stream_responses``: OpenAI Responses API (event-typed SSE).
 * ``stream_anthropic``: Anthropic Messages API.
 
@@ -332,6 +333,37 @@ def stream_anthropic(resp) -> Iterator[StreamEvent]:
 				return
 			# message_start / content_block_start / content_block_stop / ping are not
 			# relevant to the consumer; they're skipped here.
+	finally:
+		_safe_close(resp)
+
+
+def stream_gemini_generate_content(resp) -> Iterator[StreamEvent]:
+	"""Parse a native Gemini ``streamGenerateContent`` SSE stream."""
+	from ._parsers import _gemini_parts_text
+
+	latest_usage: dict = {}
+	try:
+		for data in iter_sse_events(resp):
+			if data is DONE:
+				if latest_usage:
+					yield build_stream_event(usage=dict(latest_usage), finish_reason="stop")
+				return
+			if not isinstance(data, dict):
+				continue
+			usage = _normalize_usage_from_payload(data)
+			if usage:
+				latest_usage = _merge_usage(latest_usage, usage)
+			content, reasoning = _gemini_parts_text(data)
+			finish = None
+			for candidate in data.get("candidates") or []:
+				if isinstance(candidate, dict) and candidate.get("finishReason"):
+					finish = str(candidate.get("finishReason")).lower()
+			if content or reasoning:
+				yield build_stream_event(content=content, reasoning=reasoning)
+			if finish and finish not in ("unspecified", "unknown"):
+				if latest_usage:
+					yield build_stream_event(usage=dict(latest_usage), finish_reason=finish)
+				return
 	finally:
 		_safe_close(resp)
 
