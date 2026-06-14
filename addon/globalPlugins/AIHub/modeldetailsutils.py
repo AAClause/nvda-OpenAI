@@ -154,6 +154,15 @@ def build_model_details_html(model):
 	if model.supports_web_search:
 		# Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
 		capabilities.append(_("Web search"))
+	if getattr(model, "supports_x_search", False):
+		# Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
+		capabilities.append(_("X search"))
+	if getattr(model, "supports_code_interpreter", False):
+		# Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
+		capabilities.append(_("Code interpreter"))
+	if getattr(model, "supports_collections_search", False):
+		# Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
+		capabilities.append(_("Collections search"))
 	if getattr(model, "supports_openrouter_web_search", False):
 		# Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
 		capabilities.append(_("OpenRouter web search"))

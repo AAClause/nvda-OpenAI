@@ -126,10 +126,60 @@ def parse_responses(data: dict, provider: str = "") -> ChatCompletion:
 		if think_inline:
 			reasoning = _merge_reasoning(reasoning, think_inline, separator="\n").strip()
 
+	response_id, citations = _extract_responses_metadata(data)
+	encrypted_reasoning = _extract_responses_encrypted_reasoning(data)
+
 	return ChatCompletion(
 		[Choice(ChoiceMessage(content=text, reasoning=reasoning))],
 		usage=_normalize_usage_from_payload(data),
+		response_id=response_id,
+		citations=citations,
+		encrypted_reasoning=encrypted_reasoning,
 	)
+
+
+def _responses_payload_root(data: dict) -> dict:
+	"""Return the Responses object that holds ``id``, ``citations``, and ``output``."""
+	if not isinstance(data, dict):
+		return {}
+	resp = data.get("response")
+	if isinstance(resp, dict):
+		return resp
+	return data
+
+
+def _extract_responses_metadata(data: dict) -> tuple[str, list[str]]:
+	"""Extract response id and citation URLs from a Responses API payload."""
+	root = _responses_payload_root(data if isinstance(data, dict) else {})
+	rid = root.get("id")
+	response_id = rid.strip() if isinstance(rid, str) else ""
+	raw = root.get("citations")
+	citations: list[str] = []
+	if isinstance(raw, list):
+		for item in raw:
+			if isinstance(item, str) and item.strip():
+				citations.append(item.strip())
+	return response_id, citations
+
+
+def _extract_responses_encrypted_reasoning(data: dict) -> list[dict]:
+	"""Extract encrypted reasoning output items from a Responses API payload."""
+	root = _responses_payload_root(data if isinstance(data, dict) else {})
+	items: list[dict] = []
+	for item in root.get("output", []) or []:
+		if not isinstance(item, dict):
+			continue
+		item_type = str(item.get("type", "")).lower()
+		if "reasoning" not in item_type:
+			continue
+		encrypted = item.get("encrypted_content")
+		if not isinstance(encrypted, str) or not encrypted.strip():
+			continue
+		entry: dict = {"type": item.get("type"), "encrypted_content": encrypted.strip()}
+		if isinstance(item.get("id"), str) and item.get("id").strip():
+			entry["id"] = item.get("id").strip()
+		items.append(entry)
+	return items
 
 
 def _merge_reasoning(base: str, addition: str, separator: str = "") -> str:

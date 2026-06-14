@@ -81,7 +81,32 @@ class Model:
 		# SigmaNight Anthropic metadata lists generic tools support; web search uses that API.
 		if self.provider == Provider.Anthropic and "tools" in params:
 			return True
+		# xAI built-in web search uses the Responses API ``web_search`` tool.
+		if self.provider == Provider.xAI and "tools" in params:
+			return True
 		return False
+
+	@property
+	def supports_x_search(self):
+		"""True when xAI Responses API ``x_search`` (X/Twitter) is available for this model."""
+		return self.supports_xai_builtin_tools
+
+	@property
+	def supports_xai_builtin_tools(self):
+		"""True when xAI Responses API built-in server-side tools are available."""
+		if self.provider != Provider.xAI:
+			return False
+		return "tools" in self._supported_param_set()
+
+	@property
+	def supports_code_interpreter(self):
+		"""True when xAI ``code_interpreter`` built-in tool is available."""
+		return self.supports_xai_builtin_tools
+
+	@property
+	def supports_collections_search(self):
+		"""True when xAI ``collections_search`` built-in tool is available."""
+		return self.supports_xai_builtin_tools
 
 	@property
 	def supports_openrouter_web_search(self):

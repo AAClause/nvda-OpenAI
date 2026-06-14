@@ -385,6 +385,15 @@ def _block_to_dict(block) -> dict:
 	block_id = getattr(block, "uid", None)
 	if isinstance(block_id, str) and block_id:
 		d["id"] = block_id
+	xai_rid = getattr(block, "xaiResponseId", None)
+	if isinstance(xai_rid, str) and xai_rid.strip():
+		d["xaiResponseId"] = xai_rid.strip()
+	citations = getattr(block, "citations", None)
+	if isinstance(citations, list) and citations:
+		d["citations"] = [c for c in citations if isinstance(c, str) and c.strip()]
+	encrypted = getattr(block, "xaiEncryptedReasoning", None)
+	if isinstance(encrypted, list) and encrypted:
+		d["xaiEncryptedReasoning"] = encrypted
 	return d
 
 
@@ -478,6 +487,20 @@ def _dict_to_block(d: dict, conv_id: str = "", block_idx: int = 0):
 	block.audioTranscriptList = d.get("audioTranscriptList") or []
 	block_id = d.get("id") or d.get("uid")
 	block.uid = block_id if isinstance(block_id, str) and block_id else str(uuid.uuid4())
+	xai_rid = d.get("xaiResponseId")
+	block.xaiResponseId = xai_rid.strip() if isinstance(xai_rid, str) and xai_rid.strip() else None
+	raw_citations = d.get("citations")
+	if isinstance(raw_citations, list):
+		block.citations = [c for c in raw_citations if isinstance(c, str) and c.strip()]
+	else:
+		block.citations = None
+	raw_encrypted = d.get("xaiEncryptedReasoning")
+	if isinstance(raw_encrypted, list):
+		block.xaiEncryptedReasoning = [
+			item for item in raw_encrypted if isinstance(item, dict)
+		]
+	else:
+		block.xaiEncryptedReasoning = None
 	return block
 
 
