@@ -302,8 +302,9 @@ def stream_anthropic(resp) -> Iterator[StreamEvent]:
 
 			if evt_type == "message_delta":
 				usage_acc = _merge_usage(usage_acc, _normalize_usage(data.get("usage")))
+				finish = data.get("delta", {}).get("stop_reason") if isinstance(data.get("delta"), dict) else None
 				if usage_acc:
-					yield build_stream_event(usage=dict(usage_acc))
+					yield build_stream_event(usage=dict(usage_acc), finish_reason=finish or None)
 				continue
 
 			if evt_type == "content_block_delta":
@@ -315,6 +316,8 @@ def stream_anthropic(resp) -> Iterator[StreamEvent]:
 						yield build_stream_event(content=text)
 				elif d_type in ("thinking_delta", "reasoning_delta"):
 					th = delta.get("thinking")
+					if not isinstance(th, str) or not th:
+						th = delta.get("text") or ""
 					reasoning = th if isinstance(th, str) else _extract_reasoning_text(delta)
 					if reasoning:
 						yield build_stream_event(reasoning=reasoning)
@@ -324,6 +327,8 @@ def stream_anthropic(resp) -> Iterator[StreamEvent]:
 			if evt_type == "message_stop":
 				if usage_acc:
 					yield build_stream_event(usage=dict(usage_acc), finish_reason="stop")
+				else:
+					yield build_stream_event(finish_reason="stop")
 				return
 
 			if evt_type == "error":

@@ -161,6 +161,9 @@ def parse_anthropic(data: dict) -> ChatCompletion:
 		blk_type = str(blk.get("type", "")).lower()
 		if blk_type == "text":
 			text += blk.get("text", "") or ""
+		elif blk_type == "redacted_thinking":
+			# Encrypted safety-redacted thinking — no readable summary in API.
+			continue
 		elif "thinking" in blk_type or "reasoning" in blk_type:
 			part = _extract_reasoning_text(blk)
 			if part:

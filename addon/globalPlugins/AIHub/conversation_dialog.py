@@ -1584,6 +1584,18 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 			return ""
 		return f"{self._THINK_HISTORY_OPEN}{text}{self._THINK_HISTORY_CLOSE}\n"
 
+	def _closeThinkingHistoryTags(self, block):
+		"""Insert the closing thinking marker once the reasoning stream has finished."""
+		if not self._showThinkingInHistory:
+			return
+		if block.segmentReasoning is None:
+			return
+		if getattr(block, "segmentReasoningSuffix", None) is not None:
+			return
+		block.segmentReasoningSuffix = TextSegment(
+			self.messagesTextCtrl, self._THINK_HISTORY_CLOSE, block
+		)
+
 	def _clearMessagesSegments(self):
 		self.messagesTextCtrl.Clear()
 		if hasattr(self.messagesTextCtrl, "firstSegment"):
@@ -1603,6 +1615,8 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		if segment in (block.segmentResponseLabel, block.segmentResponse):
 			return block, "response"
 		if segment in (block.segmentReasoningLabel, block.segmentReasoning):
+			return block, "reasoning"
+		if segment == getattr(block, "segmentReasoningSuffix", None):
 			return block, "reasoning"
 		return block, "response"
 
@@ -2263,6 +2277,7 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 				else:
 					block.segmentResponse.appendText(newText)
 				if first_assistant_content:
+					self._closeThinkingHistoryTags(block)
 					ip_after_label = None
 					lbl = getattr(block, "segmentResponseLabel", None)
 					if lbl is not None:
@@ -2280,15 +2295,14 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 			last_reasoning_len = getattr(block, "lastReasoningLen", 0)
 			if self._showThinkingInHistory and reasoning_len > last_reasoning_len:
 				reasoning_delta = (block.reasoningText or "")[last_reasoning_len:]
-				reasoning_suffix = getattr(block, "segmentReasoningSuffix", None)
-				if block.segmentReasoning is not None and reasoning_suffix is not None:
+				if block.segmentReasoning is not None:
 					block.segmentReasoning.appendText(reasoning_delta)
 				elif not (block.responseText or "").strip():
 					block.segmentReasoningLabel = TextSegment(self.messagesTextCtrl, "", block)
 					block.segmentReasoning = TextSegment(
 						self.messagesTextCtrl, self._THINK_HISTORY_OPEN + (block.reasoningText or ""), block
 					)
-					block.segmentReasoningSuffix = TextSegment(self.messagesTextCtrl, self._THINK_HISTORY_CLOSE, block)
+					block.segmentReasoningSuffix = None
 				else:
 					anchor_block, anchor_part = self._getHistoryAnchor()
 					if anchor_block is None:
@@ -2296,6 +2310,8 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 						anchor_part = "response"
 					self._rerenderMessages(anchor_block=anchor_block, anchor_part=anchor_part)
 				block.lastReasoningLen = reasoning_len
+			if block.responseTerminated:
+				self._closeThinkingHistoryTags(block)
 			if (
 				self._showThinkingInHistory
 				and block.responseTerminated

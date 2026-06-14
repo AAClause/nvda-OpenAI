@@ -212,6 +212,7 @@ def apply_reasoning_disabled(params: dict[str, Any], model, provider: str) -> No
 	if not getattr(model, "supports_reasoning_disable", False):
 		return
 	if provider == Provider.Anthropic:
+		params["reasoning_disabled"] = True
 		return
 	if provider == Provider.OpenRouter:
 		params["reasoning"] = {"effort": "none"}

@@ -60,7 +60,7 @@ _PROFILES: Tuple[Tuple[str, Dict[str, object]], ...] = (
 			"adaptive_only": True,
 			"adaptive_supported": True,
 			"reasoning_always_on": True,
-			"effort_levels": ("low", "medium", "high", "max"),
+			"effort_levels": ("low", "medium", "high", "xhigh", "max"),
 		},
 	),
 	(
@@ -69,7 +69,7 @@ _PROFILES: Tuple[Tuple[str, Dict[str, object]], ...] = (
 			"adaptive_only": True,
 			"adaptive_supported": True,
 			"reasoning_always_on": True,
-			"effort_levels": ("low", "medium", "high", "max"),
+			"effort_levels": ("low", "medium", "high", "xhigh", "max"),
 		},
 	),
 	# Broader mythos/fable ids (e.g. dated snapshots) after exact 5.x ids.
@@ -79,7 +79,7 @@ _PROFILES: Tuple[Tuple[str, Dict[str, object]], ...] = (
 			"adaptive_only": True,
 			"adaptive_supported": True,
 			"reasoning_always_on": True,
-			"effort_levels": ("low", "medium", "high", "max"),
+			"effort_levels": ("low", "medium", "high", "xhigh", "max"),
 		},
 	),
 	(
@@ -88,7 +88,7 @@ _PROFILES: Tuple[Tuple[str, Dict[str, object]], ...] = (
 			"adaptive_only": True,
 			"adaptive_supported": True,
 			"reasoning_always_on": True,
-			"effort_levels": ("low", "medium", "high", "max"),
+			"effort_levels": ("low", "medium", "high", "xhigh", "max"),
 		},
 	),
 	# Adaptive recommended; manual budget_tokens still accepted (deprecated).
