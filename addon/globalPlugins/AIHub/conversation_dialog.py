@@ -1504,7 +1504,9 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		block.displayHeader = False
 
 	def _formatThinkingForHistory(self, reasoning_text):
-		text = (reasoning_text or "").strip()
+		from .propertiesutils import _normalize_reasoning_for_properties
+
+		text = _normalize_reasoning_for_properties(reasoning_text)
 		if not text:
 			return ""
 		return f"{self._THINK_HISTORY_OPEN}{text}{self._THINK_HISTORY_CLOSE}\n"
@@ -2237,6 +2239,12 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 				block.lastReasoningLen = reasoning_len
 			if block.responseTerminated:
 				self._closeThinkingHistoryTags(block)
+			if getattr(block, "_needsHistoryRerender", False):
+				block._needsHistoryRerender = False
+				anchor_block, anchor_part = self._getHistoryAnchor()
+				if anchor_block is None:
+					anchor_block, anchor_part = block, "response"
+				self._rerenderMessages(anchor_block=anchor_block, anchor_part=anchor_part)
 			if (
 				self._showThinkingInHistory
 				and block.responseTerminated

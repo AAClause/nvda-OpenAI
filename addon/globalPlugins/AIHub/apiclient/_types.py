@@ -94,7 +94,16 @@ class StreamEvent:
 	chatcompletion consumer can use both interchangeably.
 	"""
 
-	__slots__ = ("choices", "usage", "error", "response_id", "citations", "encrypted_reasoning")
+	__slots__ = (
+		"choices",
+		"usage",
+		"error",
+		"response_id",
+		"citations",
+		"encrypted_reasoning",
+		"reconcile_reasoning",
+		"reconcile_content",
+	)
 
 	def __init__(
 		self,
@@ -104,6 +113,8 @@ class StreamEvent:
 		response_id: str = "",
 		citations: Optional[list] = None,
 		encrypted_reasoning: Optional[list] = None,
+		reconcile_reasoning: Optional[str] = None,
+		reconcile_content: Optional[str] = None,
 	):
 		self.choices = choices or []
 		self.usage = usage or {}
@@ -111,6 +122,8 @@ class StreamEvent:
 		self.response_id = response_id or ""
 		self.citations = list(citations or [])
 		self.encrypted_reasoning = list(encrypted_reasoning or [])
+		self.reconcile_reasoning = reconcile_reasoning
+		self.reconcile_content = reconcile_content
 
 
 def build_stream_event(
@@ -122,6 +135,8 @@ def build_stream_event(
 	response_id: str = "",
 	citations: Optional[list] = None,
 	encrypted_reasoning: Optional[list] = None,
+	reconcile_reasoning: Optional[str] = None,
+	reconcile_content: Optional[str] = None,
 ) -> StreamEvent:
 	"""Convenience constructor used by all stream parsers."""
 	delta = ChoiceDelta(content, reasoning=reasoning)
@@ -133,4 +148,6 @@ def build_stream_event(
 		response_id=response_id,
 		citations=citations,
 		encrypted_reasoning=encrypted_reasoning,
+		reconcile_reasoning=reconcile_reasoning,
+		reconcile_content=reconcile_content,
 	)

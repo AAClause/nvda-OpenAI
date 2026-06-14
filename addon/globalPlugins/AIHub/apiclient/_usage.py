@@ -104,6 +104,7 @@ def _normalize_usage(usage: Any) -> dict:
 	reasoning_tokens = (
 		_to_int(usage.get("reasoning_tokens"))
 		or _to_int(completion_tokens_details.get("reasoning_tokens"))
+		or _to_int(output_tokens_details.get("reasoning_tokens"))
 		or _to_int(output_tokens_details.get("thinking_tokens"))
 		or _to_int(usage.get("thinking_tokens"))
 	)

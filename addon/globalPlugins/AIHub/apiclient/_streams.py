@@ -198,17 +198,18 @@ def _parse_chat_delta(delta: Any) -> tuple[str, str]:
 # OpenAI Responses API.
 # ---------------------------------------------------------------------------
 
-def stream_responses(resp) -> Iterator[StreamEvent]:
-	"""Parse an OpenAI Responses API SSE stream.
+def stream_responses(resp, provider: str = "") -> Iterator[StreamEvent]:
+	"""Parse an OpenAI Responses API SSE stream (OpenAI file-input path).
 
-	The Responses API uses event-typed SSE (no ``[DONE]`` terminator); the
-	stream ends with ``response.completed`` or ``response.failed``. We translate
-	the relevant events into the same StreamEvent shape used by Chat Completions
-	so downstream code does not have to special-case the shape.
+	xAI traffic uses ``stream_xai_responses`` in ``_xai_responses_stream.py``.
 	"""
+	think_states = _new_think_chain_states()
 	try:
 		for data in iter_sse_events(resp):
 			if data is DONE:
+				flushed_content, flushed_reasoning = _flush_think_chain(think_states)
+				if flushed_content or flushed_reasoning:
+					yield build_stream_event(flushed_content, flushed_reasoning)
 				return
 			if not isinstance(data, dict):
 				continue
@@ -219,6 +220,11 @@ def stream_responses(resp) -> Iterator[StreamEvent]:
 			if evt_type == "response.output_text.delta" or evt_type == "response.refusal.delta":
 				delta = data.get("delta")
 				text = delta if isinstance(delta, str) else _extract_reasoning_text(delta)
+				if not text:
+					continue
+				text, think_from_tags = _apply_think_chain_to_chunk(text, think_states)
+				if think_from_tags:
+					yield build_stream_event(reasoning=think_from_tags)
 				if text:
 					yield build_stream_event(content=text)
 				continue
@@ -277,9 +283,6 @@ def stream_responses(resp) -> Iterator[StreamEvent]:
 				err = _resp_error_payload(data)
 				yield build_stream_event(finish_reason="error", error=err)
 				return
-			# Other event types (response.created, response.in_progress,
-			# response.content_part.added, response.output_text.done, ...) are
-			# noise for our consumer, so we skip them silently.
 	finally:
 		_safe_close(resp)
 
