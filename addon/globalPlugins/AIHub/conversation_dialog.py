@@ -1563,6 +1563,7 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 			block.segmentReasoningSuffix = None
 			block.lastReasoningLen = len(block.reasoningText or "")
 		block.segmentResponse = TextSegment(self.messagesTextCtrl, (block.responseText or "") + "\n", block)
+		block.displayHeader = False
 
 	def _formatThinkingForHistory(self, reasoning_text):
 		text = (reasoning_text or "").strip()
@@ -2219,20 +2220,23 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		if self.lastBlock is not None:
 			block = self.lastBlock
 			if block.displayHeader:
-				if block != self.firstBlock:
-					block.previous.segmentBreakLine = TextSegment(self.messagesTextCtrl, "\n", block)
-				# Translators: Prefix shown before user message content in streaming history updates.
-				block.segmentPromptLabel = TextSegment(self.messagesTextCtrl, _("User:") + ' ', block)
-				prompt_text = block.prompt
-				if not prompt_text:
-					tlist = getattr(block, "audioTranscriptList", None)
-					if tlist and any(t for t in tlist):
-						prompt_text = "\n".join(t for t in tlist if t).strip()
-				block.segmentPrompt = TextSegment(self.messagesTextCtrl, (prompt_text or "") + "\n", block)
-				# Translators: Prefix shown before assistant response in streaming history updates.
-				# Translators: Prefix shown before assistant response in streaming history updates.
-				block.segmentResponseLabel = TextSegment(self.messagesTextCtrl, _("Assistant:") + ' ', block)
-				block.displayHeader = False
+				if block.segmentPrompt is not None:
+					block.displayHeader = False
+				else:
+					if block != self.firstBlock:
+						block.previous.segmentBreakLine = TextSegment(self.messagesTextCtrl, "\n", block)
+					# Translators: Prefix shown before user message content in streaming history updates.
+					block.segmentPromptLabel = TextSegment(self.messagesTextCtrl, _("User:") + ' ', block)
+					prompt_text = block.prompt
+					if not prompt_text:
+						tlist = getattr(block, "audioTranscriptList", None)
+						if tlist and any(t for t in tlist):
+							prompt_text = "\n".join(t for t in tlist if t).strip()
+					block.segmentPrompt = TextSegment(self.messagesTextCtrl, (prompt_text or "") + "\n", block)
+					# Translators: Prefix shown before assistant response in streaming history updates.
+					# Translators: Prefix shown before assistant response in streaming history updates.
+					block.segmentResponseLabel = TextSegment(self.messagesTextCtrl, _("Assistant:") + ' ', block)
+					block.displayHeader = False
 			l = len(block.responseText)
 			if block.lastLen == 0 and l > 0:
 				block.responseText = block.responseText.lstrip()

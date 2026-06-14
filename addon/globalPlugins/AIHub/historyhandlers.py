@@ -531,7 +531,7 @@ class HistoryHandlersMixin:
 		block.responseText = ""
 		block.reasoningText = ""
 		block.responseTerminated = False
-		block.displayHeader = True
+		block.displayHeader = False
 		block.lastLen = 0
 		block.lastReasoningLen = 0
 		block.usage = None
