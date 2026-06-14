@@ -80,7 +80,7 @@ class TextSegment:
 		had_selection = sel_start != sel_end
 		ctrl.SetInsertionPoint(self.end)
 		pos_before = ctrl.GetInsertionPoint()
-		ctrl.AppendText(text)
+		ctrl.WriteText(text)
 		pos_after = ctrl.GetInsertionPoint()
 		insert_len = pos_after - pos_before
 		self.end = pos_after

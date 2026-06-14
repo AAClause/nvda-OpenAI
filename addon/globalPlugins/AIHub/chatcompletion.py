@@ -14,6 +14,11 @@ import gui
 from logHandler import log
 
 from .apiclient import Choice, ChatCompletion, configure_client_for_provider
+from .apiclient._think_tags import (
+	_apply_think_chain_to_chunk,
+	_flush_think_chain,
+	_new_think_chain_states,
+)
 from .consts import (
 	ContentType,
 	Provider,
@@ -738,6 +743,7 @@ class CompletionThread(threading.Thread):
 		speechBuffer = ""
 		latest_usage = None
 		first_speech_emitted = False
+		think_states = _new_think_chain_states()
 
 		def _emit_speech(text: str) -> bool:
 			"""Speak ``text`` if streaming speech is currently allowed.
@@ -807,6 +813,12 @@ class CompletionThread(threading.Thread):
 					block.timing["firstTokenAt"] = time.time()
 				block.reasoningText += reasoning_chunk
 			if content_chunk:
+				if think_states:
+					content_chunk, think_from_tags = _apply_think_chain_to_chunk(content_chunk, think_states)
+					if think_from_tags:
+						block.reasoningText += think_from_tags
+				if not content_chunk:
+					continue
 				if "firstTokenAt" not in block.timing:
 					block.timing["firstTokenAt"] = time.time()
 				speechBuffer += content_chunk
@@ -818,6 +830,12 @@ class CompletionThread(threading.Thread):
 					_emit_speech(to_speak)
 			if getattr(choice, "finish_reason", None):
 				break
+		flushed_content, flushed_reasoning = _flush_think_chain(think_states)
+		if flushed_reasoning:
+			block.reasoningText += flushed_reasoning
+		if flushed_content:
+			block.responseText += flushed_content
+			speechBuffer += flushed_content
 		if speechBuffer:
 			_emit_speech(speechBuffer)
 			speechBuffer = ""

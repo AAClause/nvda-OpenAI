@@ -16,7 +16,7 @@ import uuid
 from typing import Any, BinaryIO, Generator, Optional
 
 from .. import apikeymanager
-from ..anthropicthinking import get_anthropic_thinking_profile, normalize_effort
+from ..anthropicthinking import get_anthropic_thinking_profile, normalize_effort, anthropic_reasoning_always_on
 from ..consts import BASE_URLs, Provider
 
 from ._content import (
@@ -127,7 +127,14 @@ class OpenAIClient:
 		"""Build the JSON body for a Chat Completions request."""
 		body: dict[str, Any] = {"model": model, "messages": messages, "stream": stream}
 		# Internal pseudo-params that must never appear on the wire.
-		excluded = {"reasoning_enabled", "adaptive_thinking", "reasoning_effort", "extra_body", "think"}
+		excluded = {
+			"reasoning_enabled",
+			"reasoning_disabled",
+			"adaptive_thinking",
+			"reasoning_effort",
+			"extra_body",
+			"think",
+		}
 		for k, v in kwargs.items():
 			if k in excluded or v is None:
 				continue
@@ -604,6 +611,12 @@ def _apply_anthropic_thinking(body: dict, model: str, kwargs: dict) -> None:
 	Opus 4.7+ and Fable/Mythos reject ``thinking.type: enabled``; those models
 	must use ``thinking.type: adaptive`` with ``output_config.effort``.
 	"""
+	if kwargs.get("reasoning_disabled"):
+		# Omitting ``thinking`` also disables extended thinking; explicit disabled
+		# matches the Messages API docs for models that accept it.
+		if not anthropic_reasoning_always_on(model):
+			body["thinking"] = {"type": "disabled"}
+		return
 	if not kwargs.get("reasoning_enabled"):
 		return
 	caps = get_anthropic_thinking_profile(model)
