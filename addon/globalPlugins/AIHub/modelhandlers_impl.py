@@ -347,11 +347,35 @@ class ModelHandlersMixin:
 			self.data[key] = bool(enabled)
 			self.saveData(True)
 
-	def onModelChange(self, evt):
+	def _preserve_session_chrome(self, evt=None, chrome_source=None) -> bool:
+		"""True when onModelChange should not overwrite user/session control values."""
+		if chrome_source is not None:
+			return True
+		if evt is None:
+			return False
+		try:
+			src = evt.GetEventObject()
+		except Exception:
+			return False
+		for w in (
+			self.reasoningModeCheckBox,
+			getattr(self, "adaptiveThinkingCheckBox", None),
+			getattr(self, "webSearchCheckBox", None),
+			getattr(self, "openRouterWebSearchCheckBox", None),
+			getattr(self, "streamModeCheckBox", None),
+			getattr(self, "debugModeCheckBox", None),
+			getattr(self, "advancedSamplingCheckBox", None),
+		):
+			if w is not None and src is w:
+				return True
+		return False
+
+	def onModelChange(self, evt=None, chrome_source=None):
 		model = self.getCurrentModel()
 		if not model:
 			return
 		self._persistCurrentModelSelection(model)
+		preserve_chrome = self._preserve_session_chrome(evt, chrome_source)
 		supported = self._supported_param_set(model)
 		supports_max_tokens = (
 			"max_tokens" in supported
@@ -366,7 +390,7 @@ class ModelHandlersMixin:
 			self.maxTokensSpinCtrl.SetRange(0, max_cap)
 		key_maxTokens = "maxTokens_%s" % model.id
 		defaultMaxOutputToken = self.data.get(key_maxTokens, 0) if isinstance(self.data.get(key_maxTokens, 0), int) else 0
-		if supports_max_tokens:
+		if supports_max_tokens and not preserve_chrome:
 			try:
 				self.maxTokensSpinCtrl.SetValue(defaultMaxOutputToken)
 			except Exception:
@@ -379,7 +403,8 @@ class ModelHandlersMixin:
 				self.reasoningModeCheckBox.Enable(False)
 			else:
 				self.reasoningModeCheckBox.Enable(True)
-				self.reasoningModeCheckBox.SetValue(self._saved_reasoning_mode(model))
+				if not preserve_chrome:
+					self.reasoningModeCheckBox.SetValue(self._saved_reasoning_mode(model))
 			reasoning_on = self.reasoningModeCheckBox.IsChecked()
 			if not getattr(model, "reasoning_always_on", False):
 				self._persist_reasoning_mode(model, reasoning_on)
@@ -388,9 +413,10 @@ class ModelHandlersMixin:
 				labels = [o[1] for o in opts]
 				self._reasoningEffortOptions = opts
 				self.reasoningEffortChoice.Set(labels)
-				saved = self.conf.get("reasoningEffort", "medium")
-				idx = next((i for i, (v, _) in enumerate(opts) if v == saved), 0)
-				self.reasoningEffortChoice.SetSelection(idx)
+				if not preserve_chrome:
+					saved = self.conf.get("reasoningEffort", "medium")
+					idx = next((i for i, (v, _) in enumerate(opts) if v == saved), 0)
+					self.reasoningEffortChoice.SetSelection(idx)
 				self._set_labeled_visibility(self.reasoningEffortLabel, self.reasoningEffortChoice, True)
 				if hasattr(self, "reasoningEffortRow"):
 					self.reasoningEffortRow.Show(True)
@@ -403,7 +429,8 @@ class ModelHandlersMixin:
 			if model.adaptive_choice_visible and reasoning_on:
 				self.adaptiveThinkingCheckBox.Enable(True)
 				self.adaptiveThinkingCheckBox.Show(True)
-				self.adaptiveThinkingCheckBox.SetValue(self.conf.get("adaptiveThinking", True))
+				if not preserve_chrome:
+					self.adaptiveThinkingCheckBox.SetValue(self.conf.get("adaptiveThinking", True))
 			else:
 				self.adaptiveThinkingCheckBox.Enable(False)
 				self.adaptiveThinkingCheckBox.Show(False)
