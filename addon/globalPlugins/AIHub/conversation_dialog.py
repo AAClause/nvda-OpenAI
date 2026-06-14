@@ -766,6 +766,7 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		if hasattr(page.messagesTextCtrl, "firstSegment"):
 			page.messagesTextCtrl.firstSegment = None
 			page.messagesTextCtrl.lastSegment = None
+		page.messagesTextCtrl._aihub_saved_selection = None
 
 	def _captureEphemeralToPage(self, page):
 		if page is None or not hasattr(self, "ephemeralCheckBox"):
@@ -1556,6 +1557,7 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		if hasattr(self.messagesTextCtrl, "firstSegment"):
 			self.messagesTextCtrl.firstSegment = None
 			self.messagesTextCtrl.lastSegment = None
+		self.messagesTextCtrl._aihub_saved_selection = None
 
 	def _getHistoryAnchor(self):
 		segment = TextSegment.getCurrentSegment(self.messagesTextCtrl)
@@ -2232,6 +2234,8 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 
 	def addShortcutsForPage(self, page):
 		page.messagesTextCtrl.Bind(wx.EVT_TEXT_COPY, self.onCopyMessage)
+		page.messagesTextCtrl.Bind(wx.EVT_LEFT_UP, self._syncMessagesSelectionCache)
+		page.messagesTextCtrl.Bind(wx.EVT_KEY_UP, self._syncMessagesSelectionCache)
 		accelEntries = []
 		self.addEntry(accelEntries, wx.ACCEL_NORMAL, ord("M"), self.onCurrentMessage)
 		self.addEntry(accelEntries, wx.ACCEL_CTRL + wx.ACCEL_SHIFT, wx.WXK_UP, self.onPreviousMessage)

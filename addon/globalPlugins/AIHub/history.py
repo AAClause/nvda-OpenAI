@@ -1,6 +1,46 @@
 """Chat history: TextSegment and HistoryBlock for the messages control."""
 
 
+def _shift_index_after_insert(pos: int, insert_at: int, insert_len: int) -> int:
+	return pos + insert_len if pos >= insert_at else pos
+
+
+def sync_textctrl_saved_selection_after_insert(control, insert_at: int, insert_len: int) -> None:
+	"""Keep a cached messages-field selection aligned when text is appended upstream."""
+	saved = getattr(control, "_aihub_saved_selection", None)
+	if not saved or saved[0] == saved[1]:
+		return
+	control._aihub_saved_selection = (
+		_shift_index_after_insert(saved[0], insert_at, insert_len),
+		_shift_index_after_insert(saved[1], insert_at, insert_len),
+	)
+
+
+def update_textctrl_saved_selection(control) -> None:
+	"""Record or clear the user's current selection on a messages TextCtrl."""
+	start, end = control.GetSelection()
+	if start != end:
+		control._aihub_saved_selection = (start, end)
+	else:
+		control._aihub_saved_selection = None
+
+
+def get_textctrl_selected_text(control) -> str:
+	"""Return selected text from the control, using a cached range if wx cleared it."""
+	start, end = control.GetSelection()
+	if start != end:
+		return control.GetRange(start, end)
+	saved = getattr(control, "_aihub_saved_selection", None)
+	if saved and saved[0] != saved[1]:
+		s_start, s_end = saved
+		last = control.GetLastPosition()
+		if 0 <= s_start < s_end <= last:
+			text = control.GetRange(s_start, s_end)
+			if text:
+				return text
+	return ""
+
+
 class TextSegment:
 	previous = None
 	next = None
@@ -31,25 +71,31 @@ class TextSegment:
 		if not text:
 			return
 		ctrl = self.control
-		insert_len = len(text)
 		caret_pos = ctrl.GetInsertionPoint()
 		sel_start, sel_end = ctrl.GetSelection()
-		append_at = self.end
-		ctrl.SetInsertionPoint(append_at)
+		had_selection = sel_start != sel_end
+		ctrl.SetInsertionPoint(self.end)
+		pos_before = ctrl.GetInsertionPoint()
 		ctrl.AppendText(text)
-		self.end = append_at + insert_len
+		pos_after = ctrl.GetInsertionPoint()
+		insert_len = pos_after - pos_before
+		self.end = pos_after
 		segment = self.next
 		while segment is not None:
 			segment.start += insert_len
 			segment.end += insert_len
 			segment = segment.next
-		if sel_start != sel_end:
-			new_sel_start = sel_start + insert_len if sel_start >= append_at else sel_start
-			new_sel_end = sel_end + insert_len if sel_end >= append_at else sel_end
+		if had_selection:
+			new_sel_start = _shift_index_after_insert(sel_start, pos_before, insert_len)
+			new_sel_end = _shift_index_after_insert(sel_end, pos_before, insert_len)
 			ctrl.SetSelection(new_sel_start, new_sel_end)
-		if caret_pos >= append_at:
-			caret_pos += insert_len
-		ctrl.SetInsertionPoint(caret_pos)
+			ctrl._aihub_saved_selection = (new_sel_start, new_sel_end)
+		elif caret_pos >= pos_before:
+			ctrl.SetInsertionPoint(caret_pos + insert_len)
+		else:
+			ctrl.SetInsertionPoint(caret_pos)
+		if not had_selection:
+			sync_textctrl_saved_selection_after_insert(ctrl, pos_before, insert_len)
 
 	def getText(self):
 		return self.control.GetRange(self.start, self.end)

@@ -9,7 +9,7 @@ import api
 import ui
 from logHandler import log
 
-from .history import TextSegment
+from .history import TextSegment, get_textctrl_selected_text, update_textctrl_saved_selection
 from .image_file import AttachmentFile, AttachmentFileTypes, URL_PATTERN
 from .propertiesutils import aggregate_blocks_usage, build_message_properties_html, format_token_usage_lines
 
@@ -273,6 +273,10 @@ class HistoryHandlersMixin:
 		if value:
 			self.promptTextCtrl.SetValue(value)
 
+	def _setMessagesInsertionPoint(self, pos: int) -> None:
+		self.messagesTextCtrl.SetInsertionPoint(pos)
+		update_textctrl_saved_selection(self.messagesTextCtrl)
+
 	def onPreviousMessage(self, evt):
 		segment, block = self._getCurrentSegmentBlock()
 		if segment is None:
@@ -300,7 +304,7 @@ class HistoryHandlersMixin:
 			# Translators: AI-Hub conversation — message history area: brief status feedback (speech/braille), not a full dialog.
 			self.message(_("An error occurred. More information is in the NVDA log."))
 			return
-		self.messagesTextCtrl.SetInsertionPoint(start)
+		self._setMessagesInsertionPoint(start)
 		self.message(label + text)
 
 	def onNextMessage(self, evt):
@@ -334,7 +338,7 @@ class HistoryHandlersMixin:
 			# Translators: AI-Hub conversation — message history area: brief status feedback (speech/braille), not a full dialog.
 			self.message(_("An error occurred. More information is in the NVDA log."))
 			return
-		self.messagesTextCtrl.SetInsertionPoint(start)
+		self._setMessagesInsertionPoint(start)
 		self.message(label + text)
 
 	def onCurrentMessage(self, evt):
@@ -363,7 +367,7 @@ class HistoryHandlersMixin:
 			self.message(_("No thinking block in the current message."))
 			return
 		target = max(think_segment.start, think_segment.end - 1)
-		self.messagesTextCtrl.SetInsertionPoint(target)
+		self._setMessagesInsertionPoint(target)
 		# Translators: AI-Hub conversation — message history area: brief status feedback (speech/braille), not a full dialog.
 		self.message(_("Moved to end of thinking block."))
 
@@ -376,7 +380,7 @@ class HistoryHandlersMixin:
 			# Translators: AI-Hub conversation — message history area: brief status feedback (speech/braille), not a full dialog.
 			self.message(_("No thinking block in the current message."))
 			return
-		self.messagesTextCtrl.SetInsertionPoint(think_segment.start)
+		self._setMessagesInsertionPoint(think_segment.start)
 		# Translators: AI-Hub conversation — message history area: brief status feedback (speech/braille), not a full dialog.
 		self.message(_("Moved to start of thinking block."))
 
@@ -390,7 +394,7 @@ class HistoryHandlersMixin:
 			target_segment = block.segmentResponse or block.segmentPrompt
 		if target_segment is None:
 			return
-		self.messagesTextCtrl.SetInsertionPoint(target_segment.start)
+		self._setMessagesInsertionPoint(target_segment.start)
 		# Translators: AI-Hub conversation — message history area: brief status feedback (speech/braille), not a full dialog.
 		self.message(_("Moved to beginning of content."))
 
@@ -405,7 +409,7 @@ class HistoryHandlersMixin:
 		if target_segment is None:
 			return
 		target = max(target_segment.start, target_segment.end - 1)
-		self.messagesTextCtrl.SetInsertionPoint(target)
+		self._setMessagesInsertionPoint(target)
 		# Translators: AI-Hub conversation — message history area: brief status feedback (speech/braille), not a full dialog.
 		self.message(_("Moved to end of content."))
 
@@ -430,9 +434,14 @@ class HistoryHandlersMixin:
 		# Translators: AI-Hub conversation — message history area: brief status feedback (speech/braille), not a full dialog.
 		self.message(_("Copied to prompt"))
 
+	def _syncMessagesSelectionCache(self, evt=None):
+		update_textctrl_saved_selection(self.messagesTextCtrl)
+		if evt is not None:
+			evt.Skip()
+
 	def onCopyMessage(self, evt, isHtml=False):
 		from .conversation_dialog import copyToClipAsHTML, render_markdown_html
-		text = self.messagesTextCtrl.GetStringSelection()
+		text = get_textctrl_selected_text(self.messagesTextCtrl)
 		# Translators: Text in history navigation and context-menu messages.
 		msg = _("Copy")
 		if not text:
