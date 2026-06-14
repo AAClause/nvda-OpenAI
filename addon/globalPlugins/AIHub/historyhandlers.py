@@ -280,12 +280,36 @@ class HistoryHandlersMixin:
 		self.messagesTextCtrl.SetInsertionPoint(pos)
 		update_textctrl_saved_selection(self.messagesTextCtrl)
 
+	def _contentSegmentForKind(self, block, kind):
+		if kind == "prompt":
+			return block.segmentPrompt
+		if kind == "response":
+			return block.segmentResponse
+		if kind == "reasoning":
+			return block.segmentReasoning
+		return None
+
+	def _isAtContentStart(self, block, kind) -> bool:
+		content = self._contentSegmentForKind(block, kind)
+		if content is None:
+			return True
+		return self.messagesTextCtrl.GetInsertionPoint() <= content.start
+
 	def onPreviousMessage(self, evt):
 		segment, block = self._getCurrentSegmentBlock()
 		if segment is None:
 			return
 		try:
 			kind = self._segmentKind(block, segment)
+			if kind not in ("prompt", "response", "reasoning"):
+				return
+			if not self._isAtContentStart(block, kind):
+				content = self._contentSegmentForKind(block, kind)
+				if content is not None:
+					self._setMessagesInsertionPoint(content.start)
+					label, text = self._getBlockTextByKind(block, kind)
+					self.message(label + text)
+					return
 			if kind == "prompt":
 				prev = block.previous
 				if prev is None:
