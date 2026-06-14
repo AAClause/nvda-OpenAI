@@ -421,6 +421,8 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 			if idx is not None:
 				self.reasoningEffortChoice.SetSelection(idx)
 				self.conf["reasoningEffort"] = want
+		if opts and self.reasoningModeCheckBox.IsShown() and self.reasoningModeCheckBox.IsChecked():
+			self._ensure_reasoning_effort_selection(opts)
 		if self.adaptiveThinkingCheckBox.IsShown() and "adaptiveThinking" in st:
 			v = bool(st["adaptiveThinking"])
 			self.adaptiveThinkingCheckBox.SetValue(v)

@@ -7,7 +7,7 @@ import gui
 import ui
 
 from . import apikeymanager
-from .consts import Provider
+from .consts import DEFAULT_REASONING_EFFORT, Provider
 from .modeldetailsutils import build_model_details_html
 from .model import clearModelCache, getModels
 
@@ -370,6 +370,19 @@ class ModelHandlersMixin:
 				return True
 		return False
 
+	def _ensure_reasoning_effort_selection(self, opts) -> None:
+		"""Keep the effort combo on a valid item when reasoning is enabled."""
+		if not opts:
+			return
+		idx = self.reasoningEffortChoice.GetSelection()
+		if 0 <= idx < len(opts):
+			self.conf["reasoningEffort"] = opts[idx][0]
+			return
+		saved = self.conf.get("reasoningEffort", DEFAULT_REASONING_EFFORT)
+		idx = next((i for i, (v, _) in enumerate(opts) if v == saved), 0)
+		self.reasoningEffortChoice.SetSelection(idx)
+		self.conf["reasoningEffort"] = opts[idx][0]
+
 	def onModelChange(self, evt=None, chrome_source=None):
 		model = self.getCurrentModel()
 		if not model:
@@ -414,9 +427,10 @@ class ModelHandlersMixin:
 				self._reasoningEffortOptions = opts
 				self.reasoningEffortChoice.Set(labels)
 				if not preserve_chrome:
-					saved = self.conf.get("reasoningEffort", "medium")
+					saved = self.conf.get("reasoningEffort", DEFAULT_REASONING_EFFORT)
 					idx = next((i for i, (v, _) in enumerate(opts) if v == saved), 0)
 					self.reasoningEffortChoice.SetSelection(idx)
+				self._ensure_reasoning_effort_selection(opts)
 				self._set_labeled_visibility(self.reasoningEffortLabel, self.reasoningEffortChoice, True)
 				if hasattr(self, "reasoningEffortRow"):
 					self.reasoningEffortRow.Show(True)
