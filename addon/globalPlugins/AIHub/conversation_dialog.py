@@ -393,12 +393,16 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 				pass
 			self._update_advanced_controls_visibility()
 		model = self.getCurrentModel()
-		if "reasoningMode" in st and self.reasoningModeCheckBox.IsShown():
-			self.reasoningModeCheckBox.SetValue(bool(st["reasoningMode"]))
 		try:
 			self.onModelChange(None)
 		except Exception:
 			pass
+		if "reasoningMode" in st and self.reasoningModeCheckBox.IsShown():
+			self.reasoningModeCheckBox.SetValue(bool(st["reasoningMode"]))
+			try:
+				self.onModelChange(chrome_source=self.reasoningModeCheckBox)
+			except Exception:
+				pass
 		model = self.getCurrentModel()
 		if model and model.supports_web_search and "webSearch" in st:
 			self.webSearchCheckBox.SetValue(bool(st["webSearch"]))
@@ -1069,7 +1073,7 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 	def _onAdvancedSamplingToggle(self, evt):
 		self._update_advanced_controls_visibility()
 		try:
-			self.onModelChange(None)
+			self.onModelChange(evt)
 		except Exception:
 			pass
 		try:
