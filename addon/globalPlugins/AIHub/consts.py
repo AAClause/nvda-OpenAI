@@ -146,17 +146,14 @@ DEFAULT_TRANSCRIPTION_PROVIDER = TranscriptionProvider.OPENAI.value
 # Reasoning effort levels (unified; each provider may support a subset)
 
 class ReasoningEffort(StrEnum):
-	"""Standard reasoning_effort string values; each provider may support a subset.
-
-	Anthropic also accepts ``xhigh`` and ``max`` levels but those are not part
-	of this enum because the addon UI only persists the four canonical values
-	(see ``model.Model.reasoning_effort_options``).
-	"""
+	"""Standard reasoning_effort string values; each provider may support a subset."""
 
 	MINIMAL = auto()
 	LOW = auto()
 	MEDIUM = auto()
 	HIGH = auto()
+	XHIGH = auto()
+	MAX = auto()
 
 
 REASONING_EFFORT_OPTIONS = tuple(e.value for e in ReasoningEffort)

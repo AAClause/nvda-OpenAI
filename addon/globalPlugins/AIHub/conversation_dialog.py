@@ -1251,7 +1251,7 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		# Translators: Section title for model generation options.
 		gen_box = wx.StaticBox(content_panel, label=_("Generation"))
 		gen_sz = wx.StaticBoxSizer(gen_box, wx.VERTICAL)
-		modelOptionsSizer = wx.BoxSizer(wx.HORIZONTAL)
+		reasoningOptionsSizer = wx.BoxSizer(wx.VERTICAL)
 		# Translators: Checkbox labels for generation behavior toggles.
 		self.reasoningModeCheckBox = wx.CheckBox(
 			content_panel,
@@ -1260,7 +1260,7 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		)
 		self.reasoningModeCheckBox.SetValue(False)
 		self.reasoningModeCheckBox.Bind(wx.EVT_CHECKBOX, self._onReasoningModeChange)
-		modelOptionsSizer.Add(self.reasoningModeCheckBox, 0, wx.ALL, UI_SECTION_SPACING_PX)
+		reasoningOptionsSizer.Add(self.reasoningModeCheckBox, 0, wx.ALL, UI_SECTION_SPACING_PX)
 		self.adaptiveThinkingCheckBox = wx.CheckBox(
 			content_panel,
 			# Translators: Checkbox to enable adaptive reasoning behavior when supported.
@@ -1268,7 +1268,21 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		)
 		self.adaptiveThinkingCheckBox.SetValue(conf.get("adaptiveThinking", True))
 		self.adaptiveThinkingCheckBox.Bind(wx.EVT_CHECKBOX, self._onAdaptiveThinkingChange)
-		modelOptionsSizer.Add(self.adaptiveThinkingCheckBox, 0, wx.ALL, UI_SECTION_SPACING_PX)
+		reasoningOptionsSizer.Add(self.adaptiveThinkingCheckBox, 0, wx.ALL, UI_SECTION_SPACING_PX)
+
+		self.reasoningEffortRow = wx.Panel(content_panel)
+		reasoningEffortRowSz = wx.BoxSizer(wx.VERTICAL)
+		# Translators: Label for reasoning effort dropdown.
+		self.reasoningEffortLabel = wx.StaticText(self.reasoningEffortRow, label=_("Reasoning &effort:"))
+		self.reasoningEffortChoice = wx.Choice(self.reasoningEffortRow, choices=[])
+		self.reasoningEffortChoice.Bind(wx.EVT_CHOICE, self._onReasoningEffortChange)
+		reasoningEffortRowSz.Add(self.reasoningEffortLabel, 0, wx.LEFT | wx.RIGHT | wx.TOP, UI_SECTION_SPACING_PX)
+		reasoningEffortRowSz.Add(self.reasoningEffortChoice, 0, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.BOTTOM, UI_SECTION_SPACING_PX)
+		self.reasoningEffortRow.SetSizer(reasoningEffortRowSz)
+		reasoningOptionsSizer.Add(self.reasoningEffortRow, 0, wx.EXPAND, 0)
+		gen_sz.Add(reasoningOptionsSizer, 0, wx.EXPAND, 0)
+
+		modelOptionsSizer = wx.BoxSizer(wx.HORIZONTAL)
 		self.webSearchCheckBox = wx.CheckBox(
 			content_panel,
 			# Translators: Checkbox to allow built-in web search for supporting models.
@@ -1286,17 +1300,6 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		self.openRouterWebSearchCheckBox.Bind(wx.EVT_CHECKBOX, self._onConversationChromeEdited)
 		modelOptionsSizer.Add(self.openRouterWebSearchCheckBox, 0, wx.ALL, UI_SECTION_SPACING_PX)
 		gen_sz.Add(modelOptionsSizer, 0, wx.ALL, 0)
-
-		self.reasoningEffortRow = wx.Panel(content_panel)
-		reasoningEffortRowSz = wx.BoxSizer(wx.VERTICAL)
-		# Translators: Label for reasoning effort dropdown.
-		self.reasoningEffortLabel = wx.StaticText(self.reasoningEffortRow, label=_("Reasoning &effort:"))
-		self.reasoningEffortChoice = wx.Choice(self.reasoningEffortRow, choices=[])
-		self.reasoningEffortChoice.Bind(wx.EVT_CHOICE, self._onReasoningEffortChange)
-		reasoningEffortRowSz.Add(self.reasoningEffortLabel, 0, wx.LEFT | wx.RIGHT | wx.TOP, UI_SECTION_SPACING_PX)
-		reasoningEffortRowSz.Add(self.reasoningEffortChoice, 0, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.BOTTOM, UI_SECTION_SPACING_PX)
-		self.reasoningEffortRow.SetSizer(reasoningEffortRowSz)
-		gen_sz.Add(self.reasoningEffortRow, 0, wx.EXPAND, 0)
 
 		self.maxTokensRow = wx.Panel(content_panel)
 		maxTokensRowSz = wx.BoxSizer(wx.VERTICAL)
