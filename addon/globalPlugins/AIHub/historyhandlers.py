@@ -14,6 +14,13 @@ from .history import TextSegment, get_textctrl_selected_text, update_textctrl_sa
 from .image_file import AttachmentFile, AttachmentFileTypes, URL_PATTERN
 from .propertiesutils import aggregate_blocks_usage, build_message_properties_html
 from .usage_ledger import build_conversation_usage_lines
+from .detached_branch import (
+	clear_detached_branch,
+	detach_tail_for_regenerate,
+	detached_branch_summary,
+	has_detached_branch,
+	restore_detached_branch,
+)
 
 addonHandler.initTranslation()
 
@@ -475,10 +482,25 @@ class HistoryHandlersMixin:
 		tlist = getattr(block, "audioTranscriptList", None)
 		return bool(tlist and any(t for t in tlist))
 
-	def _truncateBlocksAfter(self, block):
-		"""Remove ``block`` and all following blocks from the active thread chain."""
-		block.next = None
-		self.lastBlock = block
+	def _detachBlocksAfterForRegenerate(self, block):
+		"""Archive the focused block's prior response and later turns for optional restore."""
+		page = self._conversation_scope()
+		detach_tail_for_regenerate(page, block)
+
+	def _announceDetachedBranchIfAny(self):
+		page = self._conversation_scope()
+		branch = getattr(page, "detachedBranch", None)
+		if not isinstance(branch, dict):
+			return
+		tail_count, had_response = detached_branch_summary(branch)
+		if tail_count:
+			# Translators: AI-Hub conversation — message history area: brief status feedback (speech/braille), not a full dialog.
+			self.message(
+				_("Previous branch archived (%d later messages). Use Restore previous branch to undo.") % tail_count
+			)
+		elif had_response:
+			# Translators: AI-Hub conversation — message history area: brief status feedback (speech/braille), not a full dialog.
+			self.message(_("Previous response archived. Use Restore previous branch to undo."))
 
 	def _resetBlockForRegenerate(self, block):
 		"""Clear assistant output on ``block`` so a new response can stream in."""
@@ -517,10 +539,43 @@ class HistoryHandlersMixin:
 		self.message(_("Regenerating response..."))
 		self._onSubmitImpl(evt)
 
+	def onRestoreDetachedBranch(self, evt=None):
+		if self.worker:
+			return
+		page = self._conversation_scope()
+		if not has_detached_branch(page):
+			# Translators: AI-Hub conversation — message history area: brief status feedback (speech/braille), not a full dialog.
+			self.message(_("No archived branch to restore."))
+			return
+		anchor, new_last = restore_detached_branch(page, self.firstBlock, self.lastBlock)
+		if anchor is None:
+			# Translators: AI-Hub conversation — message history area: brief status feedback (speech/braille), not a full dialog.
+			self.message(_("Archived branch is no longer available."))
+			return
+		self.lastBlock = new_last
+		self._rerenderMessages(anchor_block=anchor, anchor_part="response")
+		# Translators: AI-Hub conversation — message history area: brief status feedback (speech/braille), not a full dialog.
+		self.message(_("Previous branch restored."))
+		if hasattr(self, "_autoSaveConversation"):
+			self._autoSaveConversation()
+
 	def onDeleteBlock(self, evt):
 		segment, block = self._getCurrentSegmentBlock()
 		if segment is None:
 			return
+		page = self._conversation_scope()
+		branch = getattr(page, "detachedBranch", None)
+		if isinstance(branch, dict):
+			anchor_uid = branch.get("anchorBlockId")
+			tail = branch.get("tailFirstBlock")
+			if getattr(block, "uid", None) == anchor_uid or block is tail:
+				clear_detached_branch(page)
+			else:
+				while tail is not None:
+					if tail is block:
+						clear_detached_branch(page)
+						break
+					tail = tail.next
 		if block.previous is not None:
 			anchor_block = block.previous
 			anchor_part = "response"
@@ -658,6 +713,21 @@ class HistoryHandlersMixin:
 		self.Bind(wx.EVT_MENU, self.onRegenerateBlock, id=item_id)
 		if self.worker:
 			regenerate_item.Enable(False)
+		page = self._conversation_scope()
+		if has_detached_branch(page):
+			item_id = wx.NewIdRef()
+			branch = getattr(page, "detachedBranch", None)
+			tail_count, _had_response = detached_branch_summary(branch)
+			if tail_count:
+				# Translators: AI-Hub conversation — message history area: entry in a context menu or submenu.
+				label = _("Restore previous branch (%d messages)") % tail_count
+			else:
+				# Translators: AI-Hub conversation — message history area: entry in a context menu or submenu.
+				label = _("Restore previous branch")
+			restore_item = menu.Append(item_id, label)
+			self.Bind(wx.EVT_MENU, self.onRestoreDetachedBranch, id=item_id)
+			if self.worker:
+				restore_item.Enable(False)
 		item_id = wx.NewIdRef()
 		# Translators: AI-Hub conversation — message history area: entry in a context menu or submenu.
 		menu.Append(item_id, _("Delete block") + " (Ctrl+D)")

@@ -308,6 +308,7 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 			"account_key": account_key,
 			"ui_state": ui_state,
 			"usage_ledger": list(getattr(page, "usageLedger", None) or []),
+			"detached_branch": getattr(page, "detachedBranch", None),
 		}
 
 	def _saveConversationFromKw(self, kw):
@@ -323,6 +324,7 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 			account_key=kw["account_key"],
 			ui_state=kw["ui_state"],
 			usage_ledger=kw.get("usage_ledger"),
+			detached_branch=kw.get("detached_branch"),
 		)
 
 	def _captureConversationChromeToPage(self, page):
@@ -885,6 +887,7 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		page.lastBlock = None
 		page.previousPrompt = None
 		page.usageLedger = []
+		page.detachedBranch = None
 		page._regenerateBlock = None
 		page._conversationId = cid
 		page.conversationModelHint = ""
@@ -922,6 +925,7 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		page.lastBlock = None
 		page.previousPrompt = None
 		page.usageLedger = []
+		page.detachedBranch = None
 		page._regenerateBlock = None
 		page._conversationId = None
 		page.conversationModelHint = ""
@@ -1662,6 +1666,8 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 			active_pg.usageLedger = deserialize_ledger(raw_ledger)
 		else:
 			active_pg.usageLedger = migrate_ledger_from_blocks(blocks)
+		raw_detached = data.get("detachedBranch")
+		active_pg.detachedBranch = raw_detached if isinstance(raw_detached, dict) else None
 		self._clearMessagesSegments()
 		self.firstBlock = None
 		self.lastBlock = None
@@ -1718,6 +1724,12 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 				self.firstBlock = b
 			prev = b
 		self.lastBlock = prev
+		if active_pg.detachedBranch:
+			from .detached_branch import clear_detached_branch, find_block_by_uid
+
+			anchor = find_block_by_uid(self.firstBlock, active_pg.detachedBranch.get("anchorBlockId"))
+			if anchor is None:
+				clear_detached_branch(active_pg)
 		for b in blocks:
 			self._appendBlockToMessages(b)
 		if self.firstBlock and self.firstBlock.segmentPrompt is not None:
@@ -1970,9 +1982,10 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 			)
 			self.conf["images"]["resizeInfoDisplayed"] = True
 		if regenerate_block:
-			self._truncateBlocksAfter(regenerate_block)
+			self._detachBlocksAfterForRegenerate(regenerate_block)
 			self._resetBlockForRegenerate(regenerate_block)
 			self._rerenderMessages(anchor_block=regenerate_block, anchor_part="prompt")
+			self._announceDetachedBranchIfAny()
 		system = self.systemTextCtrl.GetValue().strip()
 		if self.conf["saveSystem"] and system != self._lastSystem:
 			self.data["system"] = system

@@ -21,6 +21,7 @@ from .usage_ledger import (
 	migrate_ledger_from_block_dicts,
 	resolve_ledger_for_saved_data,
 )
+from .detached_branch import deserialize_detached_branch, serialize_detached_branch
 
 addonHandler.initTranslation()
 
@@ -721,6 +722,12 @@ def load_conversation(conv_id: str) -> dict | None:
 		ui_state = raw_ui if isinstance(raw_ui, dict) else {}
 		ledger = resolve_ledger_for_saved_data(data)
 		file_version = conversation_json_version(data)
+		detached = deserialize_detached_branch(
+			data.get("detachedBranch"),
+			_dict_to_block,
+			conv_id=conv_id,
+			block_idx_offset=len(blocks),
+		)
 		return {
 			"id": data.get("id", conv_id),
 			# Translators: Text in conversation metadata/properties shown to the user.
@@ -728,6 +735,7 @@ def load_conversation(conv_id: str) -> dict | None:
 			"system": data.get("system", ""),
 			"blocks": blocks,
 			"usageLedger": ledger,
+			"detachedBranch": detached,
 			"fileVersion": file_version,
 			"model": data.get("model", ""),
 			"accountKey": data.get("accountKey", ""),
@@ -760,6 +768,7 @@ def save_conversation(
 	account_key: str = "",
 	ui_state: dict | None = None,
 	usage_ledger=None,
+	detached_branch=None,
 ) -> str:
 	"""
 	Save conversation. Returns conversation id.
@@ -788,6 +797,7 @@ def save_conversation(
 	normalized_format = normalize_conversation_format(conversation_format)
 	ui_payload = ui_state if isinstance(ui_state, dict) else {}
 	ledger_payload = deserialize_ledger(usage_ledger) if usage_ledger is not None else None
+	detached_payload = serialize_detached_branch(detached_branch, _block_to_dict) if detached_branch else None
 	path = get_conversation_path(conv_id) if conv_id else ""
 	if conv_id and os.path.exists(path):
 		try:
@@ -812,6 +822,10 @@ def save_conversation(
 		existing["formatData"] = _serialize_format_data(normalized_format, format_data)
 		existing["blocks"] = [_block_to_dict(b) for b in blocks]
 		existing["usageLedger"] = ledger_payload
+		if detached_payload:
+			existing["detachedBranch"] = detached_payload
+		else:
+			existing.pop("detachedBranch", None)
 	else:
 		conv_id = conv_id or str(uuid.uuid4())
 		if ledger_payload is None:
@@ -842,6 +856,8 @@ def save_conversation(
 			"blocks": [_block_to_dict(b) for b in blocks],
 			"usageLedger": ledger_payload,
 		}
+		if detached_payload:
+			existing["detachedBranch"] = detached_payload
 	path = get_conversation_path(conv_id)
 	try:
 		_atomic_write_json(path, existing)
