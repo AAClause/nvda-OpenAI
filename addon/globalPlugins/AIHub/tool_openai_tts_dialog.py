@@ -71,7 +71,7 @@ class OpenAITTSToolDialog(ToolDialogBase):
 			# Translators: Label before the multiline text box for the words to synthesize in the OpenAI TTS tool.
 			self.formPanel, main, _("&Input text:"), lambda: wx.TextCtrl(self.formPanel, style=wx.TE_MULTILINE, size=(-1, 130))
 		)
-		# Translators: Button that opens the last generated speech file in the default Windows application.
+		# Translators: Button that opens the last generated speech file in the default application.
 		self.openGeneratedAudioBtn = wx.Button(self.formPanel, label=_("Open generated audio"))
 		self.openGeneratedAudioBtn.Bind(wx.EVT_BUTTON, self.onOpenGeneratedAudio)
 		main.Add(self.openGeneratedAudioBtn, 0, wx.LEFT | wx.RIGHT | wx.BOTTOM, UI_FORM_ROW_BORDER_PX)

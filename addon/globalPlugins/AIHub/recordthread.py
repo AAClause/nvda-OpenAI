@@ -213,7 +213,7 @@ class RecordThread(threading.Thread):
 		self.process_transcription(filename)
 
 	def record_audio(self, sampleRate):
-		"""Record from microphone using Windows WinMM API (no external deps)."""
+		"""Record from microphone using WinMM (no external deps)."""
 		self._recording = True
 		try:
 			self._record_audio_winmm(sampleRate)
@@ -222,7 +222,7 @@ class RecordThread(threading.Thread):
 		self._recording = False
 
 	def _record_audio_winmm(self, sampleRate):
-		"""Record using winmm.dll - Windows only, standard library only."""
+		"""Record using winmm.dll via ctypes (stdlib only)."""
 		channels = self.conf["channels"]
 		bps = 16  # 16-bit PCM
 		block_align = channels * 2

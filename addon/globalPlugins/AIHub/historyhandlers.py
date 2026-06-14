@@ -489,7 +489,7 @@ class HistoryHandlersMixin:
 		else:
 			self.lastBlock = block.previous
 		# Rebuild the read-only history view from block data so removal stays
-		# correct on Windows (wx stores \\n as CRLF) without touching streaming.
+		# correct (wx stores \\n as CRLF) without touching streaming.
 		self._rerenderMessages(anchor_block=anchor_block, anchor_part=anchor_part)
 		# Translators: AI-Hub conversation — message history area: brief status feedback (speech/braille), not a full dialog.
 		self.message(_("Block deleted"))

@@ -1,4 +1,8 @@
-"""Chat history: TextSegment and HistoryBlock for the messages control."""
+"""Chat history: TextSegment and HistoryBlock for the messages control.
+
+Multiline wx.TextCtrl stores ``\\n`` as CRLF; measure inserted spans with
+``GetInsertionPoint()``, not ``len(text)``.
+"""
 
 
 def _shift_index_after_insert(pos: int, insert_at: int, insert_len: int) -> int:

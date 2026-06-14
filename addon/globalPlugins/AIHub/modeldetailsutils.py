@@ -63,7 +63,7 @@ def _clean_value(value):
 
 
 def _format_datetime(value):
-	"""Format unix timestamp as local date/time using active locale."""
+	"""Format epoch timestamp as local date/time using active locale."""
 	try:
 		ts = int(value)
 		if ts <= 0:
