@@ -6,7 +6,7 @@ differ enough that a generic parser would be a maintenance liability:
 * ``stream_chat_completions``: OpenAI Chat Completions / Mistral / OpenRouter /
   DeepSeek / Ollama (OpenAI-compat).
 * ``stream_gemini_generate_content``: native Gemini ``streamGenerateContent``.
-* ``stream_responses``: OpenAI Responses API (event-typed SSE).
+* ``stream_responses_api``: OpenAI / xAI Responses API (event-typed SSE, item lifecycle).
 * ``stream_anthropic``: Anthropic Messages API.
 
 Every generator yields ``StreamEvent`` instances with a stable shape so the
@@ -16,7 +16,6 @@ from __future__ import annotations
 
 from typing import Any, Iterator, Optional
 
-from ._parsers import _extract_responses_encrypted_reasoning
 from ._sse import DONE, iter_sse_events
 from ._think_tags import (
 	_apply_think_chain_to_chunk,
@@ -195,115 +194,20 @@ def _parse_chat_delta(delta: Any) -> tuple[str, str]:
 
 
 # ---------------------------------------------------------------------------
-# OpenAI Responses API.
+# OpenAI / xAI Responses API — see ``_responses_stream.py``.
 # ---------------------------------------------------------------------------
 
 def stream_responses(resp, provider: str = "") -> Iterator[StreamEvent]:
-	"""Parse an OpenAI Responses API SSE stream (OpenAI file-input path).
+	"""Parse a Responses API SSE stream (delegates to lifecycle parser)."""
+	from ..consts import Provider
+	from ._responses_stream import stream_responses_api
 
-	xAI traffic uses ``stream_xai_responses`` in ``_xai_responses_stream.py``.
-	"""
-	think_states = _new_think_chain_states()
-	try:
-		for data in iter_sse_events(resp):
-			if data is DONE:
-				flushed_content, flushed_reasoning = _flush_think_chain(think_states)
-				if flushed_content or flushed_reasoning:
-					yield build_stream_event(flushed_content, flushed_reasoning)
-				return
-			if not isinstance(data, dict):
-				continue
-			evt_type = str(data.get("type", "")).lower()
-			if not evt_type:
-				continue
-
-			if evt_type == "response.output_text.delta" or evt_type == "response.refusal.delta":
-				delta = data.get("delta")
-				text = delta if isinstance(delta, str) else _extract_reasoning_text(delta)
-				if not text:
-					continue
-				text, think_from_tags = _apply_think_chain_to_chunk(text, think_states)
-				if think_from_tags:
-					yield build_stream_event(reasoning=think_from_tags)
-				if text:
-					yield build_stream_event(content=text)
-				continue
-
-			if evt_type in (
-				"response.reasoning_text.delta",
-				"response.reasoning_summary_text.delta",
-			):
-				delta = data.get("delta")
-				text = delta if isinstance(delta, str) else _extract_reasoning_text(delta)
-				if text:
-					yield build_stream_event(reasoning=text)
-				continue
-
-			if evt_type == "response.output_item.added":
-				item = data.get("item") or {}
-				text_from_parts, reasoning_from_parts = _split_text_and_reasoning_from_parts(
-					item.get("content")
-				)
-				if text_from_parts or reasoning_from_parts:
-					yield build_stream_event(text_from_parts, reasoning_from_parts)
-				continue
-
-			if evt_type == "response.completed":
-				usage = _normalize_usage(_resp_completed_usage(data))
-				resp_obj = data.get("response") if isinstance(data.get("response"), dict) else {}
-				response_id = ""
-				rid = resp_obj.get("id")
-				if isinstance(rid, str) and rid.strip():
-					response_id = rid.strip()
-				citations: list[str] = []
-				raw_citations = resp_obj.get("citations")
-				if isinstance(raw_citations, list):
-					for item in raw_citations:
-						if isinstance(item, str) and item.strip():
-							citations.append(item.strip())
-				encrypted_reasoning = _extract_responses_encrypted_reasoning(resp_obj)
-				if usage:
-					yield build_stream_event(
-						usage=usage,
-						finish_reason="stop",
-						response_id=response_id,
-						citations=citations,
-						encrypted_reasoning=encrypted_reasoning,
-					)
-				else:
-					yield build_stream_event(
-						finish_reason="stop",
-						response_id=response_id,
-						citations=citations,
-						encrypted_reasoning=encrypted_reasoning,
-					)
-				return
-
-			if evt_type in ("response.failed", "error"):
-				err = _resp_error_payload(data)
-				yield build_stream_event(finish_reason="error", error=err)
-				return
-	finally:
-		_safe_close(resp)
-
-
-def _resp_completed_usage(data: dict) -> Any:
-	"""Locate the usage dict inside a ``response.completed`` event."""
-	resp_obj = data.get("response")
-	if isinstance(resp_obj, dict):
-		usage = resp_obj.get("usage")
-		if isinstance(usage, dict):
-			return usage
-	return data.get("usage")
-
-
-def _resp_error_payload(data: dict) -> dict:
-	resp_obj = data.get("response")
-	if isinstance(resp_obj, dict) and isinstance(resp_obj.get("error"), dict):
-		return resp_obj["error"]
-	if isinstance(data.get("error"), dict):
-		return data["error"]
-	return {"message": str(data.get("message") or "Stream failed")}
+	interleaved = provider != Provider.xAI
+	return stream_responses_api(
+		resp,
+		interleaved_reasoning=interleaved,
+		strip_inline_think_tags=interleaved,
+	)
 
 
 # ---------------------------------------------------------------------------

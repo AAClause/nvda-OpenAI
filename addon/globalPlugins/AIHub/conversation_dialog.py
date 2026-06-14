@@ -119,6 +119,8 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 	"""NVDA AI-Hub conversation window (parallel sessions in a notebook)."""
 	_THINK_HISTORY_OPEN = "<think>\n"
 	_THINK_HISTORY_CLOSE = "\n</think>\n"
+	_THINKING_WRAP_STREAMING = "streaming"
+	_THINKING_WRAP_COMPLETE = "complete"
 
 	def _onNotebookPageChanging(self, evt):
 		try:
@@ -1499,6 +1501,7 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 			block.segmentReasoningLabel = TextSegment(self.messagesTextCtrl, "", block)
 			block.segmentReasoning = TextSegment(self.messagesTextCtrl, self._formatThinkingForHistory(block.reasoningText), block)
 			block.segmentReasoningSuffix = None
+			block.thinkingWrapState = self._THINKING_WRAP_COMPLETE
 			block.lastReasoningLen = len(block.reasoningText or "")
 		block.segmentResponse = TextSegment(self.messagesTextCtrl, (block.responseText or "") + "\n", block)
 		block.displayHeader = False
@@ -1512,16 +1515,20 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		return f"{self._THINK_HISTORY_OPEN}{text}{self._THINK_HISTORY_CLOSE}\n"
 
 	def _closeThinkingHistoryTags(self, block):
-		"""Insert the closing thinking marker once the reasoning stream has finished."""
+		"""Append the closing thinking marker after streaming reasoning (open tag only)."""
 		if not self._showThinkingInHistory:
 			return
 		if block.segmentReasoning is None:
 			return
-		if getattr(block, "segmentReasoningSuffix", None) is not None:
+		if block.thinkingWrapState != self._THINKING_WRAP_STREAMING:
+			return
+		if block.segmentReasoningSuffix is not None:
+			block.thinkingWrapState = self._THINKING_WRAP_COMPLETE
 			return
 		block.segmentReasoningSuffix = TextSegment(
 			self.messagesTextCtrl, self._THINK_HISTORY_CLOSE, block
 		)
+		block.thinkingWrapState = self._THINKING_WRAP_COMPLETE
 
 	def _clearMessagesSegments(self):
 		self.messagesTextCtrl.Clear()
@@ -1576,6 +1583,7 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 			b.segmentReasoningLabel = None
 			b.segmentReasoning = None
 			b.segmentReasoningSuffix = None
+			b.thinkingWrapState = ""
 			self._appendBlockToMessages(b)
 			b = b.next
 		self._restoreHistoryAnchor(anchor_block, anchor_part)
@@ -2230,6 +2238,7 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 						self.messagesTextCtrl, self._THINK_HISTORY_OPEN + (block.reasoningText or ""), block
 					)
 					block.segmentReasoningSuffix = None
+					block.thinkingWrapState = self._THINKING_WRAP_STREAMING
 				else:
 					anchor_block, anchor_part = self._getHistoryAnchor()
 					if anchor_block is None:
@@ -2237,14 +2246,14 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 						anchor_part = "response"
 					self._rerenderMessages(anchor_block=anchor_block, anchor_part=anchor_part)
 				block.lastReasoningLen = reasoning_len
-			if block.responseTerminated:
-				self._closeThinkingHistoryTags(block)
 			if getattr(block, "_needsHistoryRerender", False):
 				block._needsHistoryRerender = False
 				anchor_block, anchor_part = self._getHistoryAnchor()
 				if anchor_block is None:
 					anchor_block, anchor_part = block, "response"
 				self._rerenderMessages(anchor_block=anchor_block, anchor_part=anchor_part)
+			elif block.responseTerminated and block.thinkingWrapState == self._THINKING_WRAP_STREAMING:
+				self._closeThinkingHistoryTags(block)
 			if (
 				self._showThinkingInHistory
 				and block.responseTerminated

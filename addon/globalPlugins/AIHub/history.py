@@ -132,6 +132,8 @@ class HistoryBlock:
 	segmentReasoning = None
 	lastLen = 0
 	lastReasoningLen = 0
+	# UI-only while streaming: "" | "streaming" (open tag, close pending) | "complete"
+	thinkingWrapState = ""
 	model = ""
 	temperature = 0
 	topP = 0
