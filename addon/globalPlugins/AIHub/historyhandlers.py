@@ -462,20 +462,15 @@ class HistoryHandlersMixin:
 		segment, block = self._getCurrentSegmentBlock()
 		if segment is None:
 			return
-		if block.segmentBreakLine is not None:
-			block.segmentBreakLine.delete()
-		if block.segmentPromptLabel is not None:
-			block.segmentPromptLabel.delete()
-		if block.segmentPrompt is not None:
-			block.segmentPrompt.delete()
-		if block.segmentResponseLabel is not None:
-			block.segmentResponseLabel.delete()
-		if block.segmentResponse is not None:
-			block.segmentResponse.delete()
-		if block.segmentReasoningLabel is not None:
-			block.segmentReasoningLabel.delete()
-		if block.segmentReasoning is not None:
-			block.segmentReasoning.delete()
+		if block.previous is not None:
+			anchor_block = block.previous
+			anchor_part = "response"
+		elif block.next is not None:
+			anchor_block = block.next
+			anchor_part = "prompt"
+		else:
+			anchor_block = None
+			anchor_part = "prompt"
 		if block.previous is not None:
 			block.previous.next = block.next
 		else:
@@ -484,6 +479,9 @@ class HistoryHandlersMixin:
 			block.next.previous = block.previous
 		else:
 			self.lastBlock = block.previous
+		# Rebuild the read-only history view from block data so removal stays
+		# correct on Windows (wx stores \\n as CRLF) without touching streaming.
+		self._rerenderMessages(anchor_block=anchor_block, anchor_part=anchor_part)
 		# Translators: AI-Hub conversation — message history area: brief status feedback (speech/braille), not a full dialog.
 		self.message(_("Block deleted"))
 
