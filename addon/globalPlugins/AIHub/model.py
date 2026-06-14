@@ -11,6 +11,7 @@ from .reasoningrequest import (
 	mistral_reasoning_mandatory,
 	mistral_supports_reasoning_effort,
 	supports_reasoning_disable as _supports_reasoning_disable,
+	xai_reasoning_mandatory,
 	xai_supports_reasoning_effort,
 )
 from .consts import Provider, ReasoningEffort
@@ -182,6 +183,9 @@ class Model:
 				(ReasoningEffort.HIGH.value, _("High")),
 			)
 		if self.provider == Provider.MistralAI and mistral_reasoning_mandatory(self.id):
+			return ()
+		# xAI grok-4.20+ has no chat-completions reasoning_effort knob.
+		if self.provider == Provider.xAI:
 			return ()
 		# OpenAI o-series / gpt-5: low, medium, high
 		if self.supports_adaptive_thinking or self.provider == Provider.OpenAI:
@@ -391,6 +395,14 @@ def _parse_model_obj(provider: str, model: dict) -> Model:
 		reasoning = True
 	if provider == Provider.xAI and xai_supports_reasoning_effort(model_id):
 		reasoning = True
+	# grok-4.20 etc. may list "reasoning" in catalog metadata but chat API has no control.
+	if (
+		provider == Provider.xAI
+		and reasoning
+		and not xai_supports_reasoning_effort(model_id)
+		and not xai_reasoning_mandatory(model_id)
+	):
+		reasoning = False
 
 	exclude_keys_pre = {"id", "name", "description", "context_length", "top_provider", "parameter_conflicts"}
 	extra_info_pre = {k: v for k, v in model.items() if k not in exclude_keys_pre}
