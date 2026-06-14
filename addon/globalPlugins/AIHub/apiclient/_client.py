@@ -122,7 +122,7 @@ class OpenAIClient:
 		"""Build the JSON body for a Chat Completions request."""
 		body: dict[str, Any] = {"model": model, "messages": messages, "stream": stream}
 		# Internal pseudo-params that must never appear on the wire.
-		excluded = {"reasoning_enabled", "adaptive_thinking", "reasoning_effort", "extra_body"}
+		excluded = {"reasoning_enabled", "adaptive_thinking", "reasoning_effort", "extra_body", "think"}
 		for k, v in kwargs.items():
 			if k in excluded or v is None:
 				continue
@@ -573,20 +573,27 @@ def _normalize_stop_sequences(stop_kw: Any) -> list[str]:
 
 
 def _apply_anthropic_thinking(body: dict, model: str, kwargs: dict) -> None:
-	"""Mutate ``body`` to enable Anthropic extended thinking when requested."""
+	"""Mutate ``body`` to enable Anthropic extended thinking when requested.
+
+	See https://platform.claude.com/docs/en/build-with-claude/adaptive-thinking
+	Opus 4.7+ and Fable/Mythos reject ``thinking.type: enabled``; those models
+	must use ``thinking.type: adaptive`` with ``output_config.effort``.
+	"""
 	if not kwargs.get("reasoning_enabled"):
 		return
 	caps = get_anthropic_thinking_profile(model)
-	if caps["adaptive_only"]:
-		body["thinking"] = {"type": "adaptive"}
-	elif caps["adaptive_supported"] and kwargs.get("adaptive_thinking", True):
+	use_adaptive = bool(
+		caps.get("adaptive_only")
+		or (caps.get("adaptive_supported") and kwargs.get("adaptive_thinking", True))
+	)
+	if use_adaptive:
 		body["thinking"] = {"type": "adaptive"}
 	else:
 		body["thinking"] = {"type": "enabled", "budget_tokens": 10000}
-	# Claude 4.7/Mythos default to omitted thinking output; request summarized
+	# Opus 4.7+/Fable/Mythos default to omitted thinking text; request summarized
 	# output so history can display <think>...</think>.
 	body["thinking"]["display"] = "summarized"
-	if caps["effort_supported"]:
+	if caps.get("effort_supported"):
 		effort = normalize_effort(
 			kwargs.get("reasoning_effort", "high"),
 			tuple(caps.get("effort_levels") or ()),

@@ -5,6 +5,14 @@ import addonHandler
 from logHandler import log
 from . import apikeymanager
 from .anthropicthinking import get_anthropic_thinking_profile
+from .reasoningrequest import (
+	deepseek_thinking_defaults_on,
+	detect_reasoning_mandatory,
+	mistral_reasoning_mandatory,
+	mistral_supports_reasoning_effort,
+	supports_reasoning_disable as _supports_reasoning_disable,
+	xai_supports_reasoning_effort,
+)
 from .consts import Provider, ReasoningEffort
 
 addonHandler.initTranslation()
@@ -93,19 +101,13 @@ class Model:
 	@property
 	def supports_reasoning_disable(self) -> bool:
 		"""True when the API accepts an explicit reasoning-off signal for this model."""
-		if not self.reasoning or self.reasoning_mandatory:
-			return False
-		params = self._supported_param_set()
-		if self.provider == Provider.Anthropic:
-			return True
-		if self.provider == Provider.Ollama:
-			return True
-		if self.provider == Provider.OpenRouter:
-			# OpenRouter documents effort "none" only for models listing reasoning_effort.
-			return "reasoning_effort" in params
-		if self.provider == Provider.DeepSeek:
-			return bool(params & {"thinking", "reasoning"})
-		return "reasoning_effort" in params
+		return _supports_reasoning_disable(
+			self.provider,
+			self.id,
+			self._supported_param_set(),
+			reasoning=bool(self.reasoning),
+			reasoning_mandatory=bool(self.reasoning_mandatory),
+		)
 
 	@property
 	def reasoning_always_on(self) -> bool:
@@ -155,7 +157,7 @@ class Model:
 				ReasoningEffort.HIGH.value,
 			)
 			return tuple((lv, labels.get(lv, lv.title())) for lv in levels)
-		# xAI grok-3-mini: only low, high
+		# xAI grok-3-mini: only low, high (no none — reasoning cannot be fully disabled).
 		if self.provider == Provider.xAI and "grok-3-mini" in self.id:
 			return (
 				# Translators: Text in model labels and capability descriptions.
@@ -163,7 +165,25 @@ class Model:
 				# Translators: Text in model labels and capability descriptions.
 				(ReasoningEffort.HIGH.value, _("High")),
 			)
-		# OpenAI o1/o3: low, medium, high
+		# xAI grok-4.3: none/low/medium/high per xAI docs.
+		if self.provider == Provider.xAI and xai_supports_reasoning_effort(self.id):
+			return (
+				# Translators: Text in model labels and capability descriptions.
+				(ReasoningEffort.LOW.value, _("Low")),
+				# Translators: Text in model labels and capability descriptions.
+				(ReasoningEffort.MEDIUM.value, _("Medium")),
+				# Translators: Text in model labels and capability descriptions.
+				(ReasoningEffort.HIGH.value, _("High")),
+			)
+		# Mistral adjustable reasoning: API documents high vs none (none = off via checkbox).
+		if self.provider == Provider.MistralAI and mistral_supports_reasoning_effort(self.id):
+			return (
+				# Translators: Text in model labels and capability descriptions.
+				(ReasoningEffort.HIGH.value, _("High")),
+			)
+		if self.provider == Provider.MistralAI and mistral_reasoning_mandatory(self.id):
+			return ()
+		# OpenAI o-series / gpt-5: low, medium, high
 		if self.supports_adaptive_thinking or self.provider == Provider.OpenAI:
 			return (
 				# Translators: Text in model labels and capability descriptions.
@@ -173,7 +193,7 @@ class Model:
 				# Translators: Text in model labels and capability descriptions.
 				(ReasoningEffort.HIGH.value, _("High")),
 			)
-		# Google, Mistral, OpenRouter: full range
+		# Google, OpenRouter, and other providers: full range
 		return (
 			# Translators: Text in model labels and capability descriptions.
 			(ReasoningEffort.MINIMAL.value, _("Minimal")),
@@ -312,13 +332,7 @@ def _models_from_ollama_tags(tags_index: dict) -> list:
 
 
 def _detect_reasoning_mandatory(provider: str, model_id: str, extra_info: dict) -> bool:
-	"""True when model metadata marks reasoning as required (no model-id heuristics)."""
-	extra = extra_info if isinstance(extra_info, dict) else {}
-	if extra.get("reasoning_mandatory") is True:
-		return True
-	if provider == Provider.Anthropic:
-		return bool(get_anthropic_thinking_profile(model_id).get("adaptive_only"))
-	return False
+	return detect_reasoning_mandatory(provider, model_id, extra_info)
 
 
 def _parse_model_obj(provider: str, model: dict) -> Model:
@@ -378,6 +392,12 @@ def _parse_model_obj(provider: str, model: dict) -> Model:
 	reasoning = "reasoning" in supported or "include_reasoning" in supported
 
 	model_id = model.get("id", "")
+
+	# Provider heuristics when catalog metadata omits the reasoning flag.
+	if provider == Provider.DeepSeek and deepseek_thinking_defaults_on(model_id):
+		reasoning = True
+	if provider == Provider.xAI and xai_supports_reasoning_effort(model_id):
+		reasoning = True
 
 	exclude_keys_pre = {"id", "name", "description", "context_length", "top_provider", "parameter_conflicts"}
 	extra_info_pre = {k: v for k, v in model.items() if k not in exclude_keys_pre}

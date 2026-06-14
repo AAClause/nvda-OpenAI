@@ -31,6 +31,10 @@ from .consts import (
 from .history import HistoryBlock
 from .mediastore import persist_local_file
 from .recordthread import transcribe_audio_file
+from .reasoningrequest import (
+	apply_reasoning_disabled,
+	apply_reasoning_enabled,
+)
 from .resultevent import ResultEvent
 
 addonHandler.initTranslation()
@@ -71,16 +75,6 @@ _STREAM_USAGE_PROVIDERS = (
 	Provider.DeepSeek,
 	Provider.Google,
 	Provider.Ollama,
-)
-
-# Providers that accept top-level reasoning_effort on chat completions (others use
-# provider-specific shapes such as OpenRouter's ``reasoning`` object or DeepSeek's
-# ``thinking`` field).
-_REASONING_EFFORT_PROVIDERS = (
-	Provider.OpenAI,
-	Provider.CustomOpenAI,
-	Provider.MistralAI,
-	Provider.Google,
 )
 
 # Providers that cap stop sequences at 4 (per OpenAI chat-completions docs);
@@ -186,15 +180,8 @@ class CompletionThread(threading.Thread):
 		Honoring the "Reasoning enabled" checkbox is provider-specific: most
 		APIs default to reasoning ON when the model supports it, so simply
 		omitting params would still bill us for reasoning tokens. We send the
-		appropriate disable signal whenever the official API exposes one:
-
-		* Anthropic — extended thinking is opt-in (no ``thinking`` param = OFF).
-		* OpenRouter — send ``reasoning: {effort: "none"}`` only when model
-		  metadata lists ``reasoning_effort``; otherwise omit ``reasoning``
-		  (mandatory-reasoning endpoints reject explicit disable signals).
-		* Other providers — send the provider-native off signal only when
-		  ``model.supports_reasoning_disable`` is true (from ``supported_parameters``
-		  and ``reasoning_mandatory`` metadata).
+		appropriate disable signal whenever the official API exposes one.
+		See ``reasoningrequest`` for per-provider rules and doc links.
 		"""
 		model_supports_reasoning = bool(getattr(model, "reasoning", False))
 		if getattr(model, "reasoning_always_on", False):
@@ -203,55 +190,10 @@ class CompletionThread(threading.Thread):
 		provider = model.provider
 		effort = conf.get("reasoningEffort", ReasoningEffort.MEDIUM.value)
 		if use_reasoning:
-			self._applyReasoningEnabled(params, model, provider, effort, conf)
+			apply_reasoning_enabled(params, model, provider, effort, conf)
 		else:
-			self._applyReasoningDisabled(params, model, provider)
+			apply_reasoning_disabled(params, model, provider)
 		return use_reasoning
-
-	def _applyReasoningEnabled(self, params: dict, model, provider, effort: str, conf) -> None:
-		"""Send the "please reason" signal in whatever shape the provider expects."""
-		if provider == Provider.Anthropic:
-			params["reasoning_enabled"] = True
-			params["reasoning_effort"] = effort
-			params["adaptive_thinking"] = conf.get("adaptiveThinking", True)
-			return
-		if provider == Provider.Ollama:
-			params["think"] = True
-			return
-		if provider == Provider.OpenRouter:
-			# https://openrouter.ai/docs/guides/best-practices/reasoning-tokens
-			params["reasoning"] = {"enabled": True, "effort": effort}
-			return
-		if provider == Provider.DeepSeek:
-			if not getattr(model, "reasoning_mandatory", False):
-				params["thinking"] = {"type": "enabled"}
-			if "reasoning_effort" in model._supported_param_set():
-				params["reasoning_effort"] = effort
-			return
-		if getattr(model, "reasoning_mandatory", False):
-			return
-		if provider in _REASONING_EFFORT_PROVIDERS:
-			params["reasoning_effort"] = effort
-
-	def _applyReasoningDisabled(self, params: dict, model, provider) -> None:
-		"""Send the right "no reasoning" signal so providers don't reason by default."""
-		if not getattr(model, "reasoning", False):
-			return
-		if not getattr(model, "supports_reasoning_disable", False):
-			return
-		if provider == Provider.Anthropic:
-			return
-		if provider == Provider.OpenRouter:
-			params["reasoning"] = {"effort": "none"}
-			return
-		if provider == Provider.DeepSeek:
-			params["thinking"] = {"type": "disabled"}
-			return
-		if provider == Provider.Ollama:
-			params["think"] = False
-			return
-		if provider in _REASONING_EFFORT_PROVIDERS:
-			params["reasoning_effort"] = "none"
 
 	def _usage_for_block(self, usage):
 		"""Normalize usage dict into the persisted HistoryBlock usage shape."""

@@ -330,6 +330,26 @@ class ModelHandlersMixin:
 		if not self._selectModel(selector) and lst.GetCount():
 			lst.SetSelection(0)
 
+	def _reasoning_mode_data_key(self, model_id: str) -> str:
+		return "reasoningMode_%s" % model_id
+
+	def _saved_reasoning_mode(self, model) -> bool:
+		"""Per-model reasoning preference; defaults off when optional (saves tokens)."""
+		if getattr(model, "reasoning_always_on", False):
+			return True
+		key = self._reasoning_mode_data_key(model.id)
+		if key in self.data:
+			return bool(self.data[key])
+		return False
+
+	def _persist_reasoning_mode(self, model, enabled: bool) -> None:
+		if not model:
+			return
+		key = self._reasoning_mode_data_key(model.id)
+		if self.data.get(key) != enabled:
+			self.data[key] = bool(enabled)
+			self.saveData(True)
+
 	def onModelChange(self, evt):
 		model = self.getCurrentModel()
 		if not model:
@@ -362,7 +382,10 @@ class ModelHandlersMixin:
 				self.reasoningModeCheckBox.Enable(False)
 			else:
 				self.reasoningModeCheckBox.Enable(True)
+				self.reasoningModeCheckBox.SetValue(self._saved_reasoning_mode(model))
 			reasoning_on = self.reasoningModeCheckBox.IsChecked()
+			if not getattr(model, "reasoning_always_on", False):
+				self._persist_reasoning_mode(model, reasoning_on)
 			opts = model.reasoning_effort_options
 			if opts and reasoning_on:
 				labels = [o[1] for o in opts]
