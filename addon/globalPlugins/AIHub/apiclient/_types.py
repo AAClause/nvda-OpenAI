@@ -33,7 +33,12 @@ class ChoiceMessage:
 
 	__slots__ = ("content", "audio", "reasoning")
 
-	def __init__(self, content: str = "", audio: Optional[dict] = None, reasoning: str = ""):
+	def __init__(
+		self,
+		content: str = "",
+		audio: Optional[dict] = None,
+		reasoning: str = "",
+	):
 		self.content = content or ""
 		# {"data": base64_str, "format": "wav"} when the model returns audio.
 		self.audio = audio
@@ -53,11 +58,22 @@ class Choice:
 class ChatCompletion:
 	"""Aggregated non-streaming completion result."""
 
-	__slots__ = ("choices", "usage")
+	__slots__ = ("choices", "usage", "response_id", "citations", "encrypted_reasoning")
 
-	def __init__(self, choices: list, usage: Optional[dict] = None):
+	def __init__(
+		self,
+		choices: list,
+		usage: Optional[dict] = None,
+		response_id: str = "",
+		citations: Optional[list] = None,
+		encrypted_reasoning: Optional[list] = None,
+	):
 		self.choices = choices
 		self.usage = usage or {}
+		# xAI / OpenAI Responses API metadata (stateful follow-ups, source URLs).
+		self.response_id = response_id or ""
+		self.citations = list(citations or [])
+		self.encrypted_reasoning = list(encrypted_reasoning or [])
 
 
 class Transcription:
@@ -78,17 +94,23 @@ class StreamEvent:
 	chatcompletion consumer can use both interchangeably.
 	"""
 
-	__slots__ = ("choices", "usage", "error")
+	__slots__ = ("choices", "usage", "error", "response_id", "citations", "encrypted_reasoning")
 
 	def __init__(
 		self,
 		choices: Optional[list] = None,
 		usage: Optional[dict] = None,
 		error: Optional[dict] = None,
+		response_id: str = "",
+		citations: Optional[list] = None,
+		encrypted_reasoning: Optional[list] = None,
 	):
 		self.choices = choices or []
 		self.usage = usage or {}
 		self.error = error
+		self.response_id = response_id or ""
+		self.citations = list(citations or [])
+		self.encrypted_reasoning = list(encrypted_reasoning or [])
 
 
 def build_stream_event(
@@ -97,8 +119,18 @@ def build_stream_event(
 	finish_reason: Optional[str] = None,
 	usage: Optional[dict] = None,
 	error: Optional[dict] = None,
+	response_id: str = "",
+	citations: Optional[list] = None,
+	encrypted_reasoning: Optional[list] = None,
 ) -> StreamEvent:
 	"""Convenience constructor used by all stream parsers."""
 	delta = ChoiceDelta(content, reasoning=reasoning)
 	choice = StreamChoice(delta, finish_reason)
-	return StreamEvent(choices=[choice], usage=usage or {}, error=error)
+	return StreamEvent(
+		choices=[choice],
+		usage=usage or {},
+		error=error,
+		response_id=response_id,
+		citations=citations,
+		encrypted_reasoning=encrypted_reasoning,
+	)

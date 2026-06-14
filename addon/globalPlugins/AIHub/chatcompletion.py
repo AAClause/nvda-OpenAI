@@ -88,12 +88,32 @@ _STOP_SEQUENCE_CAP_4_PROVIDERS = (Provider.OpenAI, Provider.CustomOpenAI)
 
 # OpenRouter server tool: https://openrouter.ai/docs/guides/features/server-tools/web-search
 _OPENROUTER_WEB_SEARCH_TOOL = {"type": "openrouter:web_search"}
+# xAI built-in tools (Responses API): https://docs.x.ai/developers/tools/overview
+_XAI_CODE_INTERPRETER_TOOL = {"type": "code_interpreter"}
+
+
+def _set_builtin_tool(params: dict, tool: dict) -> None:
+	"""Replace any existing tool with the same ``type`` and append ``tool``."""
+	ttype = tool.get("type")
+	tools = [
+		t for t in (params.get("tools") or [])
+		if not (isinstance(t, dict) and t.get("type") == ttype)
+	]
+	tools.append(dict(tool))
+	params["tools"] = tools
+
+
+def _append_tool(params: dict, tool: dict) -> None:
+	tools = list(params.get("tools") or [])
+	ttype = tool.get("type")
+	if ttype and any(isinstance(t, dict) and t.get("type") == ttype for t in tools):
+		return
+	tools.append(dict(tool))
+	params["tools"] = tools
 
 
 def _apply_web_search_settings(params: dict, model, wnd, provider: str) -> None:
 	"""Apply provider-native and/or OpenRouter universal web search to the request."""
-	tools = list(params.get("tools") or [])
-
 	native_on = (
 		model.supports_web_search
 		and hasattr(wnd, "webSearchCheckBox")
@@ -109,6 +129,10 @@ def _apply_web_search_settings(params: dict, model, wnd, provider: str) -> None:
 		elif provider in (Provider.OpenAI, Provider.OpenRouter):
 			# OpenRouter passes web_search_options to the upstream provider when supported.
 			params["web_search_options"] = {}
+		elif provider == Provider.xAI:
+			from .xaitools import build_web_search_tool_from_wnd
+
+			_set_builtin_tool(params, build_web_search_tool_from_wnd(wnd))
 
 	or_cb = getattr(wnd, "openRouterWebSearchCheckBox", None)
 	or_on = (
@@ -117,10 +141,144 @@ def _apply_web_search_settings(params: dict, model, wnd, provider: str) -> None:
 		and or_cb.IsChecked()
 	)
 	if or_on and provider == Provider.OpenRouter:
-		tools.append(dict(_OPENROUTER_WEB_SEARCH_TOOL))
+		_append_tool(params, _OPENROUTER_WEB_SEARCH_TOOL)
 
-	if tools:
-		params["tools"] = tools
+
+def _apply_x_search_settings(params: dict, model, wnd, provider: str) -> None:
+	"""Attach xAI ``x_search`` (X/Twitter) when the user enables it."""
+	if provider != Provider.xAI:
+		return
+	if not getattr(model, "supports_x_search", False):
+		return
+	cb = getattr(wnd, "xSearchCheckBox", None)
+	if cb is None or not cb.IsChecked():
+		return
+	from .xaitools import build_x_search_tool_from_wnd
+
+	_set_builtin_tool(params, build_x_search_tool_from_wnd(wnd))
+
+
+def _apply_code_interpreter_settings(params: dict, model, wnd, provider: str) -> None:
+	"""Attach xAI ``code_interpreter`` when enabled."""
+	if provider != Provider.xAI:
+		return
+	if not getattr(model, "supports_code_interpreter", False):
+		return
+	cb = getattr(wnd, "codeInterpreterCheckBox", None)
+	if cb is None or not cb.IsChecked():
+		return
+	_set_builtin_tool(params, _XAI_CODE_INTERPRETER_TOOL)
+
+
+def _apply_collections_search_settings(params: dict, model, wnd, provider: str) -> None:
+	"""Attach xAI ``collections_search`` when enabled and collection ids are set."""
+	if provider != Provider.xAI:
+		return
+	if not getattr(model, "supports_collections_search", False):
+		return
+	cb = getattr(wnd, "collectionsSearchCheckBox", None)
+	if cb is None or not cb.IsChecked():
+		return
+	from .xaitools import build_collections_search_tool_from_wnd
+
+	tool = build_collections_search_tool_from_wnd(wnd)
+	if tool is not None:
+		_set_builtin_tool(params, tool)
+
+
+def _apply_xai_include_settings(
+	params: dict,
+	model,
+	wnd,
+	provider: str,
+	reasoning_enabled: bool,
+) -> None:
+	"""Merge xAI Responses ``include`` flags (citations, encrypted reasoning)."""
+	if provider != Provider.xAI:
+		return
+	include = list(params.get("include") or [])
+	tools = params.get("tools")
+	if isinstance(tools, list) and tools:
+		if "inline_citations" not in include and "no_inline_citations" not in include:
+			include.append("inline_citations")
+	from .xaitools import xai_encrypted_reasoning_requested
+
+	if xai_encrypted_reasoning_requested(wnd, reasoning_enabled):
+		token = "reasoning.encrypted_content"
+		if token not in include:
+			include.append(token)
+	if include:
+		params["include"] = include
+
+
+def _messages_for_xai_responses(wnd, messages: list, is_regenerate: bool) -> list:
+	"""Use ``previous_response_id`` state: send only the new user turn when possible."""
+	if is_regenerate:
+		return messages
+	anchor = getattr(wnd, "lastBlock", None)
+	prev_id = getattr(anchor, "xaiResponseId", None) if anchor is not None else None
+	if not isinstance(prev_id, str) or not prev_id.strip():
+		return messages
+	system_msgs = [
+		m for m in messages
+		if isinstance(m, dict) and str(m.get("role", "")).lower() == "system"
+	]
+	user_msgs = [
+		m for m in messages
+		if isinstance(m, dict) and str(m.get("role", "")).lower() == "user"
+	]
+	if not user_msgs:
+		return messages
+	return system_msgs + [user_msgs[-1]]
+
+
+def _apply_xai_previous_response_id(params: dict, wnd, is_regenerate: bool) -> None:
+	if is_regenerate:
+		return
+	anchor = getattr(wnd, "lastBlock", None)
+	prev_id = getattr(anchor, "xaiResponseId", None) if anchor is not None else None
+	if isinstance(prev_id, str) and prev_id.strip():
+		params["previous_response_id"] = prev_id.strip()
+
+
+def _format_xai_citations_footer(citations: list, response_text: str) -> str:
+	"""Append a sources list when the API returned citations not already inline."""
+	if not citations:
+		return ""
+	text = response_text or ""
+	unique = []
+	seen: set[str] = set()
+	for url in citations:
+		if not isinstance(url, str) or not url.strip():
+			continue
+		u = url.strip()
+		if u in seen:
+			continue
+		seen.add(u)
+		if u in text:
+			continue
+		unique.append(u)
+	if not unique:
+		return ""
+	lines = ["", "---", _("Sources:")]
+	for idx, url in enumerate(unique, start=1):
+		lines.append(f"{idx}. {url}")
+	return "\n".join(lines)
+
+
+def _apply_xai_response_metadata(block, response, response_text: str = "") -> str:
+	"""Store xAI Responses metadata on ``block``; return optional footer text."""
+	rid = getattr(response, "response_id", None)
+	if isinstance(rid, str) and rid.strip():
+		block.xaiResponseId = rid.strip()
+	encrypted = getattr(response, "encrypted_reasoning", None)
+	if isinstance(encrypted, list) and encrypted:
+		block.xaiEncryptedReasoning = list(encrypted)
+	citations = getattr(response, "citations", None) or []
+	if citations:
+		block.citations = list(citations)
+		return _format_xai_citations_footer(citations, response_text)
+	return ""
 
 
 def _strip_markdown_for_speech(fragment: str) -> str:
@@ -593,6 +751,14 @@ class CompletionThread(threading.Thread):
 		# defined regardless of which optional branches fire).
 		provider = model.provider
 		_apply_web_search_settings(params, model, wnd, provider)
+		_apply_x_search_settings(params, model, wnd, provider)
+		_apply_code_interpreter_settings(params, model, wnd, provider)
+		_apply_collections_search_settings(params, model, wnd, provider)
+		if provider == Provider.xAI:
+			_apply_xai_include_settings(params, model, wnd, provider, useReasoning)
+			_apply_xai_previous_response_id(params, wnd, is_regenerate)
+			messages = _messages_for_xai_responses(wnd, messages, is_regenerate)
+			params["messages"] = messages
 		if debug:
 			log.info("Client base URL: %s", client.base_url)
 			log.info("OpenAI [timing] Messages in request: %d", len(messages))
@@ -799,6 +965,15 @@ class CompletionThread(threading.Thread):
 			usage = getattr(event, "usage", None)
 			if isinstance(usage, dict) and usage:
 				latest_usage = usage
+			rid = getattr(event, "response_id", None)
+			if isinstance(rid, str) and rid.strip():
+				block.xaiResponseId = rid.strip()
+			event_citations = getattr(event, "citations", None)
+			if event_citations:
+				block.citations = list(event_citations)
+			event_encrypted = getattr(event, "encrypted_reasoning", None)
+			if isinstance(event_encrypted, list) and event_encrypted:
+				block.xaiEncryptedReasoning = list(event_encrypted)
 			choices = getattr(event, "choices", None)
 			if not choices:
 				continue
@@ -844,6 +1019,13 @@ class CompletionThread(threading.Thread):
 			if normalized:
 				block.usage = normalized
 			self._log_usage_debug(debug, "stream final chunk", latest_usage, normalized)
+		citations_footer = _format_xai_citations_footer(
+			getattr(block, "citations", None) or [],
+			block.responseText or "",
+		)
+		if citations_footer:
+			block.responseText += citations_footer
+			wnd.updateResponse(block, citations_footer)
 		block.responseTerminated = True
 
 	def _responseWithoutStream(self, response, block, debug=False):
@@ -891,7 +1073,11 @@ class CompletionThread(threading.Thread):
 						)
 		else:
 			raise TypeError(f"Invalid response type: {type(response)}")
+		citations_footer = _apply_xai_response_metadata(block, response, text)
 		block.responseText += text
+		if citations_footer:
+			block.responseText += citations_footer
+			text += citations_footer
 		if not played_audio and text:
 			if hasattr(wnd, "canAutoReadStreamingResponse") and wnd.canAutoReadStreamingResponse():
 				speech_plain = _strip_markdown_for_speech(text)

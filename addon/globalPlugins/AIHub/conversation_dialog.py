@@ -353,9 +353,22 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 				st["adaptiveThinking"] = self.adaptiveThinkingCheckBox.IsChecked()
 			if self.webSearchCheckBox.IsShown():
 				st["webSearch"] = self.webSearchCheckBox.IsChecked()
+			x_cb = getattr(self, "xSearchCheckBox", None)
+			if x_cb is not None and x_cb.IsShown():
+				st["xSearch"] = x_cb.IsChecked()
 			or_cb = getattr(self, "openRouterWebSearchCheckBox", None)
 			if or_cb is not None and or_cb.IsShown():
 				st["openRouterWebSearch"] = or_cb.IsChecked()
+			code_cb = getattr(self, "codeInterpreterCheckBox", None)
+			if code_cb is not None and code_cb.IsShown():
+				st["codeInterpreter"] = code_cb.IsChecked()
+			coll_cb = getattr(self, "collectionsSearchCheckBox", None)
+			if coll_cb is not None and coll_cb.IsShown():
+				st["collectionsSearch"] = coll_cb.IsChecked()
+			coll_ids = getattr(self, "xaiCollectionIdsTextCtrl", None)
+			if coll_ids is not None and coll_ids.IsShown():
+				st["xaiCollectionIds"] = coll_ids.GetValue()
+			self._captureXaiAdvancedChrome(st)
 			try:
 				st["advancedSampling"] = self.advancedSamplingCheckBox.IsChecked()
 			except Exception:
@@ -406,9 +419,25 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		model = self.getCurrentModel()
 		if model and model.supports_web_search and "webSearch" in st:
 			self.webSearchCheckBox.SetValue(bool(st["webSearch"]))
+		x_cb = getattr(self, "xSearchCheckBox", None)
+		if x_cb is not None and model and getattr(model, "supports_x_search", False) and "xSearch" in st:
+			x_cb.SetValue(bool(st["xSearch"]))
 		or_cb = getattr(self, "openRouterWebSearchCheckBox", None)
 		if or_cb is not None and model and model.supports_openrouter_web_search and "openRouterWebSearch" in st:
 			or_cb.SetValue(bool(st["openRouterWebSearch"]))
+		code_cb = getattr(self, "codeInterpreterCheckBox", None)
+		if code_cb is not None and model and getattr(model, "supports_code_interpreter", False) and "codeInterpreter" in st:
+			code_cb.SetValue(bool(st["codeInterpreter"]))
+		coll_cb = getattr(self, "collectionsSearchCheckBox", None)
+		if coll_cb is not None and model and getattr(model, "supports_collections_search", False) and "collectionsSearch" in st:
+			coll_cb.SetValue(bool(st["collectionsSearch"]))
+		coll_ids = getattr(self, "xaiCollectionIdsTextCtrl", None)
+		if coll_ids is not None and model and getattr(model, "supports_collections_search", False) and "xaiCollectionIds" in st:
+			coll_ids.SetValue(st["xaiCollectionIds"])
+		self._applyXaiAdvancedChrome(st, model)
+		if model:
+			self._updateCollectionsSearchChrome(model)
+			self._updateXaiAdvancedChrome(model)
 		if "maxTokens" in st:
 			try:
 				self.maxTokensSpinCtrl.SetValue(int(st["maxTokens"]))
@@ -1291,8 +1320,16 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 			label=_("&Web search")
 		)
 		self.webSearchCheckBox.SetValue(False)
-		self.webSearchCheckBox.Bind(wx.EVT_CHECKBOX, self._onConversationChromeEdited)
+		self.webSearchCheckBox.Bind(wx.EVT_CHECKBOX, self._onWebSearchToggled)
 		modelOptionsSizer.Add(self.webSearchCheckBox, 0, wx.ALL, UI_SECTION_SPACING_PX)
+		self.xSearchCheckBox = wx.CheckBox(
+			content_panel,
+			# Translators: Checkbox to enable xAI X (Twitter) search built-in tool.
+			label=_("&X search"),
+		)
+		self.xSearchCheckBox.SetValue(False)
+		self.xSearchCheckBox.Bind(wx.EVT_CHECKBOX, self._onXSearchToggled)
+		modelOptionsSizer.Add(self.xSearchCheckBox, 0, wx.ALL, UI_SECTION_SPACING_PX)
 		self.openRouterWebSearchCheckBox = wx.CheckBox(
 			content_panel,
 			# Translators: Checkbox for OpenRouter universal web search server tool (any tool-calling model).
@@ -1302,6 +1339,152 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		self.openRouterWebSearchCheckBox.Bind(wx.EVT_CHECKBOX, self._onConversationChromeEdited)
 		modelOptionsSizer.Add(self.openRouterWebSearchCheckBox, 0, wx.ALL, UI_SECTION_SPACING_PX)
 		gen_sz.Add(modelOptionsSizer, 0, wx.ALL, 0)
+
+		xaiToolsSizer = wx.BoxSizer(wx.HORIZONTAL)
+		self.codeInterpreterCheckBox = wx.CheckBox(
+			content_panel,
+			# Translators: Checkbox to enable xAI code interpreter built-in tool.
+			label=_("Code &interpreter"),
+		)
+		self.codeInterpreterCheckBox.SetValue(False)
+		self.codeInterpreterCheckBox.Bind(wx.EVT_CHECKBOX, self._onConversationChromeEdited)
+		xaiToolsSizer.Add(self.codeInterpreterCheckBox, 0, wx.ALL, UI_SECTION_SPACING_PX)
+		self.collectionsSearchCheckBox = wx.CheckBox(
+			content_panel,
+			# Translators: Checkbox to enable xAI collections search built-in tool.
+			label=_("Collections &search"),
+		)
+		self.collectionsSearchCheckBox.SetValue(False)
+		self.collectionsSearchCheckBox.Bind(wx.EVT_CHECKBOX, self._onCollectionsSearchToggled)
+		xaiToolsSizer.Add(self.collectionsSearchCheckBox, 0, wx.ALL, UI_SECTION_SPACING_PX)
+		gen_sz.Add(xaiToolsSizer, 0, wx.ALL, 0)
+
+		self.xaiCollectionIdsRow = wx.Panel(content_panel)
+		xaiCollectionIdsRowSz = wx.BoxSizer(wx.VERTICAL)
+		# Translators: Label for xAI collection ids used with collections search.
+		self.xaiCollectionIdsLabel = wx.StaticText(
+			self.xaiCollectionIdsRow,
+			label=_("xAI collection &IDs:"),
+		)
+		self.xaiCollectionIdsTextCtrl = wx.TextCtrl(self.xaiCollectionIdsRow)
+		self.xaiCollectionIdsTextCtrl.Bind(wx.EVT_TEXT, self._onConversationChromeEdited)
+		xaiCollectionIdsRowSz.Add(self.xaiCollectionIdsLabel, 0, wx.LEFT | wx.RIGHT | wx.TOP, UI_SECTION_SPACING_PX)
+		xaiCollectionIdsRowSz.Add(self.xaiCollectionIdsTextCtrl, 0, wx.EXPAND | wx.LEFT | wx.RIGHT, UI_SECTION_SPACING_PX)
+		self.xaiCollectionsMaxResultsLabel = wx.StaticText(
+			self.xaiCollectionIdsRow,
+			# Translators: Label for max collection search hits per xAI collections_search tool.
+			label=_("Max &results:"),
+		)
+		self.xaiCollectionsMaxResultsSpinCtrl = wx.SpinCtrl(self.xaiCollectionIdsRow, min=0, max=50)
+		self.xaiCollectionsMaxResultsSpinCtrl.Bind(wx.EVT_SPINCTRL, self._onConversationChromeEdited)
+		xaiCollectionIdsRowSz.Add(self.xaiCollectionsMaxResultsLabel, 0, wx.LEFT | wx.RIGHT | wx.TOP, UI_SECTION_SPACING_PX)
+		xaiCollectionIdsRowSz.Add(self.xaiCollectionsMaxResultsSpinCtrl, 0, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.BOTTOM, UI_SECTION_SPACING_PX)
+		self.xaiCollectionIdsRow.SetSizer(xaiCollectionIdsRowSz)
+		gen_sz.Add(self.xaiCollectionIdsRow, 0, wx.EXPAND, 0)
+
+		self.xaiWebSearchOptionsRow = wx.Panel(content_panel)
+		xaiWebSz = wx.BoxSizer(wx.VERTICAL)
+		# Translators: Subheading for xAI web search filter controls.
+		xaiWebSz.Add(wx.StaticText(self.xaiWebSearchOptionsRow, label=_("xAI web search filters")), 0, wx.ALL, UI_SECTION_SPACING_PX)
+		self.xaiWebAllowedDomainsLabel = wx.StaticText(
+			self.xaiWebSearchOptionsRow,
+			# Translators: Label for allowed web domains (xAI web_search).
+			label=_("Allowed &domains (max 5):"),
+		)
+		self.xaiWebAllowedDomainsTextCtrl = wx.TextCtrl(self.xaiWebSearchOptionsRow)
+		self.xaiWebAllowedDomainsTextCtrl.Bind(wx.EVT_TEXT, self._onConversationChromeEdited)
+		xaiWebSz.Add(self.xaiWebAllowedDomainsLabel, 0, wx.LEFT | wx.RIGHT | wx.TOP, UI_SECTION_SPACING_PX)
+		xaiWebSz.Add(self.xaiWebAllowedDomainsTextCtrl, 0, wx.EXPAND | wx.LEFT | wx.RIGHT, UI_SECTION_SPACING_PX)
+		self.xaiWebExcludedDomainsLabel = wx.StaticText(
+			self.xaiWebSearchOptionsRow,
+			# Translators: Label for excluded web domains (xAI web_search).
+			label=_("Excluded dom&ains (max 5):"),
+		)
+		self.xaiWebExcludedDomainsTextCtrl = wx.TextCtrl(self.xaiWebSearchOptionsRow)
+		self.xaiWebExcludedDomainsTextCtrl.Bind(wx.EVT_TEXT, self._onConversationChromeEdited)
+		xaiWebSz.Add(self.xaiWebExcludedDomainsLabel, 0, wx.LEFT | wx.RIGHT | wx.TOP, UI_SECTION_SPACING_PX)
+		xaiWebSz.Add(self.xaiWebExcludedDomainsTextCtrl, 0, wx.EXPAND | wx.LEFT | wx.RIGHT, UI_SECTION_SPACING_PX)
+		self.xaiWebImageSearchCheckBox = wx.CheckBox(
+			self.xaiWebSearchOptionsRow,
+			# Translators: xAI web_search enable_image_search flag.
+			label=_("Enable &image search"),
+		)
+		self.xaiWebImageSearchCheckBox.Bind(wx.EVT_CHECKBOX, self._onConversationChromeEdited)
+		xaiWebSz.Add(self.xaiWebImageSearchCheckBox, 0, wx.ALL, UI_SECTION_SPACING_PX)
+		self.xaiWebImageUnderstandingCheckBox = wx.CheckBox(
+			self.xaiWebSearchOptionsRow,
+			# Translators: xAI web_search enable_image_understanding flag.
+			label=_("Enable image &understanding"),
+		)
+		self.xaiWebImageUnderstandingCheckBox.Bind(wx.EVT_CHECKBOX, self._onConversationChromeEdited)
+		xaiWebSz.Add(self.xaiWebImageUnderstandingCheckBox, 0, wx.ALL, UI_SECTION_SPACING_PX)
+		self.xaiWebSearchOptionsRow.SetSizer(xaiWebSz)
+		gen_sz.Add(self.xaiWebSearchOptionsRow, 0, wx.EXPAND, 0)
+
+		self.xaiXSearchOptionsRow = wx.Panel(content_panel)
+		xaiXSz = wx.BoxSizer(wx.VERTICAL)
+		# Translators: Subheading for xAI X (Twitter) search filter controls.
+		xaiXSz.Add(wx.StaticText(self.xaiXSearchOptionsRow, label=_("xAI X search filters")), 0, wx.ALL, UI_SECTION_SPACING_PX)
+		self.xaiXAllowedHandlesLabel = wx.StaticText(
+			self.xaiXSearchOptionsRow,
+			# Translators: Label for allowed X handles (xAI x_search).
+			label=_("Allowed X &handles (max 20):"),
+		)
+		self.xaiXAllowedHandlesTextCtrl = wx.TextCtrl(self.xaiXSearchOptionsRow)
+		self.xaiXAllowedHandlesTextCtrl.Bind(wx.EVT_TEXT, self._onConversationChromeEdited)
+		xaiXSz.Add(self.xaiXAllowedHandlesLabel, 0, wx.LEFT | wx.RIGHT | wx.TOP, UI_SECTION_SPACING_PX)
+		xaiXSz.Add(self.xaiXAllowedHandlesTextCtrl, 0, wx.EXPAND | wx.LEFT | wx.RIGHT, UI_SECTION_SPACING_PX)
+		self.xaiXExcludedHandlesLabel = wx.StaticText(
+			self.xaiXSearchOptionsRow,
+			# Translators: Label for excluded X handles (xAI x_search).
+			label=_("Excluded X hand&les (max 20):"),
+		)
+		self.xaiXExcludedHandlesTextCtrl = wx.TextCtrl(self.xaiXSearchOptionsRow)
+		self.xaiXExcludedHandlesTextCtrl.Bind(wx.EVT_TEXT, self._onConversationChromeEdited)
+		xaiXSz.Add(self.xaiXExcludedHandlesLabel, 0, wx.LEFT | wx.RIGHT | wx.TOP, UI_SECTION_SPACING_PX)
+		xaiXSz.Add(self.xaiXExcludedHandlesTextCtrl, 0, wx.EXPAND | wx.LEFT | wx.RIGHT, UI_SECTION_SPACING_PX)
+		self.xaiXFromDateLabel = wx.StaticText(
+			self.xaiXSearchOptionsRow,
+			# Translators: Label for X search start date (ISO YYYY-MM-DD).
+			label=_("From date (&YYYY-MM-DD):"),
+		)
+		self.xaiXFromDateTextCtrl = wx.TextCtrl(self.xaiXSearchOptionsRow)
+		self.xaiXFromDateTextCtrl.Bind(wx.EVT_TEXT, self._onConversationChromeEdited)
+		xaiXSz.Add(self.xaiXFromDateLabel, 0, wx.LEFT | wx.RIGHT | wx.TOP, UI_SECTION_SPACING_PX)
+		xaiXSz.Add(self.xaiXFromDateTextCtrl, 0, wx.EXPAND | wx.LEFT | wx.RIGHT, UI_SECTION_SPACING_PX)
+		self.xaiXToDateLabel = wx.StaticText(
+			self.xaiXSearchOptionsRow,
+			# Translators: Label for X search end date (ISO YYYY-MM-DD).
+			label=_("To date (YYYY-MM-&DD):"),
+		)
+		self.xaiXToDateTextCtrl = wx.TextCtrl(self.xaiXSearchOptionsRow)
+		self.xaiXToDateTextCtrl.Bind(wx.EVT_TEXT, self._onConversationChromeEdited)
+		xaiXSz.Add(self.xaiXToDateLabel, 0, wx.LEFT | wx.RIGHT | wx.TOP, UI_SECTION_SPACING_PX)
+		xaiXSz.Add(self.xaiXToDateTextCtrl, 0, wx.EXPAND | wx.LEFT | wx.RIGHT, UI_SECTION_SPACING_PX)
+		self.xaiXImageUnderstandingCheckBox = wx.CheckBox(
+			self.xaiXSearchOptionsRow,
+			# Translators: xAI x_search enable_image_understanding flag.
+			label=_("X image &understanding"),
+		)
+		self.xaiXImageUnderstandingCheckBox.Bind(wx.EVT_CHECKBOX, self._onConversationChromeEdited)
+		xaiXSz.Add(self.xaiXImageUnderstandingCheckBox, 0, wx.ALL, UI_SECTION_SPACING_PX)
+		self.xaiXVideoUnderstandingCheckBox = wx.CheckBox(
+			self.xaiXSearchOptionsRow,
+			# Translators: xAI x_search enable_video_understanding flag.
+			label=_("X video underst&anding"),
+		)
+		self.xaiXVideoUnderstandingCheckBox.Bind(wx.EVT_CHECKBOX, self._onConversationChromeEdited)
+		xaiXSz.Add(self.xaiXVideoUnderstandingCheckBox, 0, wx.ALL, UI_SECTION_SPACING_PX)
+		self.xaiXSearchOptionsRow.SetSizer(xaiXSz)
+		gen_sz.Add(self.xaiXSearchOptionsRow, 0, wx.EXPAND, 0)
+
+		self.xaiEncryptedReasoningCheckBox = wx.CheckBox(
+			content_panel,
+			# Translators: Request encrypted reasoning content from xAI Responses API.
+			label=_("xAI encrypted &reasoning content"),
+		)
+		self.xaiEncryptedReasoningCheckBox.Bind(wx.EVT_CHECKBOX, self._onConversationChromeEdited)
+		gen_sz.Add(self.xaiEncryptedReasoningCheckBox, 0, wx.ALL, UI_SECTION_SPACING_PX)
 
 		self.maxTokensRow = wx.Panel(content_panel)
 		maxTokensRowSz = wx.BoxSizer(wx.VERTICAL)
@@ -1515,6 +1698,102 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 				self._captureConversationChromeToPage(self.get_active_page())
 			except Exception:
 				pass
+
+	def _onCollectionsSearchToggled(self, evt):
+		"""Show collection id field when collections search is enabled."""
+		try:
+			model = self.getCurrentModel()
+			if model:
+				self._updateCollectionsSearchChrome(model)
+		except Exception:
+			pass
+		self._onConversationChromeEdited(evt)
+
+	def _captureXaiAdvancedChrome(self, st: dict) -> None:
+		"""Persist xAI tool filter and encrypted-reasoning chrome into tab state."""
+		text_fields = (
+			("xaiWebAllowedDomainsTextCtrl", "xaiWebAllowedDomains"),
+			("xaiWebExcludedDomainsTextCtrl", "xaiWebExcludedDomains"),
+			("xaiXAllowedHandlesTextCtrl", "xaiXAllowedHandles"),
+			("xaiXExcludedHandlesTextCtrl", "xaiXExcludedHandles"),
+			("xaiXFromDateTextCtrl", "xaiXFromDate"),
+			("xaiXToDateTextCtrl", "xaiXToDate"),
+		)
+		for ctrl_name, key in text_fields:
+			ctrl = getattr(self, ctrl_name, None)
+			if ctrl is not None and ctrl.IsShown():
+				st[key] = ctrl.GetValue()
+		check_fields = (
+			("xaiWebImageSearchCheckBox", "xaiWebImageSearch"),
+			("xaiWebImageUnderstandingCheckBox", "xaiWebImageUnderstanding"),
+			("xaiXImageUnderstandingCheckBox", "xaiXImageUnderstanding"),
+			("xaiXVideoUnderstandingCheckBox", "xaiXVideoUnderstanding"),
+			("xaiEncryptedReasoningCheckBox", "xaiEncryptedReasoning"),
+		)
+		for ctrl_name, key in check_fields:
+			ctrl = getattr(self, ctrl_name, None)
+			if ctrl is not None and ctrl.IsShown():
+				st[key] = ctrl.IsChecked()
+		spin = getattr(self, "xaiCollectionsMaxResultsSpinCtrl", None)
+		if spin is not None and spin.IsShown():
+			st["xaiCollectionsMaxResults"] = spin.GetValue()
+
+	def _applyXaiAdvancedChrome(self, st: dict, model) -> None:
+		"""Restore xAI tool filter chrome from tab state."""
+		if not model or not getattr(model, "supports_xai_builtin_tools", False):
+			return
+		text_fields = (
+			("xaiWebAllowedDomainsTextCtrl", "xaiWebAllowedDomains"),
+			("xaiWebExcludedDomainsTextCtrl", "xaiWebExcludedDomains"),
+			("xaiXAllowedHandlesTextCtrl", "xaiXAllowedHandles"),
+			("xaiXExcludedHandlesTextCtrl", "xaiXExcludedHandles"),
+			("xaiXFromDateTextCtrl", "xaiXFromDate"),
+			("xaiXToDateTextCtrl", "xaiXToDate"),
+		)
+		for ctrl_name, key in text_fields:
+			if key not in st:
+				continue
+			ctrl = getattr(self, ctrl_name, None)
+			if ctrl is not None:
+				ctrl.SetValue(st[key])
+		check_fields = (
+			("xaiWebImageSearchCheckBox", "xaiWebImageSearch"),
+			("xaiWebImageUnderstandingCheckBox", "xaiWebImageUnderstanding"),
+			("xaiXImageUnderstandingCheckBox", "xaiXImageUnderstanding"),
+			("xaiXVideoUnderstandingCheckBox", "xaiXVideoUnderstanding"),
+			("xaiEncryptedReasoningCheckBox", "xaiEncryptedReasoning"),
+		)
+		for ctrl_name, key in check_fields:
+			if key not in st:
+				continue
+			ctrl = getattr(self, ctrl_name, None)
+			if ctrl is not None:
+				ctrl.SetValue(bool(st[key]))
+		if "xaiCollectionsMaxResults" in st:
+			spin = getattr(self, "xaiCollectionsMaxResultsSpinCtrl", None)
+			if spin is not None:
+				try:
+					spin.SetValue(int(st["xaiCollectionsMaxResults"]))
+				except (TypeError, ValueError):
+					pass
+
+	def _onWebSearchToggled(self, evt):
+		try:
+			model = self.getCurrentModel()
+			if model:
+				self._updateXaiAdvancedChrome(model)
+		except Exception:
+			pass
+		self._onConversationChromeEdited(evt)
+
+	def _onXSearchToggled(self, evt):
+		try:
+			model = self.getCurrentModel()
+			if model:
+				self._updateXaiAdvancedChrome(model)
+		except Exception:
+			pass
+		self._onConversationChromeEdited(evt)
 
 	def onResetSystemPrompt(self, event):
 		self.systemTextCtrl.SetValue(DEFAULT_SYSTEM_PROMPT)
@@ -2729,7 +3008,43 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		self.adaptiveThinkingCheckBox.Disable()
 		self.webSearchCheckBox.Disable()
 		try:
+			self.xSearchCheckBox.Disable()
+		except Exception:
+			pass
+		try:
 			self.openRouterWebSearchCheckBox.Disable()
+		except Exception:
+			pass
+		try:
+			self.codeInterpreterCheckBox.Disable()
+		except Exception:
+			pass
+		try:
+			self.collectionsSearchCheckBox.Disable()
+		except Exception:
+			pass
+		try:
+			self.xaiCollectionIdsTextCtrl.Disable()
+			self.xaiCollectionIdsLabel.Disable()
+			self.xaiCollectionsMaxResultsSpinCtrl.Disable()
+			self.xaiCollectionsMaxResultsLabel.Disable()
+			self.xaiWebAllowedDomainsTextCtrl.Disable()
+			self.xaiWebAllowedDomainsLabel.Disable()
+			self.xaiWebExcludedDomainsTextCtrl.Disable()
+			self.xaiWebExcludedDomainsLabel.Disable()
+			self.xaiWebImageSearchCheckBox.Disable()
+			self.xaiWebImageUnderstandingCheckBox.Disable()
+			self.xaiXAllowedHandlesTextCtrl.Disable()
+			self.xaiXAllowedHandlesLabel.Disable()
+			self.xaiXExcludedHandlesTextCtrl.Disable()
+			self.xaiXExcludedHandlesLabel.Disable()
+			self.xaiXFromDateTextCtrl.Disable()
+			self.xaiXFromDateLabel.Disable()
+			self.xaiXToDateTextCtrl.Disable()
+			self.xaiXToDateLabel.Disable()
+			self.xaiXImageUnderstandingCheckBox.Disable()
+			self.xaiXVideoUnderstandingCheckBox.Disable()
+			self.xaiEncryptedReasoningCheckBox.Disable()
 		except Exception:
 			pass
 		self.maxTokensSpinCtrl.Disable()
@@ -2790,6 +3105,10 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 					if model.adaptive_choice_visible and reasoning_on:
 						self.adaptiveThinkingCheckBox.Enable()
 				self._updateWebSearchCheckbox(model)
+				self._updateXSearchCheckbox(model)
+				self._updateCodeInterpreterCheckbox(model)
+				self._updateCollectionsSearchChrome(model)
+				self._updateXaiAdvancedChrome(model)
 				self._updateOpenRouterWebSearchCheckbox(model)
 		except (IndexError, TypeError):
 			pass

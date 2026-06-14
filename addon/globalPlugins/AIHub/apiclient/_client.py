@@ -95,7 +95,11 @@ class OpenAIClient:
 				model=model, messages=messages, stream=stream, **kwargs
 			)
 		if provider == Provider.OpenAI and has_input_files:
-			return self._openai_responses_create(
+			return self._responses_create(
+				model=model, messages=messages, stream=stream, **kwargs
+			)
+		if provider == Provider.xAI:
+			return self._responses_create(
 				model=model, messages=messages, stream=stream, **kwargs
 			)
 		if provider == Provider.Google:
@@ -195,6 +199,35 @@ class OpenAIClient:
 	# OpenAI Responses API path (used when input contains files).
 	# ------------------------------------------------------------------
 
+	def _responses_create(
+		self,
+		*,
+		model: str,
+		messages: list,
+		stream: bool = False,
+		**kwargs,
+	) -> ChatCompletion | Generator:
+		"""Make a request against ``/v1/responses`` (OpenAI file input, xAI built-in tools)."""
+		provider = getattr(self, "provider", Provider.OpenAI)
+		upload_file = None
+		if provider == Provider.OpenAI:
+			upload_file = lambda p: self._upload_openai_user_file(p, purpose="user_data")
+		elif provider == Provider.xAI:
+			upload_file = self._upload_xai_user_file
+		input_payload = _messages_to_responses_input(
+			messages,
+			upload_file=upload_file,
+		)
+		if not input_payload:
+			raise APIError("No valid messages for Responses API request.")
+		body = self._build_responses_body(model, input_payload, stream, kwargs, provider=provider)
+		req = self._json_request("/responses", body)
+		if stream:
+			resp = _open_streaming(self._opener, req, timeout=180)
+			return stream_responses(resp)
+		data = _open_json(self._opener, req, timeout=180)
+		return parse_responses(data, provider=provider)
+
 	def _openai_responses_create(
 		self,
 		*,
@@ -203,20 +236,10 @@ class OpenAIClient:
 		stream: bool = False,
 		**kwargs,
 	) -> ChatCompletion | Generator:
-		"""Make a request against ``/v1/responses`` for richer document input support."""
-		input_payload = _messages_to_responses_input(
-			messages,
-			upload_file=lambda p: self._upload_openai_user_file(p, purpose="user_data"),
+		"""Backward-compatible alias for OpenAI Responses routing."""
+		return self._responses_create(
+			model=model, messages=messages, stream=stream, **kwargs
 		)
-		if not input_payload:
-			raise APIError("No valid messages for OpenAI Responses API request.")
-		body = self._build_responses_body(model, input_payload, stream, kwargs)
-		req = self._json_request("/responses", body)
-		if stream:
-			resp = _open_streaming(self._opener, req, timeout=180)
-			return stream_responses(resp)
-		data = _open_json(self._opener, req, timeout=180)
-		return parse_responses(data, provider=getattr(self, "provider", ""))
 
 	def _build_responses_body(
 		self,
@@ -224,10 +247,25 @@ class OpenAIClient:
 		input_payload: list,
 		stream: bool,
 		kwargs: dict,
+		provider: str = "",
 	) -> dict:
 		body: dict[str, Any] = {"model": model, "input": input_payload, "stream": stream}
+		skip_keys = {
+			"messages",
+			"stream",
+			"stream_options",
+			"web_search_options",
+			"reasoning_enabled",
+			"reasoning_disabled",
+			"adaptive_thinking",
+			"extra_body",
+			"think",
+		}
+		# xAI reasoning models reject these on the Responses API.
+		if provider == Provider.xAI:
+			skip_keys |= {"stop", "frequency_penalty", "presence_penalty"}
 		for key, value in kwargs.items():
-			if value is None or key in ("messages", "stream", "stream_options"):
+			if value is None or key in skip_keys:
 				continue
 			if key in ("max_tokens", "max_completion_tokens"):
 				body["max_output_tokens"] = value
@@ -271,6 +309,10 @@ class OpenAIClient:
 			)
 		except (urllib.error.URLError, OSError, ConnectionError) as e:
 			raise APIConnectionError(str(e)) from e
+
+	def _upload_xai_user_file(self, file_path: str) -> str:
+		"""Upload a local file to xAI ``/v1/files`` for Responses ``input_file`` parts."""
+		return self._upload_openai_user_file(file_path, purpose="assistants")
 
 	# ------------------------------------------------------------------
 	# Anthropic Messages API path.

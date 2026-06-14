@@ -151,6 +151,10 @@ class HistoryBlock:
 	usage = None
 	timing = None
 	uid = None
+	# xAI Responses API: id for ``previous_response_id`` on the next turn.
+	xaiResponseId = None
+	citations = None
+	xaiEncryptedReasoning = None
 
 	def __init__(self):
 		self.uid = str(uuid.uuid4())

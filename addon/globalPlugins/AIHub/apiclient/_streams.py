@@ -16,6 +16,7 @@ from __future__ import annotations
 
 from typing import Any, Iterator, Optional
 
+from ._parsers import _extract_responses_encrypted_reasoning
 from ._sse import DONE, iter_sse_events
 from ._think_tags import (
 	_apply_think_chain_to_chunk,
@@ -243,8 +244,33 @@ def stream_responses(resp) -> Iterator[StreamEvent]:
 
 			if evt_type == "response.completed":
 				usage = _normalize_usage(_resp_completed_usage(data))
+				resp_obj = data.get("response") if isinstance(data.get("response"), dict) else {}
+				response_id = ""
+				rid = resp_obj.get("id")
+				if isinstance(rid, str) and rid.strip():
+					response_id = rid.strip()
+				citations: list[str] = []
+				raw_citations = resp_obj.get("citations")
+				if isinstance(raw_citations, list):
+					for item in raw_citations:
+						if isinstance(item, str) and item.strip():
+							citations.append(item.strip())
+				encrypted_reasoning = _extract_responses_encrypted_reasoning(resp_obj)
 				if usage:
-					yield build_stream_event(usage=usage, finish_reason="stop")
+					yield build_stream_event(
+						usage=usage,
+						finish_reason="stop",
+						response_id=response_id,
+						citations=citations,
+						encrypted_reasoning=encrypted_reasoning,
+					)
+				else:
+					yield build_stream_event(
+						finish_reason="stop",
+						response_id=response_id,
+						citations=citations,
+						encrypted_reasoning=encrypted_reasoning,
+					)
 				return
 
 			if evt_type in ("response.failed", "error"):
