@@ -2207,12 +2207,17 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 				newText = block.responseText[block.lastLen:]
 				first_assistant_content = block.lastLen == 0 and bool(newText.strip())
 				block.lastLen = l
+				if first_assistant_content:
+					# Close the thinking block BEFORE creating the answer segment so
+					# the </think> marker is positioned between reasoning and answer.
+					# TextSegment always appends at the end of the control, so segment
+					# creation order is visual order.
+					self._closeThinkingHistoryTags(block)
 				if block.segmentResponse is None:
 					block.segmentResponse = TextSegment(self.messagesTextCtrl, newText, block)
 				else:
 					block.segmentResponse.appendText(newText)
 				if first_assistant_content:
-					self._closeThinkingHistoryTags(block)
 					ip_after_label = None
 					lbl = getattr(block, "segmentResponseLabel", None)
 					if lbl is not None:
