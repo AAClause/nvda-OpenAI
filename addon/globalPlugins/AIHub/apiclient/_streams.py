@@ -4,7 +4,7 @@ We implement three distinct stream parsers because the on-the-wire shapes
 differ enough that a generic parser would be a maintenance liability:
 
 * ``stream_chat_completions``: OpenAI Chat Completions / Mistral / OpenRouter /
-  xAI / DeepSeek / Ollama (OpenAI-compat).
+  DeepSeek / Ollama (OpenAI-compat).
 * ``stream_gemini_generate_content``: native Gemini ``streamGenerateContent``.
 * ``stream_responses``: OpenAI Responses API (event-typed SSE).
 * ``stream_anthropic``: Anthropic Messages API.

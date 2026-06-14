@@ -207,7 +207,7 @@ class Model:
 			)
 		if self.provider == Provider.MistralAI and mistral_reasoning_mandatory(self.id):
 			return ()
-		# xAI grok-4.20+ has no chat-completions reasoning_effort knob.
+		# xAI grok-4.20+ has no reasoning effort UI/API knob.
 		if self.provider == Provider.xAI:
 			return ()
 		# OpenAI o-series / gpt-5: low, medium, high

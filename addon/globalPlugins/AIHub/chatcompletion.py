@@ -75,7 +75,6 @@ _STREAM_USAGE_PROVIDERS = (
 	Provider.OpenAI,
 	Provider.CustomOpenAI,
 	Provider.OpenRouter,
-	Provider.xAI,
 	Provider.MistralAI,
 	Provider.DeepSeek,
 	Provider.Google,
@@ -193,22 +192,20 @@ def _apply_xai_include_settings(
 	provider: str,
 	reasoning_enabled: bool,
 ) -> None:
-	"""Merge xAI Responses ``include`` flags (citations, encrypted reasoning)."""
+	"""Set xAI Responses ``include`` only for encrypted reasoning.
+
+	Inline citations are returned by default on the Responses API; requesting
+	``inline_citations`` via ``include`` is rejected by xAI (``Argument not
+	supported: include``).
+	"""
 	if provider != Provider.xAI:
 		return
-	include = list(params.get("include") or [])
-	tools = params.get("tools")
-	if isinstance(tools, list) and tools:
-		if "inline_citations" not in include and "no_inline_citations" not in include:
-			include.append("inline_citations")
 	from .xaitools import xai_encrypted_reasoning_requested
 
 	if xai_encrypted_reasoning_requested(wnd, reasoning_enabled):
-		token = "reasoning.encrypted_content"
-		if token not in include:
-			include.append(token)
-	if include:
-		params["include"] = include
+		params["include"] = ["reasoning.encrypted_content"]
+	else:
+		params.pop("include", None)
 
 
 def _messages_for_xai_responses(wnd, messages: list, is_regenerate: bool) -> list:
@@ -757,6 +754,12 @@ class CompletionThread(threading.Thread):
 		if provider == Provider.xAI:
 			_apply_xai_include_settings(params, model, wnd, provider, useReasoning)
 			_apply_xai_previous_response_id(params, wnd, is_regenerate)
+			from .xaitools import collect_xai_encrypted_reasoning_input
+
+			use_prev = bool(params.get("previous_response_id"))
+			enc_input = collect_xai_encrypted_reasoning_input(wnd, is_regenerate, use_prev)
+			if enc_input:
+				params["xai_encrypted_reasoning_input"] = enc_input
 			messages = _messages_for_xai_responses(wnd, messages, is_regenerate)
 			params["messages"] = messages
 		if debug:
