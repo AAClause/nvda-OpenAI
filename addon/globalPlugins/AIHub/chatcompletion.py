@@ -912,7 +912,15 @@ class CompletionThread(threading.Thread):
 		speechBuffer = ""
 		latest_usage = None
 		first_speech_emitted = False
-		think_states = _new_think_chain_states()
+		model = None
+		try:
+			if hasattr(wnd, "getCurrentModel"):
+				model = wnd.getCurrentModel()
+		except Exception:
+			pass
+		# xAI Responses API uses structured summary + output_text channels.
+		use_think_strip = not (model and model.provider == Provider.xAI)
+		think_states = _new_think_chain_states() if use_think_strip else None
 
 		def _emit_speech(text: str) -> bool:
 			"""Speak ``text`` if streaming speech is currently allowed.
@@ -977,6 +985,16 @@ class CompletionThread(threading.Thread):
 			event_encrypted = getattr(event, "encrypted_reasoning", None)
 			if isinstance(event_encrypted, list) and event_encrypted:
 				block.xaiEncryptedReasoning = list(event_encrypted)
+			reconcile_r = getattr(event, "reconcile_reasoning", None)
+			reconcile_c = getattr(event, "reconcile_content", None)
+			if reconcile_r is not None:
+				block.reasoningText = reconcile_r
+				block.lastReasoningLen = 0
+				block._needsHistoryRerender = True
+			if reconcile_c is not None:
+				block.responseText = reconcile_c
+				block.lastLen = 0
+				block._needsHistoryRerender = True
 			choices = getattr(event, "choices", None)
 			if not choices:
 				continue
@@ -1008,7 +1026,7 @@ class CompletionThread(threading.Thread):
 					_emit_speech(to_speak)
 			if getattr(choice, "finish_reason", None):
 				break
-		flushed_content, flushed_reasoning = _flush_think_chain(think_states)
+		flushed_content, flushed_reasoning = _flush_think_chain(think_states) if think_states else ("", "")
 		if flushed_reasoning:
 			block.reasoningText += flushed_reasoning
 		if flushed_content:

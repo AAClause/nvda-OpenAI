@@ -39,6 +39,7 @@ from ._http import (
 from ._google import create_gemini_generate_content_request
 from ._parsers import parse_anthropic, parse_chat_completion, parse_gemini_generate_content, parse_responses
 from ._streams import stream_anthropic, stream_chat_completions, stream_gemini_generate_content, stream_responses
+from ._xai_responses_stream import stream_xai_responses
 from ._types import ChatCompletion, Transcription
 
 
@@ -231,7 +232,9 @@ class OpenAIClient:
 		req = self._json_request("/responses", body)
 		if stream:
 			resp = _open_streaming(self._opener, req, timeout=180)
-			return stream_responses(resp)
+			if provider == Provider.xAI:
+				return stream_xai_responses(resp)
+			return stream_responses(resp, provider=provider)
 		data = _open_json(self._opener, req, timeout=180)
 		return parse_responses(data, provider=provider)
 

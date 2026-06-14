@@ -84,10 +84,87 @@ def _first_reasoning(container: Any) -> str:
 	return ""
 
 
+def _extract_xai_reasoning_summaries(output: list) -> str:
+	"""Collect grok reasoning summaries from Responses ``output`` reasoning items."""
+	parts: list[str] = []
+	for item in output or []:
+		if not isinstance(item, dict):
+			continue
+		if str(item.get("type", "")).lower() != "reasoning":
+			continue
+		for entry in item.get("summary") or []:
+			if not isinstance(entry, dict):
+				continue
+			entry_type = str(entry.get("type", "")).lower()
+			if entry_type and "summary" not in entry_type:
+				continue
+			text = entry.get("text")
+			if isinstance(text, str) and text.strip():
+				parts.append(text.strip())
+	return "\n\n".join(parts)
+
+
+def _extract_xai_assistant_text(output: list) -> str:
+	"""Collect assistant answer text from Responses ``message`` output items."""
+	chunks: list[str] = []
+	for item in output or []:
+		if not isinstance(item, dict):
+			continue
+		if str(item.get("type", "")).lower() != "message":
+			continue
+		for part in item.get("content") or []:
+			if not isinstance(part, dict):
+				continue
+			part_type = str(part.get("type", "")).lower()
+			if part_type not in ("output_text", "text", "message_output_text"):
+				continue
+			text = part.get("text") or part.get("output_text") or ""
+			if isinstance(text, str) and text:
+				chunks.append(text)
+	return "".join(chunks)
+
+
+def _xai_final_response_text(resp_obj: dict) -> str:
+	"""Assistant answer from a completed xAI Responses payload (``message`` / ``output_text``)."""
+	if not isinstance(resp_obj, dict):
+		return ""
+	output = resp_obj.get("output") or []
+	text = _extract_xai_assistant_text(output)
+	output_text = resp_obj.get("output_text")
+	if isinstance(output_text, str) and output_text.strip():
+		ot = output_text.strip()
+		if not text or len(ot) > len(text):
+			return ot
+	return text
+
+
 def parse_responses(data: dict, provider: str = "") -> ChatCompletion:
 	"""Parse an OpenAI Responses API non-streaming JSON response."""
 	if not isinstance(data, dict):
 		data = {}
+	root = _responses_payload_root(data)
+	output = root.get("output") or []
+
+	if provider == Provider.xAI:
+		text_parts: list[str] = []
+		output_text = root.get("output_text")
+		if isinstance(output_text, str) and output_text.strip():
+			text_parts.append(output_text.strip())
+		message_text = _extract_xai_assistant_text(output)
+		if message_text:
+			text_parts.append(message_text)
+		text = "\n".join(text_parts).strip()
+		reasoning = _extract_xai_reasoning_summaries(output)
+		response_id, citations = _extract_responses_metadata(data)
+		encrypted_reasoning = _extract_responses_encrypted_reasoning(data)
+		return ChatCompletion(
+			[Choice(ChoiceMessage(content=text, reasoning=reasoning))],
+			usage=_normalize_usage_from_payload(data),
+			response_id=response_id,
+			citations=citations,
+			encrypted_reasoning=encrypted_reasoning,
+		)
+
 	text_parts: list[str] = []
 	reasoning_parts: list[str] = []
 
