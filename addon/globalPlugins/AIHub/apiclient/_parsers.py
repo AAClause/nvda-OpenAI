@@ -84,27 +84,70 @@ def _first_reasoning(container: Any) -> str:
 	return ""
 
 
-def _extract_xai_reasoning_summaries(output: list) -> str:
-	"""Collect grok reasoning summaries from Responses ``output`` reasoning items."""
+def _reasoning_summary_entry_text(entry: dict) -> str:
+	if not isinstance(entry, dict):
+		return ""
+	entry_type = str(entry.get("type", "")).lower()
+	if entry_type and "summary" not in entry_type:
+		return ""
+	text = entry.get("text")
+	if isinstance(text, str) and text.strip():
+		return text.strip()
+	return ""
+
+
+def _extract_responses_reasoning_from_item(item: dict, *, summaries_only: bool = False) -> str:
+	"""Readable reasoning from one Responses ``output`` reasoning item."""
+	if not isinstance(item, dict):
+		return ""
+	item_type = str(item.get("type", "")).lower()
+	if item_type != "reasoning" and "reasoning" not in item_type:
+		return ""
 	parts: list[str] = []
-	for item in output or []:
-		if not isinstance(item, dict):
-			continue
-		if str(item.get("type", "")).lower() != "reasoning":
-			continue
-		for entry in item.get("summary") or []:
-			if not isinstance(entry, dict):
+	if not summaries_only:
+		for part in item.get("content") or []:
+			if not isinstance(part, dict):
 				continue
-			entry_type = str(entry.get("type", "")).lower()
-			if entry_type and "summary" not in entry_type:
-				continue
-			text = entry.get("text")
-			if isinstance(text, str) and text.strip():
-				parts.append(text.strip())
+			part_type = str(part.get("type", "")).lower()
+			if (
+				"reasoning" in part_type
+				or "thinking" in part_type
+				or "summary" in part_type
+			):
+				text = _extract_reasoning_text(part)
+				if text:
+					parts.append(text.strip())
+	for entry in item.get("summary") or []:
+		text = _reasoning_summary_entry_text(entry)
+		if text:
+			parts.append(text)
 	return "\n\n".join(parts)
 
 
+def _extract_responses_reasoning_from_output(
+	output: list,
+	*,
+	summaries_only: bool = False,
+) -> str:
+	parts: list[str] = []
+	for item in output or []:
+		text = _extract_responses_reasoning_from_item(item, summaries_only=summaries_only)
+		if text:
+			parts.append(text)
+	return "\n\n".join(parts)
+
+
+def _extract_xai_reasoning_summaries(output: list) -> str:
+	"""Collect grok reasoning summaries from Responses ``output`` reasoning items."""
+	return _extract_responses_reasoning_from_output(output, summaries_only=True)
+
+
 def _extract_xai_assistant_text(output: list) -> str:
+	"""Collect assistant answer text from Responses ``message`` output items."""
+	return _extract_responses_assistant_text(output)
+
+
+def _extract_responses_assistant_text(output: list) -> str:
 	"""Collect assistant answer text from Responses ``message`` output items."""
 	chunks: list[str] = []
 	for item in output or []:
@@ -125,7 +168,11 @@ def _extract_xai_assistant_text(output: list) -> str:
 
 
 def _xai_final_response_text(resp_obj: dict) -> str:
-	"""Assistant answer from a completed xAI Responses payload (``message`` / ``output_text``)."""
+	"""Assistant answer from a completed Responses payload (``message`` / ``output_text``)."""
+	return _responses_final_assistant_text(resp_obj)
+
+
+def _responses_final_assistant_text(resp_obj: dict) -> str:
 	if not isinstance(resp_obj, dict):
 		return ""
 	output = resp_obj.get("output") or []

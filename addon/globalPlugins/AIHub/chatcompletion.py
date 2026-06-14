@@ -565,6 +565,7 @@ class CompletionThread(threading.Thread):
 			block.displayHeader = False
 			block.lastLen = 0
 			block.lastReasoningLen = 0
+			block.thinkingWrapState = ""
 			block.usage = None
 			block.timing = {"startedAt": time.time()}
 		else:

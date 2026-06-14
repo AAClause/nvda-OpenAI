@@ -544,6 +544,7 @@ class HistoryHandlersMixin:
 		block.segmentReasoningLabel = None
 		block.segmentReasoning = None
 		block.segmentReasoningSuffix = None
+		block.thinkingWrapState = ""
 
 	def onRegenerateBlock(self, evt):
 		segment, block = self._getCurrentSegmentBlock()
