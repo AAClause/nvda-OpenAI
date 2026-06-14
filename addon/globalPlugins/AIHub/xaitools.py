@@ -14,26 +14,7 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# Built-in tool types executed on xAI servers (not OpenAI-style function tools).
-XAI_BUILTIN_TOOL_TYPES = frozenset({
-	"web_search",
-	"x_search",
-	"code_interpreter",
-	"collections_search",
-})
-
 _XAI_ISO_DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
-
-
-def xai_builtin_tools_requested(tools: list | None) -> bool:
-	"""True when ``tools`` includes a built-in xAI server-side tool."""
-	for tool in tools or []:
-		if not isinstance(tool, dict):
-			continue
-		ttype = str(tool.get("type", "")).lower()
-		if ttype in XAI_BUILTIN_TOOL_TYPES:
-			return True
-	return False
 
 
 def _parse_token_list(
@@ -168,3 +149,43 @@ def xai_encrypted_reasoning_requested(wnd, reasoning_enabled: bool) -> bool:
 		return False
 	cb = getattr(wnd, "xaiEncryptedReasoningCheckBox", None)
 	return cb is not None and cb.IsChecked()
+
+
+def collect_xai_encrypted_reasoning_input(
+	wnd,
+	is_regenerate: bool,
+	use_previous_response_id: bool,
+) -> list[dict]:
+	"""Build Responses ``input`` reasoning items from stored block metadata.
+
+	Skipped when ``previous_response_id`` is used (server retains reasoning state).
+	"""
+	if use_previous_response_id:
+		return []
+	first = getattr(wnd, "firstBlock", None)
+	if first is None:
+		return []
+	items: list[dict] = []
+	block = first
+	stop = getattr(wnd, "lastBlock", None)
+	while block is not None:
+		if is_regenerate and block is stop:
+			break
+		for entry in getattr(block, "xaiEncryptedReasoning", None) or []:
+			if not isinstance(entry, dict):
+				continue
+			encrypted = entry.get("encrypted_content")
+			if not isinstance(encrypted, str) or not encrypted.strip():
+				continue
+			item: dict[str, Any] = {
+				"type": entry.get("type") or "reasoning",
+				"encrypted_content": encrypted.strip(),
+			}
+			rid = entry.get("id")
+			if isinstance(rid, str) and rid.strip():
+				item["id"] = rid.strip()
+			items.append(item)
+		if block is stop:
+			break
+		block = block.next
+	return items

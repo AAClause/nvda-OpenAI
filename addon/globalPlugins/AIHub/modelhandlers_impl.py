@@ -43,179 +43,6 @@ class ModelHandlersMixin:
 			if isinstance(p, str)
 		}
 
-	def _updateWebSearchCheckbox(self, model):
-		"""Show/enable provider-native web search chrome."""
-		if model and model.supports_web_search:
-			self.webSearchCheckBox.Enable(True)
-			self.webSearchCheckBox.Show(True)
-		else:
-			self.webSearchCheckBox.Enable(False)
-			self.webSearchCheckBox.Show(False)
-			self.webSearchCheckBox.SetValue(False)
-
-	def _updateOpenRouterWebSearchCheckbox(self, model):
-		"""Show/enable OpenRouter universal web search server tool."""
-		cb = getattr(self, "openRouterWebSearchCheckBox", None)
-		if cb is None:
-			return
-		if model and model.supports_openrouter_web_search:
-			cb.Enable(True)
-			cb.Show(True)
-		else:
-			cb.Enable(False)
-			cb.Show(False)
-			cb.SetValue(False)
-
-	def _updateXSearchCheckbox(self, model):
-		"""Show/enable xAI X (Twitter) search built-in tool."""
-		cb = getattr(self, "xSearchCheckBox", None)
-		if cb is None:
-			return
-		if model and getattr(model, "supports_x_search", False):
-			cb.Enable(True)
-			cb.Show(True)
-		else:
-			cb.Enable(False)
-			cb.Show(False)
-			cb.SetValue(False)
-
-	def _updateCodeInterpreterCheckbox(self, model):
-		"""Show/enable xAI code interpreter built-in tool."""
-		cb = getattr(self, "codeInterpreterCheckBox", None)
-		if cb is None:
-			return
-		if model and getattr(model, "supports_code_interpreter", False):
-			cb.Enable(True)
-			cb.Show(True)
-		else:
-			cb.Enable(False)
-			cb.Show(False)
-			cb.SetValue(False)
-
-	def _updateCollectionsSearchChrome(self, model):
-		"""Show/enable xAI collections search and its collection id field."""
-		cb = getattr(self, "collectionsSearchCheckBox", None)
-		row = getattr(self, "xaiCollectionIdsRow", None)
-		label = getattr(self, "xaiCollectionIdsLabel", None)
-		text_ctrl = getattr(self, "xaiCollectionIdsTextCtrl", None)
-		supported = bool(model and getattr(model, "supports_collections_search", False))
-		if cb is not None:
-			if supported:
-				cb.Enable(True)
-				cb.Show(True)
-			else:
-				cb.Enable(False)
-				cb.Show(False)
-				cb.SetValue(False)
-		show_ids = supported and cb is not None and cb.IsChecked()
-		if row is not None:
-			row.Show(show_ids)
-		if label is not None:
-			label.Show(show_ids)
-			label.Enable(show_ids)
-		if text_ctrl is not None:
-			text_ctrl.Show(show_ids)
-			text_ctrl.Enable(show_ids)
-			if not show_ids:
-				text_ctrl.SetValue("")
-		max_label = getattr(self, "xaiCollectionsMaxResultsLabel", None)
-		max_spin = getattr(self, "xaiCollectionsMaxResultsSpinCtrl", None)
-		if max_label is not None:
-			max_label.Show(show_ids)
-			max_label.Enable(show_ids)
-		if max_spin is not None:
-			max_spin.Show(show_ids)
-			max_spin.Enable(show_ids)
-			if not show_ids:
-				max_spin.SetValue(0)
-
-	def _updateXaiAdvancedChrome(self, model):
-		"""Show xAI web/X filter rows and encrypted reasoning option."""
-		supported = bool(model and getattr(model, "supports_xai_builtin_tools", False))
-		web_row = getattr(self, "xaiWebSearchOptionsRow", None)
-		x_row = getattr(self, "xaiXSearchOptionsRow", None)
-		enc_cb = getattr(self, "xaiEncryptedReasoningCheckBox", None)
-		web_on = (
-			supported
-			and model.supports_web_search
-			and self.webSearchCheckBox.IsShown()
-			and self.webSearchCheckBox.IsChecked()
-		)
-		x_on = (
-			supported
-			and getattr(model, "supports_x_search", False)
-			and getattr(self, "xSearchCheckBox", None) is not None
-			and self.xSearchCheckBox.IsShown()
-			and self.xSearchCheckBox.IsChecked()
-		)
-		if web_row is not None:
-			web_row.Show(web_on)
-		for name in (
-			"xaiWebAllowedDomainsLabel",
-			"xaiWebAllowedDomainsTextCtrl",
-			"xaiWebExcludedDomainsLabel",
-			"xaiWebExcludedDomainsTextCtrl",
-			"xaiWebImageSearchCheckBox",
-			"xaiWebImageUnderstandingCheckBox",
-		):
-			ctrl = getattr(self, name, None)
-			if ctrl is not None:
-				ctrl.Show(web_on)
-				ctrl.Enable(web_on)
-		if x_row is not None:
-			x_row.Show(x_on)
-		for name in (
-			"xaiXAllowedHandlesLabel",
-			"xaiXAllowedHandlesTextCtrl",
-			"xaiXExcludedHandlesLabel",
-			"xaiXExcludedHandlesTextCtrl",
-			"xaiXFromDateLabel",
-			"xaiXFromDateTextCtrl",
-			"xaiXToDateLabel",
-			"xaiXToDateTextCtrl",
-			"xaiXImageUnderstandingCheckBox",
-			"xaiXVideoUnderstandingCheckBox",
-		):
-			ctrl = getattr(self, name, None)
-			if ctrl is not None:
-				ctrl.Show(x_on)
-				ctrl.Enable(x_on)
-		show_enc = bool(model and model.provider == Provider.xAI and getattr(model, "reasoning", False))
-		if enc_cb is not None:
-			if show_enc:
-				enc_cb.Show(True)
-				enc_cb.Enable(True)
-			else:
-				enc_cb.Show(False)
-				enc_cb.Enable(False)
-				enc_cb.SetValue(False)
-		if not web_on:
-			for name in (
-				"xaiWebAllowedDomainsTextCtrl",
-				"xaiWebExcludedDomainsTextCtrl",
-			):
-				ctrl = getattr(self, name, None)
-				if ctrl is not None:
-					ctrl.SetValue("")
-			for name in ("xaiWebImageSearchCheckBox", "xaiWebImageUnderstandingCheckBox"):
-				cb = getattr(self, name, None)
-				if cb is not None:
-					cb.SetValue(False)
-		if not x_on:
-			for name in (
-				"xaiXAllowedHandlesTextCtrl",
-				"xaiXExcludedHandlesTextCtrl",
-				"xaiXFromDateTextCtrl",
-				"xaiXToDateTextCtrl",
-			):
-				ctrl = getattr(self, name, None)
-				if ctrl is not None:
-					ctrl.SetValue("")
-			for name in ("xaiXImageUnderstandingCheckBox", "xaiXVideoUnderstandingCheckBox"):
-				cb = getattr(self, name, None)
-				if cb is not None:
-					cb.SetValue(False)
-
 	def _set_labeled_visibility(self, label, ctrl, visible: bool, enabled: bool | None = None):
 		if enabled is None:
 			enabled = visible
@@ -517,26 +344,7 @@ class ModelHandlersMixin:
 		except Exception:
 			return False
 		for w in (
-			self.reasoningModeCheckBox,
-			getattr(self, "adaptiveThinkingCheckBox", None),
-			getattr(self, "webSearchCheckBox", None),
-			getattr(self, "xSearchCheckBox", None),
-			getattr(self, "codeInterpreterCheckBox", None),
-			getattr(self, "collectionsSearchCheckBox", None),
-			getattr(self, "xaiCollectionIdsTextCtrl", None),
-			getattr(self, "xaiCollectionsMaxResultsSpinCtrl", None),
-			getattr(self, "xaiWebAllowedDomainsTextCtrl", None),
-			getattr(self, "xaiWebExcludedDomainsTextCtrl", None),
-			getattr(self, "xaiWebImageSearchCheckBox", None),
-			getattr(self, "xaiWebImageUnderstandingCheckBox", None),
-			getattr(self, "xaiXAllowedHandlesTextCtrl", None),
-			getattr(self, "xaiXExcludedHandlesTextCtrl", None),
-			getattr(self, "xaiXFromDateTextCtrl", None),
-			getattr(self, "xaiXToDateTextCtrl", None),
-			getattr(self, "xaiXImageUnderstandingCheckBox", None),
-			getattr(self, "xaiXVideoUnderstandingCheckBox", None),
-			getattr(self, "xaiEncryptedReasoningCheckBox", None),
-			getattr(self, "openRouterWebSearchCheckBox", None),
+			*(getattr(self, "_generation_chrome", None).preserve_controls() if hasattr(self, "_generation_chrome") else ()),
 			getattr(self, "streamModeCheckBox", None),
 			getattr(self, "debugModeCheckBox", None),
 			getattr(self, "advancedSamplingCheckBox", None),
@@ -637,12 +445,8 @@ class ModelHandlersMixin:
 			self.adaptiveThinkingCheckBox.Show(False)
 			self.adaptiveThinkingCheckBox.SetValue(False)
 
-		self._updateWebSearchCheckbox(model)
-		self._updateXSearchCheckbox(model)
-		self._updateCodeInterpreterCheckbox(model)
-		self._updateCollectionsSearchChrome(model)
-		self._updateXaiAdvancedChrome(model)
-		self._updateOpenRouterWebSearchCheckbox(model)
+		if hasattr(self, "_generation_chrome"):
+			self._generation_chrome.update_for_model(model)
 
 		if self._effective_advanced_mode():
 			if "temperature" in supported:

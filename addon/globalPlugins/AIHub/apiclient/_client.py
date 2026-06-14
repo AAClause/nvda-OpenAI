@@ -207,7 +207,7 @@ class OpenAIClient:
 		stream: bool = False,
 		**kwargs,
 	) -> ChatCompletion | Generator:
-		"""Make a request against ``/v1/responses`` (OpenAI file input, xAI built-in tools)."""
+		"""Make a request against ``/v1/responses`` (OpenAI file input, xAI chat)."""
 		provider = getattr(self, "provider", Provider.OpenAI)
 		upload_file = None
 		if provider == Provider.OpenAI:
@@ -218,6 +218,13 @@ class OpenAIClient:
 			messages,
 			upload_file=upload_file,
 		)
+		encrypted_input = kwargs.get("xai_encrypted_reasoning_input")
+		if (
+			provider == Provider.xAI
+			and isinstance(encrypted_input, list)
+			and encrypted_input
+		):
+			input_payload = list(encrypted_input) + input_payload
 		if not input_payload:
 			raise APIError("No valid messages for Responses API request.")
 		body = self._build_responses_body(model, input_payload, stream, kwargs, provider=provider)
@@ -227,19 +234,6 @@ class OpenAIClient:
 			return stream_responses(resp)
 		data = _open_json(self._opener, req, timeout=180)
 		return parse_responses(data, provider=provider)
-
-	def _openai_responses_create(
-		self,
-		*,
-		model: str,
-		messages: list,
-		stream: bool = False,
-		**kwargs,
-	) -> ChatCompletion | Generator:
-		"""Backward-compatible alias for OpenAI Responses routing."""
-		return self._responses_create(
-			model=model, messages=messages, stream=stream, **kwargs
-		)
 
 	def _build_responses_body(
 		self,
@@ -260,6 +254,7 @@ class OpenAIClient:
 			"adaptive_thinking",
 			"extra_body",
 			"think",
+			"xai_encrypted_reasoning_input",
 		}
 		# xAI reasoning models reject these on the Responses API.
 		if provider == Provider.xAI:
