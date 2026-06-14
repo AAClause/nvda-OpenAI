@@ -56,6 +56,7 @@ class ConversationSessionPanel(wx.Panel):
 		self._historyPath = None
 		self.previousPrompt = None
 		self.usageLedger = []
+		self._regenerateBlock = None
 		self.conversationModelHint = ""
 		self.conversationAccountKey = ""
 		self.conversationSystemText = ""

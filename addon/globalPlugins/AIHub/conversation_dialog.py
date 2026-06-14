@@ -885,6 +885,7 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		page.lastBlock = None
 		page.previousPrompt = None
 		page.usageLedger = []
+		page._regenerateBlock = None
 		page._conversationId = cid
 		page.conversationModelHint = ""
 		page.conversationAccountKey = ""
@@ -921,6 +922,7 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		page.lastBlock = None
 		page.previousPrompt = None
 		page.usageLedger = []
+		page._regenerateBlock = None
 		page._conversationId = None
 		page.conversationModelHint = ""
 		page.conversationAccountKey = ""
@@ -1843,16 +1845,28 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 			)
 
 	def _onSubmitImpl(self, evt):
-		if not getattr(self, "_askPromptOverride", None) and not self.promptTextCtrl.GetValue().strip() and not self.filesList and not self.audioPathList:
-			self.promptTextCtrl.SetFocus()
+		page = self.get_active_page()
+		regenerate_block = getattr(page, "_regenerateBlock", None)
+		if not regenerate_block:
+			if not getattr(self, "_askPromptOverride", None) and not self.promptTextCtrl.GetValue().strip() and not self.filesList and not self.audioPathList:
+				self.promptTextCtrl.SetFocus()
+				return
+		elif not self._block_has_submittable_content(regenerate_block):
+			# Translators: AI-Hub conversation — message history area: brief status feedback (speech/braille), not a full dialog.
+			self.message(_("This message has no prompt or attachments to regenerate."))
+			page._regenerateBlock = None
 			return
 		if self.worker:
 			return
 		model = self._requireModel(modal=True)
 		if not model:
+			if regenerate_block:
+				page._regenerateBlock = None
 			return
 		account = self._requireAccount(modal=True)
 		if not account:
+			if regenerate_block:
+				page._regenerateBlock = None
 			return
 		if account["provider"] != model.provider:
 			gui.messageBox(
@@ -1868,6 +1882,8 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 				_("Provider mismatch"),
 				wx.OK | wx.ICON_ERROR
 			)
+			if regenerate_block:
+				page._regenerateBlock = None
 			return
 		if not apikeymanager.get(model.provider).isReady(account_id=account["id"]):
 			gui.messageBox(
@@ -1884,9 +1900,13 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 				}),
 				wx.OK | wx.ICON_ERROR
 			)
+			if regenerate_block:
+				page._regenerateBlock = None
 			return
 
-		ok, validation_message = self.validateAttachmentsForProvider(provider=model.provider, filesList=self.filesList)
+		submit_files = regenerate_block.filesList if regenerate_block else self.filesList
+		submit_audio = regenerate_block.audioPathList if regenerate_block else self.audioPathList
+		ok, validation_message = self.validateAttachmentsForProvider(provider=model.provider, filesList=submit_files or [])
 		if not ok:
 			gui.messageBox(
 				validation_message,
@@ -1894,9 +1914,11 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 				_("Unsupported attachments"),
 				wx.OK | wx.ICON_ERROR
 			)
+			if regenerate_block:
+				page._regenerateBlock = None
 			return
 
-		if not model.vision and self.filesList:
+		if not model.vision and submit_files:
 			visionModels = [m.id for m in self._models if m.vision]
 			gui.messageBox(
 				# Translators: Error text when current model cannot process image attachments.
@@ -1911,8 +1933,10 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 				_("Invalid model"),
 				wx.OK | wx.ICON_ERROR
 			)
+			if regenerate_block:
+				page._regenerateBlock = None
 			return
-		if self.audioPathList and not getattr(model, "audioInput", False):
+		if submit_audio and not getattr(model, "audioInput", False):
 			audioModels = [m.id for m in self._models if getattr(m, "audioInput", False)]
 			gui.messageBox(
 				# Translators: Error text when current model cannot process audio attachments.
@@ -1928,6 +1952,8 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 				_("Invalid model"),
 				wx.OK | wx.ICON_ERROR
 			)
+			if regenerate_block:
+				page._regenerateBlock = None
 			return
 		if (
 			model.vision
@@ -1943,6 +1969,10 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 				wx.OK | wx.ICON_INFORMATION
 			)
 			self.conf["images"]["resizeInfoDisplayed"] = True
+		if regenerate_block:
+			self._truncateBlocksAfter(regenerate_block)
+			self._resetBlockForRegenerate(regenerate_block)
+			self._rerenderMessages(anchor_block=regenerate_block, anchor_part="prompt")
 		system = self.systemTextCtrl.GetValue().strip()
 		if self.conf["saveSystem"] and system != self._lastSystem:
 			self.data["system"] = system
@@ -2162,6 +2192,7 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 			wp_done = getattr(self, "_worker_page", None)
 			if wp_done:
 				wp_done.worker = None
+				wp_done._regenerateBlock = None
 			self._worker_page = None
 
 	def onCharHook(self, evt):
@@ -2265,6 +2296,7 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		self.addEntry(accelEntries, wx.ACCEL_NORMAL, ord("N"), self.onMoveToEndOfContent)
 		self.addEntry(accelEntries, wx.ACCEL_CTRL + wx.ACCEL_SHIFT, ord("C"), lambda evt: self.onCopyMessage(evt, True))
 		self.addEntry(accelEntries, wx.ACCEL_CTRL, ord("D"), self.onDeleteBlock)
+		self.addEntry(accelEntries, wx.ACCEL_CTRL + wx.ACCEL_SHIFT, ord("R"), self.onRegenerateBlock)
 		self.addEntry(accelEntries, wx.ACCEL_CTRL + wx.ACCEL_SHIFT, ord("S"), self.onSaveHistory)
 		self.addEntry(accelEntries, wx.ACCEL_CTRL, ord("P"), self.onAudioPlayPause)
 		self.addEntry(accelEntries, wx.ACCEL_ALT, wx.WXK_RETURN, self.onMessageProperties)
@@ -2373,8 +2405,15 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 
 	def getMessages(
 		self,
-		messages: list
+		messages: list,
+		*,
+		until_block=None,
 	):
+		"""Append chat history blocks to ``messages``.
+
+		When ``until_block`` is set, include every prior turn (user + assistant) and
+		only the user turn for ``until_block`` (no assistant reply), then stop.
+		"""
 		block = self.firstBlock
 		while block:
 			userContent = []
@@ -2398,11 +2437,14 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 					"role": Role.USER,
 					"content": userContent
 				})
-			if block.responseText:
+			stop_after = until_block is not None and block is until_block
+			if not stop_after and block.responseText:
 				messages.append({
 					"role": Role.ASSISTANT,
 					"content": block.responseText
 				})
+			if stop_after:
+				break
 			block = block.next
 
 	def onSetFocus(self, evt):

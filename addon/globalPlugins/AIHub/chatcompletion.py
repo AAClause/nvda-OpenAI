@@ -388,15 +388,36 @@ class CompletionThread(threading.Thread):
 		client = wnd.client
 		conf = wnd.conf
 		data = wnd.data
-		block = HistoryBlock()
-		system = wnd.systemTextCtrl.GetValue().strip()
-		block.system = system
-		prompt = getattr(wnd, "_askPromptOverride", None)
-		if prompt is not None:
-			delattr(wnd, "_askPromptOverride")
+		page = getattr(wnd, "_worker_page", None)
+		regenerate_block = getattr(page, "_regenerateBlock", None) if page else None
+		is_regenerate = regenerate_block is not None
+		if is_regenerate and page is not None:
+			page._regenerateBlock = None
+
+		if is_regenerate:
+			block = regenerate_block
+			system = (getattr(block, "system", "") or wnd.systemTextCtrl.GetValue()).strip()
+			block.system = system
+			prompt = (block.prompt or "").strip()
+			block.responseText = ""
+			block.reasoningText = ""
+			block.responseTerminated = False
+			block.displayHeader = True
+			block.lastLen = 0
+			block.lastReasoningLen = 0
+			block.usage = None
+			block.timing = {"startedAt": time.time()}
 		else:
-			prompt = wnd.promptTextCtrl.GetValue().strip()
-		block.prompt = prompt
+			block = HistoryBlock()
+			system = wnd.systemTextCtrl.GetValue().strip()
+			block.system = system
+			prompt = getattr(wnd, "_askPromptOverride", None)
+			if prompt is not None:
+				delattr(wnd, "_askPromptOverride")
+			else:
+				prompt = wnd.promptTextCtrl.GetValue().strip()
+			block.prompt = prompt
+			block.timing = {"startedAt": time.time()}
 		model = wnd.getCurrentModel()
 		block.model = model.id
 		stream = wnd.streamModeCheckBox.IsChecked()
@@ -418,18 +439,24 @@ class CompletionThread(threading.Thread):
 			conf["topP"] = wnd.topPSpinCtrl.GetValue()
 		block.temperature = temperature
 		block.topP = topP
-		block.filesList = wnd.filesList.copy()
-		block.audioPathList = wnd.audioPathList.copy()
-		block.timing = {"startedAt": time.time()}
+		if not is_regenerate:
+			block.filesList = wnd.filesList.copy()
+			block.audioPathList = wnd.audioPathList.copy()
+		else:
+			if block.filesList is None:
+				block.filesList = []
+			if block.audioPathList is None:
+				block.audioPathList = []
 
 		current_audio_transcripts = None
-		if wnd.audioPathList:
+		audio_source = block.audioPathList if is_regenerate else wnd.audioPathList
+		if audio_source:
 			# Translators: Text in chat completion status and error messages.
 			wnd.message(_("Transcribing audio..."))
 			try:
 				t_transcribe_start = time.perf_counter()
 				transcripts = []
-				for path in wnd.audioPathList:
+				for path in audio_source:
 					path_str = path if isinstance(path, str) else getattr(path, "path", str(path))
 					t = transcribe_audio_file(path_str, wnd.conf["audio"], wnd.client)
 					transcripts.append((t or "").strip())
@@ -437,13 +464,14 @@ class CompletionThread(threading.Thread):
 				block.audioTranscriptList = transcripts
 				current_audio_transcripts = transcripts
 				combined_txt = "\n".join(t for t in transcripts if t).strip()
-				if combined_txt:
+				if combined_txt and not is_regenerate:
 					try:
 						wx.CallAfter(wnd._merge_audio_transcripts_into_prompt, combined_txt)
 					except Exception:
 						pass
 				if not prompt and any(t for t in transcripts):
 					block.prompt = "\n".join(t for t in transcripts if t).strip()
+					prompt = block.prompt
 			except Exception as err:
 				log.error(f"Transcription error: {err}", exc_info=True)
 				stop_progress_sound()
@@ -459,7 +487,11 @@ class CompletionThread(threading.Thread):
 			wx.PostEvent(self._notifyWindow, ResultEvent(_("Invalid top P")))
 			return
 		t_build_start = time.perf_counter()
-		messages = self._getMessages(system, prompt, current_audio_transcripts)
+		wnd._historyUntilBlock = regenerate_block if is_regenerate else None
+		try:
+			messages = self._getMessages(system, prompt, current_audio_transcripts)
+		finally:
+			wnd._historyUntilBlock = None
 		self._log_timing(debug, "build messages (incl. history)", time.perf_counter() - t_build_start)
 		nbImages = 0
 		nbAudio = 0
@@ -577,14 +609,19 @@ class CompletionThread(threading.Thread):
 			doc_error = self._maybe_build_document_support_error(err, provider, nbDocuments)
 			wx.PostEvent(self._notifyWindow, ResultEvent(doc_error if doc_error else err))
 			return
-		if wnd.lastBlock is None:
-			wnd.firstBlock = wnd.lastBlock = block
+		if not is_regenerate:
+			if wnd.lastBlock is None:
+				wnd.firstBlock = wnd.lastBlock = block
+			else:
+				wnd.lastBlock.next = block
+				block.previous = wnd.lastBlock
+				wnd.lastBlock = block
+			wnd.previousPrompt = wnd.promptTextCtrl.GetValue()
+			wnd.promptTextCtrl.Clear()
 		else:
-			wnd.lastBlock.next = block
-			block.previous = wnd.lastBlock
 			wnd.lastBlock = block
-		wnd.previousPrompt = wnd.promptTextCtrl.GetValue()
-		wnd.promptTextCtrl.Clear()
+			if wnd.firstBlock is None:
+				wnd.firstBlock = block
 		try:
 			t_resp_start = time.perf_counter()
 			if use_stream:
@@ -623,7 +660,12 @@ class CompletionThread(threading.Thread):
 		messages = []
 		if system:
 			messages.append({"role": Role.SYSTEM, "content": system})
+		until_block = getattr(wnd, "_historyUntilBlock", None)
 		t_hist = time.perf_counter()
+		if until_block is not None:
+			wnd.getMessages(messages, until_block=until_block)
+			self._log_timing(debug, "  history (prior blocks)", time.perf_counter() - t_hist)
+			return messages
 		wnd.getMessages(messages)
 		self._log_timing(debug, "  history (prior blocks)", time.perf_counter() - t_hist)
 		t_cur = time.perf_counter()

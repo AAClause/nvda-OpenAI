@@ -2,6 +2,7 @@
 import datetime
 import os
 import re
+import time
 import wx
 
 import addonHandler
@@ -462,6 +463,60 @@ class HistoryHandlersMixin:
 			api.copyToClip(text)
 		self.message(msg)
 
+	def _block_has_submittable_content(self, block):
+		if not block:
+			return False
+		if (getattr(block, "prompt", "") or "").strip():
+			return True
+		if getattr(block, "filesList", None):
+			return True
+		if getattr(block, "audioPathList", None):
+			return True
+		tlist = getattr(block, "audioTranscriptList", None)
+		return bool(tlist and any(t for t in tlist))
+
+	def _truncateBlocksAfter(self, block):
+		"""Remove ``block`` and all following blocks from the active thread chain."""
+		block.next = None
+		self.lastBlock = block
+
+	def _resetBlockForRegenerate(self, block):
+		"""Clear assistant output on ``block`` so a new response can stream in."""
+		block.responseText = ""
+		block.reasoningText = ""
+		block.responseTerminated = False
+		block.displayHeader = True
+		block.lastLen = 0
+		block.lastReasoningLen = 0
+		block.usage = None
+		block.timing = {"startedAt": time.time()}
+		block.segmentBreakLine = None
+		block.segmentPromptLabel = None
+		block.segmentPrompt = None
+		block.segmentResponseLabel = None
+		block.segmentResponse = None
+		block.segmentReasoningLabel = None
+		block.segmentReasoning = None
+		block.segmentReasoningSuffix = None
+
+	def onRegenerateBlock(self, evt):
+		segment, block = self._getCurrentSegmentBlock()
+		if segment is None or block is None:
+			# Translators: AI-Hub conversation — message history area: brief status feedback (speech/braille), not a full dialog.
+			self.message(_("No message selected."))
+			return
+		if self.worker:
+			return
+		if not self._block_has_submittable_content(block):
+			# Translators: AI-Hub conversation — message history area: brief status feedback (speech/braille), not a full dialog.
+			self.message(_("This message has no prompt or attachments to regenerate."))
+			return
+		page = self._conversation_scope()
+		page._regenerateBlock = block
+		# Translators: AI-Hub conversation — message history area: brief status feedback (speech/braille), not a full dialog.
+		self.message(_("Regenerating response..."))
+		self._onSubmitImpl(evt)
+
 	def onDeleteBlock(self, evt):
 		segment, block = self._getCurrentSegmentBlock()
 		if segment is None:
@@ -597,6 +652,12 @@ class HistoryHandlersMixin:
 		# Translators: AI-Hub conversation — message history area: entry in a context menu or submenu.
 		menu.Append(item_id, _("Copy prompt to prompt") + " (Alt+Right)")
 		self.Bind(wx.EVT_MENU, self.onCopyPromptToPrompt, id=item_id)
+		item_id = wx.NewIdRef()
+		# Translators: AI-Hub conversation — message history area: entry in a context menu or submenu.
+		regenerate_item = menu.Append(item_id, _("Regenerate response") + " (Ctrl+Shift+R)")
+		self.Bind(wx.EVT_MENU, self.onRegenerateBlock, id=item_id)
+		if self.worker:
+			regenerate_item.Enable(False)
 		item_id = wx.NewIdRef()
 		# Translators: AI-Hub conversation — message history area: entry in a context menu or submenu.
 		menu.Append(item_id, _("Delete block") + " (Ctrl+D)")
