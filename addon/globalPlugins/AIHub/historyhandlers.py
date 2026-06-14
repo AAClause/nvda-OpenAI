@@ -308,7 +308,7 @@ class HistoryHandlersMixin:
 				if content is not None:
 					self._setMessagesInsertionPoint(content.start)
 					label, text = self._getBlockTextByKind(block, kind)
-					self.message(label + text)
+					self.message(label + text, speechOnly=True)
 					return
 			if kind == "prompt":
 				prev = block.previous
@@ -332,7 +332,7 @@ class HistoryHandlersMixin:
 			self.message(_("An error occurred. More information is in the NVDA log."))
 			return
 		self._setMessagesInsertionPoint(start)
-		self.message(label + text)
+		self.message(label + text, speechOnly=True)
 
 	def onNextMessage(self, evt):
 		segment, block = self._getCurrentSegmentBlock()
@@ -366,7 +366,7 @@ class HistoryHandlersMixin:
 			self.message(_("An error occurred. More information is in the NVDA log."))
 			return
 		self._setMessagesInsertionPoint(start)
-		self.message(label + text)
+		self.message(label + text, speechOnly=True)
 
 	def onCurrentMessage(self, evt):
 		segment, block = self._getCurrentSegmentBlock()
@@ -423,7 +423,7 @@ class HistoryHandlersMixin:
 			return
 		self._setMessagesInsertionPoint(target_segment.start)
 		# Translators: AI-Hub conversation — message history area: brief status feedback (speech/braille), not a full dialog.
-		self.message(_("Moved to beginning of content."))
+		self.message(_("Moved to beginning of content."), speechOnly=True)
 
 	def onMoveToEndOfContent(self, evt=None):
 		segment, block = self._getCurrentSegmentBlock()
@@ -438,7 +438,7 @@ class HistoryHandlersMixin:
 		target = max(target_segment.start, target_segment.end - 1)
 		self._setMessagesInsertionPoint(target)
 		# Translators: AI-Hub conversation — message history area: brief status feedback (speech/braille), not a full dialog.
-		self.message(_("Moved to end of content."))
+		self.message(_("Moved to end of content."), speechOnly=True)
 
 	def onCopyResponseToSystem(self, evt):
 		segment, block = self._getCurrentSegmentBlock()
