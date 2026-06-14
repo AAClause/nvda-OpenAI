@@ -138,8 +138,6 @@ class Model:
 			return ()
 		if self.provider == Provider.Anthropic:
 			profile = get_anthropic_thinking_profile(self.id)
-			# xhigh / max are Anthropic-only and intentionally not part of the
-			# ReasoningEffort enum (see consts.ReasoningEffort docstring).
 			labels = {
 				# Translators: Text in model labels and capability descriptions.
 				ReasoningEffort.LOW.value: _("Low"),
@@ -148,9 +146,9 @@ class Model:
 				# Translators: Text in model labels and capability descriptions.
 				ReasoningEffort.HIGH.value: _("High"),
 				# Translators: Text in model labels and capability descriptions.
-				"xhigh": _("Extra high"),
+				ReasoningEffort.XHIGH.value: _("Extra high"),
 				# Translators: Text in model labels and capability descriptions.
-				"max": _("Maximum"),
+				ReasoningEffort.MAX.value: _("Maximum"),
 			}
 			levels = profile.get("effort_levels") or (
 				ReasoningEffort.LOW.value,
