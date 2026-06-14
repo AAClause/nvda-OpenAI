@@ -45,6 +45,7 @@ from .consts import (
 	UI_SECTION_SPACING_PX,
 )
 from .history import HistoryBlock, TextSegment
+from .detached_branch import assistant_label_for_block
 from .imagehelper import encode_image, get_image_dimensions, resize_image
 from .image_file import AttachmentFile, AttachmentFileTypes, get_display_size, URL_PATTERN
 from .recordthread import RecordThread, WhisperTranscription, AudioInputResult
@@ -1556,7 +1557,12 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 				prompt_text = "\n".join(t for t in tlist if t).strip()
 		block.segmentPrompt = TextSegment(self.messagesTextCtrl, (prompt_text or "") + "\n", block)
 		# Translators: Prefix shown before assistant response content in history view.
-		block.segmentResponseLabel = TextSegment(self.messagesTextCtrl, _("Assistant:") + " ", block)
+		assistant_label = assistant_label_for_block(
+			self._conversation_scope(),
+			block,
+			default_label=_("Assistant:") + " ",
+		)
+		block.segmentResponseLabel = TextSegment(self.messagesTextCtrl, assistant_label, block)
 		if self._showThinkingInHistory and (block.reasoningText or "").strip():
 			block.segmentReasoningLabel = TextSegment(self.messagesTextCtrl, "", block)
 			block.segmentReasoning = TextSegment(self.messagesTextCtrl, self._formatThinkingForHistory(block.reasoningText), block)

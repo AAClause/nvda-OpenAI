@@ -90,6 +90,27 @@ def has_detached_branch(page) -> bool:
 	return isinstance(branch, dict) and bool(branch.get("anchorBlockId"))
 
 
+def is_detached_branch_anchor(page, block) -> bool:
+	branch = getattr(page, "detachedBranch", None)
+	if not isinstance(branch, dict):
+		return False
+	anchor_uid = branch.get("anchorBlockId")
+	return bool(anchor_uid) and getattr(block, "uid", None) == anchor_uid
+
+
+def assistant_label_for_block(page, block, *, default_label: str) -> str:
+	"""History assistant prefix; marks the anchor block when a branch is archived."""
+	if not is_detached_branch_anchor(page, block):
+		return default_label
+	branch = page.detachedBranch
+	tail_count, _had_response = detached_branch_summary(branch)
+	if tail_count:
+		# Translators: Assistant response label in history when regenerate archived later messages.
+		return _("Assistant [archived branch, %d later messages]:") % tail_count + " "
+	# Translators: Assistant response label in history when regenerate archived the prior response.
+	return _("Assistant [archived branch]:") + " "
+
+
 def detached_tail_count(branch) -> int:
 	if not isinstance(branch, dict):
 		return 0
