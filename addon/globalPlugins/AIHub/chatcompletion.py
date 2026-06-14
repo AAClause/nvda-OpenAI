@@ -296,6 +296,33 @@ class CompletionThread(threading.Thread):
 		if cost > 0:
 			usage["cost"] = float(cost)
 
+	def _record_usage_in_ledger(self, wnd, block, model, *, kind):
+		"""Append this API call to the tab's append-only usage ledger."""
+		from .usage_ledger import append_usage_event, ensure_block_uid
+
+		page = getattr(wnd, "_worker_page", None)
+		if page is None:
+			return
+		ledger = getattr(page, "usageLedger", None)
+		if not isinstance(ledger, list):
+			page.usageLedger = []
+			ledger = page.usageLedger
+		usage = getattr(block, "usage", None)
+		if not isinstance(usage, dict):
+			return
+		finished_at = None
+		timing = getattr(block, "timing", None)
+		if isinstance(timing, dict):
+			finished_at = timing.get("finishedAt")
+		append_usage_event(
+			ledger,
+			usage=usage,
+			model=getattr(model, "id", "") or getattr(block, "model", ""),
+			kind=kind,
+			block_id=ensure_block_uid(block),
+			at=finished_at,
+		)
+
 	def _maybe_build_document_support_error(self, err, provider, document_count):
 		"""Return a clearer provider-specific document failure message when possible."""
 		if document_count <= 0:
@@ -565,6 +592,14 @@ class CompletionThread(threading.Thread):
 			else:
 				self._responseWithoutStream(response, block, debug)
 			self._apply_pricing_if_missing(block, model)
+			from .usage_ledger import USAGE_KIND_ABORTED, USAGE_KIND_COMPLETION
+			aborted = self._wantAbort or wnd.stopRequest.is_set()
+			self._record_usage_in_ledger(
+				wnd,
+				block,
+				model,
+				kind=USAGE_KIND_ABORTED if aborted else USAGE_KIND_COMPLETION,
+			)
 			self._log_timing(debug, "response processing", time.perf_counter() - t_resp_start)
 		except Exception as err:
 			log.error("Error processing response for model %s: %s", model.id, err, exc_info=True)

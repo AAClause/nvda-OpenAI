@@ -14,6 +14,13 @@ from logHandler import log
 from .consts import DATA_DIR, ensure_dir_exists
 from .image_file import AttachmentFile
 from .mediastore import persist_local_file
+from .usage_ledger import (
+	CONVERSATION_JSON_VERSION,
+	conversation_json_version,
+	deserialize_ledger,
+	migrate_ledger_from_block_dicts,
+	resolve_ledger_for_saved_data,
+)
 
 addonHandler.initTranslation()
 
@@ -374,6 +381,9 @@ def _block_to_dict(block) -> dict:
 		d["audioPath"] = persist_local_file(audio_path, "audio", prefix="chat_audio", fallback_ext=".wav")
 	transcripts = getattr(block, "audioTranscriptList", None)
 	d["audioTranscriptList"] = list(transcripts) if transcripts else []
+	block_id = getattr(block, "uid", None)
+	if isinstance(block_id, str) and block_id:
+		d["id"] = block_id
 	return d
 
 
@@ -465,6 +475,8 @@ def _dict_to_block(d: dict, conv_id: str = "", block_idx: int = 0):
 	audio_path = d.get("audioPath")
 	block.audioPath = audio_path if isinstance(audio_path, str) else None
 	block.audioTranscriptList = d.get("audioTranscriptList") or []
+	block_id = d.get("id") or d.get("uid")
+	block.uid = block_id if isinstance(block_id, str) and block_id else str(uuid.uuid4())
 	return block
 
 
@@ -515,6 +527,19 @@ def get_conversation_properties(conv_id: str) -> dict | None:
 	blocks = data.get("blocks", [])
 	if not isinstance(blocks, list):
 		blocks = []
+	ledger = resolve_ledger_for_saved_data(data)
+	session_agg = None
+	thread_agg = None
+	try:
+		from .usage_ledger import aggregate_block_dicts_usage, aggregate_ledger_usage
+
+		session_agg = aggregate_ledger_usage(ledger, _("unknown"))
+		thread_agg = aggregate_block_dicts_usage(blocks, _("unknown"))
+	except Exception:
+		session_agg = None
+		thread_agg = None
+
+	# Legacy scalar totals (session when ledger exists, else sum of block dicts).
 	total_input = total_output = total_tokens = 0
 	total_reasoning = total_cached = 0
 	total_cache_write = total_input_audio = total_output_audio = 0
@@ -522,40 +547,57 @@ def get_conversation_properties(conv_id: str) -> dict | None:
 	has_cost = False
 	usage_message_count = 0
 	model_counts = {}
-	for block in blocks:
-		if not isinstance(block, dict):
-			continue
-		# Translators: Text in conversation metadata/properties shown to the user.
-		model_name = block.get("model") or _("unknown")
-		model_counts[model_name] = model_counts.get(model_name, 0) + 1
-		usage = block.get("usage")
-		if not isinstance(usage, dict):
-			continue
-		usage_message_count += 1
-		try:
-			input_tokens = int(usage.get("input_tokens", 0) or 0)
-			output_tokens = int(usage.get("output_tokens", 0) or 0)
-			if input_tokens == 0:
-				input_tokens = int(usage.get("prompt_tokens", 0) or 0)
-			if output_tokens == 0:
-				output_tokens = int(usage.get("completion_tokens", 0) or 0)
-			total_input += input_tokens
-			total_output += output_tokens
-			total_for_block = int(usage.get("total_tokens", 0) or 0)
-			if total_for_block == 0 and (input_tokens or output_tokens):
-				total_for_block = input_tokens + output_tokens
-			total_tokens += total_for_block
-			total_reasoning += int(usage.get("reasoning_tokens", 0) or 0)
-			total_cached += int(usage.get("cached_input_tokens", 0) or 0)
-			total_cache_write += int(usage.get("cache_creation_input_tokens", 0) or 0)
-			total_input_audio += int(usage.get("input_audio_tokens", 0) or 0)
-			total_output_audio += int(usage.get("output_audio_tokens", 0) or 0)
-		except (TypeError, ValueError):
-			pass
-		cost = usage.get("cost")
-		if isinstance(cost, (int, float)):
-			total_cost += float(cost)
-			has_cost = True
+	if session_agg and session_agg.get("usage_count"):
+		total_input = session_agg["total_input"]
+		total_output = session_agg["total_output"]
+		total_tokens = session_agg["total_tokens"]
+		total_reasoning = session_agg["total_reasoning"]
+		total_cached = session_agg["total_cached"]
+		total_cache_write = session_agg["total_cache_write"]
+		total_input_audio = session_agg["total_input_audio"]
+		total_output_audio = session_agg["total_output_audio"]
+		total_cost = session_agg["total_cost"]
+		has_cost = session_agg["has_cost"]
+		usage_message_count = session_agg["usage_count"]
+		model_counts = dict(session_agg.get("model_counts") or {})
+	else:
+		for block in blocks:
+			if not isinstance(block, dict):
+				continue
+			# Translators: Text in conversation metadata/properties shown to the user.
+			model_name = block.get("model") or _("unknown")
+			model_counts[model_name] = model_counts.get(model_name, 0) + 1
+			usage = block.get("usage")
+			if not isinstance(usage, dict):
+				continue
+			usage_message_count += 1
+			try:
+				input_tokens = int(usage.get("input_tokens", 0) or 0)
+				output_tokens = int(usage.get("output_tokens", 0) or 0)
+				if input_tokens == 0:
+					input_tokens = int(usage.get("prompt_tokens", 0) or 0)
+				if output_tokens == 0:
+					output_tokens = int(usage.get("completion_tokens", 0) or 0)
+				total_input += input_tokens
+				total_output += output_tokens
+				total_for_block = int(usage.get("total_tokens", 0) or 0)
+				if total_for_block == 0 and (input_tokens or output_tokens):
+					total_for_block = input_tokens + output_tokens
+				total_tokens += total_for_block
+				total_reasoning += int(usage.get("reasoning_tokens", 0) or 0)
+				total_cached += int(usage.get("cached_input_tokens", 0) or 0)
+				total_cache_write += int(usage.get("cache_creation_input_tokens", 0) or 0)
+				total_input_audio += int(usage.get("input_audio_tokens", 0) or 0)
+				total_output_audio += int(usage.get("output_audio_tokens", 0) or 0)
+			except (TypeError, ValueError):
+				pass
+			cost = usage.get("cost")
+			if isinstance(cost, (int, float)):
+				total_cost += float(cost)
+				has_cost = True
+
+	thread_cost = thread_agg.get("total_cost", 0.0) if thread_agg else total_cost
+	thread_has_cost = bool(thread_agg.get("has_cost")) if thread_agg else has_cost
 
 	return {
 		"id": data.get("id", conv_id),
@@ -576,6 +618,13 @@ def get_conversation_properties(conv_id: str) -> dict | None:
 		"total_output_audio": total_output_audio,
 		"total_cost": total_cost,
 		"has_cost": has_cost,
+		"thread_total_input": int(thread_agg.get("total_input", 0)) if thread_agg else total_input,
+		"thread_total_output": int(thread_agg.get("total_output", 0)) if thread_agg else total_output,
+		"thread_total_tokens": int(thread_agg.get("total_tokens", 0)) if thread_agg else total_tokens,
+		"thread_total_cost": thread_cost,
+		"thread_has_cost": thread_has_cost,
+		"ledger_entries": len(ledger),
+		"file_version": conversation_json_version(data),
 		"has_usage": bool(usage_message_count),
 		"usage_message_count": usage_message_count,
 		"model_counts": model_counts,
@@ -670,12 +719,16 @@ def load_conversation(conv_id: str) -> dict | None:
 			blocks.append(_dict_to_block(bd, conv_id=conv_id, block_idx=idx))
 		raw_ui = data.get("uiState")
 		ui_state = raw_ui if isinstance(raw_ui, dict) else {}
+		ledger = resolve_ledger_for_saved_data(data)
+		file_version = conversation_json_version(data)
 		return {
 			"id": data.get("id", conv_id),
 			# Translators: Text in conversation metadata/properties shown to the user.
 			"name": data.get("name", _("Untitled conversation")),
 			"system": data.get("system", ""),
 			"blocks": blocks,
+			"usageLedger": ledger,
+			"fileVersion": file_version,
 			"model": data.get("model", ""),
 			"accountKey": data.get("accountKey", ""),
 			"uiState": ui_state,
@@ -706,6 +759,7 @@ def save_conversation(
 	format_data: dict | None = None,
 	account_key: str = "",
 	ui_state: dict | None = None,
+	usage_ledger=None,
 ) -> str:
 	"""
 	Save conversation. Returns conversation id.
@@ -733,6 +787,7 @@ def save_conversation(
 	now = int(time.time())
 	normalized_format = normalize_conversation_format(conversation_format)
 	ui_payload = ui_state if isinstance(ui_state, dict) else {}
+	ledger_payload = deserialize_ledger(usage_ledger) if usage_ledger is not None else None
 	path = get_conversation_path(conv_id) if conv_id else ""
 	if conv_id and os.path.exists(path):
 		try:
@@ -740,6 +795,9 @@ def save_conversation(
 				existing = json.load(f)
 		except Exception:
 			existing = {}
+		if ledger_payload is None:
+			ledger_payload = resolve_ledger_for_saved_data(existing)
+		existing["version"] = CONVERSATION_JSON_VERSION
 		existing["updated"] = now
 		if name is not None:
 			existing["name"] = name
@@ -753,8 +811,11 @@ def save_conversation(
 		existing["format"] = normalized_format.value
 		existing["formatData"] = _serialize_format_data(normalized_format, format_data)
 		existing["blocks"] = [_block_to_dict(b) for b in blocks]
+		existing["usageLedger"] = ledger_payload
 	else:
 		conv_id = conv_id or str(uuid.uuid4())
+		if ledger_payload is None:
+			ledger_payload = migrate_ledger_from_block_dicts([_block_to_dict(b) for b in blocks])
 		if name is None and blocks:
 			first = blocks[0]
 			prompt = getattr(first, "prompt", "") or ""
@@ -763,6 +824,7 @@ def save_conversation(
 				prompt = "\n".join(t for t in tlist if t).strip()
 			name = get_default_title(prompt)
 		existing = {
+			"version": CONVERSATION_JSON_VERSION,
 			"id": conv_id,
 			# Translators: Text in conversation metadata/properties shown to the user.
 			"name": name or _("Untitled conversation"),
@@ -778,6 +840,7 @@ def save_conversation(
 			"format": normalized_format.value,
 			"formatData": _serialize_format_data(normalized_format, format_data),
 			"blocks": [_block_to_dict(b) for b in blocks],
+			"usageLedger": ledger_payload,
 		}
 	path = get_conversation_path(conv_id)
 	try:

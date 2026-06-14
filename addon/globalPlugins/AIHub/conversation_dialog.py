@@ -307,6 +307,7 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 			"draftAudioPathList": page.audioPathList,
 			"account_key": account_key,
 			"ui_state": ui_state,
+			"usage_ledger": list(getattr(page, "usageLedger", None) or []),
 		}
 
 	def _saveConversationFromKw(self, kw):
@@ -321,6 +322,7 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 			draftAudioPathList=kw["draftAudioPathList"],
 			account_key=kw["account_key"],
 			ui_state=kw["ui_state"],
+			usage_ledger=kw.get("usage_ledger"),
 		)
 
 	def _captureConversationChromeToPage(self, page):
@@ -690,6 +692,14 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		self._conversation_scope().previousPrompt = value
 
 	@property
+	def usageLedger(self):
+		return self._conversation_scope().usageLedger
+
+	@usageLedger.setter
+	def usageLedger(self, value):
+		self._conversation_scope().usageLedger = value
+
+	@property
 	def _conversationId(self):
 		return self._conversation_scope()._conversationId
 
@@ -874,6 +884,7 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		page.firstBlock = None
 		page.lastBlock = None
 		page.previousPrompt = None
+		page.usageLedger = []
 		page._conversationId = cid
 		page.conversationModelHint = ""
 		page.conversationAccountKey = ""
@@ -909,6 +920,7 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		page.firstBlock = None
 		page.lastBlock = None
 		page.previousPrompt = None
+		page.usageLedger = []
 		page._conversationId = None
 		page.conversationModelHint = ""
 		page.conversationAccountKey = ""
@@ -1641,6 +1653,13 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		active_pg.conversationUiState = raw_ui if isinstance(raw_ui, dict) else {}
 		active_pg.ephemeral = False
 		active_pg.conversationSystemText = data.get("system", "") if isinstance(data.get("system"), str) else ""
+		from .usage_ledger import deserialize_ledger, migrate_ledger_from_blocks
+
+		raw_ledger = data.get("usageLedger")
+		if isinstance(raw_ledger, list) and raw_ledger:
+			active_pg.usageLedger = deserialize_ledger(raw_ledger)
+		else:
+			active_pg.usageLedger = migrate_ledger_from_blocks(blocks)
 		self._clearMessagesSegments()
 		self.firstBlock = None
 		self.lastBlock = None

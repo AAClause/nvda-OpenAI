@@ -12,6 +12,7 @@ from logHandler import log
 from .history import TextSegment, get_textctrl_selected_text, update_textctrl_saved_selection
 from .image_file import AttachmentFile, AttachmentFileTypes, URL_PATTERN
 from .propertiesutils import aggregate_blocks_usage, build_message_properties_html
+from .usage_ledger import build_conversation_usage_lines
 
 addonHandler.initTranslation()
 
@@ -94,44 +95,43 @@ class HistoryHandlersMixin:
 			# Translators: AI-Hub conversation — message history area: brief status feedback (speech/braille), not a full dialog.
 			ui.message(_("No conversation messages yet."))
 			return
-		# Translators: Placeholder model name in the «Conversation properties» token summary when a message block has no model id.
-		agg = aggregate_blocks_usage(blocks, _("unknown"))
+		page = self._conversation_scope()
+		ledger = getattr(page, "usageLedger", None)
+		if not isinstance(ledger, list):
+			ledger = []
 		lines = [
 			# Translators: Text in history navigation and context-menu messages.
 			_("Conversation properties"),
 			"",
-			# Translators: Text in history navigation and context-menu messages.
-			_("Messages: %d") % len(blocks),
-			# Translators: Text in history navigation and context-menu messages.
-			_("Total input tokens: %d") % agg["total_input"],
-			# Translators: Text in history navigation and context-menu messages.
-			_("Total output tokens: %d") % agg["total_output"],
-			# Translators: Text in history navigation and context-menu messages.
-			_("Total tokens: %d") % agg["total_tokens"],
 		]
-		if agg["total_reasoning"]:
+		lines.extend(
+			build_conversation_usage_lines(
+				blocks=blocks,
+				ledger=ledger,
+				unknown_model_label=_("unknown"),
+				message_count=len(blocks),
+			)
+		)
+		session_models = {}
+		for entry in ledger:
+			if not isinstance(entry, dict):
+				continue
+			model_name = entry.get("model") or _("unknown")
+			session_models[model_name] = session_models.get(model_name, 0) + 1
+		if session_models:
+			lines.append("")
 			# Translators: Text in history navigation and context-menu messages.
-			lines.append(_("Total reasoning tokens: %d") % agg["total_reasoning"])
-		if agg["total_cached"]:
-			# Translators: Text in history navigation and context-menu messages.
-			lines.append(_("Total cached input tokens: %d") % agg["total_cached"])
-		if agg["total_cache_write"]:
-			# Translators: Text in history navigation and context-menu messages.
-			lines.append(_("Total cache write tokens: %d") % agg["total_cache_write"])
-		if agg["total_input_audio"]:
-			# Translators: Text in history navigation and context-menu messages.
-			lines.append(_("Total input audio tokens: %d") % agg["total_input_audio"])
-		if agg["total_output_audio"]:
-			# Translators: Text in history navigation and context-menu messages.
-			lines.append(_("Total output audio tokens: %d") % agg["total_output_audio"])
-		if agg["has_cost"]:
-			# Translators: Text in history navigation and context-menu messages.
-			lines.append(_("Total cost: $%.6f") % agg["total_cost"])
-		lines.append("")
-		# Translators: Text in history navigation and context-menu messages.
-		lines.append(_("Models used:"))
-		for model_name, count in sorted(agg["model_counts"].items(), key=lambda x: x[1], reverse=True):
-			lines.append(f"- {model_name}: {count}")
+			lines.append(_("Models used (session):"))
+			for model_name, count in sorted(session_models.items(), key=lambda x: x[1], reverse=True):
+				lines.append(f"- {model_name}: {count}")
+		elif blocks:
+			agg = aggregate_blocks_usage(blocks, _("unknown"))
+			if agg.get("model_counts"):
+				lines.append("")
+				# Translators: Text in history navigation and context-menu messages.
+				lines.append(_("Models used:"))
+				for model_name, count in sorted(agg["model_counts"].items(), key=lambda x: x[1], reverse=True):
+					lines.append(f"- {model_name}: {count}")
 		# Translators: Text in history navigation and context-menu messages.
 		ui.browseableMessage("\n".join(lines), _("Conversation properties"), False)
 

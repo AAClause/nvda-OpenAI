@@ -486,35 +486,72 @@ class ConversationsManagerDialog(wx.Dialog):
 			_("Draft prompt length: %d characters") % int(props.get("draft_len", 0)),
 		]
 		if props.get("has_usage"):
-			lines.extend([
-				# Translators: Properties line: sum of input tokens across all turns (shown only when usage was recorded).
-				_("Total input tokens: %d") % int(props.get("total_input", 0)),
-				# Translators: Properties line: sum of output tokens across all turns.
-				_("Total output tokens: %d") % int(props.get("total_output", 0)),
-				# Translators: Properties line: combined input plus output token total.
-				_("Total tokens: %d") % int(props.get("total_tokens", 0)),
-			])
+			ledger_entries = int(props.get("ledger_entries", 0) or 0)
+			if ledger_entries:
+				# Translators: Property line: number of billable API calls recorded for this conversation.
+				lines.append(_("API calls recorded: %d") % ledger_entries)
+				lines.extend([
+					"",
+					# Translators: Section heading — cumulative API usage including deleted/regenerated turns.
+					_("Session (all API calls)"),
+					# Translators: Property line: billed input tokens summed across every API call.
+					_("Billed input tokens: %d") % int(props.get("total_input", 0)),
+					# Translators: Property line: billed output tokens summed across every API call.
+					_("Billed output tokens: %d") % int(props.get("total_output", 0)),
+					# Translators: Property line: billed input plus output tokens across every API call.
+					_("Billed total tokens: %d") % int(props.get("total_tokens", 0)),
+				])
+				if props.get("has_cost"):
+					# Translators: Property line: cumulative API dollar cost for all recorded calls.
+					lines.append(_("API spend: $%.6f") % float(props.get("total_cost", 0.0)))
+				thread_has_usage = int(props.get("thread_total_tokens", 0) or 0) > 0
+				session_tokens = int(props.get("total_tokens", 0) or 0)
+				thread_tokens = int(props.get("thread_total_tokens", 0) or 0)
+				if thread_has_usage and thread_tokens != session_tokens:
+					lines.extend([
+						"",
+						# Translators: Section heading — usage for messages still in the saved history.
+						_("Active thread (remaining messages)"),
+						# Translators: Property line: billed input tokens for remaining message blocks only.
+						_("Billed input tokens: %d") % int(props.get("thread_total_input", 0)),
+						# Translators: Property line: billed output tokens for remaining message blocks only.
+						_("Billed output tokens: %d") % int(props.get("thread_total_output", 0)),
+						# Translators: Property line: billed total tokens for remaining message blocks only.
+						_("Billed total tokens: %d") % thread_tokens,
+					])
+					if props.get("thread_has_cost"):
+						# Translators: Property line: API dollar cost attributable to remaining messages only.
+						lines.append(_("API spend: $%.6f") % float(props.get("thread_total_cost", 0.0)))
+			else:
+				lines.extend([
+					# Translators: Property line: sum of input tokens across all turns (shown only when usage was recorded).
+					_("Billed input tokens: %d") % int(props.get("total_input", 0)),
+					# Translators: Property line: sum of output tokens across all turns.
+					_("Billed output tokens: %d") % int(props.get("total_output", 0)),
+					# Translators: Property line: combined input plus output token total.
+					_("Billed total tokens: %d") % int(props.get("total_tokens", 0)),
+				])
+				if props.get("has_cost"):
+					# Translators: Property line: total estimated API dollar cost for one saved conversation.
+					lines.append(_("API spend: $%.6f") % float(props.get("total_cost", 0.0)))
 		else:
 			# Translators: Property line in «Manage saved conversations» when the conversation file has no stored token totals.
 			lines.append(_("Token usage: unavailable"))
 		if int(props.get("total_reasoning", 0)):
 			# Translators: Property line: aggregate reasoning-token count for one saved conversation.
-			lines.append(_("Total reasoning tokens: %d") % int(props.get("total_reasoning", 0)))
+			lines.append(_("Reasoning tokens: %d") % int(props.get("total_reasoning", 0)))
 		if int(props.get("total_cached", 0)):
 			# Translators: Property line: aggregate cached prompt-token count for one saved conversation.
-			lines.append(_("Total cached input tokens: %d") % int(props.get("total_cached", 0)))
+			lines.append(_("Cached input tokens: %d") % int(props.get("total_cached", 0)))
 		if int(props.get("total_cache_write", 0)):
 			# Translators: Property line: aggregate cache-write token count for one saved conversation.
-			lines.append(_("Total cache write tokens: %d") % int(props.get("total_cache_write", 0)))
+			lines.append(_("Cache write tokens: %d") % int(props.get("total_cache_write", 0)))
 		if int(props.get("total_input_audio", 0)):
 			# Translators: Property line: aggregate input-audio token count for one saved conversation.
-			lines.append(_("Total input audio tokens: %d") % int(props.get("total_input_audio", 0)))
+			lines.append(_("Input audio tokens: %d") % int(props.get("total_input_audio", 0)))
 		if int(props.get("total_output_audio", 0)):
 			# Translators: Property line: aggregate output-audio token count for one saved conversation.
-			lines.append(_("Total output audio tokens: %d") % int(props.get("total_output_audio", 0)))
-		if props.get("has_cost"):
-			# Translators: Property line: total estimated API dollar cost for one saved conversation.
-			lines.append(_("Total cost: $%.6f") % float(props.get("total_cost", 0.0)))
+			lines.append(_("Output audio tokens: %d") % int(props.get("total_output_audio", 0)))
 		model_counts = props.get("model_counts", {})
 		if model_counts:
 			# Translators: Section heading before the per-model message counts in the saved-conversation properties list.

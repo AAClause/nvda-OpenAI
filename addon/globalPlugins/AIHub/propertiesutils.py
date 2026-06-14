@@ -53,46 +53,9 @@ def _usage_triplet(usage):
 
 def aggregate_blocks_usage(blocks, unknown_model_label):
 	"""Aggregate usage totals and model counts from iterable of blocks."""
-	total_input = total_output = total_tokens = 0
-	total_reasoning = total_cached = total_cache_write = 0
-	total_input_audio = total_output_audio = 0
-	total_cost = 0.0
-	has_cost = False
-	model_counts = {}
+	from .usage_ledger import aggregate_blocks_usage as _aggregate_blocks_usage
 
-	for block in blocks:
-		model_name = getattr(block, "model", "") or unknown_model_label
-		model_counts[model_name] = model_counts.get(model_name, 0) + 1
-		usage = getattr(block, "usage", {}) or {}
-		if not isinstance(usage, dict):
-			continue
-		input_tokens, output_tokens, total_for_block = _usage_triplet(usage)
-		total_input += input_tokens
-		total_output += output_tokens
-		total_tokens += total_for_block
-		total_reasoning += _to_int(usage.get("reasoning_tokens"))
-		total_cached += _to_int(usage.get("cached_input_tokens"))
-		total_cache_write += _to_int(usage.get("cache_creation_input_tokens"))
-		total_input_audio += _to_int(usage.get("input_audio_tokens"))
-		total_output_audio += _to_int(usage.get("output_audio_tokens"))
-		cost = usage.get("cost")
-		if isinstance(cost, (int, float)):
-			total_cost += float(cost)
-			has_cost = True
-
-	return {
-		"total_input": total_input,
-		"total_output": total_output,
-		"total_tokens": total_tokens,
-		"total_reasoning": total_reasoning,
-		"total_cached": total_cached,
-		"total_cache_write": total_cache_write,
-		"total_input_audio": total_input_audio,
-		"total_output_audio": total_output_audio,
-		"total_cost": total_cost,
-		"has_cost": has_cost,
-		"model_counts": model_counts,
-	}
+	return _aggregate_blocks_usage(blocks, unknown_model_label)
 
 
 def format_token_usage_lines(usage, include_unavailable=True):
@@ -146,7 +109,7 @@ def format_token_usage_lines(usage, include_unavailable=True):
 		lines.append(_("Output audio tokens: %d") % output_audio)
 	if isinstance(cost, (int, float)):
 		# Translators: Text in message/conversation properties output.
-		lines.append(_("Cost: $%.6f") % float(cost))
+		lines.append(_("API spend: $%.6f") % float(cost))
 	return lines
 
 

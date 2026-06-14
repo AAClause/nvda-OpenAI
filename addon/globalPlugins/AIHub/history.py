@@ -4,6 +4,8 @@ Multiline wx.TextCtrl stores ``\\n`` as CRLF; measure inserted spans with
 ``GetInsertionPoint()``, not ``len(text)``.
 """
 
+import uuid
+
 
 def _shift_index_after_insert(pos: int, insert_at: int, insert_len: int) -> int:
 	return pos + insert_len if pos >= insert_at else pos
@@ -148,3 +150,7 @@ class HistoryBlock:
 	audioPath = None
 	usage = None
 	timing = None
+	uid = None
+
+	def __init__(self):
+		self.uid = str(uuid.uuid4())
