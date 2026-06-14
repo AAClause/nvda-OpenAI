@@ -23,12 +23,12 @@ from .anthropicthinking import anthropic_reasoning_always_on
 from .consts import Provider, ReasoningEffort
 
 # Providers whose chat-completions body accepts top-level ``reasoning_effort``.
+# xAI is handled explicitly: only grok-4.3 / grok-3-mini per xAI chat API docs.
 _REASONING_EFFORT_BODY_PROVIDERS = frozenset({
 	Provider.OpenAI,
 	Provider.CustomOpenAI,
 	Provider.MistralAI,
 	Provider.Google,
-	Provider.xAI,
 	Provider.Ollama,
 	Provider.DeepSeek,
 })
@@ -63,6 +63,7 @@ def ollama_reasoning_always_on(model_id: str) -> bool:
 
 
 def xai_supports_reasoning_effort(model_id: str) -> bool:
+	"""Chat Completions ``reasoning_effort`` — grok-4.3 only (not grok-4.20+)."""
 	mid = _mid(model_id)
 	return "grok-4.3" in mid or "grok-3-mini" in mid
 
@@ -194,6 +195,10 @@ def apply_reasoning_enabled(
 	if provider == Provider.MistralAI and mistral_supports_reasoning_effort(model.id):
 		params["reasoning_effort"] = _mistral_effort(effort)
 		return
+	if provider == Provider.xAI:
+		if xai_supports_reasoning_effort(model.id):
+			params["reasoning_effort"] = effort
+		return
 	if getattr(model, "reasoning_mandatory", False):
 		return
 	if provider in _REASONING_EFFORT_BODY_PROVIDERS:
@@ -219,6 +224,10 @@ def apply_reasoning_disabled(params: dict[str, Any], model, provider: str) -> No
 		return
 	if provider == Provider.MistralAI and mistral_supports_reasoning_effort(model.id):
 		params["reasoning_effort"] = "none"
+		return
+	if provider == Provider.xAI:
+		if xai_supports_reasoning_effort(model.id):
+			params["reasoning_effort"] = "none"
 		return
 	if provider in _REASONING_EFFORT_BODY_PROVIDERS:
 		params["reasoning_effort"] = "none"
