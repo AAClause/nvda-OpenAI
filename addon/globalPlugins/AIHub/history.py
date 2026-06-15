@@ -144,6 +144,8 @@ class HistoryBlock:
 	presencePenalty = None
 	displayHeader = True
 	responseTerminated = False
+	# UI-only: True once the messages caret has been re-positioned to this reply at stream end.
+	_caretReassertedAtEnd = False
 	# In-code attribute uses the neutral name; on-disk JSON key is still
 	# ``pathList`` for backward compatibility with previously saved conversations.
 	filesList = None

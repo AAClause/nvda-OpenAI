@@ -2199,6 +2199,9 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 					# Translators: Prefix shown before assistant response in streaming history updates.
 					block.segmentResponseLabel = TextSegment(self.messagesTextCtrl, _("Assistant:") + ' ', block)
 					block.displayHeader = False
+					# Position the caret just after the "Assistant:" label synchronously, before the
+					# first token is appended, so the latest reply reads from the start of its content.
+					self._move_caret_to_assistant_content_impl(block)
 			l = len(block.responseText)
 			if block.lastLen == 0 and l > 0:
 				block.responseText = block.responseText.lstrip()
@@ -2230,6 +2233,7 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 							ip_after_label = int(block.segmentResponse.start)
 						except Exception:
 							pass
+					self._move_caret_to_assistant_content(block)
 					self._schedule_focus_message_history_on_assistant_response(ip_after_label)
 			reasoning_len = len(block.reasoningText or "")
 			last_reasoning_len = getattr(block, "lastReasoningLen", 0)
@@ -2269,6 +2273,16 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 				if anchor_block is None:
 					anchor_block, anchor_part = block, "response"
 				self._rerenderMessages(anchor_block=anchor_block, anchor_part=anchor_part)
+			# Re-assert the caret once after the response is fully rendered: end-of-stream
+			# re-renders above can recreate segments and move the caret, which previously left
+			# the caret on the prior reply for every prompt after the first.
+			if (
+				block.responseTerminated
+				and (block.responseText or "").strip()
+				and not getattr(block, "_caretReassertedAtEnd", False)
+			):
+				block._caretReassertedAtEnd = True
+				self._move_caret_to_assistant_content(block)
 
 	def addEntry(self, accelEntries, modifiers, key, func):
 		id_ = wx.Window.NewControlId()
@@ -2445,6 +2459,57 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		activeChatDlg = self
 		self.lastFocusedItem = evt.GetEventObject()
 		evt.Skip()
+
+	def _assistant_content_caret_ip(self, block):
+		"""Live insertion point for the start of ``block``'s assistant content (after the label).
+
+		Computed on demand because segment offsets shift as content streams in and can be
+		rebuilt entirely by ``_rerenderMessages``; a value captured earlier may be stale.
+		"""
+		lbl = getattr(block, "segmentResponseLabel", None)
+		if lbl is not None:
+			try:
+				return int(lbl.end)
+			except Exception:
+				pass
+		resp = getattr(block, "segmentResponse", None)
+		if resp is not None:
+			try:
+				return int(resp.start)
+			except Exception:
+				pass
+		return None
+
+	def _move_caret_to_assistant_content(self, block):
+		"""Always place the messages caret at the start of ``block``'s assistant content.
+
+		Independent of the ``focusHistoryOnAssistantResponse`` setting: this only moves the
+		insertion point (caret) so the next time the user enters the history field they land on
+		the latest reply. It never steals focus.
+		"""
+		if block is None:
+			return
+		try:
+			wx.CallAfter(self._move_caret_to_assistant_content_impl, block)
+		except Exception:
+			pass
+
+	def _move_caret_to_assistant_content_impl(self, block):
+		try:
+			if not self.IsShown():
+				return
+		except Exception:
+			return
+		ip = self._assistant_content_caret_ip(block)
+		if ip is None:
+			return
+		try:
+			msgs = self.messagesTextCtrl
+			text_len = len(msgs.GetValue())
+			if 0 <= ip <= text_len:
+				msgs.SetInsertionPoint(ip)
+		except Exception:
+			pass
 
 	def _schedule_focus_message_history_on_assistant_response(self, insertion_point_after_label=None):
 		"""If the setting is on, focus Messages and place the caret after the ``Assistant:`` label (first content token)."""
