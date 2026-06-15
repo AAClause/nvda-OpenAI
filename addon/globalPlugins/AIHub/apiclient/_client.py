@@ -137,6 +137,7 @@ class OpenAIClient:
 			"reasoning_disabled",
 			"adaptive_thinking",
 			"reasoning_effort",
+			"thinking_budget_tokens",
 			"extra_body",
 			"think",
 		}
@@ -258,6 +259,7 @@ class OpenAIClient:
 			"reasoning_enabled",
 			"reasoning_disabled",
 			"adaptive_thinking",
+			"thinking_budget_tokens",
 			"extra_body",
 			"think",
 			"xai_encrypted_reasoning_input",
@@ -663,20 +665,45 @@ def _apply_anthropic_thinking(body: dict, model: str, kwargs: dict) -> None:
 	if not kwargs.get("reasoning_enabled"):
 		return
 	caps = get_anthropic_thinking_profile(model)
+	# Only use adaptive when explicitly requested (or on adaptive-only models).
+	# Do not default to True — manual ``budget_tokens`` and effort are separate
+	# controls on Opus 4.5 and must not be combined with adaptive on 4.6.
 	use_adaptive = bool(
 		caps.get("adaptive_only")
-		or (caps.get("adaptive_supported") and kwargs.get("adaptive_thinking", True))
+		or kwargs.get("adaptive_thinking") is True
 	)
 	if use_adaptive:
 		body["thinking"] = {"type": "adaptive"}
 	else:
-		body["thinking"] = {"type": "enabled", "budget_tokens": 10000}
+		# Manual extended thinking. Anthropic requires ``budget_tokens >= 1024`` and
+		# ``budget_tokens < max_tokens``. Honor a user-supplied budget (growing
+		# max_tokens to fit it); otherwise pick a safe default that stays under
+		# the (possibly defaulted) max_tokens.
+		max_tokens = int(body.get("max_tokens") or 4096)
+		requested = int(kwargs.get("thinking_budget_tokens") or 0)
+		if requested > 0:
+			budget = max(1024, requested)
+			if budget >= max_tokens:
+				body["max_tokens"] = budget + 4096
+		else:
+			budget = 10000
+			if budget >= max_tokens:
+				budget = max(1024, int(max_tokens * 0.8))
+				if budget >= max_tokens:
+					body["max_tokens"] = budget + 512
+		body["thinking"] = {"type": "enabled", "budget_tokens": budget}
 	# Opus 4.7+/Fable/Mythos default to omitted thinking text; request summarized
-	# output so history can display <think>...</think>.
-	body["thinking"]["display"] = "summarized"
-	if caps.get("effort_supported"):
+	# output so history can display <think>...</think>. Other models already
+	# default to "summarized", so we avoid sending ``display`` to them (older
+	# thinking models may not accept the field).
+	if caps.get("thinking_display_omitted_default"):
+		body["thinking"]["display"] = "summarized"
+	# ``effort`` is optional soft guidance; when no effort is supplied (e.g. a pure
+	# Adaptive selection), omit ``output_config`` so Claude uses its default and
+	# decides on its own. https://platform.claude.com/docs/en/build-with-claude/adaptive-thinking
+	if caps.get("effort_supported") and kwargs.get("reasoning_effort"):
 		effort = normalize_effort(
-			kwargs.get("reasoning_effort", "high"),
+			kwargs.get("reasoning_effort"),
 			tuple(caps.get("effort_levels") or ()),
 			default="high",
 		)

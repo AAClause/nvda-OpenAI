@@ -333,7 +333,15 @@ class CompletionThread(threading.Thread):
 		if debug and elapsed is not None:
 			log.info("OpenAI [timing] %s: %.2fs", label, elapsed)
 
-	def _configureReasoning(self, params: dict, model, conf, checkbox_enabled: bool) -> bool:
+	def _configureReasoning(
+		self,
+		params: dict,
+		model,
+		conf,
+		checkbox_enabled: bool,
+		*,
+		wnd=None,
+	) -> bool:
 		"""Add reasoning-related params for the given provider/model.
 
 		Returns True when reasoning is being requested (so the caller can
@@ -351,8 +359,15 @@ class CompletionThread(threading.Thread):
 		use_reasoning = model_supports_reasoning and checkbox_enabled
 		provider = model.provider
 		effort = conf.get("reasoningEffort", ReasoningEffort.MEDIUM.value)
+		selection = None
+		if wnd is not None:
+			sel_fn = getattr(wnd, "_selected_reasoning_option", None)
+			if callable(sel_fn):
+				selection = sel_fn(model)
 		if use_reasoning:
-			apply_reasoning_enabled(params, model, provider, effort, conf)
+			apply_reasoning_enabled(
+				params, model, provider, effort, conf, reasoning_selection=selection
+			)
 		else:
 			apply_reasoning_disabled(params, model, provider)
 		return use_reasoning
@@ -741,8 +756,13 @@ class CompletionThread(threading.Thread):
 				pp = wnd.advancedPresPenaltySpinCtrl.GetValue() / 100.0
 				params["presence_penalty"] = pp
 				data["presence_penalty_%s" % model.id] = wnd.advancedPresPenaltySpinCtrl.GetValue()
-		reasoningEnabled = wnd.reasoningModeCheckBox.IsChecked()
-		useReasoning = self._configureReasoning(params, model, conf, reasoningEnabled)
+		reasoningEnabled = wnd._reasoning_is_enabled(model)
+		useReasoning = self._configureReasoning(params, model, conf, reasoningEnabled, wnd=wnd)
+		if useReasoning and getattr(wnd, "_thinking_budget_active", None) and wnd._thinking_budget_active(model):
+			thinkingBudget = wnd.reasoningBudgetSpinCtrl.GetValue()
+			data["thinkingBudget_%s" % model.id] = thinkingBudget
+			if thinkingBudget and thinkingBudget > 0:
+				params["thinking_budget_tokens"] = thinkingBudget
 		if maxTokens > 0:
 			params["max_completion_tokens" if useReasoning else "max_tokens"] = maxTokens
 		# Resolve the provider once up-front: it's needed both for provider-specific

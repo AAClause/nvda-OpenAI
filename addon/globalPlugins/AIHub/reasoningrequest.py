@@ -19,7 +19,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from .anthropicthinking import anthropic_reasoning_always_on
+from .anthropicthinking import anthropic_reasoning_always_on, get_anthropic_thinking_profile
 from .consts import Provider, ReasoningEffort
 
 # Providers whose chat-completions body accepts top-level ``reasoning_effort``.
@@ -166,43 +166,97 @@ def _mistral_effort(effort: str) -> str:
 	return "high"
 
 
+def _apply_anthropic_reasoning_enabled(
+	params: dict[str, Any],
+	model,
+	effort: str,
+	*,
+	mode: str,
+	effort_value: str | None,
+) -> None:
+	"""Map UI combo selection to Anthropic thinking + effort per official docs.
+
+	- Opus/Sonnet 4.6 effort levels: ``adaptive`` + ``output_config.effort`` (effort
+	  replaces deprecated ``budget_tokens``; the two are not cumulative).
+	- Opus/Sonnet 4.6 "Adaptive": ``adaptive`` only (omit effort; Claude decides).
+	- Opus 4.7+/Fable/Mythos: ``adaptive`` + effort (adaptive-only models).
+	- Opus 4.5 and older manual-thinking models: ``enabled`` + ``budget_tokens``,
+	  with effort sent alongside when the model supports it.
+	"""
+	params["reasoning_enabled"] = True
+	profile = get_anthropic_thinking_profile(model.id)
+	adaptive_choice = bool(profile.get("adaptive_choice_visible"))
+	adaptive_only = bool(profile.get("adaptive_only"))
+	effort_to_send = effort_value if effort_value is not None else effort
+
+	if mode == "adaptive":
+		params["adaptive_thinking"] = True
+		return
+
+	if adaptive_choice and mode == "enabled" and effort_to_send:
+		params["adaptive_thinking"] = True
+		params["reasoning_effort"] = effort_to_send
+		return
+
+	if adaptive_only:
+		params["adaptive_thinking"] = True
+		if effort_to_send and profile.get("effort_supported"):
+			params["reasoning_effort"] = effort_to_send
+		return
+
+	params["adaptive_thinking"] = False
+	if profile.get("effort_supported") and effort_to_send:
+		params["reasoning_effort"] = effort_to_send
+
+
 def apply_reasoning_enabled(
 	params: dict[str, Any],
 	model,
 	provider: str,
 	effort: str,
 	conf: dict,
+	*,
+	reasoning_selection: tuple[str, str | None, str] | None = None,
 ) -> None:
 	"""Send the provider-native reasoning-on signal."""
 	if provider == Provider.Anthropic:
-		params["reasoning_enabled"] = True
-		params["reasoning_effort"] = effort
-		params["adaptive_thinking"] = conf.get("adaptiveThinking", True)
+		mode = "enabled"
+		effort_value = None
+		if reasoning_selection:
+			mode, effort_value, _label = reasoning_selection
+		elif conf.get("adaptiveThinking") and getattr(model, "adaptive_choice_visible", False):
+			mode = "adaptive"
+		_apply_anthropic_reasoning_enabled(
+			params, model, effort, mode=mode, effort_value=effort_value
+		)
 		return
+	effort_use = effort
+	if reasoning_selection and reasoning_selection[1]:
+		effort_use = reasoning_selection[1]
 	if provider == Provider.Ollama:
 		# OpenAI-compat /v1/chat/completions ignores ``think``; use reasoning_effort.
-		params["reasoning_effort"] = _ollama_effort(effort)
+		params["reasoning_effort"] = _ollama_effort(effort_use)
 		return
 	if provider == Provider.OpenRouter:
-		params["reasoning"] = {"enabled": True, "effort": effort}
+		params["reasoning"] = {"enabled": True, "effort": effort_use}
 		return
 	if provider == Provider.DeepSeek:
 		if not getattr(model, "reasoning_mandatory", False):
 			params["thinking"] = {"type": "enabled"}
 		if "reasoning_effort" in model._supported_param_set():
-			params["reasoning_effort"] = _deepseek_effort(effort)
+			params["reasoning_effort"] = _deepseek_effort(effort_use)
 		return
 	if provider == Provider.MistralAI and mistral_supports_reasoning_effort(model.id):
-		params["reasoning_effort"] = _mistral_effort(effort)
+		params["reasoning_effort"] = _mistral_effort(effort_use)
 		return
 	if provider == Provider.xAI:
 		if xai_supports_reasoning_effort(model.id):
-			params["reasoning_effort"] = effort
+			params["reasoning_effort"] = effort_use
 		return
 	if getattr(model, "reasoning_mandatory", False):
 		return
 	if provider in _REASONING_EFFORT_BODY_PROVIDERS:
-		params["reasoning_effort"] = effort
+		params["reasoning_effort"] = effort_use
 
 
 def apply_reasoning_disabled(params: dict[str, Any], model, provider: str) -> None:

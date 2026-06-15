@@ -231,9 +231,11 @@ def _apply_gemini_generation_config(body: dict[str, Any], model_id: str, kwargs:
 			if "gemini-2.5" in mid and "pro" not in mid:
 				gen["thinkingConfig"] = {"thinkingBudget": 0}
 		elif "gemini-3" in mid:
+			# Gemini 3.x uses thinkingLevel (minimal/low/medium/high). The Pro
+			# variants don't support "minimal", so clamp it up to "low" there.
 			level = reasoning_effort
-			if level == "minimal":
-				level = "minimal"
+			if level == "minimal" and "pro" in mid:
+				level = "low"
 			gen["thinkingConfig"] = {"thinkingLevel": level, "includeThoughts": True}
 		elif "gemini-2.5" in mid:
 			budget_map = {"low": 1024, "medium": 8192, "high": 24576}

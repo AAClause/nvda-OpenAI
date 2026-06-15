@@ -388,12 +388,8 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 			self.onModelChange(None)
 		except Exception:
 			pass
-		if "reasoningMode" in st and self.reasoningModeCheckBox.IsShown():
-			self.reasoningModeCheckBox.SetValue(bool(st["reasoningMode"]))
-			try:
-				self.onModelChange(chrome_source=self.reasoningModeCheckBox)
-			except Exception:
-				pass
+		if "reasoningMode" in st:
+			self._apply_reasoning_mode_from_state(st)
 		model = self.getCurrentModel()
 		if model:
 			self._generation_chrome.apply(st, model)
@@ -1416,25 +1412,65 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		self._syncWindowTitleFromActiveTab()
 		wx.CallAfter(self._syncSharedChromeForActiveTab)
 
+	def _apply_reasoning_mode_from_state(self, st):
+		"""Restore the unified reasoning combo (mode + effort) from saved tab state."""
+		model = self.getCurrentModel()
+		if not model:
+			return
+		mode_opts = getattr(self, "_reasoningModeOptions", ())
+		if not mode_opts or not self.reasoningModeChoice.IsShown():
+			return
+		sel_mode = st.get("reasoningSelectionMode")
+		if sel_mode in ("disabled", "enabled", "adaptive"):
+			effort = st.get("reasoningEffort")
+			if sel_mode == "disabled":
+				idx = next((i for i, (m, e, l) in enumerate(mode_opts) if m == "disabled"), None)
+			elif sel_mode == "adaptive":
+				idx = next((i for i, (m, e, l) in enumerate(mode_opts) if m == "adaptive"), None)
+			else:
+				idx = next((i for i, (m, e, l) in enumerate(mode_opts) if m == "enabled" and e == effort), None)
+				if idx is None:
+					idx = next((i for i, (m, e, l) in enumerate(mode_opts) if m == "enabled"), None)
+		else:
+			enabled = bool(st.get("reasoningMode", True))
+			adaptive = bool(st.get("adaptiveThinking", False)) and getattr(model, "adaptive_choice_visible", False)
+			effort = st.get("reasoningEffort")
+			if not enabled:
+				idx = next((i for i, (m, e, l) in enumerate(mode_opts) if m == "disabled"), None)
+			elif adaptive:
+				idx = next((i for i, (m, e, l) in enumerate(mode_opts) if m == "adaptive"), None)
+			else:
+				idx = next((i for i, (m, e, l) in enumerate(mode_opts) if m == "enabled" and e == effort), None)
+				if idx is None:
+					idx = next((i for i, (m, e, l) in enumerate(mode_opts) if m == "enabled"), None)
+		if idx is None:
+			return
+		self.reasoningModeChoice.SetSelection(idx)
+		self._apply_reasoning_selection(model)
+		try:
+			self.onModelChange(chrome_source=self.reasoningModeChoice)
+		except Exception:
+			pass
+
+	def _apply_reasoning_selection(self, model):
+		"""Persist config/per-model state from the current reasoning combo selection."""
+		opt = self._selected_reasoning_option(model)
+		if opt is None:
+			return
+		mode, effort, _label = opt
+		if getattr(model, "adaptive_choice_visible", False):
+			self.conf["adaptiveThinking"] = mode == "adaptive"
+		if mode == "enabled" and effort is not None:
+			self.conf["reasoningEffort"] = effort
+		if not getattr(model, "reasoning_always_on", False):
+			self._persist_reasoning_mode(model, mode != "disabled")
+
 	def _onReasoningModeChange(self, evt):
-		"""Update effort/adaptive visibility when reasoning checkbox toggles."""
-		self.onModelChange(evt)
-
-	def _onReasoningEffortChange(self, evt):
-		"""Persist reasoning effort to config when user changes the dropdown."""
-		opts = getattr(self, "_reasoningEffortOptions", ())
-		idx = self.reasoningEffortChoice.GetSelection()
-		if 0 <= idx < len(opts):
-			self.conf["reasoningEffort"] = opts[idx][0]
-		if not getattr(self, "_sync_suppress_tab_capture", False):
-			try:
-				self._captureConversationChromeToPage(self.get_active_page())
-			except Exception:
-				pass
-
-	def _onAdaptiveThinkingChange(self, evt):
-		"""Persist adaptive thinking preference when user changes the checkbox."""
-		self.conf["adaptiveThinking"] = self.adaptiveThinkingCheckBox.IsChecked()
+		"""Apply the unified reasoning combo (disabled / effort level / adaptive)."""
+		model = self.getCurrentModel()
+		if model:
+			self._apply_reasoning_selection(model)
+		self.onModelChange(chrome_source=self.reasoningModeChoice)
 		if not getattr(self, "_sync_suppress_tab_capture", False):
 			try:
 				self._captureConversationChromeToPage(self.get_active_page())
@@ -2783,16 +2819,11 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 			model = self.getCurrentModel()
 			if model:
 				if model.reasoning:
-					if getattr(model, "reasoning_always_on", False):
-						self.reasoningModeCheckBox.SetValue(True)
-						self.reasoningModeCheckBox.Enable(False)
-					else:
-						self.reasoningModeCheckBox.Enable()
-					reasoning_on = self.reasoningModeCheckBox.IsChecked()
-					if model.reasoning_effort_options and reasoning_on:
-						self.reasoningEffortChoice.Enable()
-					if model.adaptive_choice_visible and reasoning_on:
-						self.adaptiveThinkingCheckBox.Enable()
+					if len(getattr(self, "_reasoningModeOptions", ())) >= 2:
+						self.reasoningModeChoice.Enable()
+				spn = getattr(self, "reasoningBudgetSpinCtrl", None)
+				if spn is not None and spn.IsShown():
+					spn.Enable()
 				if hasattr(self, "_generation_chrome"):
 					self._generation_chrome.update_for_model(model)
 		except (IndexError, TypeError):

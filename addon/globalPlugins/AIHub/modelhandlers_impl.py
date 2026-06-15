@@ -353,18 +353,106 @@ class ModelHandlersMixin:
 				return True
 		return False
 
-	def _ensure_reasoning_effort_selection(self, opts) -> None:
-		"""Keep the effort combo on a valid item when reasoning is enabled."""
+	def _reasoning_mode_options(self, model):
+		"""Unified reasoning choices as (mode, effort, label) tuples.
+
+		``mode`` is "disabled"/"enabled"/"adaptive"; ``effort`` is the effort value for
+		"enabled" entries when the model exposes effort levels (folded into this one combo),
+		otherwise None. Fewer than 2 entries means the combo stays hidden.
+
+		On Opus/Sonnet 4.6, effort entries map to adaptive thinking + effort (not
+		``budget_tokens``). On Opus 4.5 and older, effort works alongside manual
+		``budget_tokens``. "Adaptive" on 4.6 omits effort so Claude decides.
+		"""
+		if not getattr(model, "reasoning", False):
+			return []
+		mandatory = bool(getattr(model, "reasoning_always_on", False))
+		adaptive = bool(getattr(model, "adaptive_choice_visible", False))
+		effort_opts = list(getattr(model, "reasoning_effort_options", ()) or ())
+		opts = []
+		if not mandatory:
+			# Translators: Reasoning combo box choice: turn model thinking off.
+			opts.append(("disabled", None, _("Disabled")))
+		if effort_opts:
+			# Each effort level is an "enabled" entry (Low/Medium/High/...).
+			for value, label in effort_opts:
+				opts.append(("enabled", value, label))
+		else:
+			# Translators: Reasoning combo box choice: thinking on (model has no effort levels).
+			opts.append(("enabled", None, _("Enabled")))
+		if adaptive:
+			# Translators: Reasoning combo box choice: Anthropic adaptive thinking.
+			opts.append(("adaptive", None, _("Adaptive")))
+		return opts
+
+	def _current_reasoning_selection_index(self, model, opts):
+		"""Index in ``opts`` for the saved per-model reasoning/effort/adaptive preferences."""
 		if not opts:
+			return 0
+		if not self._saved_reasoning_mode(model):
+			idx = next((i for i, (m, e, l) in enumerate(opts) if m == "disabled"), None)
+			if idx is not None:
+				return idx
+		if getattr(model, "adaptive_choice_visible", False) and self.conf.get("adaptiveThinking", True):
+			idx = next((i for i, (m, e, l) in enumerate(opts) if m == "adaptive"), None)
+			if idx is not None:
+				return idx
+		saved_effort = self.conf.get("reasoningEffort", DEFAULT_REASONING_EFFORT)
+		idx = next((i for i, (m, e, l) in enumerate(opts) if m == "enabled" and e == saved_effort), None)
+		if idx is not None:
+			return idx
+		idx = next((i for i, (m, e, l) in enumerate(opts) if m == "enabled"), None)
+		return idx if idx is not None else 0
+
+	def _selected_reasoning_option(self, model):
+		"""Current (mode, effort, label) from the combo, or derived when it's hidden."""
+		opts = getattr(self, "_reasoningModeOptions", ())
+		if not opts:
+			return None
+		choice = getattr(self, "reasoningModeChoice", None)
+		if choice is not None and choice.IsShown():
+			idx = choice.GetSelection()
+			if 0 <= idx < len(opts):
+				return opts[idx]
+		if len(opts) == 1:
+			return opts[0]
+		return opts[self._current_reasoning_selection_index(model, opts)]
+
+	def _reasoning_is_enabled(self, model) -> bool:
+		"""True when reasoning should be requested for ``model`` given the current selection."""
+		if getattr(model, "reasoning_always_on", False):
+			return True
+		opt = self._selected_reasoning_option(model)
+		if opt is None:
+			return False
+		return opt[0] != "disabled"
+
+	def _thinking_budget_active(self, model) -> bool:
+		"""True when the manual thinking-budget control applies to the current selection."""
+		return bool(
+			getattr(model, "thinking_budget_supported", False)
+			and self._reasoning_is_enabled(model)
+		)
+
+	def _apply_thinking_budget_chrome(self, model, preserve_chrome: bool) -> None:
+		"""Show/populate the Anthropic manual thinking-budget spin control for ``model``."""
+		row = getattr(self, "reasoningBudgetRow", None)
+		spn = getattr(self, "reasoningBudgetSpinCtrl", None)
+		if row is None or spn is None:
 			return
-		idx = self.reasoningEffortChoice.GetSelection()
-		if 0 <= idx < len(opts):
-			self.conf["reasoningEffort"] = opts[idx][0]
+		active = self._thinking_budget_active(model)
+		self._set_labeled_visibility(self.reasoningBudgetLabel, spn, active)
+		row.Show(active)
+		if not active:
 			return
-		saved = self.conf.get("reasoningEffort", DEFAULT_REASONING_EFFORT)
-		idx = next((i for i, (v, _) in enumerate(opts) if v == saved), 0)
-		self.reasoningEffortChoice.SetSelection(idx)
-		self.conf["reasoningEffort"] = opts[idx][0]
+		cap = model.maxOutputToken if getattr(model, "maxOutputToken", 0) > 1 else getattr(model, "contextWindow", 0)
+		spn.SetRange(0, max(1024, int(cap or 32000)))
+		if not preserve_chrome:
+			val = self.data.get("thinkingBudget_%s" % model.id, 0)
+			try:
+				spn.SetValue(int(val) if isinstance(val, int) else 0)
+			except (TypeError, ValueError):
+				spn.SetValue(0)
 
 	def onModelChange(self, evt=None, chrome_source=None):
 		model = self.getCurrentModel()
@@ -393,57 +481,39 @@ class ModelHandlersMixin:
 				self.maxTokensSpinCtrl.SetValue(0)
 
 		if model.reasoning:
-			self.reasoningModeCheckBox.Show(True)
-			if getattr(model, "reasoning_always_on", False):
-				self.reasoningModeCheckBox.SetValue(True)
-				self.reasoningModeCheckBox.Enable(False)
+			mode_opts = self._reasoning_mode_options(model)
+			self._reasoningModeOptions = mode_opts
+			if len(mode_opts) >= 2:
+				labels = [o[2] for o in mode_opts]
+				self.reasoningModeChoice.Set(labels)
+				if not preserve_chrome or self.reasoningModeChoice.GetSelection() < 0:
+					self.reasoningModeChoice.SetSelection(
+						self._current_reasoning_selection_index(model, mode_opts)
+					)
+				self._set_labeled_visibility(self.reasoningModeLabel, self.reasoningModeChoice, True)
+				if hasattr(self, "reasoningModeRow"):
+					self.reasoningModeRow.Show(True)
 			else:
-				self.reasoningModeCheckBox.Enable(True)
-				if not preserve_chrome:
-					self.reasoningModeCheckBox.SetValue(self._saved_reasoning_mode(model))
-			reasoning_on = self.reasoningModeCheckBox.IsChecked()
-			if not getattr(model, "reasoning_always_on", False):
-				self._persist_reasoning_mode(model, reasoning_on)
-			opts = model.reasoning_effort_options
-			if opts and reasoning_on:
-				labels = [o[1] for o in opts]
-				self._reasoningEffortOptions = opts
-				self.reasoningEffortChoice.Set(labels)
-				if not preserve_chrome:
-					saved = self.conf.get("reasoningEffort", DEFAULT_REASONING_EFFORT)
-					idx = next((i for i, (v, _) in enumerate(opts) if v == saved), 0)
-					self.reasoningEffortChoice.SetSelection(idx)
-				self._ensure_reasoning_effort_selection(opts)
-				self._set_labeled_visibility(self.reasoningEffortLabel, self.reasoningEffortChoice, True)
-				if hasattr(self, "reasoningEffortRow"):
-					self.reasoningEffortRow.Show(True)
-			else:
-				self._reasoningEffortOptions = ()
-				self.reasoningEffortChoice.Clear()
-				self._set_labeled_visibility(self.reasoningEffortLabel, self.reasoningEffortChoice, False)
-				if hasattr(self, "reasoningEffortRow"):
-					self.reasoningEffortRow.Show(False)
-			if model.adaptive_choice_visible and reasoning_on:
-				self.adaptiveThinkingCheckBox.Enable(True)
-				self.adaptiveThinkingCheckBox.Show(True)
-				if not preserve_chrome:
-					self.adaptiveThinkingCheckBox.SetValue(self.conf.get("adaptiveThinking", True))
-			else:
-				self.adaptiveThinkingCheckBox.Enable(False)
-				self.adaptiveThinkingCheckBox.Show(False)
-				if not model.adaptive_choice_visible:
-					self.adaptiveThinkingCheckBox.SetValue(False)
+				# Single possible value (e.g. reasoning mandatory, single effort, no adaptive): hide.
+				self.reasoningModeChoice.Clear()
+				self._set_labeled_visibility(self.reasoningModeLabel, self.reasoningModeChoice, False)
+				if hasattr(self, "reasoningModeRow"):
+					self.reasoningModeRow.Show(False)
+			opt = self._selected_reasoning_option(model)
+			if opt is not None:
+				mode, effort, _label = opt
+				if not getattr(model, "reasoning_always_on", False):
+					self._persist_reasoning_mode(model, mode != "disabled")
+				if mode == "enabled" and effort is not None:
+					self.conf["reasoningEffort"] = effort
 		else:
-			self.reasoningModeCheckBox.Enable(False)
-			self.reasoningModeCheckBox.Show(False)
-			self.reasoningModeCheckBox.SetValue(False)
-			self.reasoningEffortChoice.Clear()
-			self._set_labeled_visibility(self.reasoningEffortLabel, self.reasoningEffortChoice, False)
-			if hasattr(self, "reasoningEffortRow"):
-				self.reasoningEffortRow.Show(False)
-			self.adaptiveThinkingCheckBox.Enable(False)
-			self.adaptiveThinkingCheckBox.Show(False)
-			self.adaptiveThinkingCheckBox.SetValue(False)
+			self._reasoningModeOptions = ()
+			self.reasoningModeChoice.Clear()
+			self._set_labeled_visibility(self.reasoningModeLabel, self.reasoningModeChoice, False)
+			if hasattr(self, "reasoningModeRow"):
+				self.reasoningModeRow.Show(False)
+
+		self._apply_thinking_budget_chrome(model, preserve_chrome)
 
 		if hasattr(self, "_generation_chrome"):
 			self._generation_chrome.update_for_model(model)

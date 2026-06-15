@@ -1,4 +1,4 @@
-"""Reasoning controls (mode, effort, adaptive thinking, xAI encrypted reasoning)."""
+"""Reasoning controls (unified mode/effort/adaptive combo, xAI encrypted reasoning)."""
 
 from __future__ import annotations
 
@@ -8,43 +8,45 @@ import addonHandler
 
 from ..consts import Provider, UI_SECTION_SPACING_PX
 from ._base import ChromeSection
-from ._widgets import bind_checkbox, set_controls_visible
+from ._widgets import bind_checkbox
 
 addonHandler.initTranslation()
 
 
 class ReasoningChromeSection(ChromeSection):
 	def build(self, sizer: wx.Sizer) -> None:
-		# Translators: Section title for reasoning-related generation options.
-		box = wx.StaticBox(self.parent, label=_("Reasoning"))
-		inner = wx.StaticBoxSizer(box, wx.VERTICAL)
-		self.dialog.reasoningModeCheckBox = wx.CheckBox(
-			self.parent,
-			label=_("&Reasoning mode"),
-		)
-		self.dialog.reasoningModeCheckBox.Bind(wx.EVT_CHECKBOX, self.dialog._onReasoningModeChange)
-		inner.Add(self.dialog.reasoningModeCheckBox, 0, wx.ALL, UI_SECTION_SPACING_PX)
-		self._bind_preserve(self.dialog.reasoningModeCheckBox)
+		# Single combo for all reasoning configuration: disabled / effort levels (Low/Medium/
+		# High/...) / adaptive. Built per model and hidden when the model offers no real choice.
+		# No surrounding StaticBox: a lone combo does not warrant its own group.
+		self.dialog.reasoningModeRow = wx.Panel(self.parent)
+		mode_sz = wx.BoxSizer(wx.VERTICAL)
+		# Translators: Label for the combo box selecting reasoning (disabled/effort level/adaptive).
+		self.dialog.reasoningModeLabel = wx.StaticText(self.dialog.reasoningModeRow, label=_("&Reasoning:"))
+		self.dialog.reasoningModeChoice = wx.Choice(self.dialog.reasoningModeRow, choices=[])
+		self.dialog.reasoningModeChoice.Bind(wx.EVT_CHOICE, self.dialog._onReasoningModeChange)
+		mode_sz.Add(self.dialog.reasoningModeLabel, 0, wx.LEFT | wx.RIGHT | wx.TOP, UI_SECTION_SPACING_PX)
+		mode_sz.Add(self.dialog.reasoningModeChoice, 0, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.BOTTOM, UI_SECTION_SPACING_PX)
+		self.dialog.reasoningModeRow.SetSizer(mode_sz)
+		sizer.Add(self.dialog.reasoningModeRow, 0, wx.EXPAND, 0)
+		self._bind_preserve(self.dialog.reasoningModeChoice)
 
-		self.dialog.adaptiveThinkingCheckBox = wx.CheckBox(
-			self.parent,
-			label=_("&Adaptive thinking"),
+		# Manual extended-thinking token budget (Anthropic models that use
+		# ``thinking.budget_tokens``). Shown only for those models; 0 = automatic.
+		self.dialog.reasoningBudgetRow = wx.Panel(self.parent)
+		budget_sz = wx.BoxSizer(wx.VERTICAL)
+		# Translators: Label for the Anthropic extended-thinking token budget spin control.
+		self.dialog.reasoningBudgetLabel = wx.StaticText(
+			self.dialog.reasoningBudgetRow, label=_("Thinking &budget (tokens, 0 = automatic):")
 		)
-		self.dialog.adaptiveThinkingCheckBox.SetValue(self.dialog.conf.get("adaptiveThinking", True))
-		self.dialog.adaptiveThinkingCheckBox.Bind(wx.EVT_CHECKBOX, self.dialog._onAdaptiveThinkingChange)
-		inner.Add(self.dialog.adaptiveThinkingCheckBox, 0, wx.ALL, UI_SECTION_SPACING_PX)
-		self._bind_preserve(self.dialog.adaptiveThinkingCheckBox)
-
-		self.dialog.reasoningEffortRow = wx.Panel(self.parent)
-		row_sz = wx.BoxSizer(wx.VERTICAL)
-		self.dialog.reasoningEffortLabel = wx.StaticText(self.dialog.reasoningEffortRow, label=_("Reasoning &effort:"))
-		self.dialog.reasoningEffortChoice = wx.Choice(self.dialog.reasoningEffortRow, choices=[])
-		self.dialog.reasoningEffortChoice.Bind(wx.EVT_CHOICE, self.dialog._onReasoningEffortChange)
-		row_sz.Add(self.dialog.reasoningEffortLabel, 0, wx.LEFT | wx.RIGHT | wx.TOP, UI_SECTION_SPACING_PX)
-		row_sz.Add(self.dialog.reasoningEffortChoice, 0, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.BOTTOM, UI_SECTION_SPACING_PX)
-		self.dialog.reasoningEffortRow.SetSizer(row_sz)
-		inner.Add(self.dialog.reasoningEffortRow, 0, wx.EXPAND, 0)
-		self._bind_preserve(self.dialog.reasoningEffortChoice)
+		self.dialog.reasoningBudgetSpinCtrl = wx.SpinCtrl(self.dialog.reasoningBudgetRow, min=0, max=200000)
+		self.dialog.reasoningBudgetSpinCtrl.Bind(wx.EVT_SPINCTRL, self._edited)
+		budget_sz.Add(self.dialog.reasoningBudgetLabel, 0, wx.LEFT | wx.RIGHT | wx.TOP, UI_SECTION_SPACING_PX)
+		budget_sz.Add(
+			self.dialog.reasoningBudgetSpinCtrl, 0, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.BOTTOM, UI_SECTION_SPACING_PX
+		)
+		self.dialog.reasoningBudgetRow.SetSizer(budget_sz)
+		sizer.Add(self.dialog.reasoningBudgetRow, 0, wx.EXPAND, 0)
+		self._bind_preserve(self.dialog.reasoningBudgetSpinCtrl)
 
 		self.dialog.xaiEncryptedReasoningCheckBox = bind_checkbox(
 			self.parent,
@@ -53,10 +55,8 @@ class ReasoningChromeSection(ChromeSection):
 			_("Encrypted reasoning &content"),
 			self._edited,
 		)
-		inner.Add(self.dialog.xaiEncryptedReasoningCheckBox, 0, wx.ALL, UI_SECTION_SPACING_PX)
+		sizer.Add(self.dialog.xaiEncryptedReasoningCheckBox, 0, wx.ALL, UI_SECTION_SPACING_PX)
 		self._bind_preserve(self.dialog.xaiEncryptedReasoningCheckBox)
-
-		sizer.Add(inner, 0, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.BOTTOM, UI_SECTION_SPACING_PX)
 
 	def update_for_model(self, model) -> None:
 		show_enc = bool(model and model.provider == Provider.xAI and getattr(model, "reasoning", False))
@@ -70,33 +70,34 @@ class ReasoningChromeSection(ChromeSection):
 			cb.SetValue(False)
 
 	def capture(self, st: dict, model) -> None:
-		if self.dialog.reasoningModeCheckBox.IsShown():
-			st["reasoningMode"] = self.dialog.reasoningModeCheckBox.IsChecked()
-		opts = getattr(self.dialog, "_reasoningEffortOptions", ())
-		idx = self.dialog.reasoningEffortChoice.GetSelection()
-		if opts and 0 <= idx < len(opts):
-			st["reasoningEffort"] = opts[idx][0]
-		if self.dialog.adaptiveThinkingCheckBox.IsShown():
-			st["adaptiveThinking"] = self.dialog.adaptiveThinkingCheckBox.IsChecked()
-		cb = self.dialog.xaiEncryptedReasoningCheckBox
+		d = self.dialog
+		mode_opts = getattr(d, "_reasoningModeOptions", ())
+		if mode_opts and d.reasoningModeChoice.IsShown():
+			idx = d.reasoningModeChoice.GetSelection()
+			if 0 <= idx < len(mode_opts):
+				mode, effort, _label = mode_opts[idx]
+				st["reasoningMode"] = mode != "disabled"
+				st["reasoningSelectionMode"] = mode
+				if mode == "enabled" and effort is not None:
+					st["reasoningEffort"] = effort
+				if getattr(model, "adaptive_choice_visible", False):
+					st["adaptiveThinking"] = mode == "adaptive"
+		cb = d.xaiEncryptedReasoningCheckBox
 		if cb.IsShown():
 			st["xaiEncryptedReasoning"] = cb.IsChecked()
+		spn = getattr(d, "reasoningBudgetSpinCtrl", None)
+		if spn is not None and spn.IsShown():
+			st["thinkingBudget"] = spn.GetValue()
 
 	def apply(self, st: dict, model) -> None:
+		d = self.dialog
 		if "xaiEncryptedReasoning" in st:
 			if model and model.provider == Provider.xAI and getattr(model, "reasoning", False):
-				self.dialog.xaiEncryptedReasoningCheckBox.SetValue(bool(st["xaiEncryptedReasoning"]))
-		opts = getattr(self.dialog, "_reasoningEffortOptions", ())
-		if opts and "reasoningEffort" in st:
-			want = st["reasoningEffort"]
-			idx = next((i for i, (v, _) in enumerate(opts) if v == want), None)
-			if idx is not None:
-				self.dialog.reasoningEffortChoice.SetSelection(idx)
-				self.dialog.conf["reasoningEffort"] = want
-		if self.dialog.adaptiveThinkingCheckBox.IsShown() and "adaptiveThinking" in st:
-			v = bool(st["adaptiveThinking"])
-			self.dialog.adaptiveThinkingCheckBox.SetValue(v)
-			self.dialog.conf["adaptiveThinking"] = v
-		if opts and self.dialog.reasoningModeCheckBox.IsShown() and self.dialog.reasoningModeCheckBox.IsChecked():
-			self.dialog._ensure_reasoning_effort_selection(opts)
+				d.xaiEncryptedReasoningCheckBox.SetValue(bool(st["xaiEncryptedReasoning"]))
+		spn = getattr(d, "reasoningBudgetSpinCtrl", None)
+		if spn is not None and "thinkingBudget" in st and getattr(model, "thinking_budget_supported", False):
+			try:
+				spn.SetValue(int(st["thinkingBudget"]))
+			except (TypeError, ValueError):
+				pass
 		self.update_for_model(model)

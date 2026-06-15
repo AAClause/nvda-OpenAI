@@ -157,12 +157,30 @@ class Model:
 		return bool(profile.get("adaptive_choice_visible"))
 
 	@property
+	def thinking_budget_supported(self):
+		"""True when manual ``thinking.budget_tokens`` is the model's thinking control.
+
+		Only Anthropic models that use manual extended thinking expose a token
+		budget. Adaptive-only models (Opus 4.7+/Fable/Mythos) reject it, and on
+		the adaptive-choice models (Opus 4.6/Sonnet 4.6) ``budget_tokens`` is
+		deprecated in favour of effort, so we don't surface it there.
+		"""
+		if self.provider != Provider.Anthropic or not self.reasoning:
+			return False
+		profile = get_anthropic_thinking_profile(self.id)
+		return not (profile.get("adaptive_only") or profile.get("adaptive_choice_visible"))
+
+	@property
 	def reasoning_effort_options(self):
 		"""Tuple of (value, label) for effort dropdown, or () if no configurable effort."""
 		if not self.reasoning:
 			return ()
 		if self.provider == Provider.Anthropic:
 			profile = get_anthropic_thinking_profile(self.id)
+			# Only models on the official effort list expose configurable effort;
+			# others (Sonnet 4.5, 3.7, ...) only toggle thinking on/off.
+			if not profile.get("effort_supported"):
+				return ()
 			labels = {
 				# Translators: Text in model labels and capability descriptions.
 				ReasoningEffort.LOW.value: _("Low"),
