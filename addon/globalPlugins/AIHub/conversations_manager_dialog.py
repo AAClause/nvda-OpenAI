@@ -181,13 +181,23 @@ class ConversationsManagerDialog(wx.Dialog):
 			idx = self._list.GetNextSelected(idx)
 		return ids
 
+	def _entry_summary(self, entry):
+		"""Lightweight summary for list/filtering; falls back to full props for legacy entries."""
+		summary = entry.get("summary")
+		if isinstance(summary, dict) and "messages" in summary:
+			return summary
+		props = conversations.get_conversation_properties(entry.get("id")) or {}
+		summary = conversations.summary_from_properties(props)
+		entry["summary"] = summary
+		return summary
+
 	def _sort_entries(self):
 		if len(self._entries) <= 1:
 			return
 		mode = self._sort_mode
 
 		def _props(e):
-			p = e.get("properties")
+			p = e.get("summary")
 			return p if isinstance(p, dict) else {}
 
 		if mode == "date_desc":
@@ -234,35 +244,31 @@ class ConversationsManagerDialog(wx.Dialog):
 		has_keyed = bool(keyed_terms)
 		filtered = []
 		for entry in list(self._all_entries):
-			props = conversations.get_conversation_properties(entry.get("id")) or {}
-			entry["properties"] = props
-			if self._entry_matches_filter(entry, props, keyed_terms, plain_terms, has_keyed):
+			summary = self._entry_summary(entry)
+			if self._entry_matches_filter(entry, summary, keyed_terms, plain_terms, has_keyed):
 				filtered.append(entry)
 		self._entries = filtered
 		self._sort_entries()
 		self._list.DeleteAllItems()
 		for e in self._entries:
-			props = e.get("properties")
-			if not isinstance(props, dict):
-				props = conversations.get_conversation_properties(e.get("id")) or {}
-			e["properties"] = props
+			summary = self._entry_summary(e)
 			# Translators: Default conversation title when no name exists.
 			name = e.get("name", _("Untitled conversation"))
 			date_str = format_date(e.get("updated", 0))
-			model_counts = props.get("model_counts", {}) if isinstance(props, dict) else {}
+			model_counts = summary.get("model_counts", {}) if isinstance(summary, dict) else {}
 			# Translators: Placeholder model label when no model is known.
 			main_model = _("unknown")
 			if model_counts:
 				main_model = max(model_counts.items(), key=lambda item: item[1])[0]
 			conv_format = e.get("format", "generic")
-			total_tokens_display = str(props.get("total_tokens", 0))
-			if not props.get("has_usage"):
+			total_tokens_display = str(summary.get("total_tokens", 0))
+			if not summary.get("has_usage"):
 				total_tokens_display = "—"
 			self._list.Append([
 				name,
 				str(conv_format),
 				date_str,
-				str(props.get("messages", 0)),
+				str(summary.get("messages", 0)),
 				total_tokens_display,
 				main_model,
 			])
@@ -410,7 +416,7 @@ class ConversationsManagerDialog(wx.Dialog):
 		is_empty = messages == 0 and draft_len == 0
 		has_usage = bool(props.get("has_usage"))
 		has_cost = bool(props.get("has_cost"))
-		has_files = bool(props.get("files")) if isinstance(props, dict) else False
+		has_files = bool(props.get("has_files") or props.get("files")) if isinstance(props, dict) else False
 
 		for key, value in keyed_terms:
 			val = value.lower()
@@ -841,11 +847,8 @@ class ConversationsManagerDialog(wx.Dialog):
 		)
 
 	def _entry_is_empty_conversation(self, entry):
-		props = entry.get("properties")
-		if not isinstance(props, dict):
-			props = conversations.get_conversation_properties(entry.get("id")) or {}
-			entry["properties"] = props
-		return int(props.get("messages", 0) or 0) == 0 and int(props.get("draft_len", 0) or 0) == 0
+		summary = self._entry_summary(entry)
+		return int(summary.get("messages", 0) or 0) == 0 and int(summary.get("draft_len", 0) or 0) == 0
 
 	def _confirm_and_delete_entries(self, entries, *, confirm_msg, confirm_title, confirm_style=wx.YES_NO | wx.ICON_QUESTION):
 		res = gui.messageBox(confirm_msg, confirm_title, confirm_style)

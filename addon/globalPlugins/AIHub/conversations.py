@@ -528,26 +528,111 @@ def _write_index(data: dict):
 
 
 def list_conversations() -> list:
-	"""Return list of conversation metadata dicts, newest first."""
+	"""Return list of conversation metadata dicts, newest first.
+
+	Each entry carries a lightweight ``summary`` (see ``SUMMARY_FIELDS``) so the history
+	list can render columns and apply filters without opening every conversation file.
+	Legacy entries without a summary are backfilled once and the index is rewritten.
+	"""
 	idx = _read_index()
 	entries = idx.get("entries", [])
+	changed = _backfill_index_summaries(entries)
+	if changed:
+		idx["entries"] = entries
+		try:
+			_write_index(idx)
+		except Exception as err:
+			log.error(f"conversations: persist backfilled summaries: {err}", exc_info=True)
 	# Sort by updated desc
 	entries = sorted(entries, key=lambda e: e.get("updated", 0), reverse=True)
 	return entries
 
 
-def get_conversation_properties(conv_id: str) -> dict | None:
-	"""Return lightweight properties from saved JSON without restoring attachments."""
-	path = get_conversation_path(conv_id)
-	if not os.path.exists(path):
+def _backfill_index_summaries(entries: list) -> bool:
+	"""Add a ``summary`` to any index entry missing one. Returns True if anything changed."""
+	changed = False
+	for entry in entries:
+		if not isinstance(entry, dict):
+			continue
+		summary = entry.get("summary")
+		if isinstance(summary, dict) and "messages" in summary:
+			continue
+		props = get_conversation_properties(entry.get("id"))
+		entry["summary"] = summary_from_properties(props)
+		changed = True
+	return changed
+
+
+# Cache of full properties keyed by conv_id -> (file_signature, props). The signature is
+# (mtime_ns, size); any save rewrites the file (changing it), so the cache self-invalidates.
+_PROPERTIES_CACHE: dict = {}
+
+# Fields needed to render the history list columns and evaluate filters, stored in the index
+# so the list can be built without opening every conversation file.
+SUMMARY_FIELDS = (
+	"messages",
+	"total_tokens",
+	"has_usage",
+	"has_cost",
+	"has_files",
+	"draft_len",
+	"model_counts",
+)
+
+
+def _properties_file_signature(path: str):
+	try:
+		st = os.stat(path)
+	except OSError:
 		return None
+	return (st.st_mtime_ns, st.st_size)
+
+
+def summary_from_properties(props: dict | None) -> dict:
+	"""Reduce a full properties dict to the lightweight fields stored in the index."""
+	props = props or {}
+	files = props.get("files")
+	return {
+		"messages": int(props.get("messages", 0) or 0),
+		"total_tokens": int(props.get("total_tokens", 0) or 0),
+		"has_usage": bool(props.get("has_usage")),
+		"has_cost": bool(props.get("has_cost")),
+		"has_files": bool(props.get("has_files") or files),
+		"draft_len": int(props.get("draft_len", 0) or 0),
+		"model_counts": dict(props.get("model_counts") or {}),
+	}
+
+
+def get_conversation_properties(conv_id: str, *, use_cache: bool = True) -> dict | None:
+	"""Return lightweight properties from saved JSON without restoring attachments.
+
+	Results are cached per conversation keyed by the file's modification time and size, so
+	repeatedly reading the same conversation (e.g. filtering/sorting the history list) does
+	not re-parse unchanged files.
+	"""
+	path = get_conversation_path(conv_id)
+	signature = _properties_file_signature(path)
+	if signature is None:
+		_PROPERTIES_CACHE.pop(conv_id, None)
+		return None
+	if use_cache:
+		cached = _PROPERTIES_CACHE.get(conv_id)
+		if cached is not None and cached[0] == signature:
+			return cached[1]
 	try:
 		with open(path, "r", encoding="utf-8") as f:
 			data = json.load(f)
 	except Exception as err:
 		log.error(f"conversations: properties {conv_id}: {err}", exc_info=True)
 		return None
+	props = _compute_properties_from_data(data, conv_id)
+	if props is not None:
+		_PROPERTIES_CACHE[conv_id] = (signature, props)
+	return props
 
+
+def _compute_properties_from_data(data: dict, conv_id: str) -> dict | None:
+	"""Compute the full properties dict from already-loaded conversation JSON ``data``."""
 	blocks = data.get("blocks", [])
 	if not isinstance(blocks, list):
 		blocks = []
@@ -887,7 +972,13 @@ def save_conversation(
 	except Exception as err:
 		log.error(f"conversations: save {conv_id}: {err}", exc_info=True)
 		raise
-	# Update index
+	# Update index. Compute the lightweight summary from the in-memory data we just wrote so
+	# the history list can render without re-opening this file later.
+	try:
+		summary = summary_from_properties(_compute_properties_from_data(existing, conv_id))
+	except Exception as err:
+		log.error(f"conversations: summary {conv_id}: {err}", exc_info=True)
+		summary = summary_from_properties(None)
 	idx = _read_index()
 	entries = {e["id"]: e for e in idx.get("entries", [])}
 	entries[conv_id] = {
@@ -897,6 +988,7 @@ def save_conversation(
 		"created": existing.get("created", now),
 		"updated": now,
 		"format": normalize_conversation_format(existing.get("format", ConversationFormat.GENERIC.value)).value,
+		"summary": summary,
 	}
 	idx["entries"] = list(entries.values())
 	_write_index(idx)
