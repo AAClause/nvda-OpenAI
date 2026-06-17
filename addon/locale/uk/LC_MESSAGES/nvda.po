@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Open AI 24.03.30\n"
 "Report-Msgid-Bugs-To: 'nvda-translations@groups.io'\n"
-"POT-Creation-Date: 2026-06-15 02:36+0300\n"
-"PO-Revision-Date: 2026-06-15 03:10+0300\n"
+"POT-Creation-Date: 2026-06-17 07:24+0300\n"
+"PO-Revision-Date: 2026-06-17 07:28+0300\n"
 "Last-Translator: Volodymyr Pyrih <vp88.mobile@gmail.com>\n"
 "Language-Team: Heorhi Halas. https://www.nvdaukr.online/\n"
 "Language: uk\n"
@@ -111,8 +111,8 @@ msgstr ""
 #: addon\globalPlugins\AIHub\accounts_dialog.py:363
 #: addon\globalPlugins\AIHub\accounts_dialog.py:404
 #: addon\globalPlugins\AIHub\accounts_dialog.py:417
-#: addon\globalPlugins\AIHub\modelhandlers_impl.py:85
-#: addon\globalPlugins\AIHub\modelhandlers_impl.py:102
+#: addon\globalPlugins\AIHub\modelhandlers_impl.py:62
+#: addon\globalPlugins\AIHub\modelhandlers_impl.py:79
 #: addon\globalPlugins\AIHub\settings_dialog.py:271
 #: addon\globalPlugins\AIHub\tool_voxtral_tts_dialog.py:60
 msgid "Account"
@@ -242,13 +242,13 @@ msgstr "Відтворення аудіо"
 #. Translators: Fallback error body when the background task failed with an exception object that has no message attribute (same wording as the generic API error).
 #. Translators: AI-Hub conversation — message history area: brief status feedback (speech/braille), not a full dialog.
 #: addon\globalPlugins\AIHub\audiohandlers.py:32
-#: addon\globalPlugins\AIHub\conversation_dialog.py:1860
-#: addon\globalPlugins\AIHub\conversation_dialog.py:2174
-#: addon\globalPlugins\AIHub\conversation_dialog.py:2187
+#: addon\globalPlugins\AIHub\conversation_dialog.py:1852
+#: addon\globalPlugins\AIHub\conversation_dialog.py:2166
+#: addon\globalPlugins\AIHub\conversation_dialog.py:2179
 #: addon\globalPlugins\AIHub\historyhandlers.py:332
 #: addon\globalPlugins\AIHub\historyhandlers.py:366
 #: addon\globalPlugins\AIHub\historyhandlers.py:383
-#: addon\globalPlugins\AIHub\historyhandlers.py:639
+#: addon\globalPlugins\AIHub\historyhandlers.py:640
 msgid "An error occurred. More information is in the NVDA log."
 msgstr "Сталася помилка. Більше інформації в журналі NVDA."
 
@@ -303,7 +303,11 @@ msgstr "Видалити &все"
 msgid "Add from &file path..."
 msgstr "&Додати зі шляху до файлу..."
 
-#: addon\globalPlugins\AIHub\chatcompletion.py:351
+#: addon\globalPlugins\AIHub\chatcompletion.py:260
+msgid "Sources:"
+msgstr "Джерела:"
+
+#: addon\globalPlugins\AIHub\chatcompletion.py:526
 msgid ""
 "Anthropic accepts PDF as native document blocks and inlines plain-text "
 "files. Other formats (.docx, .xlsx, .csv, …) must be converted to PDF or "
@@ -313,7 +317,7 @@ msgstr ""
 "вигляді простого тексту. Інші формати (.docx, .xlsx, .csv тощо) необхідно "
 "перетворити у PDF або простий текст."
 
-#: addon\globalPlugins\AIHub\chatcompletion.py:357
+#: addon\globalPlugins\AIHub\chatcompletion.py:532
 msgid ""
 "Google accepts images and PDFs as native inline attachments on the Gemini "
 "API. Plain-text files are inlined automatically."
@@ -321,7 +325,7 @@ msgstr ""
 "Google підтримує зображення та PDF-файли як вбудовані вкладення в API "
 "Gemini. Файли у форматі простого тексту вставляються автоматично."
 
-#: addon\globalPlugins\AIHub\chatcompletion.py:363
+#: addon\globalPlugins\AIHub\chatcompletion.py:538
 msgid ""
 "OpenRouter parses PDFs into the underlying model. If this file was rejected, "
 "the underlying model may not support documents — try another model."
@@ -330,7 +334,7 @@ msgstr ""
 "відхилено, можливо, базова модель не підтримує документи — спробуйте іншу "
 "модель."
 
-#: addon\globalPlugins\AIHub\chatcompletion.py:369
+#: addon\globalPlugins\AIHub\chatcompletion.py:544
 msgid ""
 "Mistral expects documents via the document_url shape (URL or data URI). For "
 "OCR of scanned files, use the Mistral OCR tool."
@@ -339,7 +343,7 @@ msgstr ""
 "розпізнавання тексту у відсканованих файлах скористайтеся інструментом "
 "Mistral OCR."
 
-#: addon\globalPlugins\AIHub\chatcompletion.py:375
+#: addon\globalPlugins\AIHub\chatcompletion.py:550
 msgid ""
 "The selected OpenAI model rejected this document. Try another OpenAI model "
 "with file-input support or use a supported document format."
@@ -348,7 +352,7 @@ msgstr ""
 "із підтримкою введення файлів або використовуйте підтримуваний формат "
 "документа."
 
-#: addon\globalPlugins\AIHub\chatcompletion.py:381
+#: addon\globalPlugins\AIHub\chatcompletion.py:556
 msgid ""
 "The selected provider does not natively accept binary documents on its chat "
 "endpoint. Plain-text files are inlined automatically; for PDFs use OpenAI, "
@@ -360,51 +364,51 @@ msgstr ""
 "Anthropic, OpenRouter, Mistral або xAI."
 
 #. Translators: Text in chat completion status and error messages.
-#: addon\globalPlugins\AIHub\chatcompletion.py:455
+#: addon\globalPlugins\AIHub\chatcompletion.py:632
 msgid "Transcribing audio..."
 msgstr "Транскрибування аудіо..."
 
 #. Translators: Text in chat completion status and error messages.
-#: addon\globalPlugins\AIHub\chatcompletion.py:483
+#: addon\globalPlugins\AIHub\chatcompletion.py:660
 msgid "Invalid temperature"
 msgstr "Неправильна температура"
 
 #. Translators: Text in chat completion status and error messages.
-#: addon\globalPlugins\AIHub\chatcompletion.py:487
+#: addon\globalPlugins\AIHub\chatcompletion.py:664
 msgid "Invalid top P"
 msgstr "Неправильна вершина P"
 
 #. Translators: Text in chat completion status and error messages.
-#: addon\globalPlugins\AIHub\chatcompletion.py:510
+#: addon\globalPlugins\AIHub\chatcompletion.py:687
 #, python-format
 msgid "Uploading %s, please wait..."
 msgstr "Відвантаження %s, зачекайте..."
 
 #. Translators: Text in chat completion status and error messages.
-#: addon\globalPlugins\AIHub\chatcompletion.py:512
+#: addon\globalPlugins\AIHub\chatcompletion.py:689
 #, python-format
 msgid "%d image(s)"
 msgstr "%d зображень"
 
 #. Translators: Text in chat completion status and error messages.
-#: addon\globalPlugins\AIHub\chatcompletion.py:514
+#: addon\globalPlugins\AIHub\chatcompletion.py:691
 #, python-format
 msgid "%d audio file(s)"
 msgstr "%d аудіофайл(и)"
 
 #. Translators: Text in chat completion status and error messages.
-#: addon\globalPlugins\AIHub\chatcompletion.py:516
+#: addon\globalPlugins\AIHub\chatcompletion.py:693
 #, python-format
 msgid "%d document(s)"
 msgstr "%d документ(ів)"
 
 #. Translators: Text in chat completion status and error messages.
-#: addon\globalPlugins\AIHub\chatcompletion.py:518
+#: addon\globalPlugins\AIHub\chatcompletion.py:695
 msgid "Please wait..."
 msgstr "Будь ласка, зачекайте..."
 
 #. Translators: Error message when the chat response included audio but NVDA could not play or save it (details in the log).
-#: addon\globalPlugins\AIHub\chatcompletion.py:868
+#: addon\globalPlugins\AIHub\chatcompletion.py:1111
 msgid ""
 "An error occurred playing the audio response. More information is in the "
 "NVDA log."
@@ -415,13 +419,13 @@ msgstr ""
 #. Translators: Title of the error message box for chat-completion failures in AI-Hub.
 #. Translators: Title for generic add-on error dialog.
 #. Translators: Title for runtime/API error dialog after submit.
-#: addon\globalPlugins\AIHub\chatcompletion.py:870
-#: addon\globalPlugins\AIHub\conversation_dialog.py:1862
-#: addon\globalPlugins\AIHub\conversation_dialog.py:2195
+#: addon\globalPlugins\AIHub\chatcompletion.py:1113
+#: addon\globalPlugins\AIHub\conversation_dialog.py:1854
+#: addon\globalPlugins\AIHub\conversation_dialog.py:2187
 msgid "OpenAI Error"
 msgstr "Помилка OpenAI"
 
-#: addon\globalPlugins\AIHub\consts.py:202
+#: addon\globalPlugins\AIHub\consts.py:199
 msgid ""
 "You are an accessibility assistant integrated in the NVDA screen reader that "
 "helps blind screen reader users access visual information that may not be "
@@ -503,29 +507,29 @@ msgstr ""
 #. Translators: Fallback name when opening an untitled saved conversation from history.
 #. Translators: Main dialog title suffix.
 #. Translators: NVDA Preferences — AI-Hub category: title of a bordered settings group.
-#: addon\globalPlugins\AIHub\conversation_dialog.py:490
-#: addon\globalPlugins\AIHub\conversation_dialog.py:497
-#: addon\globalPlugins\AIHub\conversation_dialog.py:501
-#: addon\globalPlugins\AIHub\conversation_dialog.py:561
-#: addon\globalPlugins\AIHub\conversation_dialog.py:906
-#: addon\globalPlugins\AIHub\conversation_dialog.py:992
-#: addon\globalPlugins\AIHub\conversation_dialog.py:998
-#: addon\globalPlugins\AIHub\conversation_dialog.py:1013
-#: addon\globalPlugins\AIHub\conversation_dialog.py:1035
-#: addon\globalPlugins\AIHub\conversation_dialog.py:1148
-#: addon\globalPlugins\AIHub\conversation_dialog.py:1151
+#: addon\globalPlugins\AIHub\conversation_dialog.py:467
+#: addon\globalPlugins\AIHub\conversation_dialog.py:474
+#: addon\globalPlugins\AIHub\conversation_dialog.py:478
+#: addon\globalPlugins\AIHub\conversation_dialog.py:538
+#: addon\globalPlugins\AIHub\conversation_dialog.py:883
+#: addon\globalPlugins\AIHub\conversation_dialog.py:969
+#: addon\globalPlugins\AIHub\conversation_dialog.py:975
+#: addon\globalPlugins\AIHub\conversation_dialog.py:990
+#: addon\globalPlugins\AIHub\conversation_dialog.py:1012
+#: addon\globalPlugins\AIHub\conversation_dialog.py:1125
+#: addon\globalPlugins\AIHub\conversation_dialog.py:1128
 #: addon\globalPlugins\AIHub\settings_dialog.py:45
 msgid "Conversation"
 msgstr "Розмова"
 
 #. Translators: Tab position in the notebook (e.g. second of three tabs).
-#: addon\globalPlugins\AIHub\conversation_dialog.py:499
+#: addon\globalPlugins\AIHub\conversation_dialog.py:476
 #, python-brace-format
 msgid "({cur}/{tot})"
 msgstr "({cur}/{tot})"
 
 #. Translators: Tab title when first attachment name is followed by more attachments.
-#: addon\globalPlugins\AIHub\conversation_dialog.py:526
+#: addon\globalPlugins\AIHub\conversation_dialog.py:503
 #, python-brace-format
 msgid "{base} (+{n})"
 msgstr "{base} (+{n})"
@@ -539,222 +543,192 @@ msgstr "{base} (+{n})"
 #. Translators: Default name suggested in rename dialog for untitled conversations.
 #. Translators: Text in conversation metadata/properties shown to the user.
 #. Translators: Default conversation title when no name exists.
-#: addon\globalPlugins\AIHub\conversation_dialog.py:559
-#: addon\globalPlugins\AIHub\conversation_dialog.py:746
-#: addon\globalPlugins\AIHub\conversation_dialog.py:873
-#: addon\globalPlugins\AIHub\conversation_dialog.py:944
-#: addon\globalPlugins\AIHub\conversation_dialog.py:1146
-#: addon\globalPlugins\AIHub\conversation_dialog.py:1658
-#: addon\globalPlugins\AIHub\conversation_dialog.py:1813
+#: addon\globalPlugins\AIHub\conversation_dialog.py:536
+#: addon\globalPlugins\AIHub\conversation_dialog.py:723
+#: addon\globalPlugins\AIHub\conversation_dialog.py:850
+#: addon\globalPlugins\AIHub\conversation_dialog.py:921
+#: addon\globalPlugins\AIHub\conversation_dialog.py:1123
+#: addon\globalPlugins\AIHub\conversation_dialog.py:1650
+#: addon\globalPlugins\AIHub\conversation_dialog.py:1805
 #: addon\globalPlugins\AIHub\conversations.py:317
-#: addon\globalPlugins\AIHub\conversations.py:606
-#: addon\globalPlugins\AIHub\conversations.py:734
-#: addon\globalPlugins\AIHub\conversations.py:844
-#: addon\globalPlugins\AIHub\conversations.py:873
-#: addon\globalPlugins\AIHub\conversations.py:891
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:250
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:478
+#: addon\globalPlugins\AIHub\conversations.py:714
+#: addon\globalPlugins\AIHub\conversations.py:842
+#: addon\globalPlugins\AIHub\conversations.py:952
+#: addon\globalPlugins\AIHub\conversations.py:987
+#: addon\globalPlugins\AIHub\conversations.py:1006
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:256
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:484
 msgid "Untitled conversation"
 msgstr "Розмова без назви"
 
 #. Translators: Placeholder caption for a brand new conversation tab.
 #. Translators: Title used when opening a fresh conversation window.
 #. Translators: Spoken status message after creating a new conversation tab.
-#: addon\globalPlugins\AIHub\conversation_dialog.py:563
-#: addon\globalPlugins\AIHub\conversation_dialog.py:1151
-#: addon\globalPlugins\AIHub\conversation_dialog.py:1846
+#: addon\globalPlugins\AIHub\conversation_dialog.py:540
+#: addon\globalPlugins\AIHub\conversation_dialog.py:1128
+#: addon\globalPlugins\AIHub\conversation_dialog.py:1838
 msgid "New conversation"
 msgstr "Нова розмова"
 
 #. Translators: Status after enabling ephemeral (no-save) mode on the current tab.
-#: addon\globalPlugins\AIHub\conversation_dialog.py:849
+#: addon\globalPlugins\AIHub\conversation_dialog.py:826
 msgid "Ephemeral mode: this conversation will not be saved."
 msgstr "Тимчасовий режим: ця розмова не буде збережена."
 
 #. Translators: Status after disabling ephemeral mode; saving is available again.
-#: addon\globalPlugins\AIHub\conversation_dialog.py:852
+#: addon\globalPlugins\AIHub\conversation_dialog.py:829
 msgid "Saving is enabled for this conversation."
 msgstr "Для цієї розмови увімкнено збереження."
 
 #. Translators: Section title for top action buttons in the conversation window.
-#: addon\globalPlugins\AIHub\conversation_dialog.py:1163
+#: addon\globalPlugins\AIHub\conversation_dialog.py:1140
 msgid "Toolbar"
 msgstr "Панель інструментів"
 
 #. Translators: AI-Hub conversation window: title of a bordered settings group.
-#: addon\globalPlugins\AIHub\conversation_dialog.py:1169
+#: addon\globalPlugins\AIHub\conversation_dialog.py:1146
 msgid "Conversation &list..."
 msgstr "&Список розмов..."
 
 #. Translators: Toolbar button to save current conversation immediately.
-#: addon\globalPlugins\AIHub\conversation_dialog.py:1176
+#: addon\globalPlugins\AIHub\conversation_dialog.py:1153
 msgid "&Save conversation"
 msgstr "&Зберегти розмову"
 
 #. Translators: Checkbox to keep the current tab out of history and disable auto-save.
-#: addon\globalPlugins\AIHub\conversation_dialog.py:1183
+#: addon\globalPlugins\AIHub\conversation_dialog.py:1160
 msgid "&Ephemeral conversation"
 msgstr "&Тимчасова розмова"
 
 #. Translators: Toolbar button to open a new conversation tab.
 #. Translators: Conversation history list context menu — starts a new AI-Hub chat (no list shortcut).
-#: addon\globalPlugins\AIHub\conversation_dialog.py:1191
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:632
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:657
+#: addon\globalPlugins\AIHub\conversation_dialog.py:1168
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:638
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:663
 msgid "&New conversation"
 msgstr "&Нова розмова"
 
 #. Translators: Toolbar button to rename the current saved conversation.
-#: addon\globalPlugins\AIHub\conversation_dialog.py:1198
+#: addon\globalPlugins\AIHub\conversation_dialog.py:1175
 msgid "&Rename conversation"
 msgstr "&Перейменувати розмову"
 
-#. Translators: Section title for model generation options.
-#: addon\globalPlugins\AIHub\conversation_dialog.py:1248
-msgid "Generation"
-msgstr "Генерація"
-
-#. Translators: AI-Hub conversation window: title of a bordered settings group.
-#: addon\globalPlugins\AIHub\conversation_dialog.py:1255
-msgid "&Reasoning mode"
-msgstr "&Режим міркування"
-
-#. Translators: Checkbox to enable adaptive reasoning behavior when supported.
-#: addon\globalPlugins\AIHub\conversation_dialog.py:1263
-msgid "&Adaptive thinking"
-msgstr "&Адаптивне міркування"
-
-#. Translators: Checkbox to allow built-in web search for supporting models.
-#: addon\globalPlugins\AIHub\conversation_dialog.py:1271
-msgid "&Web search"
-msgstr "&Веб пошук"
-
-#. Translators: Checkbox for OpenRouter universal web search server tool (any tool-calling model).
-#: addon\globalPlugins\AIHub\conversation_dialog.py:1279
-msgid "OpenRouter &web search"
-msgstr "&Веб пошук OpenRouter"
-
-#. Translators: Label for reasoning effort dropdown.
-#: addon\globalPlugins\AIHub\conversation_dialog.py:1289
-msgid "Reasoning &effort:"
-msgstr "Міркування та зусилля:"
-
 #. Translators: Label for maximum output tokens numeric input.
-#: addon\globalPlugins\AIHub\conversation_dialog.py:1300
+#: addon\globalPlugins\AIHub\conversation_dialog.py:1230
 msgid "Max to&kens:"
 msgstr "&Максимальна кількість токенів:"
 
 #. Translators: Checkbox that reveals/hides advanced sampling controls.
-#: addon\globalPlugins\AIHub\conversation_dialog.py:1311
+#: addon\globalPlugins\AIHub\conversation_dialog.py:1241
 msgid "Ad&vanced sampling (temperature, top-p, seed, stop, …)"
 msgstr ""
 "Розширена вибірка (температура, верхня температура, початковий рівень, стоп, "
 "тощо.)"
 
 #. Translators: Group title for advanced sampling parameters.
-#: addon\globalPlugins\AIHub\conversation_dialog.py:1318
+#: addon\globalPlugins\AIHub\conversation_dialog.py:1248
 msgid "Advanced sampling options"
 msgstr "Розширені параметри вибірки"
 
 #. Translators: Label before the temperature spin control (value is hundredths) in Advanced sampling on the conversation window.
 #. Translators: Label before the optional sampling temperature field for Lyria music generation.
-#: addon\globalPlugins\AIHub\conversation_dialog.py:1328
+#: addon\globalPlugins\AIHub\conversation_dialog.py:1258
 #: addon\globalPlugins\AIHub\tool_lyria_dialog.py:99
 msgid "&Temperature:"
 msgstr "&Температура:"
 
 #. Translators: Label before the top-P (probability mass) spin control in Advanced sampling on the conversation window.
-#: addon\globalPlugins\AIHub\conversation_dialog.py:1344
+#: addon\globalPlugins\AIHub\conversation_dialog.py:1274
 msgid "Pro&bability Mass (top P):"
 msgstr "Мас&а ймовірності (Верхнє P):"
 
 #. Translators: Label for optional deterministic seed spin control.
-#: addon\globalPlugins\AIHub\conversation_dialog.py:1355
+#: addon\globalPlugins\AIHub\conversation_dialog.py:1285
 msgid "See&d (−1 = omit):"
 msgstr "&Початкове значення (−1 = пропустити):"
 
 #. Translators: Label for optional top-k spin control.
-#: addon\globalPlugins\AIHub\conversation_dialog.py:1366
+#: addon\globalPlugins\AIHub\conversation_dialog.py:1296
 msgid "Top &K (0 = omit):"
 msgstr "Вверх &K (0 = пропустити):"
 
 #. Translators: Label for stop sequences multiline input.
-#: addon\globalPlugins\AIHub\conversation_dialog.py:1381
+#: addon\globalPlugins\AIHub\conversation_dialog.py:1311
 msgid "St&op sequences (one per line):"
 msgstr "&Стоп послідовності (по одній на рядок):"
 
 #. Translators: Label for frequency penalty spin control.
-#: addon\globalPlugins\AIHub\conversation_dialog.py:1392
+#: addon\globalPlugins\AIHub\conversation_dialog.py:1322
 msgid "&Frequency penalty (−2..2, ×100):"
 msgstr "&Штраф за частоту (−2..2, ×100):"
 
 #. Translators: Label for presence penalty spin control.
-#: addon\globalPlugins\AIHub\conversation_dialog.py:1403
+#: addon\globalPlugins\AIHub\conversation_dialog.py:1333
 msgid "&Presence penalty (−2..2, ×100):"
 msgstr "&Штраф за присутність (−2..2, ×100):"
 
 #. Translators: Bottom-row toggles and tools button labels.
-#: addon\globalPlugins\AIHub\conversation_dialog.py:1418
+#: addon\globalPlugins\AIHub\conversation_dialog.py:1348
 msgid "&Stream mode"
 msgstr "&Потоковий режим"
 
 #. Translators: Checkbox label to enable verbose debugging output.
-#: addon\globalPlugins\AIHub\conversation_dialog.py:1424
+#: addon\globalPlugins\AIHub\conversation_dialog.py:1354
 msgid "Debu&g mode"
 msgstr "Режи&м налагодження"
 
 #. Translators: Button opening provider-specific tools/actions menu.
-#: addon\globalPlugins\AIHub\conversation_dialog.py:1432
+#: addon\globalPlugins\AIHub\conversation_dialog.py:1362
 msgid "&Tools..."
 msgstr "&Інструменти..."
 
 #. Translators: Prefix shown before user message content in history view.
 #. Translators: Prefix shown before user message content in streaming history updates.
-#: addon\globalPlugins\AIHub\conversation_dialog.py:1552
-#: addon\globalPlugins\AIHub\conversation_dialog.py:2235
+#: addon\globalPlugins\AIHub\conversation_dialog.py:1522
+#: addon\globalPlugins\AIHub\conversation_dialog.py:2227
 msgid "User:"
 msgstr "Користувач:"
 
 #. Translators: Prefix shown before assistant response in streaming history updates.
 #. Translators: Prefix shown before assistant response in streaming history updates.
-#: addon\globalPlugins\AIHub\conversation_dialog.py:1563
-#: addon\globalPlugins\AIHub\conversation_dialog.py:2244
+#: addon\globalPlugins\AIHub\conversation_dialog.py:1533
+#: addon\globalPlugins\AIHub\conversation_dialog.py:2236
 msgid "Assistant:"
 msgstr "Помічник:"
 
 #. Translators: Status message after toggling thinking text visibility in history.
-#: addon\globalPlugins\AIHub\conversation_dialog.py:1641
+#: addon\globalPlugins\AIHub\conversation_dialog.py:1633
 msgid "Thinking content shown in history."
 msgstr "Перегляд вмісту, що показується в історії."
 
-#: addon\globalPlugins\AIHub\conversation_dialog.py:1641
+#: addon\globalPlugins\AIHub\conversation_dialog.py:1633
 msgid "Thinking content hidden in history."
 msgstr "Перегляд вмісту, що прихований в історії."
 
 #. Translators: Message when manual save is requested for an empty conversation.
-#: addon\globalPlugins\AIHub\conversation_dialog.py:1787
+#: addon\globalPlugins\AIHub\conversation_dialog.py:1779
 msgid "No messages or prompt to save."
 msgstr "Немає повідомлень або запитів на збереження."
 
 #. Translators: Confirmation message after successful manual save.
-#: addon\globalPlugins\AIHub\conversation_dialog.py:1791
+#: addon\globalPlugins\AIHub\conversation_dialog.py:1783
 msgid "Conversation saved."
 msgstr "Розмову збережено."
 
 #. Translators: Error text when manual conversation save fails.
-#: addon\globalPlugins\AIHub\conversation_dialog.py:1795
+#: addon\globalPlugins\AIHub\conversation_dialog.py:1787
 msgid "Unable to save conversation. Check the NVDA log for details."
 msgstr "Не вдалося зберегти розмову. Подробиці перевірте в журналі NVDA."
 
 #. Translators: Title for manual save error dialog.
 #. Translators: AI-Hub conversation — message history area: entry in a context menu or submenu.
-#: addon\globalPlugins\AIHub\conversation_dialog.py:1797
-#: addon\globalPlugins\AIHub\historyhandlers.py:765
+#: addon\globalPlugins\AIHub\conversation_dialog.py:1789
+#: addon\globalPlugins\AIHub\historyhandlers.py:766
 msgid "Save conversation"
 msgstr "Зберегти розмову"
 
 #. Translators: Message when rename is blocked because ephemeral mode is on.
-#: addon\globalPlugins\AIHub\conversation_dialog.py:1805
+#: addon\globalPlugins\AIHub\conversation_dialog.py:1797
 msgid ""
 "Ephemeral conversations cannot be renamed. Uncheck Ephemeral to save first."
 msgstr ""
@@ -762,34 +736,34 @@ msgstr ""
 "прапорець з пункту «Тимчасові»."
 
 #. Translators: Message shown when trying to rename before first save.
-#: addon\globalPlugins\AIHub\conversation_dialog.py:1809
+#: addon\globalPlugins\AIHub\conversation_dialog.py:1801
 msgid "Save the conversation first before renaming."
 msgstr "Перш ніж перейменовувати, збережіть розмову."
 
 #. Translators: Prompt text in rename conversation dialog.
 #. Translators: Prompt in the rename conversation dialog.
-#: addon\globalPlugins\AIHub\conversation_dialog.py:1817
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:794
+#: addon\globalPlugins\AIHub\conversation_dialog.py:1809
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:800
 msgid "Enter new name for this conversation:"
 msgstr "Введіть нову назву для цієї розмови:"
 
 #. Translators: Title of rename conversation dialog.
 #. Translators: Title of the rename conversation dialog.
 #. Translators: AI-Hub conversation — message history area: entry in a context menu or submenu.
-#: addon\globalPlugins\AIHub\conversation_dialog.py:1819
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:796
-#: addon\globalPlugins\AIHub\historyhandlers.py:769
+#: addon\globalPlugins\AIHub\conversation_dialog.py:1811
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:802
+#: addon\globalPlugins\AIHub\historyhandlers.py:770
 msgid "Rename conversation"
 msgstr "Перейменувати розмову"
 
 #. Translators: AI-Hub conversation — message history area: brief status feedback (speech/braille), not a full dialog.
-#: addon\globalPlugins\AIHub\conversation_dialog.py:1875
-#: addon\globalPlugins\AIHub\historyhandlers.py:558
+#: addon\globalPlugins\AIHub\conversation_dialog.py:1867
+#: addon\globalPlugins\AIHub\historyhandlers.py:559
 msgid "This message has no prompt or attachments to regenerate."
 msgstr ""
 "Це повідомлення не містить підказки або вкладень для повторної генерації."
 
-#: addon\globalPlugins\AIHub\conversation_dialog.py:1894
+#: addon\globalPlugins\AIHub\conversation_dialog.py:1886
 #, python-brace-format
 msgid ""
 "The selected account provider ({accountProvider}) does not match the "
@@ -801,11 +775,11 @@ msgstr ""
 "обліковий запис або модель."
 
 #. Translators: Title for account/provider mismatch dialog.
-#: addon\globalPlugins\AIHub\conversation_dialog.py:1901
+#: addon\globalPlugins\AIHub\conversation_dialog.py:1893
 msgid "Provider mismatch"
 msgstr "Невідповідність постачальника"
 
-#: addon\globalPlugins\AIHub\conversation_dialog.py:1911
+#: addon\globalPlugins\AIHub\conversation_dialog.py:1903
 #, python-brace-format
 msgid ""
 "This model is only available with the {provider} provider and the selected "
@@ -817,17 +791,17 @@ msgstr ""
 "або виберіть інший обліковий запис/модель."
 
 #. Translators: Dynamic error dialog title when API key/account is missing for provider.
-#: addon\globalPlugins\AIHub\conversation_dialog.py:1917
+#: addon\globalPlugins\AIHub\conversation_dialog.py:1909
 #, python-brace-format
 msgid "No API key for {provider}"
 msgstr "Немає ключа API для {provider}"
 
 #. Translators: Title for unsupported-attachments validation error.
-#: addon\globalPlugins\AIHub\conversation_dialog.py:1933
+#: addon\globalPlugins\AIHub\conversation_dialog.py:1925
 msgid "Unsupported attachments"
 msgstr "Непідтримувані вкладення"
 
-#: addon\globalPlugins\AIHub\conversation_dialog.py:1945
+#: addon\globalPlugins\AIHub\conversation_dialog.py:1937
 #, python-brace-format
 msgid ""
 "This model ({model}) does not support image description. Please select one "
@@ -838,12 +812,12 @@ msgstr ""
 
 #. Translators: Title for model capability validation errors.
 #. Translators: Title of the error dialog when the user attaches audio but the chosen chat model does not accept audio input.
-#: addon\globalPlugins\AIHub\conversation_dialog.py:1952
-#: addon\globalPlugins\AIHub\conversation_dialog.py:1971
+#: addon\globalPlugins\AIHub\conversation_dialog.py:1944
+#: addon\globalPlugins\AIHub\conversation_dialog.py:1963
 msgid "Invalid model"
 msgstr "Неправильна модель"
 
-#: addon\globalPlugins\AIHub\conversation_dialog.py:1963
+#: addon\globalPlugins\AIHub\conversation_dialog.py:1955
 #, python-brace-format
 msgid ""
 "This model ({model}) does not support audio input. Please select one of the "
@@ -853,12 +827,12 @@ msgstr ""
 "таких моделей: {models}."
 
 #. Translators: Fallback text when no audio-capable model is available.
-#: addon\globalPlugins\AIHub\conversation_dialog.py:1968
+#: addon\globalPlugins\AIHub\conversation_dialog.py:1960
 msgid "none available"
 msgstr "немає доступних"
 
 #. Translators: Informational warning about automatic image resize behavior/cost impact.
-#: addon\globalPlugins\AIHub\conversation_dialog.py:1983
+#: addon\globalPlugins\AIHub\conversation_dialog.py:1975
 msgid ""
 "Be aware that the add-on may auto-resize images before API submission to "
 "lower request sizes and costs. Adjust this feature in the AI-Hub settings if "
@@ -870,12 +844,12 @@ msgstr ""
 "з’являтиметься."
 
 #. Translators: Title for image-resize informational dialog.
-#: addon\globalPlugins\AIHub\conversation_dialog.py:1987
+#: addon\globalPlugins\AIHub\conversation_dialog.py:1979
 msgid "Image resizing"
 msgstr "Зміна розміру зображення"
 
 #. Translators: Error shown when a temporary file could not be deleted.
-#: addon\globalPlugins\AIHub\conversation_dialog.py:2059
+#: addon\globalPlugins\AIHub\conversation_dialog.py:2051
 #, python-format
 msgid ""
 "Unable to delete the file: %s\n"
@@ -885,23 +859,23 @@ msgstr ""
 "Видаліть його вручну."
 
 #. Translators: Status message after attaching recorded/loaded audio input.
-#: addon\globalPlugins\AIHub\conversation_dialog.py:2153
+#: addon\globalPlugins\AIHub\conversation_dialog.py:2145
 msgid "Audio added for direct model input"
 msgstr "Додано аудіо для прямого введення в модель"
 
 #. Translators: Status message after inserting transcribed text into prompt.
-#: addon\globalPlugins\AIHub\conversation_dialog.py:2168
+#: addon\globalPlugins\AIHub\conversation_dialog.py:2160
 #, python-format
 msgid "Insertion of: %s"
 msgstr "Вставка з: %s"
 
 #. Translators: Prompt appended to error text when it contains a URL.
-#: addon\globalPlugins\AIHub\conversation_dialog.py:2191
+#: addon\globalPlugins\AIHub\conversation_dialog.py:2183
 msgid "Do you want to open the URL in your browser?"
 msgstr "Бажаєте відкрити URL-адресу у своєму браузері?"
 
 #. Translators: Hint spoken when Escape key is blocked by settings.
-#: addon\globalPlugins\AIHub\conversation_dialog.py:2221
+#: addon\globalPlugins\AIHub\conversation_dialog.py:2213
 msgid "Press Alt+F4 to close the dialog"
 msgstr "Натисніть Alt+F4, щоб закрити діалог"
 
@@ -1002,11 +976,11 @@ msgstr "М&одель:"
 #. Translators: Text in attachment/file handling messages.
 #. Translators: AI-Hub conversation — message history area: brief status feedback (speech/braille), not a full dialog.
 #. Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
-#: addon\globalPlugins\AIHub\conversations.py:537
-#: addon\globalPlugins\AIHub\conversations.py:538
-#: addon\globalPlugins\AIHub\conversations.py:569
+#: addon\globalPlugins\AIHub\conversations.py:645
+#: addon\globalPlugins\AIHub\conversations.py:646
+#: addon\globalPlugins\AIHub\conversations.py:677
 #: addon\globalPlugins\AIHub\conversations_manager_dialog.py:43
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:254
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:260
 #: addon\globalPlugins\AIHub\filehandlers.py:180
 #: addon\globalPlugins\AIHub\filehandlers.py:186
 #: addon\globalPlugins\AIHub\historyhandlers.py:92
@@ -1118,17 +1092,17 @@ msgid "Delete a&ll"
 msgstr "Видалити &все"
 
 #. Translators: Heading at the top of the F1 filter-help text in the Manage saved conversations dialog.
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:319
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:325
 msgid "Filter syntax"
 msgstr "Синтаксис фільтра"
 
 #. Translators: Help line explaining that several key:value filters can be combined with spaces in the history search box.
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:322
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:328
 msgid "You can combine key:value terms separated by spaces."
 msgstr "Ви можете комбінувати пари «ключ:значення», розділяючи їх пробілами."
 
 #. Translators: Help line explaining that plain words (without key:) only match the saved conversation title.
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:324
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:330
 msgid ""
 "If no key:value term is present, search is done in the conversation title "
 "only."
@@ -1136,17 +1110,17 @@ msgstr ""
 "Якщо ключ:значення відсутні, пошук виконуватиметься лише в заголовках розмов."
 
 #. Translators: Label before the example filter queries in the F1 help text.
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:327
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:333
 msgid "Examples:"
 msgstr "Приклади:"
 
 #. Translators: Label before the list of allowed filter field names in the F1 help text.
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:336
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:342
 msgid "Supported keys:"
 msgstr "Підтримувані клавіші:"
 
 #. Translators: Comma-separated list of filter keys as shown in F1 help; keep English key names so they match the search box.
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:338
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:344
 msgid ""
 "name/title, model, format/type, id, date/updated, messages/msg/msgs, tokens/"
 "token, draft/draftlen, empty, has"
@@ -1156,63 +1130,63 @@ msgstr ""
 "містить"
 
 #. Translators: Help line listing comparison operators allowed for numeric filters; placeholder is backtick-wrapped operator list.
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:341
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:347
 #, python-format
 msgid "Numeric operators: %s (for messages/tokens/draft)."
 msgstr "Числові оператори: %s (для повідомлень/токенів/чернеток)."
 
 #. Translators: Help line listing accepted true/false spellings for the empty: filter; placeholder is literal token list.
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:343
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:349
 #, python-format
 msgid "Boolean values: %s (for empty)."
 msgstr "Логічні значення: %s (для порожнього)."
 
 #. Translators: Help line listing allowed values after has: in the filter box; placeholder is literal token list.
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:345
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:351
 #, python-format
 msgid "has values: %s."
 msgstr "містить значення: %s."
 
 #. Translators: Title of the read-only NVDA browseable window opened with F1 for the saved-conversation filter field.
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:350
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:356
 msgid "Filter help"
 msgstr "Допомога з фільтрами"
 
 #. Translators: First line of the read-only properties text for one saved conversation: display name (placeholder is title or «Untitled conversation»).
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:478
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:484
 #, python-format
 msgid "Name: %s"
 msgstr "Назва: %s"
 
 #. Translators: Properties line: stored conversation format id (placeholder is format string, often «generic»).
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:480
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:486
 #, python-format
 msgid "Format: %s"
 msgstr "Формат: %s"
 
 #. Translators: Properties line: number of chat messages saved in this conversation.
 #. Translators: Message count in conversation properties.
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:482
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:488
 #: addon\globalPlugins\AIHub\usage_ledger.py:417
 #, python-format
 msgid "Messages: %d"
 msgstr "Повідомлення: %d"
 
 #. Translators: Properties line: character count of the system prompt text.
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:484
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:490
 #, python-format
 msgid "System prompt length: %d characters"
 msgstr "Довжина системної підказки: %d символів"
 
 #. Translators: Properties line: character count of the user’s draft prompt area when saved.
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:486
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:492
 #, python-format
 msgid "Draft prompt length: %d characters"
 msgstr "Довжина підказки чернетки: %d символів"
 
 #. Translators: Property line: number of billable API calls recorded for this conversation.
 #. Translators: API call count in conversation properties.
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:492
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:498
 #: addon\globalPlugins\AIHub\usage_ledger.py:420
 #, python-format
 msgid "API calls recorded: %d"
@@ -1220,7 +1194,7 @@ msgstr "Кількість викликів API: %d"
 
 #. Translators: Section heading — cumulative API usage including deleted/regenerated turns.
 #. Translators: Section heading — cumulative spend across all API calls including deleted turns.
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:496
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:502
 #: addon\globalPlugins\AIHub\usage_ledger.py:423
 msgid "Session (all API calls)"
 msgstr "Сесія (усі виклики API)"
@@ -1229,9 +1203,9 @@ msgstr "Сесія (усі виклики API)"
 #. Translators: Property line: billed input tokens for remaining message blocks only.
 #. Translators: Property line: sum of input tokens across all turns (shown only when usage was recorded).
 #. Translators: Token usage line in conversation properties (prefix may be "Session" or "Active thread").
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:498
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:516
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:528
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:504
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:522
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:534
 #: addon\globalPlugins\AIHub\usage_ledger.py:373
 #, python-format
 msgid "Billed input tokens: %d"
@@ -1241,9 +1215,9 @@ msgstr "Оплачувані токени введення: %d"
 #. Translators: Property line: billed output tokens for remaining message blocks only.
 #. Translators: Property line: sum of output tokens across all turns.
 #. Translators: Token usage line in conversation properties.
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:500
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:518
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:530
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:506
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:524
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:536
 #: addon\globalPlugins\AIHub\usage_ledger.py:375
 #, python-format
 msgid "Billed output tokens: %d"
@@ -1253,9 +1227,9 @@ msgstr "Оплачувані токени виведення: %d"
 #. Translators: Property line: billed total tokens for remaining message blocks only.
 #. Translators: Property line: combined input plus output token total.
 #. Translators: Token usage line in conversation properties.
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:502
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:520
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:532
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:508
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:526
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:538
 #: addon\globalPlugins\AIHub\usage_ledger.py:377
 #, python-format
 msgid "Billed total tokens: %d"
@@ -1266,9 +1240,9 @@ msgstr "Загальна кількість виставлених до опла
 #. Translators: Property line: total estimated API dollar cost for one saved conversation.
 #. Translators: Text in message/conversation properties output.
 #. Translators: Cost line in conversation properties.
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:506
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:524
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:536
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:512
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:530
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:542
 #: addon\globalPlugins\AIHub\propertiesutils.py:112
 #: addon\globalPlugins\AIHub\usage_ledger.py:395
 #, python-format
@@ -1277,7 +1251,7 @@ msgstr "Витрати на API: $%.6f"
 
 #. Translators: Section heading — usage for messages still in the saved history.
 #. Translators: Section heading — spend for messages still visible in history.
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:514
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:520
 #: addon\globalPlugins\AIHub\usage_ledger.py:428
 msgid "Active thread (remaining messages)"
 msgstr "Активна тема (залишилося повідомлень)"
@@ -1285,7 +1259,7 @@ msgstr "Активна тема (залишилося повідомлень)"
 #. Translators: Property line in «Manage saved conversations» when the conversation file has no stored token totals.
 #. Translators: Text in message/conversation properties output.
 #. Translators: Shown when no usage data exists for a conversation.
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:539
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:545
 #: addon\globalPlugins\AIHub\propertiesutils.py:65
 #: addon\globalPlugins\AIHub\propertiesutils.py:86
 #: addon\globalPlugins\AIHub\usage_ledger.py:434
@@ -1295,7 +1269,7 @@ msgstr "Використання токена: недоступне"
 #. Translators: Property line: aggregate reasoning-token count for one saved conversation.
 #. Translators: Text in message/conversation properties output.
 #. Translators: Token usage line in conversation properties.
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:542
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:548
 #: addon\globalPlugins\AIHub\propertiesutils.py:97
 #: addon\globalPlugins\AIHub\usage_ledger.py:380
 #, python-format
@@ -1305,7 +1279,7 @@ msgstr "Токени міркування: %d"
 #. Translators: Property line: aggregate cached prompt-token count for one saved conversation.
 #. Translators: Text in message/conversation properties output.
 #. Translators: Token usage line in conversation properties.
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:545
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:551
 #: addon\globalPlugins\AIHub\propertiesutils.py:100
 #: addon\globalPlugins\AIHub\usage_ledger.py:383
 #, python-format
@@ -1315,7 +1289,7 @@ msgstr "Кешовані токени введення: %d"
 #. Translators: Property line: aggregate cache-write token count for one saved conversation.
 #. Translators: Text in message/conversation properties output.
 #. Translators: Token usage line in conversation properties.
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:548
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:554
 #: addon\globalPlugins\AIHub\propertiesutils.py:103
 #: addon\globalPlugins\AIHub\usage_ledger.py:386
 #, python-format
@@ -1325,7 +1299,7 @@ msgstr "Токени запису кешу: %d"
 #. Translators: Property line: aggregate input-audio token count for one saved conversation.
 #. Translators: Text in message/conversation properties output.
 #. Translators: Token usage line in conversation properties.
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:551
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:557
 #: addon\globalPlugins\AIHub\propertiesutils.py:106
 #: addon\globalPlugins\AIHub\usage_ledger.py:389
 #, python-format
@@ -1335,7 +1309,7 @@ msgstr "Токени для аудіо введення: %d"
 #. Translators: Property line: aggregate output-audio token count for one saved conversation.
 #. Translators: Text in message/conversation properties output.
 #. Translators: Token usage line in conversation properties.
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:554
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:560
 #: addon\globalPlugins\AIHub\propertiesutils.py:109
 #: addon\globalPlugins\AIHub\usage_ledger.py:392
 #, python-format
@@ -1344,66 +1318,66 @@ msgstr "Токени для аудіо виводу: %d"
 
 #. Translators: Section heading before the per-model message counts in the saved-conversation properties list.
 #. Translators: Text in history navigation and context-menu messages.
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:558
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:564
 #: addon\globalPlugins\AIHub\historyhandlers.py:140
 msgid "Models used:"
 msgstr "Використовувані моделі:"
 
 #. Translators: Section heading before listing attachment paths referenced in one saved conversation.
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:564
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:570
 msgid "Files (input/output):"
 msgstr "Файли (введення/виведення):"
 
 #. Translators: Placeholder when a file entry has no stored path.
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:572
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:578
 msgid "(no path)"
 msgstr "(немає шляху)"
 
 #. Translators: One file line in the conversation properties list.
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:575
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:581
 #, python-brace-format
 msgid "- [{role}] {name} ({kind}, {size})"
 msgstr "- [{role}] {name} ({kind}, {size})"
 
 #. Translators: Conversation history context menu — opens every selected chat; Enter with focus on the list.
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:626
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:632
 #, python-format
 msgid "Open &these %(count)d conversations (Enter)"
 msgstr "Відкрити &ці %(count)d розмов (Enter)"
 
 #. Translators: Conversation history context menu — deletes every selected chat; Del with focus on the list.
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:629
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:635
 #, python-format
 msgid "&Delete %(count)d conversations (Del)"
 msgstr "&Видалити %(count)d розмов (Del)"
 
 #. Translators: Conversation history list context menu — opens selected chat; Enter opens when the list has focus.
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:635
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:641
 msgid "&Open (Enter)"
 msgstr "&Відкрити (Enter)"
 
 #. Translators: Conversation history list context menu — rename; F2 when the list has focus.
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:637
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:643
 msgid "&Rename (F2)"
 msgstr "&Перейменувати (F2)"
 
 #. Translators: Conversation history list context menu — metadata window; Alt+Enter when the list has focus.
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:639
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:645
 msgid "&Properties (Alt+Enter)"
 msgstr "&Властивості (Alt+Enter)"
 
 #. Translators: Conversation history list — parent item for the sort-order submenu.
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:651
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:657
 msgid "Sort &by"
 msgstr "Сортувати &за"
 
 #. Translators: Conversation history list context menu — delete; Del when the list has focus.
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:654
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:660
 msgid "&Delete (Del)"
 msgstr "&Видалити (Del)"
 
 #. Translators: Message shown when properties require exactly one selected conversation.
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:718
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:724
 msgid "Select only one conversation to show properties."
 msgstr "Виберіть лише одну розмову, щоб переглянути її властивості."
 
@@ -1411,86 +1385,86 @@ msgstr "Виберіть лише одну розмову, щоб перегля
 #. Translators: Title of NVDA’s read-only browseable window showing every line of metadata for the selected saved conversation.
 #. Translators: Text in history navigation and context-menu messages.
 #. Translators: AI-Hub conversation — message history area: entry in a context menu or submenu.
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:726
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:730
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:732
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:736
 #: addon\globalPlugins\AIHub\historyhandlers.py:112
 #: addon\globalPlugins\AIHub\historyhandlers.py:144
-#: addon\globalPlugins\AIHub\historyhandlers.py:780
+#: addon\globalPlugins\AIHub\historyhandlers.py:781
 msgid "Conversation properties"
 msgstr "Властивості розмови"
 
 #. Translators: Error shown when a selected conversation cannot be loaded from disk.
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:744
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:750
 msgid "Unable to load conversation."
 msgstr "Не вдалося завантажити розмову."
 
 #. Translators: Shown when opening several chats but at least one file failed to load.
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:751
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:757
 msgid "Some conversations could not be loaded."
 msgstr "Деякі розмови не вдалося завантажити."
 
 #. Translators: Message shown when renaming requires exactly one selected conversation.
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:787
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:793
 msgid "Select only one conversation to rename."
 msgstr "Виберіть лише одну розмову для перейменування."
 
 #. Translators: Yes/No confirmation question before deleting exactly one saved conversation from the history list.
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:817
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:823
 msgid "Delete this conversation? This cannot be undone."
 msgstr "Видалити цю розмову? Це неможливо скасувати."
 
 #. Translators: Yes/No confirmation question before deleting several selected conversations; placeholder is the count.
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:820
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:826
 #, python-format
 msgid "Delete %d conversations? This cannot be undone."
 msgstr "Видалити %d розмов? Цю дію неможливо скасувати."
 
 #. Translators: Title of the Yes/No confirmation dialog for deleting one or more saved conversations.
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:826
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:832
 msgid "Delete conversation"
 msgstr "Видалити розмову"
 
 #. Translators: Yes/No confirmation question before wiping the entire saved-conversation list; placeholder is how many will be removed.
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:837
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:843
 #, python-format
 msgid "Delete all %d conversations? This cannot be undone."
 msgstr "Видалити всі розмови (%d)? Це неможливо скасувати."
 
 #. Translators: Title of the Yes/No confirmation dialog for deleting every saved conversation at once.
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:839
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:845
 msgid "Delete all conversations"
 msgstr "Видалити всі розмови"
 
 #. Translators: Spoken status after deleting one or many conversations.
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:866
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:869
 #, python-format
 msgid "Deleted %d conversation."
 msgstr "Видалено %d розмову."
 
 #. Translators: AI-Hub conversation history dialog: brief status feedback (speech/braille), not a full dialog.
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:869
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:872
 #, python-format
 msgid "Deleted %d conversations."
 msgstr "Видалено %d розмов."
 
 #. Translators: Spoken message when no empty conversations match delete-empty action.
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:879
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:882
 msgid "No empty conversations to delete."
 msgstr "Немає порожніх розмов для видалення."
 
 #. Translators: AI-Hub conversation history dialog: brief status feedback (speech/braille), not a full dialog.
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:885
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:888
 #, python-format
 msgid "Delete all %d empty conversations? This cannot be undone."
 msgstr "Видалити всі порожні розмови (%d)? Це неможливо скасувати."
 
 #. Translators: AI-Hub conversation history dialog: brief status feedback (speech/braille), not a full dialog.
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:887
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:890
 msgid "Delete empty conversations"
 msgstr "Видалити порожні розмови"
 
 #. Translators: Fallback message when no API key is configured.
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:908
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:911
 msgid "No API key provided"
 msgstr "Ключ API не надано"
 
@@ -1507,7 +1481,7 @@ msgstr "Помічник [архівна гілка]:"
 
 #. Translators: Text in model/account selection UI and model context menus.
 #: addon\globalPlugins\AIHub\filehandlers.py:180
-#: addon\globalPlugins\AIHub\modelhandlers_impl.py:255
+#: addon\globalPlugins\AIHub\modelhandlers_impl.py:232
 msgid "image"
 msgstr "зображення"
 
@@ -1660,7 +1634,7 @@ msgstr "Отримання знімків екрана увімкнено"
 
 #. Translators: AI-Hub conversation — message history area: brief status feedback (speech/braille), not a full dialog.
 #: addon\globalPlugins\AIHub\historyhandlers.py:89
-#: addon\globalPlugins\AIHub\historyhandlers.py:552
+#: addon\globalPlugins\AIHub\historyhandlers.py:553
 msgid "No message selected."
 msgstr "Повідомлення не вибрано."
 
@@ -1668,7 +1642,7 @@ msgstr "Повідомлення не вибрано."
 #. Translators: AI-Hub conversation — message history area: entry in a context menu or submenu.
 #. Translators: Text in message/conversation properties output.
 #: addon\globalPlugins\AIHub\historyhandlers.py:94
-#: addon\globalPlugins\AIHub\historyhandlers.py:776
+#: addon\globalPlugins\AIHub\historyhandlers.py:777
 #: addon\globalPlugins\AIHub\propertiesutils.py:147
 msgid "Message properties"
 msgstr "Властивості повідомлення"
@@ -1781,257 +1755,257 @@ msgstr ""
 "гілку», щоб скасувати."
 
 #. Translators: AI-Hub conversation — message history area: brief status feedback (speech/braille), not a full dialog.
-#: addon\globalPlugins\AIHub\historyhandlers.py:563
+#: addon\globalPlugins\AIHub\historyhandlers.py:564
 msgid "Regenerating response..."
 msgstr "Відновлення відповіді..."
 
 #. Translators: AI-Hub conversation — message history area: brief status feedback (speech/braille), not a full dialog.
-#: addon\globalPlugins\AIHub\historyhandlers.py:572
+#: addon\globalPlugins\AIHub\historyhandlers.py:573
 msgid "No archived branch to restore."
 msgstr "Немає заархівованої гілки для відновлення."
 
 #. Translators: AI-Hub conversation — message history area: brief status feedback (speech/braille), not a full dialog.
-#: addon\globalPlugins\AIHub\historyhandlers.py:577
+#: addon\globalPlugins\AIHub\historyhandlers.py:578
 msgid "Archived branch is no longer available."
 msgstr "Заархівована гілка більше недоступна."
 
 #. Translators: AI-Hub conversation — message history area: brief status feedback (speech/braille), not a full dialog.
-#: addon\globalPlugins\AIHub\historyhandlers.py:582
+#: addon\globalPlugins\AIHub\historyhandlers.py:583
 msgid "Previous branch restored."
 msgstr "Попередню гілку відновлено."
 
 #. Translators: AI-Hub conversation — message history area: brief status feedback (speech/braille), not a full dialog.
-#: addon\globalPlugins\AIHub\historyhandlers.py:624
+#: addon\globalPlugins\AIHub\historyhandlers.py:625
 msgid "Block deleted"
 msgstr "Блокування видалено"
 
 #. Translators: Text in history navigation and context-menu messages.
-#: addon\globalPlugins\AIHub\historyhandlers.py:659
+#: addon\globalPlugins\AIHub\historyhandlers.py:660
 msgid "Save history"
 msgstr "Зберегти історію"
 
 #. Translators: Text in history navigation and context-menu messages.
-#: addon\globalPlugins\AIHub\historyhandlers.py:662
+#: addon\globalPlugins\AIHub\historyhandlers.py:663
 msgid "Text file"
 msgstr "Текстовий файл"
 
 #. Translators: AI-Hub conversation — message history area: brief status feedback (speech/braille), not a full dialog.
-#: addon\globalPlugins\AIHub\historyhandlers.py:674
+#: addon\globalPlugins\AIHub\historyhandlers.py:675
 msgid "History saved"
 msgstr "Історію збережено"
 
 #. Translators: AI-Hub conversation — message history area: entry in a right-click or application context menu.
-#: addon\globalPlugins\AIHub\historyhandlers.py:680
+#: addon\globalPlugins\AIHub\historyhandlers.py:681
 msgid "Reset to default"
 msgstr "Скинути до початкових"
 
 #. Translators: AI-Hub conversation — message history area: entry in a context menu or submenu.
-#: addon\globalPlugins\AIHub\historyhandlers.py:698
+#: addon\globalPlugins\AIHub\historyhandlers.py:699
 msgid "&Play / Pause audio"
 msgstr "&Відтворити / Призупинити аудіо"
 
 #. Translators: AI-Hub conversation — message history area: entry in a context menu or submenu.
-#: addon\globalPlugins\AIHub\historyhandlers.py:702
+#: addon\globalPlugins\AIHub\historyhandlers.py:703
 msgid "S&top audio"
 msgstr "З&упинити аудіо"
 
 #. Translators: AI-Hub conversation — message history area: entry in a context menu or submenu.
-#: addon\globalPlugins\AIHub\historyhandlers.py:707
+#: addon\globalPlugins\AIHub\historyhandlers.py:708
 msgid "Show message in web view as formatted HTML"
 msgstr "Показати повідомлення у веб-перегляді як форматований HTML"
 
 #. Translators: AI-Hub conversation — message history area: entry in a context menu or submenu.
-#: addon\globalPlugins\AIHub\historyhandlers.py:711
+#: addon\globalPlugins\AIHub\historyhandlers.py:712
 msgid "Show message in web view as HTML source"
 msgstr "Показати повідомлення у веб-перегляді як джерело HTML"
 
 #. Translators: AI-Hub conversation — message history area: entry in a context menu or submenu.
-#: addon\globalPlugins\AIHub\historyhandlers.py:715
+#: addon\globalPlugins\AIHub\historyhandlers.py:716
 msgid "Copy message as plain text"
 msgstr "Копіювати повідомлення як звичайний текст"
 
 #. Translators: AI-Hub conversation — message history area: entry in a context menu or submenu.
-#: addon\globalPlugins\AIHub\historyhandlers.py:719
+#: addon\globalPlugins\AIHub\historyhandlers.py:720
 msgid "Copy message as formatted HTML"
 msgstr "Копіювати повідомлення як форматований HTML"
 
 #. Translators: AI-Hub conversation — message history area: entry in a context menu or submenu.
-#: addon\globalPlugins\AIHub\historyhandlers.py:723
+#: addon\globalPlugins\AIHub\historyhandlers.py:724
 msgid "Hide thinking in history"
 msgstr "Приховати «Міркування в історії»"
 
-#: addon\globalPlugins\AIHub\historyhandlers.py:723
+#: addon\globalPlugins\AIHub\historyhandlers.py:724
 msgid "Show thinking in history"
 msgstr "Показати міркування в історії"
 
 #. Translators: AI-Hub conversation — message history area: entry in a context menu or submenu.
-#: addon\globalPlugins\AIHub\historyhandlers.py:728
+#: addon\globalPlugins\AIHub\historyhandlers.py:729
 msgid "Copy response to system"
 msgstr "Копіювати відповідь до system"
 
 #. Translators: AI-Hub conversation — message history area: entry in a context menu or submenu.
-#: addon\globalPlugins\AIHub\historyhandlers.py:732
+#: addon\globalPlugins\AIHub\historyhandlers.py:733
 msgid "Copy prompt to prompt"
 msgstr "Копіювати запит до запиту"
 
 #. Translators: AI-Hub conversation — message history area: entry in a context menu or submenu.
-#: addon\globalPlugins\AIHub\historyhandlers.py:736
+#: addon\globalPlugins\AIHub\historyhandlers.py:737
 msgid "Regenerate response"
 msgstr "Відновити відповідь"
 
 #. Translators: AI-Hub conversation — message history area: entry in a context menu or submenu.
-#: addon\globalPlugins\AIHub\historyhandlers.py:747
+#: addon\globalPlugins\AIHub\historyhandlers.py:748
 #, python-format
 msgid "Restore previous branch (%d messages)"
 msgstr "Відновити попередню гілку (%d повідомленнь)"
 
 #. Translators: AI-Hub conversation — message history area: entry in a context menu or submenu.
-#: addon\globalPlugins\AIHub\historyhandlers.py:750
+#: addon\globalPlugins\AIHub\historyhandlers.py:751
 msgid "Restore previous branch"
 msgstr "Відновити попередню гілку"
 
 #. Translators: AI-Hub conversation — message history area: entry in a context menu or submenu.
-#: addon\globalPlugins\AIHub\historyhandlers.py:757
+#: addon\globalPlugins\AIHub\historyhandlers.py:758
 msgid "Delete block"
 msgstr "Видалити блок"
 
 #. Translators: AI-Hub conversation — message history area: entry in a context menu or submenu.
-#: addon\globalPlugins\AIHub\historyhandlers.py:761
+#: addon\globalPlugins\AIHub\historyhandlers.py:762
 msgid "Save history as text file"
 msgstr "Зберегти історію у текстовий файл"
 
 #. Translators: AI-Hub conversation — message history area: entry in a context menu or submenu.
-#: addon\globalPlugins\AIHub\historyhandlers.py:784
+#: addon\globalPlugins\AIHub\historyhandlers.py:785
 msgid "Say message"
 msgstr "Промовити повідомлення"
 
 #. Translators: AI-Hub conversation — message history area: entry in a context menu or submenu.
-#: addon\globalPlugins\AIHub\historyhandlers.py:788
+#: addon\globalPlugins\AIHub\historyhandlers.py:789
 msgid "Move to previous message"
 msgstr "Перейти до попереднього повідомлення"
 
 #. Translators: AI-Hub conversation — message history area: entry in a right-click or application context menu.
-#: addon\globalPlugins\AIHub\historyhandlers.py:792
+#: addon\globalPlugins\AIHub\historyhandlers.py:793
 msgid "Move to next message"
 msgstr "Перейти до наступного повідомлення"
 
 #. Translators: AI-Hub conversation — message history area: entry in a right-click or application context menu.
-#: addon\globalPlugins\AIHub\historyhandlers.py:796
+#: addon\globalPlugins\AIHub\historyhandlers.py:797
 msgid "Move to start of thinking block"
 msgstr "Перейти до початку блоку міркування"
 
 #. Translators: AI-Hub conversation — message history area: entry in a right-click or application context menu.
-#: addon\globalPlugins\AIHub\historyhandlers.py:800
+#: addon\globalPlugins\AIHub\historyhandlers.py:801
 msgid "Move to end of thinking block"
 msgstr "Перейти вкінець ьблоку міркування"
 
 #. Translators: AI-Hub conversation — message history area: entry in a right-click or application context menu.
-#: addon\globalPlugins\AIHub\historyhandlers.py:804
+#: addon\globalPlugins\AIHub\historyhandlers.py:805
 msgid "Move to beginning of content"
 msgstr "Перейти до початку вмісту"
 
 #. Translators: AI-Hub conversation — message history area: entry in a right-click or application context menu.
-#: addon\globalPlugins\AIHub\historyhandlers.py:808
+#: addon\globalPlugins\AIHub\historyhandlers.py:809
 msgid "Move to end of content"
 msgstr "Перейти вкінець вмісту"
 
 #. Translators: AI-Hub conversation — message history area: entry in a context menu or submenu.
-#: addon\globalPlugins\AIHub\historyhandlers.py:819
+#: addon\globalPlugins\AIHub\historyhandlers.py:820
 msgid "Dictate"
 msgstr "Диктуйте"
 
 #. Translators: AI-Hub conversation — message history area: entry in a context menu or submenu.
-#: addon\globalPlugins\AIHub\historyhandlers.py:824
+#: addon\globalPlugins\AIHub\historyhandlers.py:825
 msgid "Attach image from f&ile..."
 msgstr "Додати зображення з &файлу..."
 
 #. Translators: AI-Hub conversation — message history area: entry in a context menu or submenu.
-#: addon\globalPlugins\AIHub\historyhandlers.py:828
+#: addon\globalPlugins\AIHub\historyhandlers.py:829
 msgid "Attach image from &URL..."
 msgstr "Додати зображення з &URL..."
 
 #. Translators: AI-Hub conversation — message history area: entry in a context menu or submenu.
-#: addon\globalPlugins\AIHub\historyhandlers.py:832
+#: addon\globalPlugins\AIHub\historyhandlers.py:833
 msgid "Attach image from &screenshot"
 msgstr "Додати зображення зі &знімка екрана"
 
 #. Translators: AI-Hub conversation — message history area: entry in a context menu or submenu.
-#: addon\globalPlugins\AIHub\historyhandlers.py:836
+#: addon\globalPlugins\AIHub\historyhandlers.py:837
 msgid "Attach audio from f&ile..."
 msgstr "Додати аудіо з &файлу..."
 
 #. Translators: AI-Hub conversation — message history area: entry in a context menu or submenu.
-#: addon\globalPlugins\AIHub\historyhandlers.py:841
+#: addon\globalPlugins\AIHub\historyhandlers.py:842
 msgid "Paste (file or text)"
 msgstr "Вставити (файл або текст)"
 
 #. Translators: AI-Hub conversation — message history area: entry in a context menu or submenu.
-#: addon\globalPlugins\AIHub\historyhandlers.py:847
+#: addon\globalPlugins\AIHub\historyhandlers.py:848
 msgid "Insert previous prompt"
 msgstr "Вставити попередній запит"
 
 #. Translators: Text in model labels and capability descriptions.
-#: addon\globalPlugins\AIHub\model.py:144
-#: addon\globalPlugins\AIHub\model.py:164
-#: addon\globalPlugins\AIHub\model.py:172
-#: addon\globalPlugins\AIHub\model.py:190
-#: addon\globalPlugins\AIHub\model.py:201
+#: addon\globalPlugins\AIHub\model.py:186
+#: addon\globalPlugins\AIHub\model.py:206
+#: addon\globalPlugins\AIHub\model.py:214
+#: addon\globalPlugins\AIHub\model.py:235
+#: addon\globalPlugins\AIHub\model.py:246
 msgid "Low"
 msgstr "Низький"
 
 #. Translators: Text in model labels and capability descriptions.
-#: addon\globalPlugins\AIHub\model.py:146
-#: addon\globalPlugins\AIHub\model.py:174
-#: addon\globalPlugins\AIHub\model.py:192
-#: addon\globalPlugins\AIHub\model.py:203
+#: addon\globalPlugins\AIHub\model.py:188
+#: addon\globalPlugins\AIHub\model.py:216
+#: addon\globalPlugins\AIHub\model.py:237
+#: addon\globalPlugins\AIHub\model.py:248
 msgid "Medium"
 msgstr "Середній"
 
 #. Translators: Text in model labels and capability descriptions.
-#: addon\globalPlugins\AIHub\model.py:148
-#: addon\globalPlugins\AIHub\model.py:166
-#: addon\globalPlugins\AIHub\model.py:176
-#: addon\globalPlugins\AIHub\model.py:182
-#: addon\globalPlugins\AIHub\model.py:194
-#: addon\globalPlugins\AIHub\model.py:205
+#: addon\globalPlugins\AIHub\model.py:190
+#: addon\globalPlugins\AIHub\model.py:208
+#: addon\globalPlugins\AIHub\model.py:218
+#: addon\globalPlugins\AIHub\model.py:224
+#: addon\globalPlugins\AIHub\model.py:239
+#: addon\globalPlugins\AIHub\model.py:250
 msgid "High"
 msgstr "Високий"
 
 #. Translators: Text in model labels and capability descriptions.
-#: addon\globalPlugins\AIHub\model.py:150
+#: addon\globalPlugins\AIHub\model.py:192
 msgid "Extra high"
 msgstr "Дуже високий"
 
 #. Translators: Text in model labels and capability descriptions.
-#: addon\globalPlugins\AIHub\model.py:152
+#: addon\globalPlugins\AIHub\model.py:194
 msgid "Maximum"
 msgstr "Максимальний"
 
 #. Translators: Text in model labels and capability descriptions.
-#: addon\globalPlugins\AIHub\model.py:199
+#: addon\globalPlugins\AIHub\model.py:244
 msgid "Minimal"
 msgstr "Мінімальний"
 
 #. Translators: Text in model labels and capability descriptions.
-#: addon\globalPlugins\AIHub\model.py:223
+#: addon\globalPlugins\AIHub\model.py:268
 #, python-brace-format
 msgid "provider: {provider}"
 msgstr "постачальник: {provider}"
 
 #. Translators: Text in model labels and capability descriptions.
-#: addon\globalPlugins\AIHub\model.py:227
+#: addon\globalPlugins\AIHub\model.py:272
 #, python-brace-format
 msgid "ID: {id}"
 msgstr "ID: {id}"
 
 #. Translators: Text in model labels and capability descriptions.
-#: addon\globalPlugins\AIHub\model.py:230
+#: addon\globalPlugins\AIHub\model.py:275
 #, python-brace-format
 msgid "context window: {contextWindow}"
 msgstr "контекстне вікно: {contextWindow}"
 
 #. Translators: Text in model labels and capability descriptions.
-#: addon\globalPlugins\AIHub\model.py:233
+#: addon\globalPlugins\AIHub\model.py:278
 #, python-brace-format
 msgid "max output tokens: {maxOutputToken}"
 msgstr "максимальна кількість вихідних токенів:  {maxOutputToken}"
@@ -2127,176 +2101,218 @@ msgstr "Веб пошук"
 #. Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
 #. Translators: Text in model/account selection UI and model context menus.
 #: addon\globalPlugins\AIHub\modeldetailsutils.py:159
-#: addon\globalPlugins\AIHub\modelhandlers_impl.py:267
+#: addon\globalPlugins\AIHub\modelhandlers_impl.py:244
+msgid "X search"
+msgstr "X пошук"
+
+#. Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
+#: addon\globalPlugins\AIHub\modeldetailsutils.py:162
+msgid "Code interpreter"
+msgstr "Інтерпретатор коду"
+
+#. Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
+#: addon\globalPlugins\AIHub\modeldetailsutils.py:165
+msgid "Collections search"
+msgstr "Пошук колекцій"
+
+#. Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
+#. Translators: Text in model/account selection UI and model context menus.
+#: addon\globalPlugins\AIHub\modeldetailsutils.py:168
+#: addon\globalPlugins\AIHub\modelhandlers_impl.py:253
 msgid "OpenRouter web search"
 msgstr "Веб пошук OpenRouter"
 
 #. Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
-#: addon\globalPlugins\AIHub\modeldetailsutils.py:163
+#: addon\globalPlugins\AIHub\modeldetailsutils.py:172
 msgid "Capabilities and parameters"
 msgstr "Можливості та параметри"
 
 #. Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
-#: addon\globalPlugins\AIHub\modeldetailsutils.py:166
+#: addon\globalPlugins\AIHub\modeldetailsutils.py:175
 msgid "Capabilities"
 msgstr "Можливості"
 
 #. Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
-#: addon\globalPlugins\AIHub\modeldetailsutils.py:169
+#: addon\globalPlugins\AIHub\modeldetailsutils.py:178
 msgid "Supported parameters"
 msgstr "Підтримувані параметри"
 
 #. Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
-#: addon\globalPlugins\AIHub\modeldetailsutils.py:171
+#: addon\globalPlugins\AIHub\modeldetailsutils.py:180
 msgid "none"
 msgstr "немає"
 
 #. Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
-#: addon\globalPlugins\AIHub\modeldetailsutils.py:179
+#: addon\globalPlugins\AIHub\modeldetailsutils.py:188
 msgid "Description"
 msgstr "Опис"
 
 #. Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
-#: addon\globalPlugins\AIHub\modeldetailsutils.py:187
+#: addon\globalPlugins\AIHub\modeldetailsutils.py:196
 msgid "Pricing"
 msgstr "Ціноутворення"
 
 #. Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
-#: addon\globalPlugins\AIHub\modeldetailsutils.py:192
+#: addon\globalPlugins\AIHub\modeldetailsutils.py:201
 msgid "Input tokens"
 msgstr "Токени введення"
 
 #. Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
-#: addon\globalPlugins\AIHub\modeldetailsutils.py:194
+#: addon\globalPlugins\AIHub\modeldetailsutils.py:203
 msgid "Output tokens"
 msgstr "Токени виводу"
 
 #. Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
-#: addon\globalPlugins\AIHub\modeldetailsutils.py:196
+#: addon\globalPlugins\AIHub\modeldetailsutils.py:205
 msgid "Input cache read"
 msgstr "Читання кешу Введення"
 
 #. Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
-#: addon\globalPlugins\AIHub\modeldetailsutils.py:198
+#: addon\globalPlugins\AIHub\modeldetailsutils.py:207
 msgid "Input cache write"
 msgstr "Запис у кеш введення"
 
 #. Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
-#: addon\globalPlugins\AIHub\modeldetailsutils.py:200
+#: addon\globalPlugins\AIHub\modeldetailsutils.py:209
 msgid "Audio tokens"
 msgstr "Аудіо токени"
 
 #. Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
-#: addon\globalPlugins\AIHub\modeldetailsutils.py:202
+#: addon\globalPlugins\AIHub\modeldetailsutils.py:211
 msgid "Image"
 msgstr "Зображення"
 
 #. Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
-#: addon\globalPlugins\AIHub\modeldetailsutils.py:204
+#: addon\globalPlugins\AIHub\modeldetailsutils.py:213
 msgid "Request"
 msgstr "Запит"
 
 #. Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
-#: addon\globalPlugins\AIHub\modeldetailsutils.py:231
+#: addon\globalPlugins\AIHub\modeldetailsutils.py:240
 msgid "Additional information"
 msgstr "Додаткова інформація"
 
 #. Translators: Error message shown when no account is selected.
-#: addon\globalPlugins\AIHub\modelhandlers_impl.py:122
+#: addon\globalPlugins\AIHub\modelhandlers_impl.py:99
 msgid "Please select an account."
 msgstr "Виберіть обліковий запис."
 
 #. Translators: Error message shown when no model is selected.
-#: addon\globalPlugins\AIHub\modelhandlers_impl.py:201
+#: addon\globalPlugins\AIHub\modelhandlers_impl.py:178
 msgid "Please select a model."
 msgstr "Будь ласка, виберіть модель."
 
 #. Translators: Capability tags shown in model list labels.
-#: addon\globalPlugins\AIHub\modelhandlers_impl.py:252
+#: addon\globalPlugins\AIHub\modelhandlers_impl.py:229
 msgid "text"
 msgstr "текст"
 
 #. Translators: Text in model/account selection UI and model context menus.
-#: addon\globalPlugins\AIHub\modelhandlers_impl.py:258
+#: addon\globalPlugins\AIHub\modelhandlers_impl.py:235
 msgid "audio"
 msgstr "аудіо"
 
 #. Translators: Text in model/account selection UI and model context menus.
-#: addon\globalPlugins\AIHub\modelhandlers_impl.py:261
+#: addon\globalPlugins\AIHub\modelhandlers_impl.py:238
 msgid "reasoning"
 msgstr "міркування"
 
 #. Translators: Text in model/account selection UI and model context menus.
-#: addon\globalPlugins\AIHub\modelhandlers_impl.py:264
+#: addon\globalPlugins\AIHub\modelhandlers_impl.py:241
 msgid "web search"
 msgstr "веб пошук"
 
+#. Translators: Text in model/account selection UI and model context menus.
+#: addon\globalPlugins\AIHub\modelhandlers_impl.py:247
+msgid "code interpreter"
+msgstr "інтерпретатор коду"
+
+#. Translators: Text in model/account selection UI and model context menus.
+#: addon\globalPlugins\AIHub\modelhandlers_impl.py:250
+msgid "collections search"
+msgstr "пошук колекцій"
+
+#. Translators: Reasoning combo box choice: turn model thinking off.
+#: addon\globalPlugins\AIHub\modelhandlers_impl.py:375
+msgid "Disabled"
+msgstr "Вимкнено"
+
+#. Translators: Reasoning combo box choice: thinking on (model has no effort levels).
+#: addon\globalPlugins\AIHub\modelhandlers_impl.py:382
+msgid "Enabled"
+msgstr "Увімкнено"
+
+#. Translators: Reasoning combo box choice: Anthropic adaptive thinking.
+#: addon\globalPlugins\AIHub\modelhandlers_impl.py:385
+msgid "Adaptive"
+msgstr "Адаптивнивне"
+
 #. Translators: Title for the browseable model details view.
-#: addon\globalPlugins\AIHub\modelhandlers_impl.py:514
+#: addon\globalPlugins\AIHub\modelhandlers_impl.py:608
 msgid "Model details"
 msgstr "Деталі моделі"
 
 #. Translators: Context-menu item for opening model details.
-#: addon\globalPlugins\AIHub\modelhandlers_impl.py:571
+#: addon\globalPlugins\AIHub\modelhandlers_impl.py:665
 msgid "Show model &details"
 msgstr "Показати деталі &моделі"
 
 #. Translators: Context-menu item labels to favorite/unfavorite a model.
-#: addon\globalPlugins\AIHub\modelhandlers_impl.py:576
+#: addon\globalPlugins\AIHub\modelhandlers_impl.py:670
 msgid "Add to &favorites"
 msgstr "Додати в &обране"
 
-#: addon\globalPlugins\AIHub\modelhandlers_impl.py:576
+#: addon\globalPlugins\AIHub\modelhandlers_impl.py:670
 msgid "Remove from &favorites"
 msgstr "Видалити з &обраного"
 
 #. Translators: Text in model/account selection UI and model context menus.
-#: addon\globalPlugins\AIHub\modelhandlers_impl.py:585
+#: addon\globalPlugins\AIHub\modelhandlers_impl.py:679
 msgid "Most recent first"
 msgstr "Спочатку найновіші"
 
 #. Translators: Text in model/account selection UI and model context menus.
-#: addon\globalPlugins\AIHub\modelhandlers_impl.py:587
+#: addon\globalPlugins\AIHub\modelhandlers_impl.py:681
 msgid "Oldest first"
 msgstr "Спочатку найстаріші"
 
 #. Translators: Text in model/account selection UI and model context menus.
-#: addon\globalPlugins\AIHub\modelhandlers_impl.py:589
+#: addon\globalPlugins\AIHub\modelhandlers_impl.py:683
 msgid "Name (A–Z)"
 msgstr "Назва (За зростанням)"
 
 #. Translators: Text in model/account selection UI and model context menus.
-#: addon\globalPlugins\AIHub\modelhandlers_impl.py:591
+#: addon\globalPlugins\AIHub\modelhandlers_impl.py:685
 msgid "Name (Z–A)"
 msgstr "Назва (За спаданням)"
 
 #. Translators: Text in model/account selection UI and model context menus.
-#: addon\globalPlugins\AIHub\modelhandlers_impl.py:593
+#: addon\globalPlugins\AIHub\modelhandlers_impl.py:687
 msgid "Context window (largest first)"
 msgstr "Контекстне вікно (спочатку найбільше)"
 
 #. Translators: Text in model/account selection UI and model context menus.
-#: addon\globalPlugins\AIHub\modelhandlers_impl.py:595
+#: addon\globalPlugins\AIHub\modelhandlers_impl.py:689
 msgid "Context window (smallest first)"
 msgstr "Контекстне вікно (спочатку найменше)"
 
 #. Translators: Text in model/account selection UI and model context menus.
-#: addon\globalPlugins\AIHub\modelhandlers_impl.py:597
+#: addon\globalPlugins\AIHub\modelhandlers_impl.py:691
 msgid "Max output tokens (highest first)"
 msgstr "Макс токенів виводу (спочатку найвищий)"
 
 #. Translators: AI-Hub conversation — model list: entry in a context menu or submenu.
-#: addon\globalPlugins\AIHub\modelhandlers_impl.py:599
+#: addon\globalPlugins\AIHub\modelhandlers_impl.py:693
 msgid "Max output tokens (lowest first)"
 msgstr "Макс токенів виводу (спочатку найнижчий)"
 
 #. Translators: Submenu label for model sort options.
-#: addon\globalPlugins\AIHub\modelhandlers_impl.py:609
+#: addon\globalPlugins\AIHub\modelhandlers_impl.py:703
 msgid "&Sort by"
 msgstr "&Сортувати за"
 
 #. Translators: Context-menu item to refresh provider model list.
-#: addon\globalPlugins\AIHub\modelhandlers_impl.py:613
+#: addon\globalPlugins\AIHub\modelhandlers_impl.py:707
 msgid "&Refresh model list"
 msgstr "&Оновити список моделей"
 
@@ -3747,6 +3763,21 @@ msgstr ""
 "власні кінцеві точки, сумісні з OpenAI, та локальні моделі Ollama, а також "
 "інструменти конкретних постачальників, такі як TTS, OCR та перетворення "
 "мовлення в текст."
+
+#~ msgid "Generation"
+#~ msgstr "Генерація"
+
+#~ msgid "&Reasoning mode"
+#~ msgstr "&Режим міркування"
+
+#~ msgid "&Web search"
+#~ msgstr "&Веб пошук"
+
+#~ msgid "OpenRouter &web search"
+#~ msgstr "&Веб пошук OpenRouter"
+
+#~ msgid "Reasoning &effort:"
+#~ msgstr "Міркування та зусилля:"
 
 #~ msgid ""
 #~ "Google's chat-completions endpoint does not accept binary documents. "
