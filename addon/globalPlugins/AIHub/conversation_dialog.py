@@ -356,9 +356,9 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 			if hasattr(self, "debugModeCheckBox"):
 				st["debug"] = self.debugModeCheckBox.IsChecked()
 			if self._effective_advanced_mode():
-				if "temperature" in model.supportedParameters and hasattr(self, "temperatureSpinCtrl"):
+				if model.allows_request_parameter("temperature") and hasattr(self, "temperatureSpinCtrl"):
 					st["temperature"] = self.temperatureSpinCtrl.GetValue()
-				if "top_p" in model.supportedParameters and hasattr(self, "topPSpinCtrl"):
+				if model.allows_request_parameter("top_p") and hasattr(self, "topPSpinCtrl"):
 					st["topP"] = self.topPSpinCtrl.GetValue()
 				if hasattr(self, "advancedSeedSpinCtrl"):
 					st["advancedSeed"] = self.advancedSeedSpinCtrl.GetValue()
@@ -399,12 +399,12 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 			except Exception:
 				pass
 		if self._effective_advanced_mode() and model:
-			if "temperature" in model.supportedParameters and "temperature" in st and hasattr(self, "temperatureSpinCtrl"):
+			if model.allows_request_parameter("temperature") and "temperature" in st and hasattr(self, "temperatureSpinCtrl"):
 				try:
 					self.temperatureSpinCtrl.SetValue(int(st["temperature"]))
 				except Exception:
 					pass
-			if "top_p" in model.supportedParameters and "topP" in st and hasattr(self, "topPSpinCtrl"):
+			if model.allows_request_parameter("top_p") and "topP" in st and hasattr(self, "topPSpinCtrl"):
 				try:
 					self.topPSpinCtrl.SetValue(int(st["topP"]))
 				except Exception:

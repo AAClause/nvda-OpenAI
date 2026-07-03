@@ -19,7 +19,11 @@ from __future__ import annotations
 
 from typing import Any
 
-from .anthropicthinking import anthropic_reasoning_always_on, get_anthropic_thinking_profile
+from .anthropicthinking import (
+	anthropic_reasoning_always_on,
+	get_anthropic_thinking_profile,
+	resolve_anthropic_reasoning_request,
+)
 from .consts import Provider, ReasoningEffort
 
 # Providers whose chat-completions body accepts top-level ``reasoning_effort``.
@@ -166,49 +170,6 @@ def _mistral_effort(effort: str) -> str:
 	return "high"
 
 
-def _apply_anthropic_reasoning_enabled(
-	params: dict[str, Any],
-	model,
-	effort: str,
-	*,
-	mode: str,
-	effort_value: str | None,
-) -> None:
-	"""Map UI combo selection to Anthropic thinking + effort per official docs.
-
-	- Opus/Sonnet 4.6 effort levels: ``adaptive`` + ``output_config.effort`` (effort
-	  replaces deprecated ``budget_tokens``; the two are not cumulative).
-	- Opus/Sonnet 4.6 "Adaptive": ``adaptive`` only (omit effort; Claude decides).
-	- Opus 4.7+/Fable/Mythos: ``adaptive`` + effort (adaptive-only models).
-	- Opus 4.5 and older manual-thinking models: ``enabled`` + ``budget_tokens``,
-	  with effort sent alongside when the model supports it.
-	"""
-	params["reasoning_enabled"] = True
-	profile = get_anthropic_thinking_profile(model.id)
-	adaptive_choice = bool(profile.get("adaptive_choice_visible"))
-	adaptive_only = bool(profile.get("adaptive_only"))
-	effort_to_send = effort_value if effort_value is not None else effort
-
-	if mode == "adaptive":
-		params["adaptive_thinking"] = True
-		return
-
-	if adaptive_choice and mode == "enabled" and effort_to_send:
-		params["adaptive_thinking"] = True
-		params["reasoning_effort"] = effort_to_send
-		return
-
-	if adaptive_only:
-		params["adaptive_thinking"] = True
-		if effort_to_send and profile.get("effort_supported"):
-			params["reasoning_effort"] = effort_to_send
-		return
-
-	params["adaptive_thinking"] = False
-	if profile.get("effort_supported") and effort_to_send:
-		params["reasoning_effort"] = effort_to_send
-
-
 def apply_reasoning_enabled(
 	params: dict[str, Any],
 	model,
@@ -226,8 +187,10 @@ def apply_reasoning_enabled(
 			mode, effort_value, _label = reasoning_selection
 		elif conf.get("adaptiveThinking") and getattr(model, "adaptive_choice_visible", False):
 			mode = "adaptive"
-		_apply_anthropic_reasoning_enabled(
-			params, model, effort, mode=mode, effort_value=effort_value
+		params.update(
+			resolve_anthropic_reasoning_request(
+				model.id, mode, effort, effort_value=effort_value
+			)
 		)
 		return
 	effort_use = effort
