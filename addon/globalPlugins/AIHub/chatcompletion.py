@@ -580,7 +580,7 @@ class CompletionThread(threading.Thread):
 			block.displayHeader = False
 			block.lastLen = 0
 			block.lastReasoningLen = 0
-			block._caretReassertedAtEnd = False
+			block._assistantCaretPositioned = False
 			block.thinkingWrapState = ""
 			block.usage = None
 			block.timing = {"startedAt": time.time()}

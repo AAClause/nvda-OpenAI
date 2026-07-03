@@ -1591,6 +1591,10 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		return block, "response"
 
 	def _restoreHistoryAnchor(self, block, part="response"):
+		# During active streaming the user may be reading elsewhere; re-renders must not
+		# repeatedly pull the caret back to the assistant reply.
+		if block and block is self.lastBlock and not block.responseTerminated:
+			return
 		if not block:
 			if self.firstBlock and self.firstBlock.segmentPrompt is not None:
 				self.messagesTextCtrl.SetInsertionPoint(self.firstBlock.segmentPrompt.start)
@@ -2235,9 +2239,7 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 					# Translators: Prefix shown before assistant response in streaming history updates.
 					block.segmentResponseLabel = TextSegment(self.messagesTextCtrl, _("Assistant:") + ' ', block)
 					block.displayHeader = False
-					# Position the caret just after the "Assistant:" label synchronously, before the
-					# first token is appended, so the latest reply reads from the start of its content.
-					self._move_caret_to_assistant_content_impl(block)
+					self._position_assistant_reply_start(block)
 			l = len(block.responseText)
 			if block.lastLen == 0 and l > 0:
 				block.responseText = block.responseText.lstrip()
@@ -2257,20 +2259,7 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 				else:
 					block.segmentResponse.appendText(newText)
 				if first_assistant_content:
-					ip_after_label = None
-					lbl = getattr(block, "segmentResponseLabel", None)
-					if lbl is not None:
-						try:
-							ip_after_label = int(lbl.end)
-						except Exception:
-							ip_after_label = None
-					if ip_after_label is None and block.segmentResponse is not None:
-						try:
-							ip_after_label = int(block.segmentResponse.start)
-						except Exception:
-							pass
-					self._move_caret_to_assistant_content(block)
-					self._schedule_focus_message_history_on_assistant_response(ip_after_label)
+					self._position_assistant_reply_start(block)
 			reasoning_len = len(block.reasoningText or "")
 			last_reasoning_len = getattr(block, "lastReasoningLen", 0)
 			if self._showThinkingInHistory and reasoning_len > last_reasoning_len:
@@ -2309,16 +2298,6 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 				if anchor_block is None:
 					anchor_block, anchor_part = block, "response"
 				self._rerenderMessages(anchor_block=anchor_block, anchor_part=anchor_part)
-			# Re-assert the caret once after the response is fully rendered: end-of-stream
-			# re-renders above can recreate segments and move the caret, which previously left
-			# the caret on the prior reply for every prompt after the first.
-			if (
-				block.responseTerminated
-				and (block.responseText or "").strip()
-				and not getattr(block, "_caretReassertedAtEnd", False)
-			):
-				block._caretReassertedAtEnd = True
-				self._move_caret_to_assistant_content(block)
 
 	def addEntry(self, accelEntries, modifiers, key, func):
 		id_ = wx.Window.NewControlId()
@@ -2516,21 +2495,15 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 				pass
 		return None
 
-	def _move_caret_to_assistant_content(self, block):
-		"""Always place the messages caret at the start of ``block``'s assistant content.
+	def _position_assistant_reply_start(self, block):
+		"""Place the caret once at the start of ``block``'s assistant reply (stream or not).
 
-		Independent of the ``focusHistoryOnAssistantResponse`` setting: this only moves the
-		insertion point (caret) so the next time the user enters the history field they land on
-		the latest reply. It never steals focus.
+		Runs synchronously when the "Assistant:" label exists, or on first content if the
+		label path was skipped (e.g. regenerate). Optionally focuses the history field once
+		when ``focusHistoryOnAssistantResponse`` is enabled. Never repeats for the same block.
 		"""
-		if block is None:
+		if block is None or getattr(block, "_assistantCaretPositioned", False):
 			return
-		try:
-			wx.CallAfter(self._move_caret_to_assistant_content_impl, block)
-		except Exception:
-			pass
-
-	def _move_caret_to_assistant_content_impl(self, block):
 		try:
 			if not self.IsShown():
 				return
@@ -2542,22 +2515,20 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		try:
 			msgs = self.messagesTextCtrl
 			text_len = len(msgs.GetValue())
-			if 0 <= ip <= text_len:
-				msgs.SetInsertionPoint(ip)
-		except Exception:
-			pass
-
-	def _schedule_focus_message_history_on_assistant_response(self, insertion_point_after_label=None):
-		"""If the setting is on, focus Messages and place the caret after the ``Assistant:`` label (first content token)."""
-		try:
-			if not (self.conf.get("chatFeedback") or {}).get("focusHistoryOnAssistantResponse", False):
+			if not (0 <= ip <= text_len):
 				return
-			wx.CallAfter(self._focus_message_history_control_impl, insertion_point_after_label)
+			msgs.SetInsertionPoint(ip)
+			block._assistantCaretPositioned = True
+			if (self.conf.get("chatFeedback") or {}).get("focusHistoryOnAssistantResponse", False):
+				try:
+					wx.CallAfter(self._focus_message_history_on_assistant_response, ip)
+				except Exception:
+					pass
 		except Exception:
 			pass
 
-	def _focus_message_history_control_impl(self, insertion_point_after_label=None):
-		"""``insertion_point_after_label`` is ``TextSegment.end`` for ``segmentResponseLabel`` (after translated prefix)."""
+	def _focus_message_history_on_assistant_response(self, insertion_point):
+		"""Focus Messages and place the caret at ``insertion_point`` (once per reply)."""
 		try:
 			if not self.IsShown():
 				return
@@ -2568,11 +2539,10 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		try:
 			msgs = self.messagesTextCtrl
 			msgs.SetFocus()
-			if insertion_point_after_label is not None:
-				ip = int(insertion_point_after_label)
-				text_len = len(msgs.GetValue())
-				if 0 <= ip <= text_len:
-					msgs.SetInsertionPoint(ip)
+			ip = int(insertion_point)
+			text_len = len(msgs.GetValue())
+			if 0 <= ip <= text_len:
+				msgs.SetInsertionPoint(ip)
 		except Exception:
 			pass
 
