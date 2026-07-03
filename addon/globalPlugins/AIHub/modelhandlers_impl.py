@@ -360,9 +360,9 @@ class ModelHandlersMixin:
 		"enabled" entries when the model exposes effort levels (folded into this one combo),
 		otherwise None. Fewer than 2 entries means the combo stays hidden.
 
-		On Opus/Sonnet 4.6, effort entries map to adaptive thinking + effort (not
-		``budget_tokens``). On Opus 4.5 and older, effort works alongside manual
-		``budget_tokens``. "Adaptive" on 4.6 omits effort so Claude decides.
+		On adaptive-choice models (Opus/Sonnet 4.6/5), effort entries map to adaptive
+		thinking + effort (not ``budget_tokens``). On Opus 4.5 and older, effort
+		works alongside manual ``budget_tokens``. "Adaptive" omits effort so Claude decides.
 		"""
 		if not getattr(model, "reasoning", False):
 			return []
@@ -519,7 +519,7 @@ class ModelHandlersMixin:
 			self._generation_chrome.update_for_model(model)
 
 		if self._effective_advanced_mode():
-			if "temperature" in supported:
+			if model.allows_request_parameter("temperature"):
 				self._set_labeled_visibility(self.temperatureLabel, self.temperatureSpinCtrl, True)
 				self.temperatureSpinCtrl.SetRange(0, int(model.maxTemperature * 100))
 				key_temperature = "temperature_%s" % model.id
@@ -529,11 +529,11 @@ class ModelHandlersMixin:
 					self.temperatureSpinCtrl.SetValue(int(model.defaultTemperature * 100))
 			else:
 				self._set_labeled_visibility(self.temperatureLabel, self.temperatureSpinCtrl, False)
-			if "top_p" in supported:
+			if model.allows_request_parameter("top_p"):
 				self._set_labeled_visibility(self.topPLabel, self.topPSpinCtrl, True)
 			else:
 				self._set_labeled_visibility(self.topPLabel, self.topPSpinCtrl, False)
-			if "seed" in supported:
+			if model.allows_request_parameter("seed"):
 				self._set_labeled_visibility(self.advancedSeedLabel, self.advancedSeedSpinCtrl, True)
 				key_seed = "seed_%s" % model.id
 				if key_seed in self.data:
@@ -545,7 +545,7 @@ class ModelHandlersMixin:
 					self.advancedSeedSpinCtrl.SetValue(-1)
 			else:
 				self._set_labeled_visibility(self.advancedSeedLabel, self.advancedSeedSpinCtrl, False)
-			if "top_k" in supported:
+			if model.allows_request_parameter("top_k"):
 				self._set_labeled_visibility(self.advancedTopKLabel, self.advancedTopKSpinCtrl, True)
 				key_tk = "top_k_%s" % model.id
 				if key_tk in self.data:
@@ -557,7 +557,7 @@ class ModelHandlersMixin:
 					self.advancedTopKSpinCtrl.SetValue(0)
 			else:
 				self._set_labeled_visibility(self.advancedTopKLabel, self.advancedTopKSpinCtrl, False)
-			if "stop" in supported:
+			if model.allows_request_parameter("stop"):
 				self._set_labeled_visibility(self.advancedStopLabel, self.advancedStopTextCtrl, True)
 				key_stop = "stop_%s" % model.id
 				if key_stop in self.data:
@@ -566,7 +566,7 @@ class ModelHandlersMixin:
 					self.advancedStopTextCtrl.SetValue("")
 			else:
 				self._set_labeled_visibility(self.advancedStopLabel, self.advancedStopTextCtrl, False)
-			if "frequency_penalty" in supported:
+			if model.allows_request_parameter("frequency_penalty"):
 				self._set_labeled_visibility(self.advancedFreqPenaltyLabel, self.advancedFreqPenaltySpinCtrl, True)
 				key_fp = "frequency_penalty_%s" % model.id
 				if key_fp in self.data:
@@ -578,7 +578,7 @@ class ModelHandlersMixin:
 					self.advancedFreqPenaltySpinCtrl.SetValue(0)
 			else:
 				self._set_labeled_visibility(self.advancedFreqPenaltyLabel, self.advancedFreqPenaltySpinCtrl, False)
-			if "presence_penalty" in supported:
+			if model.allows_request_parameter("presence_penalty"):
 				self._set_labeled_visibility(self.advancedPresPenaltyLabel, self.advancedPresPenaltySpinCtrl, True)
 				key_pp = "presence_penalty_%s" % model.id
 				if key_pp in self.data:

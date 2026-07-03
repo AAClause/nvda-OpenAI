@@ -714,11 +714,11 @@ class CompletionThread(threading.Thread):
 			params["modalities"] = ["text", "audio"]
 			params["audio"] = {"voice": voice, "format": "wav"}
 		params_to_add = []
-		if "temperature" in model.supportedParameters:
+		if model.allows_request_parameter("temperature"):
 			params_to_add.append(("temperature", temperature))
-		if "top_p" in model.supportedParameters:
+		if model.allows_request_parameter("top_p"):
 			params_to_add.append(("top_p", topP))
-		if _advanced_on and "top_k" in model.supportedParameters and hasattr(wnd, "advancedTopKSpinCtrl"):
+		if _advanced_on and model.allows_request_parameter("top_k") and hasattr(wnd, "advancedTopKSpinCtrl"):
 			_tk = wnd.advancedTopKSpinCtrl.GetValue()
 			if _tk > 0:
 				params_to_add.append(("top_k", int(_tk)))
@@ -735,12 +735,12 @@ class CompletionThread(threading.Thread):
 			if k == "top_k":
 				data["top_k_%s" % model.id] = v
 		if _advanced_on:
-			if "seed" in model.supportedParameters and hasattr(wnd, "advancedSeedSpinCtrl"):
+			if model.allows_request_parameter("seed") and hasattr(wnd, "advancedSeedSpinCtrl"):
 				sv = wnd.advancedSeedSpinCtrl.GetValue()
 				if sv >= 0:
 					params["seed"] = int(sv)
 					data["seed_%s" % model.id] = int(sv)
-			if "stop" in model.supportedParameters and hasattr(wnd, "advancedStopTextCtrl"):
+			if model.allows_request_parameter("stop") and hasattr(wnd, "advancedStopTextCtrl"):
 				stops = _parse_stop_sequences(
 					wnd.advancedStopTextCtrl.GetValue(),
 					provider=model.provider,
@@ -748,11 +748,11 @@ class CompletionThread(threading.Thread):
 				if stops:
 					params["stop"] = stops
 					data["stop_%s" % model.id] = wnd.advancedStopTextCtrl.GetValue()
-			if "frequency_penalty" in model.supportedParameters and hasattr(wnd, "advancedFreqPenaltySpinCtrl"):
+			if model.allows_request_parameter("frequency_penalty") and hasattr(wnd, "advancedFreqPenaltySpinCtrl"):
 				fp = wnd.advancedFreqPenaltySpinCtrl.GetValue() / 100.0
 				params["frequency_penalty"] = fp
 				data["frequency_penalty_%s" % model.id] = wnd.advancedFreqPenaltySpinCtrl.GetValue()
-			if "presence_penalty" in model.supportedParameters and hasattr(wnd, "advancedPresPenaltySpinCtrl"):
+			if model.allows_request_parameter("presence_penalty") and hasattr(wnd, "advancedPresPenaltySpinCtrl"):
 				pp = wnd.advancedPresPenaltySpinCtrl.GetValue() / 100.0
 				params["presence_penalty"] = pp
 				data["presence_penalty_%s" % model.id] = wnd.advancedPresPenaltySpinCtrl.GetValue()

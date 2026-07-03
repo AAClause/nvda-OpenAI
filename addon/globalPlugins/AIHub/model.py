@@ -43,6 +43,7 @@ class Model:
 		audioOutput: bool = False,
 		created: int = 0,
 		parameterConflicts: list = None,
+		defaultParameters: dict | None = None,
 		**kwargs
 	):
 		self.provider = provider
@@ -64,6 +65,8 @@ class Model:
 		self.reasoningMandatory = bool(reasoningMandatory)
 		# Groups of mutually exclusive params, e.g. [["temperature", "top_p"]] from JSON
 		self.parameterConflicts = parameterConflicts if isinstance(parameterConflicts, list) else []
+		# SigmaNight ``default_parameters``: null means omit from API; numeric values are UI defaults.
+		self.defaultParameters = defaultParameters if isinstance(defaultParameters, dict) else {}
 
 	def _supported_param_set(self) -> set[str]:
 		return {
@@ -71,6 +74,36 @@ class Model:
 			for p in (self.supportedParameters or [])
 			if isinstance(p, str)
 		}
+
+	def allows_request_parameter(self, name: str) -> bool:
+		"""True when SigmaNight ``supported_parameters`` lists this API parameter.
+
+		``default_parameters`` with ``null`` documents fixed/omitted params when
+		they are absent from ``supported_parameters`` (Sonnet 5, Opus 4.7+). When
+		a param is both supported and null-default (Sonnet 4.6), it stays tunable.
+
+		Anthropic ``fixed_sampling`` profiles (Sonnet 5, Opus 4.7+, Fable/Mythos)
+		also block temperature/top_p/top_k even if stale metadata lists them.
+		"""
+		key = (name or "").lower()
+		if key not in self._supported_param_set():
+			return False
+		if (
+			self.provider == Provider.Anthropic
+			and key in ("temperature", "top_p", "top_k")
+		):
+			from .anthropicthinking import anthropic_fixed_sampling_model
+			if anthropic_fixed_sampling_model(self.id):
+				return False
+		return True
+
+	def metadata_default_for(self, name: str, fallback=None):
+		"""Return a default from ``default_parameters``, or ``fallback`` when unset/null."""
+		key = (name or "").lower()
+		if key not in self.defaultParameters:
+			return fallback
+		val = self.defaultParameters[key]
+		return fallback if val is None else val
 
 	@property
 	def supports_web_search(self):
@@ -161,9 +194,8 @@ class Model:
 		"""True when manual ``thinking.budget_tokens`` is the model's thinking control.
 
 		Only Anthropic models that use manual extended thinking expose a token
-		budget. Adaptive-only models (Opus 4.7+/Fable/Mythos) reject it, and on
-		the adaptive-choice models (Opus 4.6/Sonnet 4.6) ``budget_tokens`` is
-		deprecated in favour of effort, so we don't surface it there.
+		budget. Adaptive-choice models (Opus/Sonnet 4.6/5) and adaptive-only models
+		(Opus 4.7+/Fable/Mythos) reject ``budget_tokens``, so we don't surface it there.
 		"""
 		if self.provider != Provider.Anthropic or not self.reasoning:
 			return False
@@ -445,7 +477,7 @@ def _parse_model_obj(provider: str, model: dict) -> Model:
 	):
 		reasoning = False
 
-	exclude_keys_pre = {"id", "name", "description", "context_length", "top_provider", "parameter_conflicts"}
+	exclude_keys_pre = {"id", "name", "description", "context_length", "top_provider", "parameter_conflicts", "default_parameters"}
 	extra_info_pre = {k: v for k, v in model.items() if k not in exclude_keys_pre}
 	reasoning_mandatory = _detect_reasoning_mandatory(provider, model_id, extra_info_pre) if reasoning else False
 
@@ -463,7 +495,7 @@ def _parse_model_obj(provider: str, model: dict) -> Model:
 	except (TypeError, ValueError):
 		created = 0
 
-	exclude_keys = {"id", "name", "description", "context_length", "top_provider", "parameter_conflicts"}
+	exclude_keys = {"id", "name", "description", "context_length", "top_provider", "parameter_conflicts", "default_parameters"}
 	extra_info = {k: v for k, v in model.items() if k not in exclude_keys}
 
 	# Optional: groups of mutually exclusive params from model JSON, e.g. [["temperature", "top_p"]]
@@ -473,6 +505,17 @@ def _parse_model_obj(provider: str, model: dict) -> Model:
 	else:
 		param_conflicts = []
 
+	raw_defaults = model.get("default_parameters")
+	default_parameters: dict[str, object] = {}
+	if isinstance(raw_defaults, dict):
+		for key, val in raw_defaults.items():
+			if isinstance(key, str):
+				default_parameters[key.lower()] = val
+	default_temperature = 0.7
+	temp_default = default_parameters.get("temperature")
+	if isinstance(temp_default, (int, float)):
+		default_temperature = float(temp_default)
+
 	return Model(
 		provider=provider,
 		id_=model.get("id", ""),
@@ -481,7 +524,7 @@ def _parse_model_obj(provider: str, model: dict) -> Model:
 		contextWindow=context_length,
 		maxOutputToken=max_completion,
 		maxTemperature=2.0,
-		defaultTemperature=0.7,
+		defaultTemperature=default_temperature,
 		vision=vision,
 		preview="-preview" in model.get("id", ""),
 		supportedParameters=supported,
@@ -492,6 +535,7 @@ def _parse_model_obj(provider: str, model: dict) -> Model:
 		audioOutput=audio_output,
 		created=created,
 		parameterConflicts=param_conflicts,
+		defaultParameters=default_parameters,
 	)
 
 

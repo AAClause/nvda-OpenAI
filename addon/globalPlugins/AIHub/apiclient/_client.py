@@ -16,7 +16,13 @@ import uuid
 from typing import Any, BinaryIO, Generator, Optional
 
 from .. import apikeymanager
-from ..anthropicthinking import get_anthropic_thinking_profile, normalize_effort, anthropic_reasoning_always_on
+from ..anthropicthinking import (
+	anthropic_fixed_sampling_model,
+	anthropic_reasoning_always_on,
+	anthropic_use_adaptive_thinking,
+	get_anthropic_thinking_profile,
+	normalize_effort,
+)
 from ..consts import BASE_URLs, Provider
 
 from ._content import (
@@ -363,12 +369,15 @@ class OpenAIClient:
 		# Anthropic API: temperature and top_p are mutually exclusive.
 		temp = kwargs.get("temperature")
 		top_p = kwargs.get("top_p")
+		top_k = kwargs.get("top_k")
+		if anthropic_fixed_sampling_model(model):
+			temp = top_p = top_k = None
 		if temp is not None:
 			body["temperature"] = temp
 		elif top_p is not None:
 			body["top_p"] = top_p
-		if kwargs.get("top_k") is not None:
-			body["top_k"] = kwargs["top_k"]
+		if top_k is not None:
+			body["top_k"] = top_k
 		stop_seq = _normalize_stop_sequences(kwargs.get("stop"))
 		if stop_seq:
 			body["stop_sequences"] = stop_seq
@@ -665,12 +674,8 @@ def _apply_anthropic_thinking(body: dict, model: str, kwargs: dict) -> None:
 	if not kwargs.get("reasoning_enabled"):
 		return
 	caps = get_anthropic_thinking_profile(model)
-	# Only use adaptive when explicitly requested (or on adaptive-only models).
-	# Do not default to True — manual ``budget_tokens`` and effort are separate
-	# controls on Opus 4.5 and must not be combined with adaptive on 4.6.
-	use_adaptive = bool(
-		caps.get("adaptive_only")
-		or kwargs.get("adaptive_thinking") is True
+	use_adaptive = anthropic_use_adaptive_thinking(
+		model, adaptive_thinking=kwargs.get("adaptive_thinking")
 	)
 	if use_adaptive:
 		body["thinking"] = {"type": "adaptive"}
