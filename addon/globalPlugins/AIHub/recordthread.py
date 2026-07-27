@@ -14,13 +14,13 @@ import gui
 from logHandler import log
 import addonHandler
 import api
-import brailleInput
 import controlTypes
 import queueHandler
 import speech
 import tones
 import core
 import ui
+from keyboardHandler import KeyboardInputGesture
 
 from . import apikeymanager
 from .apiclient import (
@@ -76,6 +76,7 @@ def transcribe_audio_file(path, conf, client=None):
 def retrieveTranscription(transcription):
 	if transcription and transcription.text:
 		obj = api.getFocusObject()
+		api.copyToClip(transcription.text)
 		if (
 			obj
 			and (
@@ -83,10 +84,9 @@ def retrieveTranscription(transcription):
 				or controlTypes.State.EDITABLE in obj.states
 			) and controlTypes.State.FOCUSED in obj.states
 		):
-			brailleInput.handler.sendChars(transcription.text)
+			KeyboardInputGesture.fromName("control+v").send()
 			queueHandler.queueFunction(queueHandler.eventQueue, speech.speakMessage, transcription.text)
 		else:
-			api.copyToClip(transcription.text)
 			# Translators: Text in recording thread status and error messages.
 			speech.speakMessage(_("Transcription copied to clipboard"))
 
