@@ -54,7 +54,8 @@ class AttachmentListUIMixin:
 			if focus_prompt_if_empty:
 				self.promptTextCtrl.SetFocus()
 			return
-		list_ctrl.SetItemState(0, wx.LIST_STATE_FOCUSED, wx.LIST_STATE_FOCUSED)
+		list_ctrl.SetFocus()
+		list_ctrl.Select(0)
 
 	def _list_ctrl_selected_indices(self, list_ctrl):
 		out = []
