@@ -19,6 +19,7 @@ from .apiclient._think_tags import (
 	_flush_think_chain,
 	_new_think_chain_states,
 )
+from .apiclient._usage import _normalize_usage, uncached_input_tokens
 from .consts import (
 	ContentType,
 	Provider,
@@ -375,9 +376,10 @@ class CompletionThread(threading.Thread):
 				return int(value or 0)
 			except (TypeError, ValueError):
 				return 0
+		usage = _normalize_usage(usage) or usage
 		normalized = {
-			"input_tokens": _to_int(usage.get("input_tokens")),
-			"output_tokens": _to_int(usage.get("output_tokens")),
+			"input_tokens": _to_int(usage.get("input_tokens")) or _to_int(usage.get("prompt_tokens")),
+			"output_tokens": _to_int(usage.get("output_tokens")) or _to_int(usage.get("completion_tokens")),
 			"total_tokens": _to_int(usage.get("total_tokens")),
 			"prompt_tokens": _to_int(usage.get("prompt_tokens")),
 			"completion_tokens": _to_int(usage.get("completion_tokens")),
@@ -442,16 +444,24 @@ class CompletionThread(threading.Thread):
 				return int(value or 0)
 			except (TypeError, ValueError):
 				return 0
-		input_tokens = _to_int(usage.get("input_tokens"))
-		output_tokens = _to_int(usage.get("output_tokens"))
+		input_tokens = _to_int(usage.get("input_tokens")) or _to_int(usage.get("prompt_tokens"))
+		output_tokens = _to_int(usage.get("output_tokens")) or _to_int(usage.get("completion_tokens"))
 		cached_read_tokens = _to_int(usage.get("cached_input_tokens"))
 		cache_write_tokens = _to_int(usage.get("cache_creation_input_tokens"))
 		audio_tokens = _to_int(usage.get("input_audio_tokens")) + _to_int(usage.get("output_audio_tokens"))
-		regular_input_tokens = max(0, input_tokens - cached_read_tokens - cache_write_tokens)
+		regular_input_tokens = uncached_input_tokens(
+			input_tokens, cached_read_tokens, cache_write_tokens
+		)
 		prompt_rate = _to_float(pricing.get("prompt"))
 		completion_rate = _to_float(pricing.get("completion"))
 		cache_read_rate = _to_float(pricing.get("input_cache_read"))
 		cache_write_rate = _to_float(pricing.get("input_cache_write"))
+		# Catalog entries often omit cache rates. Bill those tokens at the prompt
+		# rate rather than $0 after subtracting them from regular input.
+		if cache_read_rate <= 0:
+			cache_read_rate = prompt_rate
+		if cache_write_rate <= 0:
+			cache_write_rate = prompt_rate
 		audio_rate = _to_float(pricing.get("audio"))
 		request_rate = _to_float(pricing.get("request"))
 		cost = (

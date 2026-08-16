@@ -37,6 +37,33 @@ def _sum_int(container: Any, *keys: str) -> int:
 	return total
 
 
+def _sum_modality_token_counts(items: Any) -> int:
+	"""Sum ``tokenCount`` entries from Gemini-style modality breakdown lists."""
+	if not isinstance(items, list):
+		return 0
+	total = 0
+	for item in items:
+		if not isinstance(item, dict):
+			continue
+		total += _to_int(item.get("tokenCount") or item.get("token_count"))
+	return total
+
+
+def uncached_input_tokens(input_tokens: int, cached_read: int, cache_write: int) -> int:
+	"""Tokens billed at the regular prompt rate.
+
+	OpenAI, Gemini, DeepSeek, and Mistral report cache read/write as a subset of
+	``input_tokens``. Anthropic reports the three fields as a disjoint partition
+	(``input_tokens`` is only the uncached tail), so subtracting would drop the
+	uncached tokens when a cache write is larger than that tail.
+	"""
+	input_tokens = max(0, _to_int(input_tokens))
+	cache_tokens = max(0, _to_int(cached_read)) + max(0, _to_int(cache_write))
+	if cache_tokens > input_tokens:
+		return input_tokens
+	return max(0, input_tokens - cache_tokens)
+
+
 def _has_any_usage_signal(raw_usage: Any) -> bool:
 	"""True when a usage payload contains at least one concrete usage signal."""
 	if not isinstance(raw_usage, dict) or not raw_usage:
@@ -51,11 +78,14 @@ def _has_any_usage_signal(raw_usage: Any) -> bool:
 		"cached_input_tokens",
 		"cache_creation_input_tokens",
 		"cache_read_input_tokens",
+		"cache_write_tokens",
 		"prompt_cache_hit_tokens",
 		"prompt_cache_miss_tokens",
 		"cachedContentTokenCount",
 		"cached_content_token_count",
 		"total_cached_tokens",
+		"cacheTokensDetails",
+		"cache_tokens_details",
 		"input_audio_tokens",
 		"output_audio_tokens",
 		"input_token_count",
@@ -73,6 +103,7 @@ def _has_any_usage_signal(raw_usage: Any) -> bool:
 		"completion_tokens_details",
 		"input_tokens_details",
 		"output_tokens_details",
+		"cache_creation",
 	):
 		nested = raw_usage.get(nested_key)
 		if isinstance(nested, dict) and nested:
@@ -100,9 +131,6 @@ def _normalize_usage(usage: Any) -> dict:
 	)
 	input_tokens = _first_int(usage, "input_tokens", "input_token_count") or prompt_tokens
 	output_tokens = _first_int(usage, "output_tokens", "output_token_count") or completion_tokens
-	total_tokens = _first_int(usage, "total_tokens", "total_token_count", "totalTokenCount")
-	if total_tokens == 0 and (input_tokens or output_tokens):
-		total_tokens = input_tokens + output_tokens
 
 	reasoning_tokens = (
 		_to_int(usage.get("reasoning_tokens"))
@@ -112,21 +140,41 @@ def _normalize_usage(usage: Any) -> dict:
 		or _to_int(usage.get("thinking_tokens"))
 	)
 
+	cache_creation = usage.get("cache_creation") if isinstance(usage.get("cache_creation"), dict) else {}
 	cached_input_tokens = (
 		_to_int(prompt_tokens_details.get("cached_tokens"))
 		or _to_int(input_tokens_details.get("cached_tokens"))
 		or _to_int(prompt_tokens_details.get("cache_read_tokens"))
+		or _to_int(input_tokens_details.get("cache_read_tokens"))
 		or _to_int(usage.get("cached_input_tokens"))
 		or _to_int(usage.get("cache_read_input_tokens"))
+		or _to_int(usage.get("cache_read_tokens"))
 		or _to_int(usage.get("prompt_cache_hit_tokens"))  # DeepSeek
 		or _to_int(usage.get("cachedContentTokenCount"))  # Gemini generateContent
 		or _to_int(usage.get("cached_content_token_count"))
 		or _to_int(usage.get("total_cached_tokens"))
+		or _sum_modality_token_counts(usage.get("cacheTokensDetails"))
+		or _sum_modality_token_counts(usage.get("cache_tokens_details"))
 	)
 	cache_creation_input_tokens = (
 		_to_int(usage.get("cache_creation_input_tokens"))
+		or _sum_int(cache_creation, "ephemeral_5m_input_tokens", "ephemeral_1h_input_tokens")
 		or _to_int(prompt_tokens_details.get("cache_write_tokens"))
+		or _to_int(input_tokens_details.get("cache_write_tokens"))
+		or _to_int(usage.get("cache_write_tokens"))
 	)
+
+	# Anthropic reports cache read/write disjoint from input_tokens (the uncached
+	# tail). Fold them in so display, totals, and OpenAI-style pricing agree.
+	cache_extra = cached_input_tokens + cache_creation_input_tokens
+	if cache_extra > input_tokens:
+		input_tokens += cache_extra
+		if prompt_tokens < input_tokens:
+			prompt_tokens = input_tokens
+
+	total_tokens = _first_int(usage, "total_tokens", "total_token_count", "totalTokenCount")
+	if input_tokens or output_tokens:
+		total_tokens = max(total_tokens, input_tokens + output_tokens)
 
 	input_audio_tokens = (
 		_to_int(prompt_tokens_details.get("audio_tokens"))
@@ -227,8 +275,17 @@ def _merge_usage(base: dict, update: dict) -> dict:
 			continue
 		if ivalue:
 			merged[key] = ivalue
-	# Recompute total_tokens if components changed but the field is missing/stale.
+	# A later Anthropic chunk may repeat uncached input_tokens without cache
+	# fields. Fold disjoint cache counts back into the inclusive prompt total.
+	cached = _to_int(merged.get("cached_input_tokens"))
+	cache_write = _to_int(merged.get("cache_creation_input_tokens"))
 	in_tok = _to_int(merged.get("input_tokens")) or _to_int(merged.get("prompt_tokens"))
+	cache_extra = cached + cache_write
+	if cache_extra > in_tok:
+		in_tok += cache_extra
+		merged["input_tokens"] = in_tok
+		if _to_int(merged.get("prompt_tokens")) < in_tok:
+			merged["prompt_tokens"] = in_tok
 	out_tok = _to_int(merged.get("output_tokens")) or _to_int(merged.get("completion_tokens"))
 	if in_tok or out_tok:
 		merged["total_tokens"] = max(_to_int(merged.get("total_tokens")), in_tok + out_tok)
