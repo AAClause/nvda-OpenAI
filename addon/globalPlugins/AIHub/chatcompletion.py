@@ -781,7 +781,11 @@ class CompletionThread(threading.Thread):
 		_apply_code_interpreter_settings(params, model, wnd, provider)
 		_apply_collections_search_settings(params, model, wnd, provider)
 		if conf.get("promptCache", True):
-			from .promptcache import apply_prompt_cache, resolve_prompt_cache_key
+			from .promptcache import (
+				apply_prompt_cache,
+				cache_ttl_for_provider,
+				resolve_prompt_cache_key,
+			)
 
 			cache_page = page
 			if cache_page is None:
@@ -793,6 +797,7 @@ class CompletionThread(threading.Thread):
 					provider,
 					model.id,
 					resolve_prompt_cache_key(cache_page),
+					ttl=cache_ttl_for_provider(conf, provider),
 				)
 		if provider == Provider.xAI:
 			_apply_xai_include_settings(params, model, wnd, provider, useReasoning)

@@ -18,7 +18,14 @@ from typing import Any
 
 from .consts import Provider
 
-_ANTHROPIC_CACHE_CONTROL = {"type": "ephemeral"}
+PROMPT_CACHE_TTL_5M = "5m"
+PROMPT_CACHE_TTL_1H = "1h"
+PROMPT_CACHE_TTL_VALUES = (PROMPT_CACHE_TTL_5M, PROMPT_CACHE_TTL_1H)
+
+_PROMPT_CACHE_TTL_CONFIG_KEYS = {
+	Provider.Anthropic: "Anthropic",
+	Provider.OpenRouter: "OpenRouter",
+}
 
 _PROMPT_CACHE_KEY_PROVIDERS = frozenset({
 	Provider.OpenAI,
@@ -31,6 +38,37 @@ _PROMPT_CACHE_KEY_PROVIDERS = frozenset({
 def _is_openrouter_anthropic_model(model_id: str) -> bool:
 	mid = (model_id or "").lower()
 	return mid.startswith("anthropic/") or "claude" in mid
+
+
+def normalize_prompt_cache_ttl(value: Any) -> str:
+	"""Return ``5m`` or ``1h``. Unknown values become the 5-minute default."""
+	raw = str(value or "").strip().lower().replace(" ", "")
+	if raw in ("1h", "1hour", "hour", "60m", "3600", "3600s"):
+		return PROMPT_CACHE_TTL_1H
+	return PROMPT_CACHE_TTL_5M
+
+
+def cache_ttl_for_provider(conf: Any, provider: str) -> str:
+	"""Configured Anthropic-style cache TTL for ``provider``, else 5 minutes."""
+	key = _PROMPT_CACHE_TTL_CONFIG_KEYS.get(provider)
+	if not key or conf is None:
+		return PROMPT_CACHE_TTL_5M
+	try:
+		section = conf.get("promptCacheTtl")
+	except Exception:
+		section = None
+	if section is None:
+		return PROMPT_CACHE_TTL_5M
+	try:
+		return normalize_prompt_cache_ttl(section.get(key))
+	except Exception:
+		return PROMPT_CACHE_TTL_5M
+
+
+def _cache_control(ttl: str) -> dict:
+	# Always pin ttl. Anthropic's default is 5 minutes, but omitting the field
+	# has drifted in the past; OpenRouter documents both "5m" and "1h".
+	return {"type": "ephemeral", "ttl": normalize_prompt_cache_ttl(ttl)}
 
 
 def stored_file_id(attachment: Any, provider: str) -> str:
@@ -112,11 +150,18 @@ def clear_xai_state_after_history_splice(page: Any) -> None:
 		block = getattr(block, "next", None)
 
 
-def apply_prompt_cache(params: dict, provider: str, model_id: str, cache_key: str) -> None:
+def apply_prompt_cache(
+	params: dict,
+	provider: str,
+	model_id: str,
+	cache_key: str,
+	ttl: str = PROMPT_CACHE_TTL_5M,
+) -> None:
 	"""Mutate ``params`` with provider-native prompt-cache fields.
 
 	Google, DeepSeek, Ollama, and Custom OpenAI are left unchanged: implicit or
-	unknown backends, with no safe request field to send.
+	unknown backends, with no safe request field to send. Google TTL only exists
+	on explicit ``cachedContents`` objects, which this add-on does not create.
 	"""
 	if not isinstance(params, dict):
 		return
@@ -128,9 +173,9 @@ def apply_prompt_cache(params: dict, provider: str, model_id: str, cache_key: st
 	if provider == Provider.OpenRouter:
 		params["session_id"] = key
 		if _is_openrouter_anthropic_model(model_id):
-			params["cache_control"] = dict(_ANTHROPIC_CACHE_CONTROL)
+			params["cache_control"] = _cache_control(ttl)
 	elif provider == Provider.Anthropic:
-		params["cache_control"] = dict(_ANTHROPIC_CACHE_CONTROL)
+		params["cache_control"] = _cache_control(ttl)
 
 
 def resolve_prompt_cache_key(page: Any) -> str:

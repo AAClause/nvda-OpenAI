@@ -13,6 +13,7 @@ from .consts import (
 	TTS_MODELS,
 	TTS_VOICES,
 )
+from .promptcache import PROMPT_CACHE_TTL_VALUES
 
 addonHandler.initTranslation()
 
@@ -64,7 +65,29 @@ class AIHubSettingsPanel(gui.settingsDialogs.SettingsPanel):
 		# Translators: NVDA Preferences — AI-Hub category: Conversation section — send provider prompt-cache keys / cache_control when supported.
 		self.promptCache = wx.CheckBox(conversationBox, label=_("Enable &prompt caching when the provider supports it"))
 		self.promptCache.SetValue(conf.get("promptCache", True))
+		self.promptCache.Bind(wx.EVT_CHECKBOX, self.onPromptCache)
 		conversationGroup.addItem(self.promptCache)
+		cacheTtlHint = wx.StaticText(
+			conversationBox,
+			# Translators: NVDA Preferences — AI-Hub category: Conversation section — explains which providers honor cache duration.
+			label=_("Duration applies to Anthropic and to Claude models on OpenRouter. Other providers set the lifetime automatically."),
+		)
+		conversationGroup.addItem(cacheTtlHint)
+		# Translators: NVDA Preferences — AI-Hub category: Conversation section — Anthropic prompt-cache lifetime choice.
+		self.anthropicCacheTtl = conversationGroup.addLabeledControl(
+			_("Anthropic cache &duration:"),
+			wx.Choice,
+			choices=self._promptCacheTtlLabels(),
+		)
+		self._selectPromptCacheTtl(self.anthropicCacheTtl, conf.get("promptCacheTtl", {}).get("Anthropic"))
+		# Translators: NVDA Preferences — AI-Hub category: Conversation section — OpenRouter Claude prompt-cache lifetime choice.
+		self.openRouterCacheTtl = conversationGroup.addLabeledControl(
+			_("OpenRouter Claude cache d&uration:"),
+			wx.Choice,
+			choices=self._promptCacheTtlLabels(),
+		)
+		self._selectPromptCacheTtl(self.openRouterCacheTtl, conf.get("promptCacheTtl", {}).get("OpenRouter"))
+		self._enablePromptCacheTtlControls()
 
 		sHelper.addItem(conversationSizer)
 
@@ -309,6 +332,36 @@ class AIHubSettingsPanel(gui.settingsDialogs.SettingsPanel):
 		self.maxHeight.Enable(self.resize.GetValue())
 		self.quality.Enable(self.resize.GetValue())
 
+	def onPromptCache(self, evt):
+		self._enablePromptCacheTtlControls()
+
+	def _promptCacheTtlLabels(self):
+		return (
+			# Translators: NVDA Preferences — AI-Hub category: Conversation section — Anthropic/OpenRouter prompt-cache lifetime option.
+			_("5 minutes"),
+			# Translators: NVDA Preferences — AI-Hub category: Conversation section — Anthropic/OpenRouter prompt-cache lifetime option.
+			_("1 hour"),
+		)
+
+	def _selectPromptCacheTtl(self, choice, value):
+		raw = str(value or "").strip()
+		try:
+			idx = PROMPT_CACHE_TTL_VALUES.index(raw)
+		except ValueError:
+			idx = 0
+		choice.SetSelection(idx)
+
+	def _selectedPromptCacheTtl(self, choice):
+		idx = choice.GetSelection()
+		if 0 <= idx < len(PROMPT_CACHE_TTL_VALUES):
+			return PROMPT_CACHE_TTL_VALUES[idx]
+		return PROMPT_CACHE_TTL_VALUES[0]
+
+	def _enablePromptCacheTtlControls(self):
+		enabled = self.promptCache.GetValue()
+		self.anthropicCacheTtl.Enable(enabled)
+		self.openRouterCacheTtl.Enable(enabled)
+
 	def onTranscriptionProviderChange(self, evt):
 		idx = self.transcriptionProviderChoice.GetSelection()
 		is_whisper_cpp = idx == 0
@@ -337,6 +390,12 @@ class AIHubSettingsPanel(gui.settingsDialogs.SettingsPanel):
 		conf["saveSystem"] = self.saveSystem.GetValue()
 		conf["autoSaveConversation"] = self.autoSaveConversation.GetValue()
 		conf["promptCache"] = self.promptCache.GetValue()
+		ttl_section = conf.get("promptCacheTtl")
+		if ttl_section is None:
+			conf["promptCacheTtl"] = {}
+			ttl_section = conf["promptCacheTtl"]
+		ttl_section["Anthropic"] = self._selectedPromptCacheTtl(self.anthropicCacheTtl)
+		ttl_section["OpenRouter"] = self._selectedPromptCacheTtl(self.openRouterCacheTtl)
 		conf["TTSVoice"] = self.voiceList.GetString(self.voiceList.GetSelection())
 		conf["TTSModel"] = self.modelList.GetString(self.modelList.GetSelection())
 		conf["images"]["resize"] = self.resize.GetValue()

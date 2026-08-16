@@ -29,6 +29,10 @@ confSpecs = {
 	"saveSystem": "boolean(default=true)",
 	"autoSaveConversation": "boolean(default=True)",
 	"promptCache": "boolean(default=True)",
+	"promptCacheTtl": {
+		"Anthropic": 'option("5m", "1h", default="5m")',
+		"OpenRouter": 'option("5m", "1h", default="5m")',
+	},
 	"images": {
 		"maxHeight": "integer(min=0, default=720)",
 		"maxWidth": "integer(min=0, default=0)",
