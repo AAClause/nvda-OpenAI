@@ -145,12 +145,8 @@ def build_model_details_html(model):
 		# Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
 		capabilities.append(_("Audio output"))
 	if model.reasoning:
-		if getattr(model, "reasoning_always_on", False):
-			# Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
-			capabilities.append(_("Reasoning (required)"))
-		else:
-			# Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
-			capabilities.append(_("Reasoning"))
+		# Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
+		capabilities.append(_("Reasoning"))
 	if model.supports_web_search:
 		# Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
 		capabilities.append(_("Web search"))
@@ -179,8 +175,19 @@ def build_model_details_html(model):
 			# Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
 			", ".join(model.supportedParameters) if model.supportedParameters else _("none")
 		),
-		"</ul>",
 	])
+	if getattr(model, "reasoning", False):
+		if getattr(model, "reasoning_always_on", False):
+			# Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
+			_append_item(parts, _("Reasoning"), _("Required"))
+		else:
+			# Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
+			_append_item(parts, _("Reasoning"), _("Optional"))
+		effort_opts = list(getattr(model, "reasoning_effort_options", ()) or ())
+		if effort_opts:
+			# Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
+			_append_item(parts, _("Reasoning efforts"), ", ".join(label for _value, label in effort_opts))
+	parts.append("</ul>")
 
 	if model.description:
 		parts.extend([
@@ -231,7 +238,7 @@ def build_model_details_html(model):
 	extra = model.extraInfo if isinstance(model.extraInfo, dict) else {}
 	if extra:
 		extra = dict(extra)
-		for key in ("pricing", "created", "supported_parameters"):
+		for key in ("pricing", "created", "supported_parameters", "reasoning"):
 			extra.pop(key, None)
 		extra = _clean_value(extra) or {}
 	if extra:

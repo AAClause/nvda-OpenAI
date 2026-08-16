@@ -346,12 +346,6 @@ class CompletionThread(threading.Thread):
 
 		Returns True when reasoning is being requested (so the caller can
 		choose ``max_completion_tokens`` over ``max_tokens``).
-
-		Honoring the "Reasoning enabled" checkbox is provider-specific: most
-		APIs default to reasoning ON when the model supports it, so simply
-		omitting params would still bill us for reasoning tokens. We send the
-		appropriate disable signal whenever the official API exposes one.
-		See ``reasoningrequest`` for per-provider rules and doc links.
 		"""
 		model_supports_reasoning = bool(getattr(model, "reasoning", False))
 		if getattr(model, "reasoning_always_on", False):
@@ -758,17 +752,20 @@ class CompletionThread(threading.Thread):
 				data["presence_penalty_%s" % model.id] = wnd.advancedPresPenaltySpinCtrl.GetValue()
 		reasoningEnabled = wnd._reasoning_is_enabled(model)
 		useReasoning = self._configureReasoning(params, model, conf, reasoningEnabled, wnd=wnd)
+		provider = model.provider
 		if useReasoning and getattr(wnd, "_thinking_budget_active", None) and wnd._thinking_budget_active(model):
 			thinkingBudget = wnd.reasoningBudgetSpinCtrl.GetValue()
 			data["thinkingBudget_%s" % model.id] = thinkingBudget
 			if thinkingBudget and thinkingBudget > 0:
 				params["thinking_budget_tokens"] = thinkingBudget
+				if provider == Provider.OpenRouter:
+					reasoning_body = params.get("reasoning")
+					if not isinstance(reasoning_body, dict):
+						reasoning_body = {"enabled": True}
+						params["reasoning"] = reasoning_body
+					reasoning_body["max_tokens"] = int(thinkingBudget)
 		if maxTokens > 0:
 			params["max_completion_tokens" if useReasoning else "max_tokens"] = maxTokens
-		# Resolve the provider once up-front: it's needed both for provider-specific
-		# request shaping below AND for the error path further down (so it must be
-		# defined regardless of which optional branches fire).
-		provider = model.provider
 		_apply_web_search_settings(params, model, wnd, provider)
 		_apply_x_search_settings(params, model, wnd, provider)
 		_apply_code_interpreter_settings(params, model, wnd, provider)

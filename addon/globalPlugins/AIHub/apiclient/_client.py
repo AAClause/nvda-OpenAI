@@ -661,9 +661,11 @@ def _normalize_stop_sequences(stop_kw: Any) -> list[str]:
 def _apply_anthropic_thinking(body: dict, model: str, kwargs: dict) -> None:
 	"""Mutate ``body`` to enable Anthropic extended thinking when requested.
 
-	See https://platform.claude.com/docs/en/build-with-claude/adaptive-thinking
-	Opus 4.7+ and Fable/Mythos reject ``thinking.type: enabled``; those models
-	must use ``thinking.type: adaptive`` with ``output_config.effort``.
+	See https://platform.claude.com/docs/en/build-with-claude/thinking
+	Opus 5, Sonnet 5, Opus 4.7+ and Fable/Mythos reject ``thinking.type: enabled``;
+	those models must use ``thinking.type: adaptive`` with ``output_config.effort``.
+	Opus 5 accepts ``thinking.type: disabled`` only at effort ``high`` or below;
+	Disabled never sends an effort value.
 	"""
 	if kwargs.get("reasoning_disabled"):
 		# Omitting ``thinking`` also disables extended thinking; explicit disabled
@@ -706,12 +708,11 @@ def _apply_anthropic_thinking(body: dict, model: str, kwargs: dict) -> None:
 	# ``effort`` is optional soft guidance; when no effort is supplied (e.g. a pure
 	# Adaptive selection), omit ``output_config`` so Claude uses its default and
 	# decides on its own. https://platform.claude.com/docs/en/build-with-claude/adaptive-thinking
-	if caps.get("effort_supported") and kwargs.get("reasoning_effort"):
-		effort = normalize_effort(
-			kwargs.get("reasoning_effort"),
-			tuple(caps.get("effort_levels") or ()),
-			default="high",
-		)
+	if kwargs.get("reasoning_effort"):
+		allowed = tuple(caps.get("effort_levels") or ())
+		effort = kwargs.get("reasoning_effort")
+		if allowed:
+			effort = normalize_effort(effort, allowed, default="high")
 		body["output_config"] = {"effort": effort}
 
 

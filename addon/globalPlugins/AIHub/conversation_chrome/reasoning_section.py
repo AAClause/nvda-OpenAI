@@ -15,9 +15,6 @@ addonHandler.initTranslation()
 
 class ReasoningChromeSection(ChromeSection):
 	def build(self, sizer: wx.Sizer) -> None:
-		# Single combo for all reasoning configuration: disabled / effort levels (Low/Medium/
-		# High/...) / adaptive. Built per model and hidden when the model offers no real choice.
-		# No surrounding StaticBox: a lone combo does not warrant its own group.
 		self.dialog.reasoningModeRow = wx.Panel(self.parent)
 		mode_sz = wx.BoxSizer(wx.VERTICAL)
 		# Translators: Label for the combo box selecting reasoning (disabled/effort level/adaptive).
@@ -30,11 +27,9 @@ class ReasoningChromeSection(ChromeSection):
 		sizer.Add(self.dialog.reasoningModeRow, 0, wx.EXPAND, 0)
 		self._bind_preserve(self.dialog.reasoningModeChoice)
 
-		# Manual extended-thinking token budget (Anthropic models that use
-		# ``thinking.budget_tokens``). Shown only for those models; 0 = automatic.
 		self.dialog.reasoningBudgetRow = wx.Panel(self.parent)
 		budget_sz = wx.BoxSizer(wx.VERTICAL)
-		# Translators: Label for the Anthropic extended-thinking token budget spin control.
+		# Translators: Label for the thinking-budget spin control.
 		self.dialog.reasoningBudgetLabel = wx.StaticText(
 			self.dialog.reasoningBudgetRow, label=_("Thinking &budget (tokens, 0 = automatic):")
 		)
