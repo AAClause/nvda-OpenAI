@@ -3,6 +3,7 @@
 from datetime import datetime
 from html import escape
 import locale
+import re
 import addonHandler
 
 addonHandler.initTranslation()
@@ -103,6 +104,176 @@ def _append_item(parts, label, value):
 	formatted = _format_value(value)
 	if formatted is not None:
 		parts.append(_li(label, formatted))
+
+
+_SLUG_TOKEN_LABELS = {
+	"3d": "3D",
+	"ascii": "ASCII",
+	"html": "HTML",
+	"svg": "SVG",
+	"ui": "UI",
+}
+_SLUG_SPLIT_RE = re.compile(
+	r"agentic|android|categories|category|native|slides|godot|website|component|"
+	r"html|ascii|code|game|data|full|stack|web|apps|viz|art|dev|ui|svg|3d",
+	re.I,
+)
+
+
+def _humanize_slug(value):
+	raw = str(value or "").strip()
+	if not raw:
+		return ""
+	raw = re.sub(r"[()]+", " ", raw)
+	raw = raw.replace("_", " ").replace("-", " ")
+	parts = []
+	rest = raw
+	while rest:
+		if rest[0].isspace():
+			rest = rest.lstrip()
+			continue
+		match = _SLUG_SPLIT_RE.match(rest)
+		if match:
+			token = match.group(0).lower()
+			parts.append(_SLUG_TOKEN_LABELS.get(token, token))
+			rest = rest[match.end():]
+			continue
+		next_split = _SLUG_SPLIT_RE.search(rest)
+		chunk = rest[: next_split.start()] if next_split else rest
+		chunk = chunk.strip()
+		if chunk:
+			parts.append(_SLUG_TOKEN_LABELS.get(chunk.lower(), chunk))
+		rest = rest[next_split.start():] if next_split else ""
+	if not parts:
+		return raw
+	out = []
+	for part in parts:
+		if part in _SLUG_TOKEN_LABELS.values() or part.isupper():
+			out.append(part)
+		else:
+			out.append(part[:1].upper() + part[1:] if part else part)
+	return " ".join(out)
+
+
+def _aa_index_label(key):
+	labels = {
+		# Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
+		"intelligence_index": _("Intelligence index"),
+		# Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
+		"coding_index": _("Coding index"),
+		# Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
+		"agentic_index": _("Agentic index"),
+	}
+	return labels.get(key, _humanize_slug(key) or key)
+
+
+def _arena_type_label(arena):
+	key = str(arena or "").strip().lower()
+	if key == "agents":
+		# Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
+		return _("Agents")
+	if key == "models":
+		# Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
+		return _("Models")
+	return _humanize_slug(arena) or str(arena)
+
+
+def _format_percent(value):
+	try:
+		number = float(value)
+	except (TypeError, ValueError):
+		return None
+	return "%s%%" % _format_number(number, 1)
+
+
+def _append_design_arena(parts, rows):
+	if not isinstance(rows, list) or not rows:
+		return False
+	grouped = {}
+	for row in rows:
+		if not isinstance(row, dict):
+			continue
+		arena = str(row.get("arena") or "").strip().lower() or "_"
+		grouped.setdefault(arena, []).append(row)
+	if not grouped:
+		return False
+	added = False
+	arena_order = sorted(
+		grouped,
+		key=lambda name: (0 if name == "agents" else 1 if name == "models" else 2, name),
+	)
+	for arena in arena_order:
+		entries = grouped[arena]
+		entries.sort(key=lambda row: (row.get("rank") is None, row.get("rank") or 0, str(row.get("category") or "")))
+		if arena == "_":
+			# Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
+			heading = _("Design Arena")
+		else:
+			# Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report. {arena} is Agents or Models.
+			heading = _("Design Arena ({arena})").format(arena=_arena_type_label(arena))
+		parts.append("<h3>%s</h3>" % escape(heading))
+		parts.append("<ul>")
+		for row in entries:
+			category = _humanize_slug(row.get("category")) or str(row.get("category") or "").strip()
+			rank = row.get("rank")
+			elo = row.get("elo")
+			win = _format_percent(row.get("win_rate"))
+			bits = []
+			if isinstance(rank, (int, float)):
+				# Translators: AI-Hub model details (browseable HTML): rank of a model on a design-arena leaderboard.
+				bits.append(_("rank %s") % _format_number(int(rank)))
+			if isinstance(elo, (int, float)):
+				bits.append("Elo %s" % _format_number(int(elo)))
+			if win:
+				# Translators: AI-Hub model details (browseable HTML): win rate on a design-arena leaderboard.
+				bits.append(_("win rate %s") % win)
+			detail = ", ".join(bits)
+			if not category and not detail:
+				continue
+			if not category:
+				# Translators: AI-Hub model details (browseable HTML): fallback label when a design-arena row has no category name.
+				category = _("Category")
+			if detail:
+				parts.append(_li(category, detail))
+			else:
+				parts.append("<li>%s</li>" % escape(category))
+		parts.append("</ul>")
+		added = True
+	return added
+
+
+def _append_benchmarks_section(parts, benchmarks):
+	if not isinstance(benchmarks, dict):
+		return
+	aa = benchmarks.get("artificial_analysis")
+	aa_items = []
+	if isinstance(aa, dict):
+		for key, value in aa.items():
+			if isinstance(value, bool) or not isinstance(value, (int, float)):
+				formatted = _format_value(value)
+			else:
+				formatted = _format_number(value, 1 if isinstance(value, float) else None)
+			if formatted is None:
+				continue
+			aa_items.append((key, formatted))
+	arena_rows = benchmarks.get("design_arena")
+	has_arena = isinstance(arena_rows, list) and any(isinstance(row, dict) for row in arena_rows)
+	if not aa_items and not has_arena:
+		return
+	parts.extend([
+		# Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
+		"<h2>%s</h2>" % escape(_("Benchmarks")),
+	])
+	if aa_items:
+		parts.extend([
+			# Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
+			"<h3>%s</h3>" % escape(_("Artificial Analysis")),
+			"<ul>",
+		])
+		for key, formatted in aa_items:
+			parts.append(_li(_aa_index_label(key), formatted))
+		parts.append("</ul>")
+	_append_design_arena(parts, arena_rows)
 
 
 def build_model_details_html(model):
@@ -235,10 +406,13 @@ def build_model_details_html(model):
 					parts.append(_li(label, value))
 		parts.append("</ul>")
 
+	benchmarks = model.extraInfo.get("benchmarks") if isinstance(model.extraInfo, dict) else None
+	_append_benchmarks_section(parts, benchmarks)
+
 	extra = model.extraInfo if isinstance(model.extraInfo, dict) else {}
 	if extra:
 		extra = dict(extra)
-		for key in ("pricing", "created", "supported_parameters", "reasoning"):
+		for key in ("pricing", "created", "supported_parameters", "reasoning", "benchmarks"):
 			extra.pop(key, None)
 		extra = _clean_value(extra) or {}
 	if extra:
