@@ -1,18 +1,14 @@
-"""Provider-native reasoning request shaping and capability detection.
-
-Each provider documents different defaults; when thinking is optional we default
-the UI off and send an explicit disable signal so users are not billed for
-reasoning tokens they did not request.
+"""Provider-native reasoning request shaping and catalog capability detection.
 
 Official references:
-- Anthropic adaptive thinking: https://platform.claude.com/docs/en/build-with-claude/adaptive-thinking
-- OpenAI reasoning: https://developers.openai.com/api/docs/guides/reasoning
-- Gemini OpenAI compat: https://ai.google.dev/gemini-api/docs/openai
-- DeepSeek thinking: https://api-docs.deepseek.com/guides/thinking_mode
-- OpenRouter reasoning: https://openrouter.ai/docs/guides/best-practices/reasoning-tokens
-- Mistral reasoning: https://docs.mistral.ai/studio-api/conversations/reasoning
-- xAI reasoning: https://docs.x.ai/developers/model-capabilities/text/reasoning
-- Ollama OpenAI compat: https://docs.ollama.com/api/openai-compatibility (reasoning_effort)
+- Anthropic: https://platform.claude.com/docs/en/build-with-claude/effort
+- OpenAI: https://developers.openai.com/api/docs/guides/reasoning
+- Gemini: https://ai.google.dev/gemini-api/docs/thinking
+- DeepSeek: https://api-docs.deepseek.com/guides/thinking_mode
+- OpenRouter: https://openrouter.ai/docs/guides/best-practices/reasoning-tokens
+- Mistral: https://docs.mistral.ai/capabilities/reasoning
+- xAI: https://docs.x.ai/developers/model-capabilities/text/reasoning
+- Ollama: https://docs.ollama.com/api/openai-compatibility
 """
 
 from __future__ import annotations
@@ -21,13 +17,10 @@ from typing import Any
 
 from .anthropicthinking import (
 	anthropic_reasoning_always_on,
-	get_anthropic_thinking_profile,
 	resolve_anthropic_reasoning_request,
 )
-from .consts import Provider, ReasoningEffort
+from .consts import GATEWAY_EFFORT_ORDER, Provider, REASONING_EFFORT_NONE, ReasoningEffort
 
-# Providers whose chat-completions body accepts top-level ``reasoning_effort``.
-# xAI is handled explicitly: only grok-4.3 / grok-3-mini per xAI chat API docs.
 _REASONING_EFFORT_BODY_PROVIDERS = frozenset({
 	Provider.OpenAI,
 	Provider.CustomOpenAI,
@@ -35,26 +28,51 @@ _REASONING_EFFORT_BODY_PROVIDERS = frozenset({
 	Provider.Google,
 	Provider.Ollama,
 	Provider.DeepSeek,
+	Provider.xAI,
 })
+_GATEWAY_EFFORT_SET = frozenset(GATEWAY_EFFORT_ORDER)
 
 
 def _mid(model_id: str) -> str:
 	return (model_id or "").lower()
 
 
-def google_reasoning_mandatory(model_id: str) -> bool:
-	"""Gemini 2.5 Pro and Gemini 3 families cannot disable thinking."""
-	mid = _mid(model_id)
-	return "gemini-2.5-pro" in mid or "gemini-3" in mid
+def catalog_reasoning_meta(extra_info) -> dict:
+	"""Nested catalog ``reasoning`` object, or ``{}`` when absent."""
+	extra = extra_info if isinstance(extra_info, dict) else {}
+	meta = extra.get("reasoning")
+	return meta if isinstance(meta, dict) else {}
+
+
+def catalog_effort_values(meta: dict) -> tuple[str, ...] | None:
+	"""Ordered effort values excluding ``none``.
+
+	``None`` means the catalog omitted ``supported_efforts`` (no effort selector).
+	JSON ``null`` means all gateway values.
+	"""
+	if not meta or "supported_efforts" not in meta:
+		return None
+	raw = meta.get("supported_efforts")
+	if raw is None:
+		return GATEWAY_EFFORT_ORDER
+	if not isinstance(raw, list):
+		return None
+	seen: set[str] = set()
+	for item in raw:
+		if not isinstance(item, str):
+			continue
+		val = item.strip().lower()
+		if val == REASONING_EFFORT_NONE or val not in _GATEWAY_EFFORT_SET:
+			continue
+		seen.add(val)
+	return tuple(e for e in GATEWAY_EFFORT_ORDER if e in seen)
 
 
 def deepseek_reasoning_mandatory(model_id: str) -> bool:
-	mid = _mid(model_id)
-	return "reasoner" in mid
+	return "reasoner" in _mid(model_id)
 
 
 def deepseek_thinking_defaults_on(model_id: str) -> bool:
-	"""DeepSeek V4 thinking mode defaults to enabled; must send disabled explicitly."""
 	mid = _mid(model_id)
 	if deepseek_reasoning_mandatory(mid):
 		return True
@@ -62,29 +80,7 @@ def deepseek_thinking_defaults_on(model_id: str) -> bool:
 
 
 def ollama_reasoning_always_on(model_id: str) -> bool:
-	"""GPT-OSS on Ollama only accepts think levels, not full off."""
 	return "gpt-oss" in _mid(model_id)
-
-
-def xai_supports_reasoning_effort(model_id: str) -> bool:
-	"""Chat Completions ``reasoning_effort`` — grok-4.3 only (not grok-4.20+)."""
-	mid = _mid(model_id)
-	return "grok-4.3" in mid or "grok-3-mini" in mid
-
-
-def xai_reasoning_mandatory(model_id: str) -> bool:
-	"""grok-3-mini only documents low/high — no ``none`` disable."""
-	return "grok-3-mini" in _mid(model_id)
-
-
-def mistral_supports_reasoning_effort(model_id: str) -> bool:
-	mid = _mid(model_id)
-	return "mistral-small" in mid or "mistral-medium-3-5" in mid or "mistral-medium-3.5" in mid
-
-
-def mistral_reasoning_mandatory(model_id: str) -> bool:
-	"""Native magistral reasoning models always think."""
-	return "magistral" in _mid(model_id)
 
 
 def openai_reasoning_model(model_id: str) -> bool:
@@ -95,23 +91,136 @@ def openai_reasoning_model(model_id: str) -> bool:
 	return False
 
 
+def openai_fallback_efforts(model_id: str) -> tuple[str, ...]:
+	"""Official GPT-5.x / o-series effort lists when catalog metadata is absent.
+
+	https://developers.openai.com/api/docs/guides/reasoning
+	https://developers.openai.com/api/docs/models/gpt-5.4
+	https://developers.openai.com/api/docs/models/gpt-5.5
+	https://developers.openai.com/api/docs/models/gpt-5.6-sol
+	"""
+	mid = _mid(model_id)
+	if "gpt-5.6" in mid:
+		return (
+			ReasoningEffort.LOW.value,
+			ReasoningEffort.MEDIUM.value,
+			ReasoningEffort.HIGH.value,
+			ReasoningEffort.XHIGH.value,
+			ReasoningEffort.MAX.value,
+		)
+	if "gpt-5.5" in mid or "gpt-5.4" in mid:
+		return (
+			ReasoningEffort.LOW.value,
+			ReasoningEffort.MEDIUM.value,
+			ReasoningEffort.HIGH.value,
+			ReasoningEffort.XHIGH.value,
+		)
+	if "gpt-5" in mid:
+		return (
+			ReasoningEffort.MINIMAL.value,
+			ReasoningEffort.LOW.value,
+			ReasoningEffort.MEDIUM.value,
+			ReasoningEffort.HIGH.value,
+		)
+	if openai_reasoning_model(mid):
+		return (
+			ReasoningEffort.LOW.value,
+			ReasoningEffort.MEDIUM.value,
+			ReasoningEffort.HIGH.value,
+		)
+	return ()
+
+
+def openai_default_effort(model_id: str) -> str | None:
+	mid = _mid(model_id)
+	if "gpt-5.4" in mid:
+		return None
+	if "gpt-5.6" in mid or "gpt-5.5" in mid or "gpt-5" in mid:
+		return ReasoningEffort.MEDIUM.value
+	if openai_reasoning_model(mid):
+		return ReasoningEffort.MEDIUM.value
+	return None
+
+
+def openai_default_enabled(model_id: str) -> bool:
+	mid = _mid(model_id)
+	if "gpt-5.4" in mid:
+		return False
+	return openai_reasoning_model(mid)
+
+
+def xai_fallback_efforts(model_id: str) -> tuple[str, ...]:
+	"""Official Grok 4.x effort lists when catalog metadata is absent.
+
+	https://docs.x.ai/developers/model-capabilities/text/reasoning
+	"""
+	mid = _mid(model_id)
+	if "multi-agent" in mid:
+		return (
+			ReasoningEffort.LOW.value,
+			ReasoningEffort.MEDIUM.value,
+			ReasoningEffort.HIGH.value,
+			ReasoningEffort.XHIGH.value,
+		)
+	if "grok-4.20" in mid:
+		return ()
+	if "grok-4.6" in mid:
+		return (
+			ReasoningEffort.LOW.value,
+			ReasoningEffort.MEDIUM.value,
+			ReasoningEffort.HIGH.value,
+			ReasoningEffort.XHIGH.value,
+		)
+	if "grok-4.5" in mid:
+		return (
+			ReasoningEffort.LOW.value,
+			ReasoningEffort.MEDIUM.value,
+			ReasoningEffort.HIGH.value,
+		)
+	if "grok-4.3" in mid:
+		return (
+			ReasoningEffort.LOW.value,
+			ReasoningEffort.MEDIUM.value,
+			ReasoningEffort.HIGH.value,
+		)
+	return ()
+
+
+def xai_reasoning_mandatory(model_id: str) -> bool:
+	mid = _mid(model_id)
+	return "grok-4.6" in mid or "grok-4.5" in mid
+
+
+def xai_default_effort(model_id: str) -> str | None:
+	mid = _mid(model_id)
+	if "grok-4.6" in mid or "grok-4.5" in mid:
+		return ReasoningEffort.HIGH.value
+	if "grok-4.3" in mid:
+		return ReasoningEffort.LOW.value
+	return None
+
+
+def xai_default_enabled(model_id: str) -> bool:
+	if xai_reasoning_mandatory(model_id):
+		return True
+	return "grok-4.3" in _mid(model_id)
+
+
 def detect_reasoning_mandatory(provider: str, model_id: str, extra_info: dict) -> bool:
-	"""True when the upstream API always applies reasoning/thinking."""
 	extra = extra_info if isinstance(extra_info, dict) else {}
 	if extra.get("reasoning_mandatory") is True:
 		return True
+	meta = catalog_reasoning_meta(extra)
+	if meta and "mandatory" in meta:
+		return bool(meta["mandatory"])
 	if provider == Provider.Anthropic:
 		return anthropic_reasoning_always_on(model_id)
-	if provider == Provider.Google:
-		return google_reasoning_mandatory(model_id)
+	if provider == Provider.xAI:
+		return xai_reasoning_mandatory(model_id)
 	if provider == Provider.DeepSeek:
 		return deepseek_reasoning_mandatory(model_id)
 	if provider == Provider.Ollama:
 		return ollama_reasoning_always_on(model_id)
-	if provider == Provider.xAI:
-		return xai_reasoning_mandatory(model_id)
-	if provider == Provider.MistralAI:
-		return mistral_reasoning_mandatory(model_id)
 	return False
 
 
@@ -122,52 +231,50 @@ def supports_reasoning_disable(
 	*,
 	reasoning: bool,
 	reasoning_mandatory: bool,
+	extra_info: dict | None = None,
 ) -> bool:
-	"""True when we can send an explicit reasoning-off signal for this model."""
 	if not reasoning or reasoning_mandatory:
 		return False
+	meta = catalog_reasoning_meta(extra_info)
+	if meta:
+		if meta.get("mandatory") is True:
+			return False
+		if provider == Provider.xAI and "supported_efforts" not in meta:
+			return False
+		return True
 	if provider == Provider.Anthropic:
 		return True
+	if provider == Provider.xAI:
+		if xai_reasoning_mandatory(model_id):
+			return False
+		if "grok-4.20" in _mid(model_id) and "multi-agent" not in _mid(model_id):
+			return False
+		return "grok-4.3" in _mid(model_id) or "reasoning_effort" in supported_params
 	if provider == Provider.Ollama:
 		return not ollama_reasoning_always_on(model_id)
 	if provider == Provider.DeepSeek:
-		if reasoning_mandatory:
-			return False
 		return deepseek_thinking_defaults_on(model_id) or bool(
-			reasoning and supported_params & {"thinking", "reasoning"}
+			supported_params & {"thinking", "reasoning"}
 		)
-	if provider == Provider.Google:
-		return not google_reasoning_mandatory(model_id)
-	if provider == Provider.xAI:
-		return xai_supports_reasoning_effort(model_id) and not xai_reasoning_mandatory(model_id)
-	if provider == Provider.MistralAI:
-		return mistral_supports_reasoning_effort(model_id)
-	if provider == Provider.OpenRouter:
-		return "reasoning_effort" in supported_params
 	if provider in (Provider.OpenAI, Provider.CustomOpenAI):
 		return "reasoning_effort" in supported_params or openai_reasoning_model(model_id)
-	return "reasoning_effort" in supported_params
+	return "reasoning_effort" in supported_params or "reasoning" in supported_params
 
 
 def _deepseek_effort(effort: str) -> str:
-	# https://api-docs.deepseek.com/guides/thinking_mode — only high/max are native.
-	if effort in ("high", "max"):
+	if effort in ("low", "high", "max"):
 		return effort
+	if effort in ("medium", "xhigh"):
+		return "high"
 	return "high"
 
 
 def _ollama_effort(effort: str) -> str:
-	# Ollama OpenAI-compat maps high/medium/low; minimal -> low.
 	if effort in ("high", "medium", "low"):
 		return effort
 	if effort == ReasoningEffort.MINIMAL.value:
 		return "low"
 	return "medium"
-
-
-def _mistral_effort(effort: str) -> str:
-	# Adjustable Mistral models only document high vs none (none = off via checkbox).
-	return "high"
 
 
 def apply_reasoning_enabled(
@@ -179,7 +286,6 @@ def apply_reasoning_enabled(
 	*,
 	reasoning_selection: tuple[str, str | None, str] | None = None,
 ) -> None:
-	"""Send the provider-native reasoning-on signal."""
 	if provider == Provider.Anthropic:
 		mode = "enabled"
 		effort_value = None
@@ -193,37 +299,36 @@ def apply_reasoning_enabled(
 			)
 		)
 		return
-	effort_use = effort
-	if reasoning_selection and reasoning_selection[1]:
-		effort_use = reasoning_selection[1]
+	effort_use = reasoning_selection[1] if reasoning_selection is not None else effort
 	if provider == Provider.Ollama:
-		# OpenAI-compat /v1/chat/completions ignores ``think``; use reasoning_effort.
 		params["reasoning_effort"] = _ollama_effort(effort_use)
 		return
 	if provider == Provider.OpenRouter:
-		params["reasoning"] = {"enabled": True, "effort": effort_use}
+		body: dict[str, Any] = {"enabled": True}
+		if effort_use:
+			body["effort"] = effort_use
+		params["reasoning"] = body
 		return
 	if provider == Provider.DeepSeek:
 		if not getattr(model, "reasoning_mandatory", False):
 			params["thinking"] = {"type": "enabled"}
-		if "reasoning_effort" in model._supported_param_set():
+		if "reasoning_effort" in model._supported_param_set() or effort_use:
 			params["reasoning_effort"] = _deepseek_effort(effort_use)
 		return
-	if provider == Provider.MistralAI and mistral_supports_reasoning_effort(model.id):
-		params["reasoning_effort"] = _mistral_effort(effort_use)
+	if provider == Provider.MistralAI:
+		params["reasoning_effort"] = effort_use or "high"
 		return
 	if provider == Provider.xAI:
-		if xai_supports_reasoning_effort(model.id):
+		if effort_use:
 			params["reasoning_effort"] = effort_use
 		return
-	if getattr(model, "reasoning_mandatory", False):
+	if getattr(model, "reasoning_mandatory", False) and not effort_use:
 		return
-	if provider in _REASONING_EFFORT_BODY_PROVIDERS:
+	if provider in _REASONING_EFFORT_BODY_PROVIDERS and effort_use:
 		params["reasoning_effort"] = effort_use
 
 
 def apply_reasoning_disabled(params: dict[str, Any], model, provider: str) -> None:
-	"""Send the provider-native reasoning-off signal when supported."""
 	if not getattr(model, "reasoning", False):
 		return
 	if not getattr(model, "supports_reasoning_disable", False):
@@ -232,20 +337,10 @@ def apply_reasoning_disabled(params: dict[str, Any], model, provider: str) -> No
 		params["reasoning_disabled"] = True
 		return
 	if provider == Provider.OpenRouter:
-		params["reasoning"] = {"effort": "none"}
+		params["reasoning"] = {"effort": REASONING_EFFORT_NONE}
 		return
 	if provider == Provider.DeepSeek:
 		params["thinking"] = {"type": "disabled"}
 		return
-	if provider == Provider.Ollama:
-		params["reasoning_effort"] = "none"
-		return
-	if provider == Provider.MistralAI and mistral_supports_reasoning_effort(model.id):
-		params["reasoning_effort"] = "none"
-		return
-	if provider == Provider.xAI:
-		if xai_supports_reasoning_effort(model.id):
-			params["reasoning_effort"] = "none"
-		return
 	if provider in _REASONING_EFFORT_BODY_PROVIDERS:
-		params["reasoning_effort"] = "none"
+		params["reasoning_effort"] = REASONING_EFFORT_NONE

@@ -15,15 +15,17 @@ from __future__ import annotations
 from typing import Any, Dict, Iterable, Tuple
 
 _DEFAULT_EFFORT = ("low", "medium", "high")
+_EFFORT_WITH_XHIGH = ("low", "medium", "high", "xhigh", "max")
+_EFFORT_WITH_MAX = ("low", "medium", "high", "max")
 
-# Shared overrides for Claude Sonnet 5 and dated ``claude-sonnet-5-*`` snapshots.
-# Manual ``thinking.type: enabled`` returns 400; use adaptive + effort instead.
-# https://platform.claude.com/docs/en/about-claude/models/whats-new-sonnet-5
+# Claude Sonnet 5: adaptive only, thinking on by default, rejects ``thinking.type: enabled``.
+# https://platform.claude.com/docs/en/build-with-claude/thinking-troubleshooting
 _SONNET_5_PROFILE: Dict[str, object] = {
+	"adaptive_only": True,
 	"adaptive_supported": True,
-	"adaptive_choice_visible": True,
 	"effort_supported": True,
-	"effort_levels": ("low", "medium", "high", "xhigh", "max"),
+	"effort_levels": _EFFORT_WITH_XHIGH,
+	"thinking_default_on": True,
 	"thinking_display_omitted_default": True,
 	"fixed_sampling": True,
 }
@@ -41,6 +43,7 @@ _PROFILE_DEFAULTS: Dict[str, object] = {
 	"manual_thinking_supported": True,
 	"effort_supported": False,
 	"effort_levels": (),
+	"thinking_default_on": False,
 	"thinking_display_omitted_default": False,
 	# Anthropic Messages API rejects explicit temperature/top_p/top_k (omit entirely).
 	"fixed_sampling": False,
@@ -48,14 +51,25 @@ _PROFILE_DEFAULTS: Dict[str, object] = {
 
 # (match substring, profile overrides) — first match wins.
 _PROFILES: Tuple[Tuple[str, Dict[str, object]], ...] = (
-	# Adaptive-only: manual ``thinking.type: enabled`` returns 400.
+	(
+		"claude-opus-5",
+		{
+			"adaptive_only": True,
+			"adaptive_supported": True,
+			"effort_supported": True,
+			"effort_levels": _EFFORT_WITH_XHIGH,
+			"thinking_default_on": True,
+			"thinking_display_omitted_default": True,
+			"fixed_sampling": True,
+		},
+	),
 	(
 		"claude-opus-4-8",
 		{
 			"adaptive_only": True,
 			"adaptive_supported": True,
 			"effort_supported": True,
-			"effort_levels": ("low", "medium", "high", "xhigh", "max"),
+			"effort_levels": _EFFORT_WITH_XHIGH,
 			"thinking_display_omitted_default": True,
 			"fixed_sampling": True,
 		},
@@ -66,12 +80,11 @@ _PROFILES: Tuple[Tuple[str, Dict[str, object]], ...] = (
 			"adaptive_only": True,
 			"adaptive_supported": True,
 			"effort_supported": True,
-			"effort_levels": ("low", "medium", "high", "xhigh", "max"),
+			"effort_levels": _EFFORT_WITH_XHIGH,
 			"thinking_display_omitted_default": True,
 			"fixed_sampling": True,
 		},
 	),
-	# Thinking always on; adaptive is the only mode. Fable 5 supports xhigh.
 	(
 		"claude-fable-5",
 		{
@@ -79,12 +92,11 @@ _PROFILES: Tuple[Tuple[str, Dict[str, object]], ...] = (
 			"adaptive_supported": True,
 			"reasoning_always_on": True,
 			"effort_supported": True,
-			"effort_levels": ("low", "medium", "high", "xhigh", "max"),
+			"effort_levels": _EFFORT_WITH_XHIGH,
 			"thinking_display_omitted_default": True,
 			"fixed_sampling": True,
 		},
 	),
-	# Mythos Preview supports max but NOT xhigh (per the effort docs).
 	(
 		"claude-mythos-preview",
 		{
@@ -92,7 +104,7 @@ _PROFILES: Tuple[Tuple[str, Dict[str, object]], ...] = (
 			"adaptive_supported": True,
 			"reasoning_always_on": True,
 			"effort_supported": True,
-			"effort_levels": ("low", "medium", "high", "max"),
+			"effort_levels": _EFFORT_WITH_MAX,
 			"thinking_display_omitted_default": True,
 			"fixed_sampling": True,
 		},
@@ -104,12 +116,11 @@ _PROFILES: Tuple[Tuple[str, Dict[str, object]], ...] = (
 			"adaptive_supported": True,
 			"reasoning_always_on": True,
 			"effort_supported": True,
-			"effort_levels": ("low", "medium", "high", "xhigh", "max"),
+			"effort_levels": _EFFORT_WITH_XHIGH,
 			"thinking_display_omitted_default": True,
 			"fixed_sampling": True,
 		},
 	),
-	# Broader mythos/fable ids (e.g. dated snapshots) after exact 5.x ids.
 	(
 		"claude-mythos",
 		{
@@ -117,7 +128,7 @@ _PROFILES: Tuple[Tuple[str, Dict[str, object]], ...] = (
 			"adaptive_supported": True,
 			"reasoning_always_on": True,
 			"effort_supported": True,
-			"effort_levels": ("low", "medium", "high", "xhigh", "max"),
+			"effort_levels": _EFFORT_WITH_XHIGH,
 			"thinking_display_omitted_default": True,
 			"fixed_sampling": True,
 		},
@@ -129,21 +140,19 @@ _PROFILES: Tuple[Tuple[str, Dict[str, object]], ...] = (
 			"adaptive_supported": True,
 			"reasoning_always_on": True,
 			"effort_supported": True,
-			"effort_levels": ("low", "medium", "high", "xhigh", "max"),
+			"effort_levels": _EFFORT_WITH_XHIGH,
 			"thinking_display_omitted_default": True,
 			"fixed_sampling": True,
 		},
 	),
-	# Claude Sonnet 5 — before 4.6 so dated ids match the modern profile first.
 	("claude-sonnet-5", dict(_SONNET_5_PROFILE)),
-	# Adaptive recommended; manual budget_tokens deprecated (still accepted on 4.6).
 	(
 		"claude-opus-4-6",
 		{
 			"adaptive_supported": True,
 			"adaptive_choice_visible": True,
 			"effort_supported": True,
-			"effort_levels": ("low", "medium", "high", "max"),
+			"effort_levels": _EFFORT_WITH_MAX,
 		},
 	),
 	(
@@ -152,10 +161,9 @@ _PROFILES: Tuple[Tuple[str, Dict[str, object]], ...] = (
 			"adaptive_supported": True,
 			"adaptive_choice_visible": True,
 			"effort_supported": True,
-			"effort_levels": ("low", "medium", "high", "max"),
+			"effort_levels": _EFFORT_WITH_MAX,
 		},
 	),
-	# Opus 4.5: manual thinking (budget_tokens) with effort alongside it.
 	(
 		"claude-opus-4-5",
 		{
@@ -163,7 +171,6 @@ _PROFILES: Tuple[Tuple[str, Dict[str, object]], ...] = (
 			"effort_levels": _DEFAULT_EFFORT,
 		},
 	),
-	# Sonnet 4.5 and older: manual extended thinking only (no adaptive).
 	("claude-sonnet-4-5", {}),
 )
 
@@ -197,6 +204,12 @@ def anthropic_reasoning_always_on(model_id: str) -> bool:
 	return bool(get_anthropic_thinking_profile(model_id).get("reasoning_always_on"))
 
 
+def anthropic_thinking_default_on(model_id: str) -> bool:
+	"""True when the API enables thinking unless the request disables it."""
+	profile = get_anthropic_thinking_profile(model_id)
+	return bool(profile.get("reasoning_always_on") or profile.get("thinking_default_on"))
+
+
 def anthropic_fixed_sampling_model(model_id: str) -> bool:
 	"""True when Anthropic rejects explicit temperature/top_p/top_k (must omit).
 
@@ -227,32 +240,34 @@ def resolve_anthropic_reasoning_request(
 	Returns a dict with ``reasoning_enabled`` plus optional ``adaptive_thinking``
 	and ``reasoning_effort``. See official docs for mode mapping:
 
-	- **Adaptive-choice models** (Sonnet 4.6/5, Opus 4.6): effort levels use
-	  ``adaptive`` + ``output_config.effort``; pure Adaptive omits effort.
-	- **Adaptive-only models** (Opus 4.7+/Fable/Mythos): always ``adaptive`` + effort.
+	- **Adaptive-choice models** (Opus/Sonnet 4.6): effort uses ``adaptive`` +
+	  ``output_config.effort``; pure Adaptive omits effort.
+	- **Adaptive-only models** (Opus 5, Sonnet 5, Opus 4.7+/Fable/Mythos): always
+	  ``adaptive`` + effort. Never ``thinking.type: enabled``.
 	- **Legacy** (Opus 4.5, Sonnet 4.5, …): manual ``budget_tokens`` + optional effort.
 	"""
 	profile = get_anthropic_thinking_profile(model_id)
-	effort = effort_value if effort_value is not None else default_effort
+	effort = effort_value
 	out: Dict[str, Any] = {"reasoning_enabled": True}
 
 	if mode == "adaptive":
 		out["adaptive_thinking"] = True
 		return out
 
-	if profile.get("adaptive_choice_visible") and mode == "enabled" and effort:
+	if profile.get("adaptive_choice_visible") and mode == "enabled":
 		out["adaptive_thinking"] = True
-		out["reasoning_effort"] = effort
+		if effort:
+			out["reasoning_effort"] = effort
 		return out
 
 	if profile.get("adaptive_only"):
 		out["adaptive_thinking"] = True
-		if effort and profile.get("effort_supported"):
+		if effort:
 			out["reasoning_effort"] = effort
 		return out
 
 	out["adaptive_thinking"] = False
-	if profile.get("effort_supported") and effort:
+	if effort:
 		out["reasoning_effort"] = effort
 	return out
 

@@ -4,21 +4,44 @@ import urllib.error
 import addonHandler
 from logHandler import log
 from . import apikeymanager
-from .anthropicthinking import get_anthropic_thinking_profile
+from .anthropicthinking import anthropic_thinking_default_on, get_anthropic_thinking_profile
 from .reasoningrequest import (
+	catalog_effort_values,
+	catalog_reasoning_meta,
 	deepseek_thinking_defaults_on,
 	detect_reasoning_mandatory,
-	mistral_reasoning_mandatory,
-	mistral_supports_reasoning_effort,
+	openai_default_effort,
+	openai_default_enabled,
+	openai_fallback_efforts,
+	openai_reasoning_model,
 	supports_reasoning_disable as _supports_reasoning_disable,
+	xai_default_effort,
+	xai_default_enabled,
+	xai_fallback_efforts,
 	xai_reasoning_mandatory,
-	xai_supports_reasoning_effort,
 )
-from .consts import Provider, ReasoningEffort
+from .consts import Provider, REASONING_EFFORT_NONE, ReasoningEffort
 
 addonHandler.initTranslation()
 
 _models = {}
+
+
+def _reasoning_effort_labels() -> dict[str, str]:
+	return {
+		# Translators: Text in model labels and capability descriptions.
+		ReasoningEffort.MINIMAL.value: _("Minimal"),
+		# Translators: Text in model labels and capability descriptions.
+		ReasoningEffort.LOW.value: _("Low"),
+		# Translators: Text in model labels and capability descriptions.
+		ReasoningEffort.MEDIUM.value: _("Medium"),
+		# Translators: Text in model labels and capability descriptions.
+		ReasoningEffort.HIGH.value: _("High"),
+		# Translators: Text in model labels and capability descriptions.
+		ReasoningEffort.XHIGH.value: _("Extra high"),
+		# Translators: Text in model labels and capability descriptions.
+		ReasoningEffort.MAX.value: _("Maximum"),
+	}
 
 
 class Model:
@@ -155,7 +178,16 @@ class Model:
 		if bool(getattr(self, "reasoningMandatory", False)):
 			return True
 		extra = self.extraInfo if isinstance(self.extraInfo, dict) else {}
-		return extra.get("reasoning_mandatory") is True
+		if extra.get("reasoning_mandatory") is True:
+			return True
+		meta = catalog_reasoning_meta(extra)
+		if meta and "mandatory" in meta:
+			return bool(meta["mandatory"])
+		return False
+
+	@property
+	def catalog_reasoning(self) -> dict:
+		return catalog_reasoning_meta(self.extraInfo)
 
 	@property
 	def supports_reasoning_disable(self) -> bool:
@@ -166,6 +198,7 @@ class Model:
 			self._supported_param_set(),
 			reasoning=bool(self.reasoning),
 			reasoning_mandatory=bool(self.reasoning_mandatory),
+			extra_info=self.extraInfo if isinstance(self.extraInfo, dict) else {},
 		)
 
 	@property
@@ -191,96 +224,101 @@ class Model:
 
 	@property
 	def thinking_budget_supported(self):
-		"""True when manual ``thinking.budget_tokens`` is the model's thinking control.
-
-		Only Anthropic models that use manual extended thinking expose a token
-		budget. Adaptive-choice models (Opus/Sonnet 4.6/5) and adaptive-only models
-		(Opus 4.7+/Fable/Mythos) reject ``budget_tokens``, so we don't surface it there.
-		"""
-		if self.provider != Provider.Anthropic or not self.reasoning:
+		if not self.reasoning:
 			return False
-		profile = get_anthropic_thinking_profile(self.id)
-		return not (profile.get("adaptive_only") or profile.get("adaptive_choice_visible"))
+		if self.provider == Provider.Anthropic:
+			profile = get_anthropic_thinking_profile(self.id)
+			if profile.get("adaptive_only") or profile.get("adaptive_choice_visible"):
+				return False
+			meta = self.catalog_reasoning
+			if meta:
+				return bool(meta.get("supports_max_tokens"))
+			return True
+		return bool(self.catalog_reasoning.get("supports_max_tokens"))
+
+	@property
+	def default_reasoning_effort(self) -> str | None:
+		opts = {v for v, _ in self.reasoning_effort_options}
+		effort = self.catalog_reasoning.get("default_effort")
+		if isinstance(effort, str):
+			val = effort.strip().lower()
+			if val != REASONING_EFFORT_NONE and val in opts:
+				return val
+		if self.provider == Provider.DeepSeek and ReasoningEffort.HIGH.value in opts:
+			return ReasoningEffort.HIGH.value
+		if self.provider == Provider.Anthropic and ReasoningEffort.HIGH.value in opts:
+			return ReasoningEffort.HIGH.value
+		if self.provider == Provider.xAI:
+			val = xai_default_effort(self.id)
+			return val if val in opts else None
+		if self.provider in (Provider.OpenAI, Provider.CustomOpenAI):
+			val = openai_default_effort(self.id)
+			return val if val in opts else None
+		return None
+
+	@property
+	def default_reasoning_enabled(self) -> bool:
+		if self.reasoning_always_on:
+			return True
+		meta = self.catalog_reasoning
+		if meta:
+			if str(meta.get("default_effort") or "").strip().lower() == REASONING_EFFORT_NONE:
+				return False
+			if "default_enabled" in meta:
+				return bool(meta["default_enabled"])
+			effort = meta.get("default_effort")
+			if isinstance(effort, str) and effort.strip():
+				return True
+		if self.provider == Provider.DeepSeek:
+			return deepseek_thinking_defaults_on(self.id)
+		if self.provider == Provider.Anthropic:
+			return anthropic_thinking_default_on(self.id)
+		if self.provider == Provider.xAI:
+			return xai_default_enabled(self.id)
+		if self.provider in (Provider.OpenAI, Provider.CustomOpenAI):
+			return openai_default_enabled(self.id)
+		return False
 
 	@property
 	def reasoning_effort_options(self):
 		"""Tuple of (value, label) for effort dropdown, or () if no configurable effort."""
 		if not self.reasoning:
 			return ()
+		meta = self.catalog_reasoning
+		if meta:
+			levels = catalog_effort_values(meta)
+			if not levels:
+				return ()
+		else:
+			levels = self._fallback_effort_values()
+		if not levels:
+			return ()
+		labels = _reasoning_effort_labels()
+		return tuple((lv, labels.get(lv, lv.title())) for lv in levels)
+
+	def _fallback_effort_values(self) -> tuple[str, ...]:
 		if self.provider == Provider.Anthropic:
 			profile = get_anthropic_thinking_profile(self.id)
-			# Only models on the official effort list expose configurable effort;
-			# others (Sonnet 4.5, 3.7, ...) only toggle thinking on/off.
 			if not profile.get("effort_supported"):
 				return ()
-			labels = {
-				# Translators: Text in model labels and capability descriptions.
-				ReasoningEffort.LOW.value: _("Low"),
-				# Translators: Text in model labels and capability descriptions.
-				ReasoningEffort.MEDIUM.value: _("Medium"),
-				# Translators: Text in model labels and capability descriptions.
-				ReasoningEffort.HIGH.value: _("High"),
-				# Translators: Text in model labels and capability descriptions.
-				ReasoningEffort.XHIGH.value: _("Extra high"),
-				# Translators: Text in model labels and capability descriptions.
-				ReasoningEffort.MAX.value: _("Maximum"),
-			}
-			levels = profile.get("effort_levels") or (
+			return tuple(profile.get("effort_levels") or ())
+		if self.provider == Provider.DeepSeek:
+			return (
+				ReasoningEffort.LOW.value,
+				ReasoningEffort.HIGH.value,
+				ReasoningEffort.MAX.value,
+			)
+		if self.provider == Provider.Ollama:
+			return (
 				ReasoningEffort.LOW.value,
 				ReasoningEffort.MEDIUM.value,
 				ReasoningEffort.HIGH.value,
 			)
-			return tuple((lv, labels.get(lv, lv.title())) for lv in levels)
-		# xAI grok-3-mini: only low, high (no none — reasoning cannot be fully disabled).
-		if self.provider == Provider.xAI and "grok-3-mini" in self.id:
-			return (
-				# Translators: Text in model labels and capability descriptions.
-				(ReasoningEffort.LOW.value, _("Low")),
-				# Translators: Text in model labels and capability descriptions.
-				(ReasoningEffort.HIGH.value, _("High")),
-			)
-		# xAI grok-4.3: none/low/medium/high per xAI docs.
-		if self.provider == Provider.xAI and xai_supports_reasoning_effort(self.id):
-			return (
-				# Translators: Text in model labels and capability descriptions.
-				(ReasoningEffort.LOW.value, _("Low")),
-				# Translators: Text in model labels and capability descriptions.
-				(ReasoningEffort.MEDIUM.value, _("Medium")),
-				# Translators: Text in model labels and capability descriptions.
-				(ReasoningEffort.HIGH.value, _("High")),
-			)
-		# Mistral adjustable reasoning: API documents high vs none (none = off via checkbox).
-		if self.provider == Provider.MistralAI and mistral_supports_reasoning_effort(self.id):
-			return (
-				# Translators: Text in model labels and capability descriptions.
-				(ReasoningEffort.HIGH.value, _("High")),
-			)
-		if self.provider == Provider.MistralAI and mistral_reasoning_mandatory(self.id):
-			return ()
-		# xAI grok-4.20+ has no reasoning effort UI/API knob.
 		if self.provider == Provider.xAI:
-			return ()
-		# OpenAI o-series / gpt-5: low, medium, high
-		if self.supports_adaptive_thinking or self.provider == Provider.OpenAI:
-			return (
-				# Translators: Text in model labels and capability descriptions.
-				(ReasoningEffort.LOW.value, _("Low")),
-				# Translators: Text in model labels and capability descriptions.
-				(ReasoningEffort.MEDIUM.value, _("Medium")),
-				# Translators: Text in model labels and capability descriptions.
-				(ReasoningEffort.HIGH.value, _("High")),
-			)
-		# Google, OpenRouter, and other providers: full range
-		return (
-			# Translators: Text in model labels and capability descriptions.
-			(ReasoningEffort.MINIMAL.value, _("Minimal")),
-			# Translators: Text in model labels and capability descriptions.
-			(ReasoningEffort.LOW.value, _("Low")),
-			# Translators: Text in model labels and capability descriptions.
-			(ReasoningEffort.MEDIUM.value, _("Medium")),
-			# Translators: Text in model labels and capability descriptions.
-			(ReasoningEffort.HIGH.value, _("High")),
-		)
+			return xai_fallback_efforts(self.id)
+		if self.provider in (Provider.OpenAI, Provider.CustomOpenAI):
+			return openai_fallback_efforts(self.id)
+		return ()
 
 	def __repr__(self):
 		return (
@@ -458,24 +496,25 @@ def _parse_model_obj(provider: str, model: dict) -> Model:
 	if not isinstance(supported, list):
 		supported = []
 
-	# Reasoning: from supported_parameters (reasoning, include_reasoning, etc.)
-	reasoning = "reasoning" in supported or "include_reasoning" in supported
-
 	model_id = model.get("id", "")
-
-	# Provider heuristics when catalog metadata omits the reasoning flag.
-	if provider == Provider.DeepSeek and deepseek_thinking_defaults_on(model_id):
-		reasoning = True
-	if provider == Provider.xAI and xai_supports_reasoning_effort(model_id):
-		reasoning = True
-	# grok-4.20 etc. may list "reasoning" in catalog metadata but chat API has no control.
-	if (
-		provider == Provider.xAI
-		and reasoning
-		and not xai_supports_reasoning_effort(model_id)
-		and not xai_reasoning_mandatory(model_id)
-	):
-		reasoning = False
+	catalog_reasoning = model.get("reasoning")
+	has_catalog = isinstance(catalog_reasoning, dict)
+	reasoning = has_catalog or "reasoning" in supported or "include_reasoning" in supported
+	if not reasoning:
+		if provider == Provider.DeepSeek and deepseek_thinking_defaults_on(model_id):
+			reasoning = True
+		elif provider in (Provider.OpenAI, Provider.CustomOpenAI) and openai_reasoning_model(model_id):
+			reasoning = True
+		elif provider == Provider.xAI and "non-reasoning" not in (model_id or "").lower() and (
+			xai_reasoning_mandatory(model_id)
+			or bool(xai_fallback_efforts(model_id))
+			or "grok-4.20" in (model_id or "").lower()
+		):
+			reasoning = True
+		elif provider == Provider.Anthropic:
+			profile = get_anthropic_thinking_profile(model_id)
+			if profile.get("adaptive_supported") or profile.get("effort_supported") or profile.get("thinking_default_on"):
+				reasoning = True
 
 	exclude_keys_pre = {"id", "name", "description", "context_length", "top_provider", "parameter_conflicts", "default_parameters"}
 	extra_info_pre = {k: v for k, v in model.items() if k not in exclude_keys_pre}

@@ -7,7 +7,7 @@ import gui
 import ui
 
 from . import apikeymanager
-from .consts import DEFAULT_REASONING_EFFORT, Provider
+from .consts import Provider
 from .modeldetailsutils import build_model_details_html
 from .model import clearModelCache, getModels
 
@@ -317,13 +317,12 @@ class ModelHandlersMixin:
 		return "reasoningMode_%s" % model_id
 
 	def _saved_reasoning_mode(self, model) -> bool:
-		"""Per-model reasoning preference; defaults off when optional (saves tokens)."""
 		if getattr(model, "reasoning_always_on", False):
 			return True
 		key = self._reasoning_mode_data_key(model.id)
 		if key in self.data:
 			return bool(self.data[key])
-		return False
+		return bool(getattr(model, "default_reasoning_enabled", False))
 
 	def _persist_reasoning_mode(self, model, enabled: bool) -> None:
 		if not model:
@@ -374,7 +373,6 @@ class ModelHandlersMixin:
 			# Translators: Reasoning combo box choice: turn model thinking off.
 			opts.append(("disabled", None, _("Disabled")))
 		if effort_opts:
-			# Each effort level is an "enabled" entry (Low/Medium/High/...).
 			for value, label in effort_opts:
 				opts.append(("enabled", value, label))
 		else:
@@ -397,8 +395,12 @@ class ModelHandlersMixin:
 			idx = next((i for i, (m, e, l) in enumerate(opts) if m == "adaptive"), None)
 			if idx is not None:
 				return idx
-		saved_effort = self.conf.get("reasoningEffort", DEFAULT_REASONING_EFFORT)
+		saved_effort = self.conf.get("reasoningEffort")
 		idx = next((i for i, (m, e, l) in enumerate(opts) if m == "enabled" and e == saved_effort), None)
+		if idx is not None:
+			return idx
+		default_effort = getattr(model, "default_reasoning_effort", None)
+		idx = next((i for i, (m, e, l) in enumerate(opts) if m == "enabled" and e == default_effort), None)
 		if idx is not None:
 			return idx
 		idx = next((i for i, (m, e, l) in enumerate(opts) if m == "enabled"), None)
@@ -435,7 +437,6 @@ class ModelHandlersMixin:
 		)
 
 	def _apply_thinking_budget_chrome(self, model, preserve_chrome: bool) -> None:
-		"""Show/populate the Anthropic manual thinking-budget spin control for ``model``."""
 		row = getattr(self, "reasoningBudgetRow", None)
 		spn = getattr(self, "reasoningBudgetSpinCtrl", None)
 		if row is None or spn is None:

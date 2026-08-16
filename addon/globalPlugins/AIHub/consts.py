@@ -158,6 +158,9 @@ class ReasoningEffort(StrEnum):
 
 REASONING_EFFORT_OPTIONS = tuple(e.value for e in ReasoningEffort)
 DEFAULT_REASONING_EFFORT = ReasoningEffort.MEDIUM.value
+# Canonical low→high order for catalog-driven effort combos (excludes ``none``).
+GATEWAY_EFFORT_ORDER = REASONING_EFFORT_OPTIONS
+REASONING_EFFORT_NONE = "none"
 
 
 class Role(StrEnum):
