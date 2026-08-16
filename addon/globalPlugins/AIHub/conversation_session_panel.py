@@ -53,6 +53,7 @@ class ConversationSessionPanel(wx.Panel):
 		self.filesList = []
 		self.audioPathList = []
 		self._conversationId = None
+		self._promptCacheKey = None
 		self._historyPath = None
 		self.previousPrompt = None
 		self.usageLedger = []

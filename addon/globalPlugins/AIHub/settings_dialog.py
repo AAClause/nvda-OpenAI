@@ -61,6 +61,11 @@ class AIHubSettingsPanel(gui.settingsDialogs.SettingsPanel):
 		self.autoSaveConversation.SetValue(conf.get("autoSaveConversation", True))
 		conversationGroup.addItem(self.autoSaveConversation)
 
+		# Translators: NVDA Preferences — AI-Hub category: Conversation section — send provider prompt-cache keys / cache_control when supported.
+		self.promptCache = wx.CheckBox(conversationBox, label=_("Enable &prompt caching when the provider supports it"))
+		self.promptCache.SetValue(conf.get("promptCache", True))
+		conversationGroup.addItem(self.promptCache)
+
 		sHelper.addItem(conversationSizer)
 
 		# Translators: NVDA Preferences — AI-Hub category: title of a bordered settings group.
@@ -331,6 +336,7 @@ class AIHubSettingsPanel(gui.settingsDialogs.SettingsPanel):
 		conf["renewClient"] = True
 		conf["saveSystem"] = self.saveSystem.GetValue()
 		conf["autoSaveConversation"] = self.autoSaveConversation.GetValue()
+		conf["promptCache"] = self.promptCache.GetValue()
 		conf["TTSVoice"] = self.voiceList.GetString(self.voiceList.GetSelection())
 		conf["TTSModel"] = self.modelList.GetString(self.modelList.GetSelection())
 		conf["images"]["resize"] = self.resize.GetValue()

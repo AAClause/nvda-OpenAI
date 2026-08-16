@@ -770,6 +770,20 @@ class CompletionThread(threading.Thread):
 		_apply_x_search_settings(params, model, wnd, provider)
 		_apply_code_interpreter_settings(params, model, wnd, provider)
 		_apply_collections_search_settings(params, model, wnd, provider)
+		if conf.get("promptCache", True):
+			from .promptcache import apply_prompt_cache, resolve_prompt_cache_key
+
+			cache_page = page
+			if cache_page is None:
+				getter = getattr(wnd, "get_active_page", None)
+				cache_page = getter() if callable(getter) else wnd
+			if cache_page is not None:
+				apply_prompt_cache(
+					params,
+					provider,
+					model.id,
+					resolve_prompt_cache_key(cache_page),
+				)
 		if provider == Provider.xAI:
 			_apply_xai_include_settings(params, model, wnd, provider, useReasoning)
 			_apply_xai_previous_response_id(params, wnd, is_regenerate)
@@ -790,7 +804,12 @@ class CompletionThread(threading.Thread):
 		try:
 			t_api_start = time.perf_counter()
 			block.timing["requestSentAt"] = time.time()
-			response = client.chat.completions.create(**params)
+			try:
+				response = client.chat.completions.create(**params)
+			finally:
+				from .promptcache import store_file_ids_from_messages
+
+				store_file_ids_from_messages(wnd, params.get("messages"), provider)
 			self._log_timing(debug, "API call", time.perf_counter() - t_api_start)
 			block.timing["responseReceivedAt"] = time.time()
 			if conf["chatFeedback"]["sndResponseSent"]:

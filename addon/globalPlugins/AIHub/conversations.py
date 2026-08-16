@@ -350,8 +350,9 @@ def _block_to_dict(block) -> dict:
 	# conversations forward-readable; the in-code attribute is ``filesList``.
 	files_list = getattr(block, "filesList", None)
 	if files_list:
-		d["pathList"] = [
-			{
+		d["pathList"] = []
+		for att in files_list:
+			entry = {
 				"path": persist_local_file(
 					(getattr(att, "path", att) if hasattr(att, "path") else att),
 					"images",
@@ -360,8 +361,10 @@ def _block_to_dict(block) -> dict:
 				),
 				"name": getattr(att, "name", ""),
 			}
-			for att in files_list
-		]
+			ids = _file_ids_payload(att)
+			if ids:
+				entry["fileIds"] = ids
+			d["pathList"].append(entry)
 	else:
 		d["pathList"] = []
 	audio_list = getattr(block, "audioPathList", None)
@@ -397,6 +400,30 @@ def _block_to_dict(block) -> dict:
 	return d
 
 
+def _file_ids_payload(att) -> dict:
+	ids = getattr(att, "providerFileIds", None)
+	if not isinstance(ids, dict):
+		return {}
+	out = {}
+	for key, value in ids.items():
+		if isinstance(key, str) and key and isinstance(value, str) and value.strip():
+			out[key] = value.strip()
+	return out
+
+
+def _apply_file_ids(att, item):
+	if att is None or not isinstance(item, dict):
+		return att
+	ids = item.get("fileIds")
+	if isinstance(ids, dict) and ids:
+		att.providerFileIds = {
+			str(k): str(v).strip()
+			for k, v in ids.items()
+			if k and isinstance(v, str) and str(v).strip()
+		}
+	return att
+
+
 def _dict_to_img(item, conv_id: str, block_idx: int, img_idx: int):
 	"""Deserialize one attachment dict. Restores base64 to persistent file; URLs used as-is.
 
@@ -423,7 +450,7 @@ def _dict_to_img(item, conv_id: str, block_idx: int, img_idx: int):
 			data = base64.b64decode(b64)
 			with open(stored_path, "wb") as f:
 				f.write(data)
-			return AttachmentFile(stored_path, name=name or None)
+			return _apply_file_ids(AttachmentFile(stored_path, name=name or None), item)
 		except Exception as err:
 			log.warning(f"conversations: could not restore image {stored_path}: {err}")
 			return None
@@ -432,7 +459,7 @@ def _dict_to_img(item, conv_id: str, block_idx: int, img_idx: int):
 	# URL or existing path
 	if path.startswith("http://") or path.startswith("https://") or os.path.exists(path):
 		try:
-			return AttachmentFile(path, name=name or None)
+			return _apply_file_ids(AttachmentFile(path, name=name or None), item)
 		except Exception as err:
 			log.warning(f"conversations: skipped image {path}: {err}")
 	return None
@@ -471,6 +498,7 @@ def _dict_to_block(d: dict, conv_id: str = "", block_idx: int = 0):
 			if path and (path.startswith("http://") or path.startswith("https://") or os.path.exists(path)):
 				try:
 					img = AttachmentFile(path, name=name or None)
+					_apply_file_ids(img, item)
 				except Exception as err:
 					log.warning(f"conversations: skipped image {path}: {err}")
 		elif img is None and isinstance(item, str) and item:
@@ -856,6 +884,7 @@ def load_conversation(conv_id: str) -> dict | None:
 				normalize_conversation_format(data.get("format", ConversationFormat.GENERIC.value)),
 				data.get("formatData"),
 			),
+			"promptCacheKey": data.get("promptCacheKey") or data.get("id", conv_id) or "",
 		}
 	except Exception as err:
 		log.error(f"conversations: load {conv_id}: {err}", exc_info=True)
@@ -877,6 +906,7 @@ def save_conversation(
 	ui_state: dict | None = None,
 	usage_ledger=None,
 	detached_branch=None,
+	prompt_cache_key: str = "",
 ) -> str:
 	"""
 	Save conversation. Returns conversation id.
@@ -890,10 +920,14 @@ def save_conversation(
 		path = getattr(img, "path", img) if hasattr(img, "path") else img
 		if not isinstance(path, str) or not path:
 			continue
-		serialized_draft_paths.append({
+		entry = {
 			"path": persist_local_file(path, "images", prefix="image", fallback_ext=".png"),
 			"name": getattr(img, "name", "") if hasattr(img, "name") else "",
-		})
+		}
+		ids = _file_ids_payload(img)
+		if ids:
+			entry["fileIds"] = ids
+		serialized_draft_paths.append(entry)
 	serialized_draft_audio = []
 	for p in draftAudioPathList:
 		path = p if isinstance(p, str) else getattr(p, "path", str(p))
@@ -967,6 +1001,9 @@ def save_conversation(
 		if detached_payload:
 			existing["detachedBranch"] = detached_payload
 	path = get_conversation_path(conv_id)
+	cache_key = (prompt_cache_key or "").strip() or existing.get("promptCacheKey") or conv_id
+	if isinstance(cache_key, str) and cache_key.strip():
+		existing["promptCacheKey"] = cache_key.strip()
 	try:
 		_atomic_write_json(path, existing)
 	except Exception as err:

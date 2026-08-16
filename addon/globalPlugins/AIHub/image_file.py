@@ -70,6 +70,9 @@ class AttachmentFile:
 		else:
 			self.size = self._get_size()
 		self.dimensions = dimensions or self._get_dimensions()
+		# Provider → uploaded file id (OpenAI/xAI Responses). Reused so historical
+		# documents keep a stable prompt prefix for prompt caching.
+		self.providerFileIds = {}
 
 	def _get_type(self):
 		if os.path.exists(self.path):
