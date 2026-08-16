@@ -313,6 +313,7 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 			"ui_state": ui_state,
 			"usage_ledger": list(getattr(page, "usageLedger", None) or []),
 			"detached_branch": getattr(page, "detachedBranch", None),
+			"prompt_cache_key": getattr(page, "_promptCacheKey", None) or "",
 		}
 
 	def _saveConversationFromKw(self, kw):
@@ -329,6 +330,7 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 			ui_state=kw["ui_state"],
 			usage_ledger=kw.get("usage_ledger"),
 			detached_branch=kw.get("detached_branch"),
+			prompt_cache_key=kw.get("prompt_cache_key") or "",
 		)
 
 	def _captureConversationChromeToPage(self, page):
@@ -341,11 +343,11 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		page.conversationModelHint = model.id if model else ""
 		page.conversationSystemText = page.systemTextCtrl.GetValue()
 		st = {}
+		try:
+			st["maxTokens"] = self.maxTokensSpinCtrl.GetValue()
+		except Exception:
+			pass
 		if model:
-			try:
-				st["maxTokens"] = self.maxTokensSpinCtrl.GetValue()
-			except Exception:
-				pass
 			self._generation_chrome.capture(st, model)
 			try:
 				st["advancedSampling"] = self.advancedSamplingCheckBox.IsChecked()
@@ -868,6 +870,7 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		page.detachedBranch = None
 		page._regenerateBlock = None
 		page._conversationId = cid
+		page._promptCacheKey = None
 		page.conversationModelHint = ""
 		page.conversationAccountKey = ""
 		page.conversationSystemText = ""
@@ -906,6 +909,7 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		page.detachedBranch = None
 		page._regenerateBlock = None
 		page._conversationId = None
+		page._promptCacheKey = None
 		page.conversationModelHint = ""
 		page.conversationAccountKey = ""
 		page.conversationSystemText = ""
@@ -1698,7 +1702,9 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 					name = item.get("name", "")
 					if path:
 						try:
-							self.filesList.append(AttachmentFile(path, name=name or None))
+							att = AttachmentFile(path, name=name or None)
+							conversations._apply_file_ids(att, item)
+							self.filesList.append(att)
 						except Exception as err:
 							log.warning(f"load draft image skipped {path}: {err}")
 				elif isinstance(item, str) and item:
@@ -1717,6 +1723,11 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		conv_id = data.get("id")
 		if conv_id:
 			self._conversationId = conv_id
+		cache_key = data.get("promptCacheKey") or conv_id
+		if isinstance(cache_key, str) and cache_key.strip():
+			active_pg._promptCacheKey = cache_key.strip()
+		else:
+			active_pg._promptCacheKey = None
 		if not blocks:
 			self._syncWindowTitleFromActiveTab()
 			if focus_message_history:
@@ -2373,6 +2384,8 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 				"type": ContentType.TEXT,
 				"text": prompt
 			})
+		model = self.getCurrentModel() if hasattr(self, "getCurrentModel") else None
+		provider = getattr(model, "provider", "") if model else ""
 		for attachment in filesList:
 			path = attachment.path
 			if attachment.type == AttachmentFileTypes.IMAGE_URL:
@@ -2401,11 +2414,18 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 					}
 				})
 			elif attachment.type == AttachmentFileTypes.DOCUMENT_LOCAL:
-				parts.append({
+				part = {
 					"type": ContentType.INPUT_FILE,
 					"file_path": path,
 					"filename": attachment.name,
-				})
+				}
+				if provider:
+					from .promptcache import stored_file_id
+
+					fid = stored_file_id(attachment, provider)
+					if fid:
+						part["file_id"] = fid
+				parts.append(part)
 			else:
 				raise ValueError(f"Invalid attachment type for {path}")
 		return parts

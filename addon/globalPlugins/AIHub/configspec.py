@@ -28,6 +28,7 @@ confSpecs = {
 	"blockEscapeKey": "boolean(default=False)",
 	"saveSystem": "boolean(default=true)",
 	"autoSaveConversation": "boolean(default=True)",
+	"promptCache": "boolean(default=True)",
 	"images": {
 		"maxHeight": "integer(min=0, default=720)",
 		"maxWidth": "integer(min=0, default=0)",

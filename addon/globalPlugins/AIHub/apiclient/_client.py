@@ -269,6 +269,8 @@ class OpenAIClient:
 			"extra_body",
 			"think",
 			"xai_encrypted_reasoning_input",
+			"session_id",
+			"cache_control",
 		}
 		# xAI reasoning models reject these on the Responses API.
 		if provider == Provider.xAI:
@@ -385,6 +387,9 @@ class OpenAIClient:
 		# Web search tool — web_search_20250305 is GA on all supported models.
 		if kwargs.get("web_search_options") is not None:
 			body["tools"] = [{"type": "web_search_20250305", "name": "web_search"}]
+		cache_control = kwargs.get("cache_control")
+		if isinstance(cache_control, dict) and cache_control:
+			body["cache_control"] = cache_control
 		return body
 
 	# ------------------------------------------------------------------

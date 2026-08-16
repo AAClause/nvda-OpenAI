@@ -611,6 +611,7 @@ class HistoryHandlersMixin:
 		else:
 			anchor_block = None
 			anchor_part = "prompt"
+		was_tail = block is self.lastBlock
 		if block.previous is not None:
 			block.previous.next = block.next
 		else:
@@ -619,6 +620,10 @@ class HistoryHandlersMixin:
 			block.next.previous = block.previous
 		else:
 			self.lastBlock = block.previous
+		if not was_tail:
+			from .promptcache import clear_xai_state_after_history_splice
+
+			clear_xai_state_after_history_splice(page)
 		# Rebuild the read-only history view from block data so removal stays
 		# correct (wx stores \\n as CRLF) without touching streaming.
 		self._rerenderMessages(anchor_block=anchor_block, anchor_part=anchor_part)

@@ -53,6 +53,9 @@ def _has_any_usage_signal(raw_usage: Any) -> bool:
 		"cache_read_input_tokens",
 		"prompt_cache_hit_tokens",
 		"prompt_cache_miss_tokens",
+		"cachedContentTokenCount",
+		"cached_content_token_count",
+		"total_cached_tokens",
 		"input_audio_tokens",
 		"output_audio_tokens",
 		"input_token_count",
@@ -116,6 +119,9 @@ def _normalize_usage(usage: Any) -> dict:
 		or _to_int(usage.get("cached_input_tokens"))
 		or _to_int(usage.get("cache_read_input_tokens"))
 		or _to_int(usage.get("prompt_cache_hit_tokens"))  # DeepSeek
+		or _to_int(usage.get("cachedContentTokenCount"))  # Gemini generateContent
+		or _to_int(usage.get("cached_content_token_count"))
+		or _to_int(usage.get("total_cached_tokens"))
 	)
 	cache_creation_input_tokens = (
 		_to_int(usage.get("cache_creation_input_tokens"))

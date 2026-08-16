@@ -520,6 +520,7 @@ def _convert_part_to_responses(
 		file_path = part.get("file_path")
 		if isinstance(file_path, str) and file_path and upload_file is not None:
 			file_id_uploaded = upload_file(file_path)
+			part["file_id"] = file_id_uploaded
 			return {"type": "input_file", "file_id": file_id_uploaded}
 	return None
 
