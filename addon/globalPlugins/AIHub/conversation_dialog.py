@@ -1103,7 +1103,7 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		self._organization = client.organization
 		self.conf = conf
 		self.data = self.loadData()
-		self._orig_data = self.data.copy() if isinstance(self.data, dict) else None
+		self._orig_data = self.data.copy()
 		self._showThinkingInHistory = bool(self.data.get("showThinkingInHistory", True))
 		self._models = []
 		self._worker_page = None
@@ -1500,18 +1500,25 @@ class ConversationDialog(ModelHandlersMixin, AttachmentListUIMixin, FileHandlers
 		if not os.path.exists(DATA_JSON_FP):
 			return {}
 		try:
-			with open(DATA_JSON_FP, 'r') as f :
-				return json.loads(f.read())
+			with open(DATA_JSON_FP, "r", encoding="utf-8") as f:
+				data = json.load(f)
+			return data if isinstance(data, dict) else {}
 		except Exception as err:
 			log.error(f"loadData: {err}", exc_info=True)
+			return {}
 
 	def saveData(self, force=False):
+		if not isinstance(self.data, dict):
+			return
 		if not force and self.data == self._orig_data:
 			return
 		tmp_path = DATA_JSON_FP + ".tmp"
-		with open(tmp_path, "w", encoding="utf-8") as f:
-			json.dump(self.data, f, indent=2, ensure_ascii=False)
-		os.replace(tmp_path, DATA_JSON_FP)
+		try:
+			with open(tmp_path, "w", encoding="utf-8") as f:
+				json.dump(self.data, f, indent=2, ensure_ascii=False)
+			os.replace(tmp_path, DATA_JSON_FP)
+		except Exception as err:
+			log.error(f"saveData: {err}", exc_info=True)
 
 	def _appendBlockToMessages(self, block):
 		"""Render a completed HistoryBlock into the messages text control.
