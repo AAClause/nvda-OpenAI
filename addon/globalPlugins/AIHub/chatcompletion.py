@@ -1043,8 +1043,10 @@ class CompletionThread(threading.Thread):
 					to_speak = speechBuffer[:cut]
 					speechBuffer = speechBuffer[cut:]
 					_emit_speech(to_speak)
-			if getattr(choice, "finish_reason", None):
-				break
+			# Do not stop on finish_reason. Chat Completions (OpenAI, OpenRouter,
+			# DeepSeek, Mistral, …) send usage in a later chunk with empty
+			# choices after finish_reason. Anthropic/Gemini/Responses attach
+			# usage on the same event as finish, so draining is still correct.
 		flushed_content, flushed_reasoning = _flush_think_chain(think_states) if think_states else ("", "")
 		if flushed_reasoning:
 			block.reasoningText += flushed_reasoning
