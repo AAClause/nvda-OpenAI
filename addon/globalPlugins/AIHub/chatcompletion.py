@@ -88,6 +88,8 @@ _STOP_SEQUENCE_CAP_4_PROVIDERS = (Provider.OpenAI, Provider.CustomOpenAI)
 
 # OpenRouter server tool: https://openrouter.ai/docs/guides/features/server-tools/web-search
 _OPENROUTER_WEB_SEARCH_TOOL = {"type": "openrouter:web_search"}
+# OpenAI Responses hosted web search: https://developers.openai.com/api/docs/guides/tools-web-search
+_OPENAI_WEB_SEARCH_TOOL = {"type": "web_search"}
 # xAI built-in tools (Responses API): https://docs.x.ai/developers/tools/overview
 _XAI_CODE_INTERPRETER_TOOL = {"type": "code_interpreter"}
 
@@ -112,12 +114,25 @@ def _append_tool(params: dict, tool: dict) -> None:
 	params["tools"] = tools
 
 
+def _is_openai_chat_search_model(model_id: str) -> bool:
+	"""True for Chat Completions search models (``web_search_options``, not Responses)."""
+	mid = (model_id or "").lower()
+	return "search-api" in mid or "search-preview" in mid
+
+
 def _apply_web_search_settings(params: dict, model, wnd, provider: str) -> None:
 	"""Apply provider-native and/or OpenRouter universal web search to the request."""
 	native_on = (
 		model.supports_web_search
 		and hasattr(wnd, "webSearchCheckBox")
 		and wnd.webSearchCheckBox.IsChecked()
+	)
+	or_cb = getattr(wnd, "openRouterWebSearchCheckBox", None)
+	or_on = (
+		provider == Provider.OpenRouter
+		and getattr(model, "supports_openrouter_web_search", False)
+		and or_cb is not None
+		and or_cb.IsChecked()
 	)
 	if native_on:
 		if provider == Provider.Anthropic:
@@ -126,21 +141,21 @@ def _apply_web_search_settings(params: dict, model, wnd, provider: str) -> None:
 			# Google Search grounding uses the native generateContent API; see
 			# apiclient._google and https://ai.google.dev/gemini-api/docs/google-search
 			params["web_search_options"] = {}
-		elif provider in (Provider.OpenAI, Provider.OpenRouter):
-			# OpenRouter passes web_search_options to the upstream provider when supported.
-			params["web_search_options"] = {}
+		elif provider == Provider.OpenAI:
+			if _is_openai_chat_search_model(model.id):
+				params["web_search_options"] = {}
+			else:
+				_append_tool(params, _OPENAI_WEB_SEARCH_TOOL)
+		elif provider == Provider.OpenRouter:
+			if getattr(model, "supports_openrouter_web_search", False):
+				_append_tool(params, _OPENROUTER_WEB_SEARCH_TOOL)
+			else:
+				params["web_search_options"] = {}
 		elif provider == Provider.xAI:
 			from .xaitools import build_web_search_tool_from_wnd
 
 			_set_builtin_tool(params, build_web_search_tool_from_wnd(wnd))
-
-	or_cb = getattr(wnd, "openRouterWebSearchCheckBox", None)
-	or_on = (
-		getattr(model, "supports_openrouter_web_search", False)
-		and or_cb is not None
-		and or_cb.IsChecked()
-	)
-	if or_on and provider == Provider.OpenRouter:
+	if or_on:
 		_append_tool(params, _OPENROUTER_WEB_SEARCH_TOOL)
 
 
@@ -171,7 +186,7 @@ def _apply_code_interpreter_settings(params: dict, model, wnd, provider: str) ->
 
 
 def _apply_collections_search_settings(params: dict, model, wnd, provider: str) -> None:
-	"""Attach xAI ``collections_search`` when enabled and collection ids are set."""
+	"""Attach xAI collections search (Responses ``file_search``) when enabled and ids are set."""
 	if provider != Provider.xAI:
 		return
 	if not getattr(model, "supports_collections_search", False):

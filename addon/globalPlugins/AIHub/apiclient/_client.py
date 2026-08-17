@@ -49,6 +49,14 @@ from ._responses_stream import stream_responses_api
 from ._types import ChatCompletion, Transcription
 
 
+def _kwargs_has_web_search_tool(kwargs: dict) -> bool:
+	"""True when ``tools`` includes the OpenAI Responses hosted ``web_search`` tool."""
+	tools = kwargs.get("tools") if isinstance(kwargs, dict) else None
+	if not isinstance(tools, list):
+		return False
+	return any(isinstance(t, dict) and t.get("type") == "web_search" for t in tools)
+
+
 class OpenAIClient:
 	"""HTTP-based client for OpenAI-compatible APIs (and Anthropic).
 
@@ -101,7 +109,9 @@ class OpenAIClient:
 			return self._anthropic_chat_completions_create(
 				model=model, messages=messages, stream=stream, **kwargs
 			)
-		if provider == Provider.OpenAI and has_input_files:
+		if provider == Provider.OpenAI and (
+			has_input_files or _kwargs_has_web_search_tool(kwargs)
+		):
 			return self._responses_create(
 				model=model, messages=messages, stream=stream, **kwargs
 			)

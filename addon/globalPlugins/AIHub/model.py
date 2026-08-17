@@ -161,7 +161,7 @@ class Model:
 
 	@property
 	def supports_collections_search(self):
-		"""True when xAI ``collections_search`` built-in tool is available."""
+		"""True when xAI collections search (Responses ``file_search``) is available."""
 		return self.supports_xai_builtin_tools
 
 	@property

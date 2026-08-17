@@ -96,9 +96,9 @@ def build_web_search_tool_from_wnd(wnd) -> dict[str, Any]:
 	allowed = parse_xai_domain_list(_wnd_text(wnd, "xaiWebAllowedDomainsTextCtrl"))
 	excluded = parse_xai_domain_list(_wnd_text(wnd, "xaiWebExcludedDomainsTextCtrl"))
 	if allowed:
-		tool["allowed_domains"] = allowed
+		tool["filters"] = {"allowed_domains": allowed}
 	elif excluded:
-		tool["excluded_domains"] = excluded
+		tool["filters"] = {"excluded_domains": excluded}
 	if _wnd_checked(wnd, "xaiWebImageSearchCheckBox"):
 		tool["enable_image_search"] = True
 	if _wnd_checked(wnd, "xaiWebImageUnderstandingCheckBox"):
@@ -129,13 +129,19 @@ def build_x_search_tool_from_wnd(wnd) -> dict[str, Any]:
 
 
 def build_collections_search_tool_from_wnd(wnd) -> dict[str, Any] | None:
-	"""Build ``collections_search`` tool dict when ids are configured."""
+	"""Build Responses ``file_search`` tool from collection ids.
+
+	xAI's native SDK uses ``collections_search`` / ``collection_ids``. The
+	Responses API this add-on calls maps that to OpenAI-compatible
+	``file_search`` / ``vector_store_ids``.
+	https://docs.x.ai/developers/tools/collections-search
+	"""
 	collection_ids = parse_xai_collection_ids(_wnd_text(wnd, "xaiCollectionIdsTextCtrl"))
 	if not collection_ids:
 		return None
 	tool: dict[str, Any] = {
-		"type": "collections_search",
-		"collection_ids": collection_ids,
+		"type": "file_search",
+		"vector_store_ids": collection_ids,
 	}
 	max_results = _wnd_spin_value(wnd, "xaiCollectionsMaxResultsSpinCtrl", default=0)
 	if max_results > 0:
