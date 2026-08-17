@@ -368,19 +368,27 @@ class ModelHandlersMixin:
 		mandatory = bool(getattr(model, "reasoning_always_on", False))
 		adaptive = bool(getattr(model, "adaptive_choice_visible", False))
 		effort_opts = list(getattr(model, "reasoning_effort_options", ()) or ())
+		default_opt = getattr(model, "api_default_reasoning_option", None)
+
+		def _combo_label(mode: str, effort, label: str) -> str:
+			if default_opt != (mode, effort):
+				return label
+			# Translators: Reasoning combo box choice that is the provider API default. {label} is the level name (e.g. Medium).
+			return _("{label} (default)").format(label=label)
+
 		opts = []
 		if not mandatory:
 			# Translators: Reasoning combo box choice: turn model thinking off.
-			opts.append(("disabled", None, _("Disabled")))
+			opts.append(("disabled", None, _combo_label("disabled", None, _("Disabled"))))
 		if effort_opts:
 			for value, label in effort_opts:
-				opts.append(("enabled", value, label))
+				opts.append(("enabled", value, _combo_label("enabled", value, label)))
 		else:
 			# Translators: Reasoning combo box choice: thinking on (model has no effort levels).
-			opts.append(("enabled", None, _("Enabled")))
+			opts.append(("enabled", None, _combo_label("enabled", None, _("Enabled"))))
 		if adaptive:
 			# Translators: Reasoning combo box choice: Anthropic adaptive thinking.
-			opts.append(("adaptive", None, _("Adaptive")))
+			opts.append(("adaptive", None, _combo_label("adaptive", None, _("Adaptive"))))
 		return opts
 
 	def _current_reasoning_selection_index(self, model, opts):

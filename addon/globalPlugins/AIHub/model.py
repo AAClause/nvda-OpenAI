@@ -279,6 +279,55 @@ class Model:
 			return openai_default_enabled(self.id)
 		return False
 
+	def _known_default_reasoning_enabled(self) -> bool | None:
+		"""API default on/off when documented; ``None`` if unknown."""
+		if not self.reasoning:
+			return None
+		if self.reasoning_always_on:
+			return True
+		meta = self.catalog_reasoning
+		if meta:
+			if str(meta.get("default_effort") or "").strip().lower() == REASONING_EFFORT_NONE:
+				return False
+			if "default_enabled" in meta:
+				return bool(meta["default_enabled"])
+			effort = meta.get("default_effort")
+			if isinstance(effort, str) and effort.strip() and effort.strip().lower() != REASONING_EFFORT_NONE:
+				return True
+		if self.provider == Provider.DeepSeek:
+			return deepseek_thinking_defaults_on(self.id)
+		if self.provider == Provider.Anthropic:
+			return anthropic_thinking_default_on(self.id)
+		if self.provider == Provider.xAI:
+			mid = (self.id or "").lower()
+			if xai_reasoning_mandatory(self.id) or "grok-4.3" in mid:
+				return xai_default_enabled(self.id)
+			return None
+		if self.provider in (Provider.OpenAI, Provider.CustomOpenAI):
+			if openai_reasoning_model(self.id):
+				return openai_default_enabled(self.id)
+			return None
+		return None
+
+	@property
+	def api_default_reasoning_option(self) -> tuple[str, str | None] | None:
+		"""Combo ``(mode, effort)`` matching the provider API default, if known."""
+		if not self.reasoning:
+			return None
+		known_on = self._known_default_reasoning_enabled()
+		effort = self.default_reasoning_effort
+		if known_on is False:
+			return ("disabled", None)
+		if known_on is True:
+			if effort:
+				return ("enabled", effort)
+			if not self.reasoning_effort_options:
+				return ("enabled", None)
+			return None
+		if effort:
+			return ("enabled", effort)
+		return None
+
 	@property
 	def reasoning_effort_options(self):
 		"""Tuple of (value, label) for effort dropdown, or () if no configurable effort."""
