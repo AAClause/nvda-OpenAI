@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Open AI 24.03.30\n"
 "Report-Msgid-Bugs-To: 'nvda-translations@groups.io'\n"
-"POT-Creation-Date: 2026-08-16 23:09+0300\n"
-"PO-Revision-Date: 2026-08-17 09:51+0300\n"
+"POT-Creation-Date: 2026-08-18 08:20+0300\n"
+"PO-Revision-Date: 2026-08-18 08:44+0300\n"
 "Last-Translator: Volodymyr Pyrih <vp88.mobile@gmail.com>\n"
 "Language-Team: Heorhi Halas. https://www.nvdaukr.online/\n"
 "Language: uk\n"
@@ -11,7 +11,8 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 3.9\n"
-"X-Poedit-Basepath: nvda-OpenAI-master/addon/globalPlugins\n"
+"X-Poedit-Basepath: ../../../../../../../AppData/Roaming/nvda/addons/OpenAI/"
+"globalPlugins\n"
 "X-Poedit-Bookmarks: -1,26,47,-1,-1,-1,-1,-1,-1,-1\n"
 "X-Poedit-SearchPath-0: .\n"
 
@@ -66,7 +67,7 @@ msgstr "&Назва організації:"
 msgid "Organization &key:"
 msgstr "&Ключ організації:"
 
-#: AIHub/accounts_dialog.py:139 AIHub/settings_dialog.py:29
+#: AIHub/accounts_dialog.py:139 AIHub/settings_dialog.py:30
 msgid "API accounts"
 msgstr "облікові записи API"
 
@@ -82,7 +83,7 @@ msgstr ""
 #: AIHub/accounts_dialog.py:167 AIHub/accounts_dialog.py:207
 #: AIHub/accounts_dialog.py:363 AIHub/accounts_dialog.py:404
 #: AIHub/accounts_dialog.py:417 AIHub/modelhandlers_impl.py:62
-#: AIHub/modelhandlers_impl.py:79 AIHub/settings_dialog.py:276
+#: AIHub/modelhandlers_impl.py:79 AIHub/settings_dialog.py:299
 #: AIHub/tool_voxtral_tts_dialog.py:60
 msgid "Account"
 msgstr "Обліковий запис"
@@ -91,7 +92,7 @@ msgstr "Обліковий запис"
 msgid "&Add..."
 msgstr "&Додати..."
 
-#: AIHub/accounts_dialog.py:219 AIHub/settings_dialog.py:280
+#: AIHub/accounts_dialog.py:219 AIHub/settings_dialog.py:303
 msgid "default"
 msgstr "початково"
 
@@ -222,11 +223,11 @@ msgstr "Видалити &все"
 msgid "Add from &file path..."
 msgstr "&Додати зі шляху до файлу..."
 
-#: AIHub/chatcompletion.py:261
+#: AIHub/chatcompletion.py:276
 msgid "Sources:"
 msgstr "Джерела:"
 
-#: AIHub/chatcompletion.py:530
+#: AIHub/chatcompletion.py:545
 msgid ""
 "Anthropic accepts PDF as native document blocks and inlines plain-text "
 "files. Other formats (.docx, .xlsx, .csv, …) must be converted to PDF or "
@@ -236,7 +237,7 @@ msgstr ""
 "вигляді простого тексту. Інші формати (.docx, .xlsx, .csv тощо) необхідно "
 "перетворити у PDF або простий текст."
 
-#: AIHub/chatcompletion.py:536
+#: AIHub/chatcompletion.py:551
 msgid ""
 "Google accepts images and PDFs as native inline attachments on the Gemini "
 "API. Plain-text files are inlined automatically."
@@ -244,7 +245,7 @@ msgstr ""
 "Google підтримує зображення та PDF-файли як вбудовані вкладення в API "
 "Gemini. Файли у форматі простого тексту вставляються автоматично."
 
-#: AIHub/chatcompletion.py:542
+#: AIHub/chatcompletion.py:557
 msgid ""
 "OpenRouter parses PDFs into the underlying model. If this file was rejected, "
 "the underlying model may not support documents — try another model."
@@ -253,7 +254,7 @@ msgstr ""
 "відхилено, можливо, базова модель не підтримує документи — спробуйте іншу "
 "модель."
 
-#: AIHub/chatcompletion.py:548
+#: AIHub/chatcompletion.py:563
 msgid ""
 "Mistral expects documents via the document_url shape (URL or data URI). For "
 "OCR of scanned files, use the Mistral OCR tool."
@@ -262,7 +263,7 @@ msgstr ""
 "розпізнавання тексту у відсканованих файлах скористайтеся інструментом "
 "Mistral OCR."
 
-#: AIHub/chatcompletion.py:554
+#: AIHub/chatcompletion.py:569
 msgid ""
 "The selected OpenAI model rejected this document. Try another OpenAI model "
 "with file-input support or use a supported document format."
@@ -271,7 +272,7 @@ msgstr ""
 "із підтримкою введення файлів або використовуйте підтримуваний формат "
 "документа."
 
-#: AIHub/chatcompletion.py:560
+#: AIHub/chatcompletion.py:575
 msgid ""
 "The selected provider does not natively accept binary documents on its chat "
 "endpoint. Plain-text files are inlined automatically; for PDFs use OpenAI, "
@@ -282,43 +283,43 @@ msgstr ""
 "вбудовуються автоматично; для обробки PDF-файлів використовуйте OpenAI, "
 "Anthropic, OpenRouter, Mistral або xAI."
 
-#: AIHub/chatcompletion.py:636
+#: AIHub/chatcompletion.py:651
 msgid "Transcribing audio..."
 msgstr "Транскрибування аудіо..."
 
-#: AIHub/chatcompletion.py:664
+#: AIHub/chatcompletion.py:679
 msgid "Invalid temperature"
 msgstr "Неправильна температура"
 
-#: AIHub/chatcompletion.py:668
+#: AIHub/chatcompletion.py:683
 msgid "Invalid top P"
 msgstr "Неправильна вершина P"
 
-#: AIHub/chatcompletion.py:691
+#: AIHub/chatcompletion.py:706
 #, python-format
 msgid "Uploading %s, please wait..."
 msgstr "Відвантаження %s, зачекайте..."
 
-#: AIHub/chatcompletion.py:693
+#: AIHub/chatcompletion.py:708
 #, python-format
 msgid "%d image(s)"
 msgstr "%d зображень"
 
-#: AIHub/chatcompletion.py:695
+#: AIHub/chatcompletion.py:710
 #, python-format
 msgid "%d audio file(s)"
 msgstr "%d аудіофайл(и)"
 
-#: AIHub/chatcompletion.py:697
+#: AIHub/chatcompletion.py:712
 #, python-format
 msgid "%d document(s)"
 msgstr "%d документ(ів)"
 
-#: AIHub/chatcompletion.py:699
+#: AIHub/chatcompletion.py:714
 msgid "Please wait..."
 msgstr "Будь ласка, зачекайте..."
 
-#: AIHub/chatcompletion.py:1139
+#: AIHub/chatcompletion.py:1159
 msgid ""
 "An error occurred playing the audio response. More information is in the "
 "NVDA log."
@@ -326,7 +327,7 @@ msgstr ""
 "Під час відтворення аудіовідповіді сталася помилка. Більше інформації в "
 "журналі NVDA."
 
-#: AIHub/chatcompletion.py:1141 AIHub/conversation_dialog.py:1876
+#: AIHub/chatcompletion.py:1161 AIHub/conversation_dialog.py:1876
 #: AIHub/conversation_dialog.py:2209
 msgid "OpenAI Error"
 msgstr "Помилка OpenAI"
@@ -503,7 +504,7 @@ msgstr "&Розпізнавання відео X"
 #: AIHub/conversation_dialog.py:886 AIHub/conversation_dialog.py:973
 #: AIHub/conversation_dialog.py:979 AIHub/conversation_dialog.py:994
 #: AIHub/conversation_dialog.py:1016 AIHub/conversation_dialog.py:1129
-#: AIHub/conversation_dialog.py:1132 AIHub/settings_dialog.py:45
+#: AIHub/conversation_dialog.py:1132 AIHub/settings_dialog.py:46
 msgid "Conversation"
 msgstr "Розмова"
 
@@ -590,7 +591,7 @@ msgstr "Мас&а ймовірності (Верхнє P):"
 
 #: AIHub/conversation_dialog.py:1289
 msgid "See&d (−1 = omit):"
-msgstr "&Початкове значення (−1 = пропустити):"
+msgstr "&Сід (−1 = пропустити):"
 
 #: AIHub/conversation_dialog.py:1300
 msgid "Top &K (0 = omit):"
@@ -1623,22 +1624,22 @@ msgstr "Дуже високе"
 msgid "Maximum"
 msgstr "Максимальне"
 
-#: AIHub/model.py:338
+#: AIHub/model.py:387
 #, python-brace-format
 msgid "provider: {provider}"
 msgstr "постачальник: {provider}"
 
-#: AIHub/model.py:342
+#: AIHub/model.py:391
 #, python-brace-format
 msgid "ID: {id}"
 msgstr "ID: {id}"
 
-#: AIHub/model.py:345
+#: AIHub/model.py:394
 #, python-brace-format
 msgid "context window: {contextWindow}"
 msgstr "контекстне вікно: {contextWindow}"
 
-#: AIHub/model.py:348
+#: AIHub/model.py:397
 #, python-brace-format
 msgid "max output tokens: {maxOutputToken}"
 msgstr "максимальна кількість вихідних токенів:  {maxOutputToken}"
@@ -1706,7 +1707,7 @@ msgstr "Штучний аналіз"
 msgid "Overview"
 msgstr "Огляд"
 
-#: AIHub/modeldetailsutils.py:293 AIHub/settings_dialog.py:177
+#: AIHub/modeldetailsutils.py:293 AIHub/settings_dialog.py:200
 msgid "Provider"
 msgstr "Постачальник"
 
@@ -1876,71 +1877,76 @@ msgstr "інтерпретатор коду"
 msgid "collections search"
 msgstr "пошук колекцій"
 
-#: AIHub/modelhandlers_impl.py:374
+#: AIHub/modelhandlers_impl.py:377
+#, python-brace-format
+msgid "{label} (default)"
+msgstr "{label} (початково)"
+
+#: AIHub/modelhandlers_impl.py:382
 msgid "Disabled"
 msgstr "Вимкнено"
 
-#: AIHub/modelhandlers_impl.py:380
+#: AIHub/modelhandlers_impl.py:388
 msgid "Enabled"
 msgstr "Увімкнено"
 
-#: AIHub/modelhandlers_impl.py:383
+#: AIHub/modelhandlers_impl.py:391
 msgid "Adaptive"
 msgstr "Адаптивнивне"
 
-#: AIHub/modelhandlers_impl.py:609
+#: AIHub/modelhandlers_impl.py:617
 msgid "Model details"
 msgstr "Деталі моделі"
 
-#: AIHub/modelhandlers_impl.py:666
+#: AIHub/modelhandlers_impl.py:674
 msgid "Show model &details"
 msgstr "Показати деталі &моделі"
 
-#: AIHub/modelhandlers_impl.py:671
+#: AIHub/modelhandlers_impl.py:679
 msgid "Add to &favorites"
 msgstr "Додати в &обране"
 
-#: AIHub/modelhandlers_impl.py:671
+#: AIHub/modelhandlers_impl.py:679
 msgid "Remove from &favorites"
 msgstr "Видалити з &обраного"
 
-#: AIHub/modelhandlers_impl.py:680
+#: AIHub/modelhandlers_impl.py:688
 msgid "Most recent first"
 msgstr "Спочатку найновіші"
 
-#: AIHub/modelhandlers_impl.py:682
+#: AIHub/modelhandlers_impl.py:690
 msgid "Oldest first"
 msgstr "Спочатку найстаріші"
 
-#: AIHub/modelhandlers_impl.py:684
+#: AIHub/modelhandlers_impl.py:692
 msgid "Name (A–Z)"
 msgstr "Назва (За зростанням)"
 
-#: AIHub/modelhandlers_impl.py:686
+#: AIHub/modelhandlers_impl.py:694
 msgid "Name (Z–A)"
 msgstr "Назва (За спаданням)"
 
-#: AIHub/modelhandlers_impl.py:688
+#: AIHub/modelhandlers_impl.py:696
 msgid "Context window (largest first)"
 msgstr "Контекстне вікно (спочатку найбільше)"
 
-#: AIHub/modelhandlers_impl.py:690
+#: AIHub/modelhandlers_impl.py:698
 msgid "Context window (smallest first)"
 msgstr "Контекстне вікно (спочатку найменше)"
 
-#: AIHub/modelhandlers_impl.py:692
+#: AIHub/modelhandlers_impl.py:700
 msgid "Max output tokens (highest first)"
 msgstr "Макс токенів виводу (спочатку найвищий)"
 
-#: AIHub/modelhandlers_impl.py:694
+#: AIHub/modelhandlers_impl.py:702
 msgid "Max output tokens (lowest first)"
 msgstr "Макс токенів виводу (спочатку найнижчий)"
 
-#: AIHub/modelhandlers_impl.py:704
+#: AIHub/modelhandlers_impl.py:712
 msgid "&Sort by"
 msgstr "&Сортувати за"
 
-#: AIHub/modelhandlers_impl.py:708
+#: AIHub/modelhandlers_impl.py:716
 msgid "&Refresh model list"
 msgstr "&Оновити список моделей"
 
@@ -2166,41 +2172,57 @@ msgstr "Клієнт OpenAI недоступний для транскрипці
 msgid "Transcription Error"
 msgstr "Помилка транскрипції"
 
-#: AIHub/settings_dialog.py:33
+#: AIHub/settings_dialog.py:34
 msgid "Manage API &accounts..."
 msgstr "Керувати обліковими записами &API..."
 
-#: AIHub/settings_dialog.py:39
+#: AIHub/settings_dialog.py:40
 msgid "Opens a separate dialog to add, edit, or remove provider accounts."
 msgstr ""
 "Відкриває окремий діалог для додавання, редагування або видалення облікових "
 "записів постачальника."
 
-#: AIHub/settings_dialog.py:50
+#: AIHub/settings_dialog.py:51
 msgid "Block the closing using the &escape key"
 msgstr "Заблокувати закриття за допомогою клавіші &escape"
 
-#: AIHub/settings_dialog.py:55
+#: AIHub/settings_dialog.py:56
 msgid "Remember the content of the S&ystem field between sessions"
 msgstr "Запам’ятовувати вміст поля &Системної підказки між сеансами"
 
-#: AIHub/settings_dialog.py:60
+#: AIHub/settings_dialog.py:61
 msgid "&Auto-save conversations after each response"
 msgstr "&Автоматичне збереження розмов після кожної відповіді"
 
-#: AIHub/settings_dialog.py:65
+#: AIHub/settings_dialog.py:66
 msgid "Enable &prompt caching when the provider supports it"
 msgstr "&Увімкнути кешування підказок, якщо постачальник його підтримує"
 
-#: AIHub/settings_dialog.py:72
+#: AIHub/settings_dialog.py:73
+msgid ""
+"Duration applies to Anthropic and to Claude models on OpenRouter. Other "
+"providers set the lifetime automatically."
+msgstr ""
+"Тривалість застосовується до моделей Anthropic та Claude на OpenRouter. Інші "
+"постачальники встановлюють термін служби автоматично."
+
+#: AIHub/settings_dialog.py:78
+msgid "Anthropic cache &duration:"
+msgstr "&Тривалість кешування Anthropic:"
+
+#: AIHub/settings_dialog.py:85
+msgid "OpenRouter Claude cache d&uration:"
+msgstr "&Тривалість кешування OpenRouter Claude:"
+
+#: AIHub/settings_dialog.py:95
 msgid "Text To Speech"
 msgstr "Перетворення тексту в мовлення"
 
-#: AIHub/settings_dialog.py:75 AIHub/tool_openai_tts_dialog.py:84
+#: AIHub/settings_dialog.py:98 AIHub/tool_openai_tts_dialog.py:84
 msgid "&Voice:"
 msgstr "&Голос:"
 
-#: AIHub/settings_dialog.py:79 AIHub/tool_lyria_dialog.py:78
+#: AIHub/settings_dialog.py:102 AIHub/tool_lyria_dialog.py:78
 #: AIHub/tool_mistral_ocr_dialog.py:61
 #: AIHub/tool_mistral_transcription_dialog.py:105
 #: AIHub/tool_openai_transcription_dialog.py:107
@@ -2208,23 +2230,23 @@ msgstr "&Голос:"
 msgid "&Model:"
 msgstr "&Модель:"
 
-#: AIHub/settings_dialog.py:85
+#: AIHub/settings_dialog.py:108
 msgid "Image description"
 msgstr "Опис зображення"
 
-#: AIHub/settings_dialog.py:90
+#: AIHub/settings_dialog.py:113
 msgid "&Resize images before sending them to the API"
 msgstr "&Змінити розмір зображення, перш ніж надсилати їх до API"
 
-#: AIHub/settings_dialog.py:96
+#: AIHub/settings_dialog.py:119
 msgid "Maximum &width (0 to resize proportionally to the height):"
 msgstr "Максимальна &ширина (0 для зміни розміру пропорційно висоті):"
 
-#: AIHub/settings_dialog.py:104
+#: AIHub/settings_dialog.py:127
 msgid "Maximum &height (0 to resize proportionally to the width):"
 msgstr "Максимальна &висота (0 для зміни розміру пропорційно ширині):"
 
-#: AIHub/settings_dialog.py:112
+#: AIHub/settings_dialog.py:135
 msgid ""
 "&Quality for JPEG images (0 [worst] to 95 [best], values above 95 should be "
 "avoided):"
@@ -2232,103 +2254,111 @@ msgstr ""
 "&Якість для зображень у форматі JPEG (де 0 [найгірше] а 95 [найкраще], варто "
 "уникати значень вище 95):"
 
-#: AIHub/settings_dialog.py:120
+#: AIHub/settings_dialog.py:143
 msgid "Customize default text &prompt"
 msgstr "Налаштувати &початковий текст підказки"
 
-#: AIHub/settings_dialog.py:126
+#: AIHub/settings_dialog.py:149
 msgid "Default &text prompt:"
 msgstr "&Початкова текстова підказка:"
 
-#: AIHub/settings_dialog.py:139
+#: AIHub/settings_dialog.py:162
 msgid "Chat feedback"
 msgstr "Зворотній зв'язок у чаті"
 
-#: AIHub/settings_dialog.py:145
+#: AIHub/settings_dialog.py:168
 msgid "Play sound when a task is in progress"
 msgstr "Відтворювати звук під час виконання завдання"
 
-#: AIHub/settings_dialog.py:149
+#: AIHub/settings_dialog.py:172
 msgid "Play sound when a response is sent"
 msgstr "Відтворювати звук gпри отриманні відповіді"
 
-#: AIHub/settings_dialog.py:153
+#: AIHub/settings_dialog.py:176
 msgid "Play sound when a response is pending"
 msgstr "Відтворювати звук при очікуванні відповіді"
 
-#: AIHub/settings_dialog.py:157
+#: AIHub/settings_dialog.py:180
 msgid "Play sound when a response is received"
 msgstr "Відтворювати звук, коли отримано відповідь"
 
-#: AIHub/settings_dialog.py:161
+#: AIHub/settings_dialog.py:184
 msgid ""
 "Move focus to message history when the first assistant reply token arrives"
 msgstr ""
 "Перемістити фокус на історію повідомлень, коли надійде перший токен "
 "відповіді асистента"
 
-#: AIHub/settings_dialog.py:165
+#: AIHub/settings_dialog.py:188
 msgid "Speak response when the focus is in the prompt field"
 msgstr "Промовляти відповідь, коли фокус знаходиться в полі запиту"
 
-#: AIHub/settings_dialog.py:173
+#: AIHub/settings_dialog.py:196
 msgid "Recording"
 msgstr "Запис"
 
-#: AIHub/settings_dialog.py:181
+#: AIHub/settings_dialog.py:204
 msgid "whisper.cpp (local)"
 msgstr "whisper.cpp (локальний)"
 
-#: AIHub/settings_dialog.py:183
+#: AIHub/settings_dialog.py:206
 msgid "OpenAI Whisper"
 msgstr "OpenAI Whisper"
 
-#: AIHub/settings_dialog.py:185
+#: AIHub/settings_dialog.py:208
 msgid "Mistral Voxtral"
 msgstr "Mistral Voxtral"
 
-#: AIHub/settings_dialog.py:189
+#: AIHub/settings_dialog.py:212
 msgid "Transcription &provider:"
 msgstr "&Постачальник транскрипції:"
 
-#: AIHub/settings_dialog.py:201
+#: AIHub/settings_dialog.py:224
 msgid "&Host (whisper.cpp):"
 msgstr "&Хост (whisper.cpp):"
 
-#: AIHub/settings_dialog.py:211
+#: AIHub/settings_dialog.py:234
 msgid "Provider account mapping"
 msgstr "Прив'язка облікових записів постачальників"
 
-#: AIHub/settings_dialog.py:217
+#: AIHub/settings_dialog.py:240
 msgid "Use these only when dictation must always use a specific account."
 msgstr ""
 "Використовуйте їх лише тоді, коли для диктування завжди потрібно "
 "використовувати певний обліковий запис."
 
-#: AIHub/settings_dialog.py:222
+#: AIHub/settings_dialog.py:245
 msgid "OpenAI transcription account:"
 msgstr "Обліковий запис транскрипції OpenAI:"
 
-#: AIHub/settings_dialog.py:228
+#: AIHub/settings_dialog.py:251
 msgid "Mistral transcription account:"
 msgstr "Обліковий запис транскрипції Mistral:"
 
-#: AIHub/settings_dialog.py:236
+#: AIHub/settings_dialog.py:259
 msgid "Audio preprocessing"
 msgstr "Попередня обробка аудіо"
 
-#: AIHub/settings_dialog.py:242
+#: AIHub/settings_dialog.py:265
 msgid "&Trim silence (remove leading/trailing and silence > 2s)"
 msgstr ""
 "&Видалити тишу (видалити початок/кінець та тишу тривалістю понад 2 секунди)"
 
-#: AIHub/settings_dialog.py:249
+#: AIHub/settings_dialog.py:272
 msgid "Minimum silence &duration to remove (seconds):"
 msgstr "Мінімальна тривалість тиші для видалення (у секундах):"
 
-#: AIHub/settings_dialog.py:268
+#: AIHub/settings_dialog.py:291
 msgid "Use provider active account (default)"
 msgstr "Використовувати активний обліковий запис постачальника (початково)"
+
+#: AIHub/settings_dialog.py:341
+msgid "5 minutes"
+msgstr "5 хвилин"
+
+#: AIHub/settings_dialog.py:343
+msgid "1 hour"
+msgstr "1 година"
 
 #: AIHub/tool_dialog_base.py:71
 msgid "OpenAI"
