@@ -5,15 +5,14 @@ model, account mapping) and the wiring of transcription requests to the
 custom endpoint's /audio/transcriptions URL.
 """
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 
-from AIHub import apikeymanager, transcription
+from AIHub import transcription
 from AIHub.apiclient import OpenAIClient, configure_client_for_provider
 from AIHub.consts import TRANSCRIPTION_PROVIDERS, Provider, TranscriptionProvider
 from AIHub.recordthread import RecordThread, transcribe_audio_file
-from AIHub.tool_openai_transcription_dialog import OpenAITranscriptionToolDialog
 
 CUSTOM = TranscriptionProvider.CUSTOM_OPENAI.value
 
@@ -132,49 +131,3 @@ def test_record_thread_raises_when_no_base_url_configured(wav):
 	rt = RecordThread(OpenAIClient(), conf={"transcriptionProvider": CUSTOM}, transcriptionProvider=CUSTOM)
 	with pytest.raises(ValueError, match="No Custom OpenAI endpoint URL configured"):
 		rt._transcribe_custom_openai(wav)
-
-
-def _openai_dialog():
-	"""Transcription tool dialog without its GUI."""
-	dlg = OpenAITranscriptionToolDialog.__new__(OpenAITranscriptionToolDialog)
-	dlg.provider = Provider.OpenAI
-	dlg.manager = apikeymanager.get(Provider.OpenAI)
-	return dlg
-
-
-def test_tool_dialog_lists_custom_accounts_when_openai_has_none(keys):
-	acc_id = keys.add_account(name="Local Whisper", api_key="sk-local", base_url="http://localhost:5000/v1", set_active=True)
-	accounts = _openai_dialog()._load_transcription_accounts()
-	assert len(accounts) == 1
-	assert accounts[0]["id"] == acc_id
-	assert accounts[0]["_provider"] == Provider.CustomOpenAI
-	assert accounts[0]["base_url"] == "http://localhost:5000/v1"
-
-
-def test_tool_dialog_configures_client_with_custom_account(keys):
-	acc_id = keys.add_account(name="OmniRoute", api_key="omni-secret-key", base_url="https://api.omniroute.ai/v1", set_active=True)
-	dlg = _openai_dialog()
-	dlg._accounts = dlg._load_transcription_accounts()
-	dlg.client = None
-	dlg.configure_client(acc_id)
-	assert dlg.client.base_url == "https://api.omniroute.ai/v1"
-	assert dlg.client.api_key == "omni-secret-key"
-	assert dlg.client.provider == Provider.CustomOpenAI
-
-
-def test_conversation_dictation_uses_custom_transcription_settings():
-	from AIHub.conversation_dialog import ConversationDialog
-
-	dlg = ConversationDialog.__new__(ConversationDialog)
-	dlg.conf = {"audio": {
-		"transcriptionProvider": CUSTOM,
-		"customOpenaiTranscriptionAccountId": "acc-123",
-		"whisperModel": "whisper-1",
-	}}
-	model = MagicMock(audioInput=False, provider=Provider.CustomOpenAI, id="custom-whisper")
-	dlg.getCurrentModel = lambda: model
-	dlg.getCurrentAccount = lambda: {"id": "acc-current", "provider": Provider.CustomOpenAI}
-	cfg = dlg._resolveDictationConfig()
-	assert cfg["transcription_provider"] == CUSTOM
-	assert cfg["transcription_account_id"] == "acc-123"
-	assert cfg["transcription_model"] == "custom-whisper"

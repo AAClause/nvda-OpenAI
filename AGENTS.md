@@ -47,6 +47,7 @@ Tests and checks must pass before committing. Add tools with `uv add --group <te
 - Tests live in `tests/` and are written in plain pytest style (functions, `assert`, fixtures, `parametrize`).
 - `tests/conftest.py` stubs the NVDA modules and registers the add-on as the `AIHub` package: import from `AIHub...` and add any missing NVDA stub there, never in a test file. Use its `key_store` fixture for anything that touches API accounts.
 - Tests must not depend on the developer's machine: no real API keys (conftest strips `*_KEY` environment variables), no network (patch `AIHub.apiclient._client._open_bytes` and the like, or use a local test server), files only under `tmp_path`.
+- No GUI tests: never instantiate a dialog or drive wx controls, even with fakes. Test the logic those classes call (parsers, request building, accounts, transcription...), and move logic out of a dialog when it needs a test.
 - Test behaviour, not declarations: no test that only re-reads a constant, an enum member, a registry entry or a class hierarchy. A bug fix comes with a test that fails without it.
 
 ## Git
