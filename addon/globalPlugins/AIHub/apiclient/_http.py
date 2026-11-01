@@ -62,10 +62,21 @@ class _CredentialSafeRedirectHandler(urllib.request.HTTPRedirectHandler):
 		return new
 
 
+_ssl_context = None
+
+
+def _default_ssl_context():
+	"""One SSL context for every request: building one reads the Windows
+	certificate store (tens of milliseconds). SSLContext is thread-safe."""
+	global _ssl_context
+	if _ssl_context is None:
+		_ssl_context = ssl.create_default_context()
+	return _ssl_context
+
+
 def _create_opener():
 	"""Create a urllib opener with default SSL context."""
-	ctx = ssl.create_default_context()
-	return urllib.request.build_opener(_CredentialSafeRedirectHandler, urllib.request.HTTPSHandler(context=ctx))
+	return urllib.request.build_opener(_CredentialSafeRedirectHandler, urllib.request.HTTPSHandler(context=_default_ssl_context()))
 
 
 def _build_headers(api_key: str, organization: Optional[str] = None) -> dict:

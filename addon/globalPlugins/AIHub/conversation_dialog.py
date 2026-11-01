@@ -39,6 +39,7 @@ from .history import HistoryBlock, TextSegment
 from .detached_branch import assistant_label_for_block
 from .recordthread import WhisperTranscription, AudioInputResult
 from .thread_shutdown import stop_worker_thread
+from .background import call_after_if_alive
 from .resultevent import EVT_RESULT_ID
 from .toolsmenu import show_tools_menu
 from .attachment_ui import AttachmentListUIMixin
@@ -138,7 +139,7 @@ class ConversationDialog(
 		if self.conf.get("saveSystem"):
 			page.systemTextCtrl.ChangeValue(getattr(page, "conversationSystemText", "") or "")
 		self._syncWindowTitleFromActiveTab()
-		wx.CallAfter(self._syncSharedChromeForActiveTab)
+		self._scheduleSharedChromeSync()
 		evt.Skip()
 
 	def _onConversationChromeEdited(self, evt):
@@ -303,6 +304,23 @@ class ConversationDialog(
 			v = bool(st["debug"])
 			self.debugModeCheckBox.SetValue(v)
 			self.conf["debug"] = v
+
+	def _scheduleSharedChromeSync(self):
+		"""Sync the shared controls once the pending events are processed.
+
+		Tab changes come in bursts (restoring a session adds one tab after the
+		other); the sync reloads the model list and the model options, so it
+		runs once for the tab that ends up selected.
+		"""
+		if getattr(self, "_sharedChromeSyncScheduled", False):
+			return
+		self._sharedChromeSyncScheduled = True
+
+		def _run():
+			self._sharedChromeSyncScheduled = False
+			self._syncSharedChromeForActiveTab()
+
+		call_after_if_alive(self, _run)
 
 	def _syncSharedChromeForActiveTab(self):
 		"""Refresh shared account/model/options controls for the selected conversation tab."""
@@ -738,7 +756,7 @@ class ConversationDialog(
 		self._hub_session_restored = False
 		if self._pending_session_paths and not conversationData:
 			try:
-				self._restoreHubSessionIfNeeded(append_fresh_tab=True)
+				self._restoreHubSessionIfNeeded()
 				self._hub_session_restored = True
 			except Exception:
 				log.error("restore hub session before pending attachment", exc_info=True)
@@ -951,9 +969,9 @@ class ConversationDialog(
 			self._loadConversation(conversationData, focus_message_history=True)
 		elif not self._hub_session_restored:
 			# After restoring saved tabs, always add a blank tab for a new conversation.
-			self._restoreHubSessionIfNeeded(append_fresh_tab=True)
+			self._restoreHubSessionIfNeeded()
 		self._syncWindowTitleFromActiveTab()
-		wx.CallAfter(self._syncSharedChromeForActiveTab)
+		self._scheduleSharedChromeSync()
 
 	def _apply_reasoning_mode_from_state(self, st):
 		"""Restore the unified reasoning combo (mode + effort) from saved tab state."""

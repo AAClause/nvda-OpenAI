@@ -250,7 +250,13 @@ class ConversationTabsMixin:
 		except Exception as err:
 			log.error(f"save hub session: {err}", exc_info=True)
 
-	def _restoreHubSessionIfNeeded(self, *, append_fresh_tab=False):
+	def _restoreHubSessionIfNeeded(self):
+		"""Reopen the tabs of the last session, then add and show a fresh tab.
+
+		Restored tabs are only loaded when the user switches to them: rendering
+		a long history up front made the window slow to appear for a tab nobody
+		looks at yet.
+		"""
 		if not self.conf.get("autoSaveConversation", True):
 			return
 		if not os.path.isfile(conversations.HUB_SESSION_JSON):
@@ -267,8 +273,6 @@ class ConversationTabsMixin:
 		while self.notebook.GetPageCount() < len(tabs):
 			# Translators: Temporary tab caption while restoring a previous session.
 			self._addConversationTab(_("Conversation"))
-		# Which tab gets full load last (others lazy/reset). No longer persisted (v2).
-		final_sel = 0
 		# Translators: Fallback conversation name during hub-session restoration.
 		name_by_id = {
 			# Translators: Fallback tab title when restoring a hub session if the saved conversation id has no stored display name.
@@ -281,8 +285,6 @@ class ConversationTabsMixin:
 			return (entry.get("id") if isinstance(entry, dict) else entry) or ""
 
 		for i in range(len(tabs)):
-			if i == final_sel:
-				continue
 			page = self.notebook.GetPage(i)
 			cid = _entry_cid(tabs[i])
 			if cid and conversations.conversation_file_exists(cid):
@@ -291,20 +293,23 @@ class ConversationTabsMixin:
 			else:
 				self._resetTabPage(page, select_tab=False, sync_attachment_widgets=False)
 
-		self.notebook.SetSelection(final_sel)
-		active_page = self.notebook.GetPage(final_sel)
-		cid = _entry_cid(tabs[final_sel])
-		if cid and conversations.conversation_file_exists(cid):
-			data = conversations.load_conversation(cid)
-			if data:
-				self._loadConversation(data)
-			else:
-				self._resetTabPage(active_page)
-		else:
-			self._resetTabPage(active_page)
-		if append_fresh_tab:
-			self._addConversationTab()
+		# The fresh tab starts from the first tab's system prompt. ChangeSelection
+		# sends no page-change event, which would load that tab.
+		self.notebook.ChangeSelection(0)
+		self._inheritSystemPromptFromConversation(self.notebook.GetPage(0), _entry_cid(tabs[0]))
+		self._addConversationTab()
 		wx.CallAfter(self.promptTextCtrl.SetFocus)
+
+	def _inheritSystemPromptFromConversation(self, page, cid):
+		"""Show a saved conversation's system prompt on its lazy tab, as a full load would."""
+		data = conversations.load_conversation(cid) if cid and conversations.conversation_file_exists(cid) else None
+		system = data.get("system", "") if isinstance(data, dict) else ""
+		if not isinstance(system, str):
+			system = ""
+		page.conversationSystemText = system
+		if system and self.conf["saveSystem"]:
+			page.systemTextCtrl.ChangeValue(system)
+			self._lastSystem = system
 
 	def _openConversationFromHistory(self, data):
 		"""Open a saved conversation in a new tab (conversation list dialog)."""

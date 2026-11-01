@@ -177,6 +177,7 @@ class DialogSessionMixin:
 			self._refocusHubWindow(dlg)
 			return
 
+		started = time.perf_counter()
 		dlg = conversation_dialog.ConversationDialog(
 			gui.mainFrame,
 			client=client,
@@ -197,6 +198,7 @@ class DialogSessionMixin:
 
 		dlg.Bind(wx.EVT_CLOSE, _on_close)
 		dlg.Show()
+		log.debug("AI-Hub conversation window shown in %d ms", (time.perf_counter() - started) * 1000)
 		if len(self._openMainDialogs) > 1:
 			last = self._openMainDialogs[-2]
 			try:
@@ -208,13 +210,12 @@ class DialogSessionMixin:
 		self._refocusHubWindow(dlg)
 
 	def onShowMainDialog(self, evt=None, forceNew=False):
-		if not self.getClient():
-			self._showNoAccountConfiguredDialog()
-			return
+		# After the tray menu has closed; _openMainDialog checks for an account itself.
 		wx.CallAfter(self._openMainDialog, None, None, forceNew)
 
 	def script_showMainDialog(self, gesture):
-		wx.CallAfter(self.onShowMainDialog, None, False)
+		# Scripts already run on NVDA's main (wx) thread.
+		self.onShowMainDialog(None, False)
 
 	def startChatSession(self, attachment):
 		"""Add an attachment to an open session, or open a new dialog with it."""
