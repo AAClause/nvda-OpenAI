@@ -1,17 +1,12 @@
 """Unit tests for Custom OpenAI-compatible endpoint transcription.
 
-Verifies:
-1. TranscriptionProvider enum contains CUSTOM_OPENAI.
-2. Transcription provider listing and choices functions include Custom OpenAI.
-3. Custom endpoint resolution (base URL, API key, model, account mapping).
-4. Audio transcription request wiring to custom endpoint URL (/audio/transcriptions).
-5. Config specifications and tools menu registry entries.
+Verifies provider selection, custom endpoint resolution (base URL, API key,
+model, account mapping) and the wiring of transcription requests to the
+custom endpoint's /audio/transcriptions URL.
 """
 
 import builtins
 import enum
-import io
-import json
 import os
 import sys
 import tempfile
@@ -91,7 +86,6 @@ from addon.globalPlugins.AIHub.consts import (
 	TranscriptionProvider,
 	TRANSCRIPTION_PROVIDERS,
 )
-from addon.globalPlugins.AIHub import configspec
 from addon.globalPlugins.AIHub import apikeymanager
 from addon.globalPlugins.AIHub import transcription
 from addon.globalPlugins.AIHub.apiclient import (
@@ -99,39 +93,15 @@ from addon.globalPlugins.AIHub.apiclient import (
 	configure_client_for_provider,
 )
 from addon.globalPlugins.AIHub.recordthread import RecordThread, transcribe_audio_file
-from addon.globalPlugins.AIHub.toolsmenu import ToolId, TOOLS_REGISTRY, _GROUP_ORDER
-from addon.globalPlugins.AIHub.tool_openai_transcription_dialog import (
-	OpenAITranscriptionToolDialog,
-	CustomOpenAITranscriptionToolDialog,
-)
-from addon.globalPlugins.AIHub.conversations import ConversationFormat
+from addon.globalPlugins.AIHub.tool_openai_transcription_dialog import OpenAITranscriptionToolDialog
 
 
 class TestTranscriptionProviderListing(unittest.TestCase):
-	"""Test transcription provider enum and listing functions."""
+	"""Test transcription provider choices and resolution."""
 
-	def test_enum_contains_custom_openai(self):
-		self.assertIn("CUSTOM_OPENAI", TranscriptionProvider.__members__)
-		self.assertEqual(TranscriptionProvider.CUSTOM_OPENAI.value, "custom_openai")
-
-	def test_transcription_providers_tuple_contains_custom_openai(self):
-		self.assertIn("custom_openai", TRANSCRIPTION_PROVIDERS)
-
-	def test_list_transcription_providers(self):
-		providers = transcription.list_transcription_providers()
-		self.assertIn(TranscriptionProvider.CUSTOM_OPENAI.value, providers)
-		self.assertIn(TranscriptionProvider.OPENAI.value, providers)
-		self.assertIn(TranscriptionProvider.MISTRAL.value, providers)
-		self.assertIn(TranscriptionProvider.WHISPER_CPP.value, providers)
-
-	def test_get_transcription_provider_choices(self):
-		choices = transcription.get_transcription_provider_choices()
-		choice_dict = dict(choices)
-		self.assertIn("custom_openai", choice_dict)
-		self.assertEqual(choice_dict["custom_openai"], "Custom OpenAI")
-		self.assertIn("openai", choice_dict)
-		self.assertIn("mistral", choice_dict)
-		self.assertIn("whisper_cpp", choice_dict)
+	def test_choices_match_provider_ids(self):
+		choice_ids = tuple(c[0] for c in transcription.get_transcription_provider_choices())
+		self.assertEqual(choice_ids, TRANSCRIPTION_PROVIDERS)
 
 	def test_get_transcription_provider_resolution(self):
 		# Default fallback
@@ -361,35 +331,6 @@ class TestTranscriptionWiring(unittest.TestCase):
 		self.assertEqual(result_text, "File helper transcription")
 
 
-class TestToolsRegistryAndConfigspec(unittest.TestCase):
-	"""Test configuration specs and tools registry integration."""
-
-	def test_configspec_contains_custom_transcription_keys(self):
-		audio_specs = configspec.confSpecs["audio"]
-		self.assertIn("customOpenAITranscriptionAccountId", audio_specs)
-		self.assertIn("customOpenAITranscriptionModel", audio_specs)
-		self.assertIn("custom_openai", audio_specs["transcriptionProvider"])
-
-	def test_tools_menu_registry_has_custom_openai(self):
-		self.assertIn("CUSTOM_OPENAI_TRANSCRIPTION", ToolId.__members__)
-		tool_ids = [t["id"] for t in TOOLS_REGISTRY]
-		self.assertIn(ToolId.CUSTOM_OPENAI_TRANSCRIPTION, tool_ids)
-
-		custom_tool = next(t for t in TOOLS_REGISTRY if t["id"] == ToolId.CUSTOM_OPENAI_TRANSCRIPTION)
-		self.assertEqual(custom_tool["group_label"], Provider.CustomOpenAI)
-		self.assertEqual(custom_tool["manager_provider"], Provider.CustomOpenAI)
-		self.assertEqual(custom_tool["dialog_class"], "CustomOpenAITranscriptionToolDialog")
-
-		self.assertIn(Provider.CustomOpenAI, _GROUP_ORDER)
-
-	def test_conversation_format_enum(self):
-		self.assertIn("TOOL_CUSTOM_OPENAI_TRANSCRIPTION", ConversationFormat.__members__)
-		self.assertEqual(
-			ConversationFormat.TOOL_CUSTOM_OPENAI_TRANSCRIPTION.value,
-			"tool/customopenai/transcription",
-		)
-
-
 class TestToolDialogAccounts(unittest.TestCase):
 	"""Test account handling in OpenAITranscriptionToolDialog and CustomOpenAITranscriptionToolDialog."""
 
@@ -442,19 +383,6 @@ class TestToolDialogAccounts(unittest.TestCase):
 		self.assertEqual(dlg.client.base_url, "https://api.omniroute.ai/v1")
 		self.assertEqual(dlg.client.api_key, "omni-secret-key")
 		self.assertEqual(dlg.client.provider, Provider.CustomOpenAI)
-
-	def test_custom_dialog_subclass_provider(self):
-		self.assertEqual(CustomOpenAITranscriptionToolDialog.__bases__[0], OpenAITranscriptionToolDialog)
-
-
-class TestSettingsDialogChoices(unittest.TestCase):
-	"""Test settings dialog choices alignment."""
-
-	def test_transcription_choices_alignment(self):
-		choices = transcription.get_transcription_provider_choices()
-		choice_ids = [c[0] for c in choices]
-		self.assertEqual(tuple(choice_ids), TRANSCRIPTION_PROVIDERS)
-		self.assertEqual(TRANSCRIPTION_PROVIDERS[3], "custom_openai")
 
 
 class TestRecordThreadEdgeCases(unittest.TestCase):

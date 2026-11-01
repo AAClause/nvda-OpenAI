@@ -25,6 +25,12 @@ if not hasattr(enum, "StrEnum"):
 
 	enum.StrEnum = StrEnum
 
+# The add-on falls back to API keys and hosts from the environment; drop them so
+# the developer's real accounts never reach the tests (nor their output).
+for _name in list(os.environ):
+	if _name.upper().endswith("_KEY") or _name.upper() == "OLLAMA_HOST":
+		del os.environ[_name]
+
 ADDON_PACKAGE_DIR = os.path.join(os.path.dirname(__file__), os.pardir, "addon", "globalPlugins", "AIHub")
 
 
