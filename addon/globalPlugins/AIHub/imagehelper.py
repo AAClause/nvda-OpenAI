@@ -1,9 +1,8 @@
 """Image utilities: screenshots, dimensions, resize. Requires Pillow in libs/."""
 import base64
-import os
 import sys
 
-from .consts import ADDON_DIR, ADDON_LIBS_DIR
+from .consts import ADDON_LIBS_DIR
 
 sys.path.insert(0, ADDON_LIBS_DIR)
 from PIL import Image, ImageGrab  # noqa: E402

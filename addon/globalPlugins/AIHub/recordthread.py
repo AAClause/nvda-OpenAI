@@ -25,7 +25,6 @@ from .apiclient import (
 	OpenAIClient,
 	build_multipart_body,
 	http_request_json,
-	Transcription,
 	transcribe_audio_mistral,
 	configure_client_for_provider,
 	truncate_error_for_user,
@@ -33,7 +32,6 @@ from .apiclient import (
 from .audioutils import trim_silence_wav, downsample_to_voice_wav
 from .consts import (
 	ADDON_DIR,
-	DATA_DIR,
 	Provider,
 	TEMP_DIR,
 	TranscriptionProvider,
@@ -296,7 +294,6 @@ class RecordThread(threading.Thread):
 
 			# Two buffers, ~62.5ms each at 16kHz mono
 			buf_size = 2048
-			buffers = []
 			headers = []
 			for _ in range(2):
 				buf = (ctypes.c_char * buf_size)()

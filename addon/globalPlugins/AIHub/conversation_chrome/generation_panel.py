@@ -6,7 +6,6 @@ import wx
 
 import addonHandler
 
-from ..consts import UI_SECTION_SPACING_PX
 from .reasoning_section import ReasoningChromeSection
 from .tools_section import ToolsChromeSection
 from .verbosity_section import VerbosityChromeSection

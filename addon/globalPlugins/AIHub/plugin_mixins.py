@@ -222,7 +222,6 @@ class DialogSessionMixin:
 
 	def startChatSession(self, attachment):
 		"""Add an attachment to an open session, or open a new dialog with it."""
-		from . import conversation_dialog
 		instance = self._findOpenConversationDialog()
 		if instance:
 			# Bring the dialog forward FIRST so the active session panel is
@@ -353,7 +352,7 @@ class AskRecordingMixin:
 		return bool(model and getattr(model, "audioInput", False))
 
 	def script_askQuestion(self, gesture):
-		from .ask_question import AskQuestionThread, mci_stop_ask_audio
+		from .ask_question import mci_stop_ask_audio
 		from .model import getModels
 		from .recordthread import RecordThread
 		from . import conversation_dialog

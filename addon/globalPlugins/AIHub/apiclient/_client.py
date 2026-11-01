@@ -361,7 +361,7 @@ class OpenAIClient:
 				_resolve_error_message(text, e.code),
 				status_code=e.code,
 				response_body=text,
-			)
+			) from None
 		except (urllib.error.URLError, OSError, ConnectionError) as e:
 			raise APIConnectionError(str(e)) from e
 

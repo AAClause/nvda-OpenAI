@@ -498,7 +498,7 @@ def _fetch_ollama_show_index(base_url: str, names, headers: dict) -> dict:
 
 	with ThreadPoolExecutor(max_workers=min(8, len(names))) as pool:
 		payloads = pool.map(lambda n: _fetch_ollama_show(native_base, n, headers), names)
-		return dict(zip(names, payloads))
+		return dict(zip(names, payloads, strict=True))
 
 
 def ollama_catalog_fields(show: dict) -> dict:

@@ -701,7 +701,7 @@ class HistoryHandlersMixin:
 		menu = wx.Menu()
 		item_id = wx.NewIdRef()
 		# Translators: AI-Hub conversation — message history area: entry in a right-click or application context menu.
-		resetItem = menu.Append(item_id, _("Reset to default"))
+		menu.Append(item_id, _("Reset to default"))
 		self.Bind(wx.EVT_MENU, self.onResetSystemPrompt, id=item_id)
 		menu.AppendSeparator()
 		self.addStandardMenuOptions(menu)

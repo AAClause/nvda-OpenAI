@@ -334,7 +334,7 @@ class OpenAITranscriptionToolDialog(ToolDialogBase):
 				kwargs["chunking_strategy"] = json.loads(chunking)
 			except Exception:
 				# Translators: Validation error when the optional chunking-strategy field is not valid JSON in the OpenAI transcription tool.
-				raise ValueError(_("Chunking strategy must be valid JSON."))
+				raise ValueError(_("Chunking strategy must be valid JSON.")) from None
 		known_names = _split_csv(self.knownSpeakerNamesText.GetValue().strip())
 		if known_names:
 			kwargs["known_speaker_names[]"] = known_names

@@ -6,7 +6,7 @@ import gui
 from logHandler import log
 from scriptHandler import script
 from . import apikeymanager
-from . import configspec
+from . import configspec  # noqa: F401 -- registers the config spec on import
 from .apiclient import OpenAIClient
 from .consts import ADDON_DIR, BASE_URLs, DATA_DIR, Provider
 from .plugin_mixins import AskRecordingMixin, DialogSessionMixin, MenuMixin

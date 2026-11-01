@@ -17,9 +17,9 @@ import addonHandler
 import gui
 from logHandler import log
 
-from .imagehelper import get_image_dimensions, resize_image
+from .imagehelper import get_image_dimensions
 from .image_file import AttachmentFile, AttachmentFileTypes, URL_PATTERN
-from .consts import Provider, TEMP_DIR
+from .consts import Provider
 from .mediastore import persist_local_file
 from .url_safety import build_http_fetch_opener, validate_http_fetch_url
 

@@ -1,7 +1,7 @@
 import json
 import os
 import uuid
-from .consts import AVAILABLE_PROVIDERS, BASE_URLs, CHAT_PROVIDERS, Provider
+from .consts import AVAILABLE_PROVIDERS, BASE_URLs, Provider
 from logHandler import log
 
 # Common environment variable names per provider (tried in order; first non-empty wins)

@@ -119,7 +119,7 @@ def _open_streaming(opener, req, *, timeout: int) -> Any:
 			_resolve_error_message(text, e.code),
 			status_code=e.code,
 			response_body=text,
-		)
+		) from None
 	except (urllib.error.URLError, OSError, ConnectionError) as e:
 		raise APIConnectionError(str(e)) from e
 	if resp.status != 200:
@@ -162,14 +162,14 @@ def _open_json(opener, req, *, timeout: int, allow_text: bool = False) -> Any:
 					_resolve_error_message(raw, resp.status),
 					status_code=resp.status,
 					response_body=raw,
-				)
+				) from None
 	except urllib.error.HTTPError as e:
 		text = e.read().decode("utf-8", errors="replace") if e.fp else ""
 		raise APIStatusError(
 			_resolve_error_message(text, e.code),
 			status_code=e.code,
 			response_body=text,
-		)
+		) from None
 	except (urllib.error.URLError, OSError, ConnectionError) as e:
 		raise APIConnectionError(str(e)) from e
 
@@ -193,7 +193,7 @@ def _open_bytes(opener, req, *, timeout: int) -> tuple[bytes, str]:
 			_resolve_error_message(text, e.code),
 			status_code=e.code,
 			response_body=text,
-		)
+		) from None
 	except (urllib.error.URLError, OSError, ConnectionError) as e:
 		raise APIConnectionError(str(e)) from e
 

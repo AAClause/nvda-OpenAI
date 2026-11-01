@@ -345,7 +345,6 @@ class AIHubSettingsPanel(gui.settingsDialogs.SettingsPanel):
 		audio_conf = conf.get("audio", {})
 		openai_id = audio_conf.get("openaiTranscriptionAccountId", "")
 		mistral_id = audio_conf.get("mistralTranscriptionAccountId", "")
-		custom_openai_id = audio_conf.get("customOpenAITranscriptionAccountId", "")
 		labels, ids, selected_idx = self._buildTranscriptionAccountChoices(Provider.OpenAI, openai_id)
 		self._openaiTranscriptionAccountIds = ids
 		self.openaiTranscriptionAccountChoice.SetItems(labels)
