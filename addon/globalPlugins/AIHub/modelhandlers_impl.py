@@ -567,9 +567,41 @@ class ModelHandlersMixin:
 			except (TypeError, ValueError):
 				spn.SetValue(0)
 
+	def _hideModelControls(self):
+		"""Hide every model-dependent control while no model is available.
+
+		The model list loads in the background, so the dialog can open (or stay,
+		when loading fails) without a model: wx would otherwise show every
+		provider's controls, all reachable with Tab.
+		"""
+		self._set_labeled_visibility(self.maxTokensLabel, self.maxTokensSpinCtrl, False)
+		self._reasoningModeOptions = ()
+		self._set_labeled_visibility(self.reasoningModeLabel, self.reasoningModeChoice, False)
+		for row in ("maxTokensRow", "reasoningModeRow"):
+			if hasattr(self, row):
+				getattr(self, row).Show(False)
+		self._apply_thinking_budget_chrome(None, preserve_chrome=True)
+		if hasattr(self, "_generation_chrome"):
+			self._generation_chrome.update_for_model(None)
+		for label, ctrl in (
+			(self.temperatureLabel, self.temperatureSpinCtrl),
+			(self.topPLabel, self.topPSpinCtrl),
+			(self.advancedSeedLabel, self.advancedSeedSpinCtrl),
+			(self.advancedTopKLabel, self.advancedTopKSpinCtrl),
+			(self.advancedStopLabel, self.advancedStopTextCtrl),
+			(self.advancedFreqPenaltyLabel, self.advancedFreqPenaltySpinCtrl),
+			(self.advancedPresPenaltyLabel, self.advancedPresPenaltySpinCtrl),
+		):
+			self._set_labeled_visibility(label, ctrl, False)
+		self._update_advanced_controls_visibility()
+		self.Layout()
+		# Not captured into the tab: its saved options are re-applied once the
+		# models are loaded.
+
 	def onModelChange(self, evt=None, chrome_source=None):
 		model = self.getCurrentModel()
 		if not model:
+			self._hideModelControls()
 			return
 		self._persistCurrentModelSelection(model)
 		preserve_chrome = self._preserve_session_chrome(evt, chrome_source)
