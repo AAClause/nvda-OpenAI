@@ -358,7 +358,7 @@ class AskRecordingMixin:
 		from .recordthread import RecordThread
 		from . import conversation_dialog
 		from .transcription import get_transcription_provider
-		from .consts import TranscriptionProvider
+		from .consts import Provider, TranscriptionProvider
 		from .apiclient import OpenAIClient, configure_client_for_provider
 
 		client = self.getClient()
@@ -439,7 +439,7 @@ class AskRecordingMixin:
 		from . import conversation_dialog
 		from .recordthread import RecordThread
 		from .transcription import get_transcription_provider
-		from .consts import TranscriptionProvider
+		from .consts import Provider, TranscriptionProvider
 		from .apiclient import OpenAIClient, configure_client_for_provider
 
 		client = self.getClient()
