@@ -260,8 +260,12 @@ def createAddonBundleFromPath(path, dest):
 	with zipfile.ZipFile(dest, 'w', zipfile.ZIP_DEFLATED) as z:
 		# FIXME: the include/exclude feature may or may not be useful. Also python files can be pre-compiled.
 		for dir, dirnames, filenames in os.walk(basedir):
+			# Bytecode caches left by local runs (tests, tools) must not ship.
+			dirnames[:] = [d for d in dirnames if d != "__pycache__"]
 			relativePath = os.path.relpath(dir, basedir)
 			for filename in filenames:
+				if filename.endswith((".pyc", ".pyo")):
+					continue
 				pathInBundle = os.path.join(relativePath, filename)
 				absPath = os.path.join(dir, filename)
 				if pathInBundle not in buildVars.excludedFiles:

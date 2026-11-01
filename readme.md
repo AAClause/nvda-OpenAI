@@ -184,12 +184,20 @@ Builds use `scons` to populate runtime libs under:
 
 When a required lib is missing, `scons` downloads pinned wheels and extracts only what is needed into that folder. Current pinned dependencies are:
 
-- **[markdown-it-py](https://pypi.org/project/markdown-it-py/)** `3.0.0` + **[mdurl](https://pypi.org/project/mdurl/)** `0.1.2` — extracted into `libs/` for chat Markdown rendering.
-- **[Pillow](https://pypi.org/project/Pillow/)** `12.1.1` for:
+- **[markdown-it-py](https://pypi.org/project/markdown-it-py/)** `4.2.0` + **[mdurl](https://pypi.org/project/mdurl/)** `0.1.2` — extracted into `libs/` for chat Markdown rendering.
+- **[Pillow](https://pypi.org/project/Pillow/)** `13.0.0` for:
   - Python `3.11` `win32` -> `libs/lib_py3.11_win32/`
   - Python `3.13` `win_amd64` -> `libs/lib_py3.13/`
 
 The `libs` directory is intentionally git-ignored; contributors do not need to commit vendored artifacts.
+
+## Development
+
+The development environment is managed with [uv](https://docs.astral.sh/uv/) (`pyproject.toml`, `uv.lock`):
+
+- `uv run pytest` — run the unit tests.
+- `uv run scons` — build the `.nvda-addon` package (`uv run scons pot` for the translation template).
+- `uv run prek run --all-files` — run the code checks (`uv run prek install` to run them on every commit).
 
 ## Troubleshooting (short)
 

@@ -1,13 +1,12 @@
-"""Load the add-on's pure modules outside NVDA.
+"""Load the add-on's modules outside NVDA.
 
-NVDA-only modules (addonHandler, logHandler, globalVars, wx, winsound...) are
-replaced by small stubs, and the ``AIHub`` package is registered without
+NVDA-only modules (addonHandler, logHandler, globalVars, gui, wx, winsound...)
+are replaced by small stubs, and the ``AIHub`` package is registered without
 running its ``__init__`` (which needs a live NVDA), so tests can import
 ``AIHub.apiclient``, ``AIHub.pricingutils`` and the like.
 """
 
 import builtins
-import enum
 import logging
 import os
 import sys
@@ -15,15 +14,8 @@ import tempfile
 import types
 from unittest import mock
 
-if not hasattr(enum, "StrEnum"):
-	class StrEnum(str, enum.Enum):
-		def _generate_next_value_(name, start, count, last_values):
-			return name.lower()
-
-		def __str__(self):
-			return str(self.value)
-
-	enum.StrEnum = StrEnum
+# Keep __pycache__ folders out of the add-on tree, which scons bundles as is.
+sys.dont_write_bytecode = True
 
 # The add-on falls back to API keys and hosts from the environment; drop them so
 # the developer's real accounts never reach the tests (nor their output).
@@ -46,14 +38,25 @@ builtins.ngettext = lambda singular, plural, count: singular if count == 1 else 
 _stub("addonHandler", initTranslation=lambda: None, getCodeAddon=mock.MagicMock(), Addon=mock.MagicMock())
 _stub("logHandler", log=logging.getLogger("AIHub"))
 _stub("globalVars", appArgs=types.SimpleNamespace(configPath=tempfile.mkdtemp(prefix="aihub-tests-")))
-_stub("config", conf={})
+_conf = mock.MagicMock(name="config.conf")
+_conf.spec = {}
+_conf.__getitem__.side_effect = lambda key: {}
+_stub("config", conf=_conf)
+_stub("globalPluginHandler", GlobalPlugin=type("GlobalPlugin", (), {}))
 if "winsound" not in sys.modules:
 	try:
 		import winsound  # noqa: F401
 	except ImportError:
 		_stub("winsound", PlaySound=lambda *a, **k: None, SND_ASYNC=1, SND_LOOP=8)
-sys.modules.setdefault("wx", mock.MagicMock(name="wx"))
-sys.modules.setdefault("markdown_it", mock.MagicMock(name="markdown_it"))
+for _name in (
+	"api", "braille", "controlTypes", "core", "gui", "gui.guiHelper", "keyboardHandler",
+	"markdown_it", "queueHandler", "scriptHandler", "speech", "tones", "ui",
+):
+	sys.modules.setdefault(_name, mock.MagicMock(name=_name))
+# Dialog classes subclass these, so they must be real classes.
+_wx = sys.modules.setdefault("wx", mock.MagicMock(name="wx"))
+_wx.Dialog = type("Dialog", (), {"__init__": lambda self, *a, **k: None, "Bind": lambda self, *a, **k: None})
+_wx.Panel = type("Panel", (), {})
 if "PIL" not in sys.modules:
 	pil_mock = mock.MagicMock(name="PIL")
 	sys.modules["PIL"] = pil_mock

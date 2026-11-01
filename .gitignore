@@ -11,3 +11,5 @@ manifest.ini
 *.nvda-addon
 .sconsign.dblite
 /[0-9]*.[0-9]*.[0-9]*.json
+.venv/
+.pytest_cache/

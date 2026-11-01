@@ -1,13 +1,5 @@
 import pytest
 
-try:
-	import AIHub  # noqa: F401
-except ImportError:
-	try:
-		import tests.conftest  # noqa: F401
-	except ImportError:
-		import conftest  # noqa: F401
-
 from AIHub.apiclient._usage import _normalize_usage_from_payload
 from AIHub.pricingutils import effective_pricing, estimate_usage_cost
 

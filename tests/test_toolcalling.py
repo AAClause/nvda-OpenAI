@@ -1,13 +1,5 @@
 import json
 
-try:
-	import AIHub  # noqa: F401
-except ImportError:
-	try:
-		import tests.conftest  # noqa: F401
-	except ImportError:
-		import conftest  # noqa: F401
-
 from AIHub.apiclient._content import _convert_messages_to_anthropic, _messages_to_responses_input
 from AIHub.apiclient._google import build_gemini_generate_content_body, messages_to_gemini_contents
 from AIHub.apiclient._parsers import parse_anthropic, parse_chat_completion, parse_gemini_generate_content, parse_responses

@@ -1,11 +1,3 @@
-try:
-	import AIHub  # noqa: F401
-except ImportError:
-	try:
-		import tests.conftest  # noqa: F401
-	except ImportError:
-		import conftest  # noqa: F401
-
 from AIHub.anthropicthinking import (
 	anthropic_reasoning_always_on,
 	anthropic_supports_default_fallback,

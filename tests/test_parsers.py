@@ -1,11 +1,3 @@
-try:
-	import AIHub  # noqa: F401
-except ImportError:
-	try:
-		import tests.conftest  # noqa: F401
-	except ImportError:
-		import conftest  # noqa: F401
-
 from AIHub.apiclient._google import interaction_audio_result
 from AIHub.apiclient._parsers import (
 	gemini_finish_reason,

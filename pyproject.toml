@@ -1,0 +1,21 @@
+# Development environment only: the add-on itself is built with scons and
+# bundled with NVDA's own Python, not installed as a package.
+[project]
+name = "nvda-aihub"
+version = "0"
+requires-python = ">=3.11"
+dependencies = []
+
+[dependency-groups]
+test = ["pytest>=8"]
+# sconstruct runs `python -m pip download` to vendor wheels into addon/.../libs.
+build = ["scons", "markdown", "pip"]
+lint = ["prek"]
+
+[tool.uv]
+package = false
+default-groups = "all"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = ["-q"]
