@@ -76,6 +76,13 @@ def copyToClipAsHTML(html_content):
 		raise RuntimeError("Unable to open the clipboard")
 
 
+def _window_title(label: str = "") -> str:
+	"""Conversation window title: what is open first, then the add-on's name."""
+	# Translators: Word in the conversation window title, after the conversation name and before "AI-Hub".
+	parts = [label, _("Conversation"), "AI-Hub"] if label else [_("Conversation"), "AI-Hub"]
+	return " – ".join(parts)
+
+
 def render_markdown_html(text: str) -> str:
 	return _MARKDOWN_RENDERER.render(text or "")
 
@@ -324,10 +331,9 @@ class ConversationDialog(
 			log.debug("Ignored error", exc_info=True)
 
 	def _syncWindowTitleFromActiveTab(self):
-		"""Window title: "<tab label> (n/N) – Conversation" so users hear which tab is active."""
+		"""Window title: "<tab label> (n/N) – Conversation – AI-Hub" so users hear which tab is active."""
 		if not getattr(self, "notebook", None) or self.notebook.GetPageCount() <= 0:
-			# Translators: Fallback title when no conversation tab exists.
-			self.SetTitle(_("Conversation"))
+			self.SetTitle(_window_title())
 			return
 		idx = self.notebook.GetSelection()
 		n = self.notebook.GetPageCount()
@@ -337,8 +343,7 @@ class ConversationDialog(
 		label = self.notebook.GetPageText(idx).strip() or _("Conversation")
 		# Translators: Tab position in the notebook (e.g. second of three tabs).
 		pos = _("({cur}/{tot})").format(cur=idx + 1, tot=n)
-		# Translators: Final conversation window title pattern.
-		self.SetTitle(f"{label} {pos} – {_('Conversation')}")
+		self.SetTitle(_window_title(f"{label} {pos}"))
 
 	def _deriveTabTitleFromAttachments(self, files) -> str:
 		"""Derive a notebook-tab label from the first attachment in the active tab.
@@ -660,11 +665,10 @@ class ConversationDialog(
 		if conversationData:
 			# Translators: Default name when opening a saved conversation without title.
 			conv_name = conversationData.get("name", _("Untitled conversation"))
-			# Translators: Main dialog title suffix.
-			title = f"{conv_name} – {_('Conversation')}"
+			title = _window_title(conv_name)
 		else:
 			# Translators: Title used when opening a fresh conversation window.
-			title = _("New conversation") + " – " + _("Conversation")
+			title = _window_title(_("New conversation"))
 		super().__init__(
 			parent,
 			title=title,
