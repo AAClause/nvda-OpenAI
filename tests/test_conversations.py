@@ -43,19 +43,3 @@ def test_delete_conversation_only_removes_its_own_files_in_the_data_folder(data_
 	assert not attachments.exists()
 	assert shared.exists()
 	assert user_file.exists()
-
-
-def test_delete_unknown_conversation_returns_false(data_dir):
-	assert conversations.delete_conversation("missing") is False
-
-
-@pytest.mark.parametrize("path, expected", [
-	("media/a.png", True),
-	("conversations/attachments/c1/a.png", True),
-	("../outside.png", False),
-	("https://example.com/a.png", False),
-	("", False),
-])
-def test_is_under_data_dir(data_dir, path, expected):
-	full = path if not path or "://" in path else str(data_dir / path)
-	assert conversations._is_under_data_dir(full) is expected

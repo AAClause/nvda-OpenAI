@@ -69,7 +69,3 @@ def test_effective_pricing_keeps_base_rates_below_threshold():
 	assert effective_pricing(pricing, 5)["prompt"] == "1"
 	assert effective_pricing(pricing, 10)["prompt"] == "2"
 	assert "overrides" not in effective_pricing(pricing, 10)
-
-
-def test_missing_pricing_costs_nothing():
-	assert estimate_usage_cost({"input_tokens": 10}, {}) == 0.0

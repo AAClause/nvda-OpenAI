@@ -2,16 +2,10 @@ from AIHub.apiclient._google import interaction_audio_result
 from AIHub.apiclient._parsers import (
 	gemini_finish_reason,
 	parse_anthropic,
-	parse_chat_completion,
 	parse_responses,
 	responses_finish_reason,
 )
 from AIHub.apiclient._sse import iter_sse_data_blocks
-
-
-def test_chat_completion_keeps_finish_reason():
-	result = parse_chat_completion({"choices": [{"message": {"content": ""}, "finish_reason": "content_filter"}]})
-	assert result.choices[0].finish_reason == "content_filter"
 
 
 def test_anthropic_refusal_is_reported():

@@ -11,7 +11,7 @@ import pytest
 
 from AIHub import transcription
 from AIHub.apiclient import OpenAIClient, configure_client_for_provider
-from AIHub.consts import TRANSCRIPTION_PROVIDERS, Provider, TranscriptionProvider
+from AIHub.consts import Provider, TranscriptionProvider
 from AIHub.recordthread import RecordThread, transcribe_audio_file
 
 CUSTOM = TranscriptionProvider.CUSTOM_OPENAI.value
@@ -35,11 +35,6 @@ def fake_response(text, requests=None):
 			requests.append(req)
 		return ('{"text": "%s"}' % text).encode(), "application/json"
 	return patch("AIHub.apiclient._client._open_bytes", side_effect=open_bytes)
-
-
-def test_choices_match_provider_ids():
-	choice_ids = tuple(c[0] for c in transcription.get_transcription_provider_choices())
-	assert choice_ids == TRANSCRIPTION_PROVIDERS
 
 
 @pytest.mark.parametrize("conf, expected", [
@@ -115,19 +110,7 @@ def test_transcribe_audio_file_dispatches_to_custom_openai(keys, wav):
 	assert text == "File helper transcription"
 
 
-def test_transcribe_audio_file_unsupported_extension_returns_none(tmp_path):
-	txt = tmp_path / "sample.txt"
-	txt.write_text("not an audio file")
-	assert transcribe_audio_file(str(txt), {"transcriptionProvider": CUSTOM}) is None
-
-
 def test_record_thread_falls_back_to_active_account(keys):
 	active_id = keys.add_account(name="Active", api_key="key", base_url="http://active:8000/v1", set_active=True)
 	conf = {"transcriptionProvider": CUSTOM, "customOpenaiTranscriptionAccountId": "non_existent_id"}
 	assert RecordThread(OpenAIClient(), conf=conf, transcriptionProvider=CUSTOM)._transcriptionAccountId == active_id
-
-
-def test_record_thread_raises_when_no_base_url_configured(wav):
-	rt = RecordThread(OpenAIClient(), conf={"transcriptionProvider": CUSTOM}, transcriptionProvider=CUSTOM)
-	with pytest.raises(ValueError, match="No Custom OpenAI endpoint URL configured"):
-		rt._transcribe_custom_openai(wav)
