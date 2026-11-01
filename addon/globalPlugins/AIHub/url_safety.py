@@ -9,8 +9,19 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-# Cloud metadata endpoint commonly targeted by SSRF (AWS / Azure / GCP instance metadata).
-_BLOCKED_METADATA = frozenset({ipaddress.ip_address("169.254.169.254")})
+# Cloud metadata endpoints commonly targeted by SSRF (AWS / Azure / GCP instance
+# metadata, and AWS's IPv6 one).
+_BLOCKED_METADATA = frozenset({ipaddress.ip_address("169.254.169.254"), ipaddress.ip_address("fd00:ec2::254")})
+
+
+def _is_blocked(address: str) -> bool:
+	try:
+		ip = ipaddress.ip_address(address.split("%")[0])
+	except ValueError:
+		return False
+	# ::ffff:169.254.169.254 reaches the IPv4 address.
+	mapped = getattr(ip, "ipv4_mapped", None)
+	return ip in _BLOCKED_METADATA or mapped in _BLOCKED_METADATA
 
 
 def validate_http_fetch_url(url: str) -> None:
@@ -33,25 +44,14 @@ def validate_http_fetch_url(url: str) -> None:
 
 
 def _check_host_and_resolve(host: str) -> None:
-	h = host.strip().strip("[]").lower()
+	if _is_blocked(host.strip().strip("[]").lower()):
+		raise ValueError("blocked host")
 	try:
-		ip = ipaddress.ip_address(h.split("%")[0])
-		if ip in _BLOCKED_METADATA:
-			raise ValueError("blocked host")
-		return
-	except ValueError:
-		pass
-	try:
-		for res in socket.getaddrinfo(host, None, type=socket.SOCK_STREAM):
-			addr = res[4][0]
-			try:
-				ip = ipaddress.ip_address(addr.split("%")[0])
-			except ValueError:
-				continue
-			if ip in _BLOCKED_METADATA:
-				raise ValueError("blocked host")
+		addresses = [res[4][0] for res in socket.getaddrinfo(host, None, type=socket.SOCK_STREAM)]
 	except socket.gaierror as e:
 		raise ValueError("could not resolve hostname") from e
+	if any(_is_blocked(addr) for addr in addresses):
+		raise ValueError("blocked host")
 
 
 class ValidatedRedirectHandler(urllib.request.HTTPRedirectHandler):
