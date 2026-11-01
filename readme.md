@@ -89,7 +89,9 @@ Open with **`NVDA+G`** or **Main dialog…** from the AI-Hub menu.
 - **Paste (file or text)** from the prompt’s context menu, or **`Ctrl+V`** in the prompt: the add-on may attach files, insert text paths, or treat a single URL as an attachment when appropriate.
 - Record **audio** snippets, attach audio files, and use **TTS** for prompt text where the model supports it.
 - **`Escape`** closes the main dialog (when no blocking modal is open).
-- **`Ctrl+R`** toggles microphone recording (when applicable).
+- **`Ctrl+R`** dictates: it records from the microphone and transcribes into the prompt, with the transcription service chosen in the settings (**Recording**), whatever the selected model.
+- **`Ctrl+Shift+A`** records a **voice message**: the audio itself is attached to the next message, for models that accept audio input.
+  Press the same shortcut again to stop. Both commands are also in the prompt's context menu, and the voice message in the audio list's.
 - **`F2`** renames the current saved conversation (after it exists in storage).
 - **`Ctrl+N`** opens a **new** main dialog instance (session).
 

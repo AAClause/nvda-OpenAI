@@ -130,6 +130,20 @@ def resolve_transcription_endpoint(conf: dict, provider: str | None = None) -> d
 	}
 
 
+def transcription_ready(conf: dict) -> bool:
+	"""True when the configured transcription service can be called.
+
+	whisper.cpp is a local server and always counts as ready; a custom
+	endpoint needs its URL, the cloud services an API key.
+	"""
+	endpoint = resolve_transcription_endpoint(conf)
+	if endpoint["provider"] == TranscriptionProvider.WHISPER_CPP.value:
+		return True
+	if endpoint["provider"] == TranscriptionProvider.CUSTOM_OPENAI.value:
+		return bool(endpoint["base_url"])
+	return bool(endpoint["api_key"])
+
+
 def get_transcription_text(transcription) -> str:
 	"""Extract text from Transcription, WhisperTranscription, or str. Returns empty string if None/invalid."""
 	if transcription is None:

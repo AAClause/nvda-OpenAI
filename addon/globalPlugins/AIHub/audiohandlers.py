@@ -136,6 +136,11 @@ class AudioHandlersMixin:
 			menu.Append(item_id, _("Remove &all"))
 			self.Bind(wx.EVT_MENU, self.onRemoveAllAudio, id=item_id)
 			menu.AppendSeparator()
+		if self._modelAcceptsAudio():
+			item_id = wx.NewIdRef()
+			# Translators: AI-Hub — audio attachments list context menu: records audio attached to the next message.
+			menu.Append(item_id, _("Record a &voice message") + " (Ctrl+Shift+A)")
+			self.Bind(wx.EVT_MENU, self.onRecordVoiceMessage, id=item_id)
 		item_id = wx.NewIdRef()
 		# Translators: AI-Hub — audio capture and playback: entry in a context menu or submenu.
 		menu.Append(item_id, _("Add from &file path..."))

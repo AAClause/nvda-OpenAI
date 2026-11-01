@@ -846,6 +846,11 @@ class HistoryHandlersMixin:
 		# Translators: AI-Hub conversation — message history area: entry in a context menu or submenu.
 		menu.Append(item_id, _("Dictate") + " (Ctrl+R)")
 		self.Bind(wx.EVT_MENU, self.onRecord, id=item_id)
+		if self._modelAcceptsAudio():
+			item_id = wx.NewIdRef()
+			# Translators: AI-Hub conversation — prompt field context menu: records audio attached to the next message (models that accept audio).
+			menu.Append(item_id, _("Record a &voice message") + " (Ctrl+Shift+A)")
+			self.Bind(wx.EVT_MENU, self.onRecordVoiceMessage, id=item_id)
 		menu.AppendSeparator()
 		item_id = wx.NewIdRef()
 		# Translators: AI-Hub conversation — message history area: entry in a context menu or submenu.

@@ -1660,6 +1660,7 @@ class ConversationDialog(
 		accelEntries = []
 		self.addEntry(accelEntries, wx.ACCEL_CTRL, wx.WXK_UP, self.onPreviousPrompt)
 		self.addEntry(accelEntries, wx.ACCEL_CTRL, ord("r"), self.onRecord)
+		self.addEntry(accelEntries, wx.ACCEL_CTRL | wx.ACCEL_SHIFT, ord("A"), self.onRecordVoiceMessage)
 		accelTable = wx.AcceleratorTable(accelEntries)
 		page.promptTextCtrl.SetAcceleratorTable(accelTable)
 
@@ -1669,6 +1670,7 @@ class ConversationDialog(
 		self.addEntry(accelEntries, wx.ACCEL_CTRL, ord("S"), self._onManualSaveRequested)
 		self.addEntry(accelEntries, wx.ACCEL_CTRL, ord("L"), self._onConversationList)
 		self.addEntry(accelEntries, wx.ACCEL_CTRL, ord("r"), self.onRecord)
+		self.addEntry(accelEntries, wx.ACCEL_CTRL | wx.ACCEL_SHIFT, ord("A"), self.onRecordVoiceMessage)
 		self.addEntry(accelEntries, wx.ACCEL_CTRL, ord("i"), self.onFileDescriptionFromFilePath)
 		self.addEntry(accelEntries, wx.ACCEL_CTRL, ord("u"), self.onFileDescriptionFromURL)
 		self.addEntry(accelEntries, wx.ACCEL_CTRL, ord("e"), self.onFileDescriptionFromScreenshot)

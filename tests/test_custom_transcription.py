@@ -175,7 +175,6 @@ def test_conversation_dictation_uses_custom_transcription_settings():
 	dlg.getCurrentModel = lambda: model
 	dlg.getCurrentAccount = lambda: {"id": "acc-current", "provider": Provider.CustomOpenAI}
 	cfg = dlg._resolveDictationConfig()
-	assert cfg["use_direct"] is False
 	assert cfg["transcription_provider"] == CUSTOM
 	assert cfg["transcription_account_id"] == "acc-123"
 	assert cfg["transcription_model"] == "custom-whisper"
