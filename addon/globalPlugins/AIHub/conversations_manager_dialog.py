@@ -91,14 +91,8 @@ class ConversationsManagerDialog(wx.Dialog):
 		self._all_entries = []
 		self._entries = []
 		main = wx.BoxSizer(wx.VERTICAL)
-		main.Add(
-			wx.StaticText(
-				self,
-				# Translators: Static label above the list of saved conversations in the Manage saved conversations dialog.
-				label=_("Saved conversations:"),
-			),
-			0, wx.ALL, 5
-		)
+		# Each label is created right before its field: screen readers name a
+		# field after the static text that precedes it in creation order.
 		filter_sz = wx.BoxSizer(wx.HORIZONTAL)
 		# Translators: Label for the conversation-history filter input.
 		self._filterLabel = wx.StaticText(self, label=_("&Filter (F1 for help):"))
@@ -109,6 +103,14 @@ class ConversationsManagerDialog(wx.Dialog):
 		filter_sz.Add(self._filterTextCtrl, 1, wx.ALL | wx.EXPAND, 5)
 		main.Add(filter_sz, 0, wx.EXPAND | wx.LEFT | wx.RIGHT, 0)
 
+		main.Add(
+			wx.StaticText(
+				self,
+				# Translators: Static label above the list of saved conversations in the Manage saved conversations dialog.
+				label=_("Saved conversations:"),
+			),
+			0, wx.LEFT | wx.RIGHT | wx.TOP, 5
+		)
 		self._list = wx.ListCtrl(
 			self,
 			style=wx.LC_REPORT,
@@ -133,11 +135,6 @@ class ConversationsManagerDialog(wx.Dialog):
 		self._sort_mode = "date_desc"
 		self.Bind(wx.EVT_MENU, self.onListContextMenuCommand)
 		main.Add(self._list, 1, wx.EXPAND | wx.ALL, 5)
-		self._propertiesText = wx.TextCtrl(
-			self,
-			style=wx.TE_MULTILINE | wx.TE_READONLY,
-			size=(600, 120)
-		)
 		main.Add(
 			wx.StaticText(
 				self,
@@ -145,6 +142,11 @@ class ConversationsManagerDialog(wx.Dialog):
 				label=_("Selected conversation properties:"),
 			),
 			0, wx.LEFT | wx.RIGHT | wx.TOP, 5
+		)
+		self._propertiesText = wx.TextCtrl(
+			self,
+			style=wx.TE_MULTILINE | wx.TE_READONLY,
+			size=(600, 120)
 		)
 		main.Add(self._propertiesText, 0, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.BOTTOM, 5)
 		btn_sizer = wx.BoxSizer(wx.HORIZONTAL)

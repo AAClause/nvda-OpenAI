@@ -4,19 +4,6 @@ from __future__ import annotations
 
 import wx
 
-from ..consts import UI_SECTION_SPACING_PX
-
-
-def add_vertical_labeled(
-	parent: wx.Window,
-	sizer: wx.Sizer,
-	label: str,
-	control: wx.Window,
-	border: int = UI_SECTION_SPACING_PX,
-) -> None:
-	label_ctrl = wx.StaticText(parent, label=label)
-	sizer.Add(label_ctrl, 0, wx.LEFT | wx.RIGHT | wx.TOP, border)
-	sizer.Add(control, 0, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.BOTTOM, border)
 
 
 def set_controls_visible(controls: list, visible: bool, enabled: bool | None = None) -> None:

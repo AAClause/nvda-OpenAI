@@ -88,15 +88,18 @@ def render_markdown_html(text: str) -> str:
 	return _MARKDOWN_RENDERER.render(text or "")
 
 
-def _labeled_control_row(parent, sizer, label_text, ctrl, proportion=0):
+def _labeled_control_row(parent, sizer, label_text, make_ctrl, proportion=0):
+	"""Create a label, then its control, and add both to ``sizer``.
+
+	Screen readers name a field after the static text created just before it
+	(Windows z-order), so the control is built by ``make_ctrl`` only once the
+	label exists. Returns (label, control).
+	"""
 	lbl = wx.StaticText(parent, label=label_text)
-	try:
-		ctrl.MoveAfterInTabOrder(lbl)
-	except Exception:
-		log.debug("Ignored error", exc_info=True)
+	ctrl = make_ctrl()
 	sizer.Add(lbl, 0, wx.LEFT | wx.RIGHT | wx.TOP, UI_SECTION_SPACING_PX)
 	sizer.Add(ctrl, proportion, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.BOTTOM, UI_SECTION_SPACING_PX)
-	return lbl
+	return lbl, ctrl
 
 
 class ConversationNotebook(wx.Notebook):
@@ -809,91 +812,77 @@ class ConversationDialog(
 		self.advancedSamplingGroupBox = wx.StaticBox(content_panel, label=_("Advanced sampling options"))
 		advancedSamplingSz = wx.StaticBoxSizer(self.advancedSamplingGroupBox, wx.VERTICAL)
 
-		self.temperatureSpinCtrl = wx.SpinCtrl(content_panel, min=0, max=200)
-		self.temperatureSpinCtrl.Bind(wx.EVT_SPINCTRL, self._onConversationChromeEdited)
-		# Translators: Label for temperature spin control.
-		self.temperatureLabel = _labeled_control_row(
+		self.temperatureLabel, self.temperatureSpinCtrl = _labeled_control_row(
 			content_panel,
 			advancedSamplingSz,
 			# Translators: Label before the temperature spin control (value is hundredths) in Advanced sampling on the conversation window.
 			_("&Temperature:"),
-			self.temperatureSpinCtrl,
+			lambda: wx.SpinCtrl(content_panel, min=0, max=200),
 		)
+		self.temperatureSpinCtrl.Bind(wx.EVT_SPINCTRL, self._onConversationChromeEdited)
 
-		self.topPSpinCtrl = wx.SpinCtrl(
-			content_panel,
-			min=TOP_P_MIN,
-			max=TOP_P_MAX,
-			initial=conf["topP"]
-		)
-		self.topPSpinCtrl.Bind(wx.EVT_SPINCTRL, self._onConversationChromeEdited)
-		# Translators: Label for top-p (probability mass) spin control.
-		self.topPLabel = _labeled_control_row(
+		self.topPLabel, self.topPSpinCtrl = _labeled_control_row(
 			content_panel,
 			advancedSamplingSz,
 			# Translators: Label before the top-P (probability mass) spin control in Advanced sampling on the conversation window.
 			_("Pro&bability Mass (top P):"),
-			self.topPSpinCtrl,
+			lambda: wx.SpinCtrl(
+				content_panel,
+				min=TOP_P_MIN,
+				max=TOP_P_MAX,
+				initial=conf["topP"]
+			),
 		)
+		self.topPSpinCtrl.Bind(wx.EVT_SPINCTRL, self._onConversationChromeEdited)
 
-		self.advancedSeedSpinCtrl = wx.SpinCtrl(content_panel, min=-1, max=2147483647, initial=-1)
-		self.advancedSeedSpinCtrl.Bind(wx.EVT_SPINCTRL, self._onConversationChromeEdited)
-		# Translators: Label for optional deterministic seed spin control.
-		self.advancedSeedLabel = _labeled_control_row(
+		self.advancedSeedLabel, self.advancedSeedSpinCtrl = _labeled_control_row(
 			content_panel,
 			advancedSamplingSz,
 			# Translators: Label for optional deterministic seed spin control.
 			_("See&d (−1 = omit):"),
-			self.advancedSeedSpinCtrl,
+			lambda: wx.SpinCtrl(content_panel, min=-1, max=2147483647, initial=-1),
 		)
+		self.advancedSeedSpinCtrl.Bind(wx.EVT_SPINCTRL, self._onConversationChromeEdited)
 
-		self.advancedTopKSpinCtrl = wx.SpinCtrl(content_panel, min=0, max=1000000, initial=0)
-		self.advancedTopKSpinCtrl.Bind(wx.EVT_SPINCTRL, self._onConversationChromeEdited)
-		# Translators: Label for optional top-k spin control.
-		self.advancedTopKLabel = _labeled_control_row(
+		self.advancedTopKLabel, self.advancedTopKSpinCtrl = _labeled_control_row(
 			content_panel,
 			advancedSamplingSz,
 			# Translators: Label for optional top-k spin control.
 			_("Top &K (0 = omit):"),
-			self.advancedTopKSpinCtrl,
+			lambda: wx.SpinCtrl(content_panel, min=0, max=1000000, initial=0),
 		)
+		self.advancedTopKSpinCtrl.Bind(wx.EVT_SPINCTRL, self._onConversationChromeEdited)
 
-		self.advancedStopTextCtrl = wx.TextCtrl(
-			content_panel,
-			size=(700, 72),
-			style=wx.TE_MULTILINE,
-		)
-		self.advancedStopTextCtrl.Bind(wx.EVT_TEXT, self._onConversationChromeEdited)
-		# Translators: Label for stop sequences multiline input.
-		self.advancedStopLabel = _labeled_control_row(
+		self.advancedStopLabel, self.advancedStopTextCtrl = _labeled_control_row(
 			content_panel,
 			advancedSamplingSz,
 			# Translators: Label for stop sequences multiline input.
 			_("St&op sequences (one per line):"),
-			self.advancedStopTextCtrl,
+			lambda: wx.TextCtrl(
+				content_panel,
+				size=(700, 72),
+				style=wx.TE_MULTILINE,
+			),
 		)
+		self.advancedStopTextCtrl.Bind(wx.EVT_TEXT, self._onConversationChromeEdited)
 
-		self.advancedFreqPenaltySpinCtrl = wx.SpinCtrl(content_panel, min=-200, max=200, initial=0)
-		self.advancedFreqPenaltySpinCtrl.Bind(wx.EVT_SPINCTRL, self._onConversationChromeEdited)
-		# Translators: Label for frequency penalty spin control.
-		self.advancedFreqPenaltyLabel = _labeled_control_row(
+		self.advancedFreqPenaltyLabel, self.advancedFreqPenaltySpinCtrl = _labeled_control_row(
 			content_panel,
 			advancedSamplingSz,
 			# Translators: Label for frequency penalty spin control.
 			_("&Frequency penalty (−2..2, ×100):"),
-			self.advancedFreqPenaltySpinCtrl,
+			lambda: wx.SpinCtrl(content_panel, min=-200, max=200, initial=0),
 		)
+		self.advancedFreqPenaltySpinCtrl.Bind(wx.EVT_SPINCTRL, self._onConversationChromeEdited)
 
-		self.advancedPresPenaltySpinCtrl = wx.SpinCtrl(content_panel, min=-200, max=200, initial=0)
-		self.advancedPresPenaltySpinCtrl.Bind(wx.EVT_SPINCTRL, self._onConversationChromeEdited)
-		# Translators: Label for presence penalty spin control.
-		self.advancedPresPenaltyLabel = _labeled_control_row(
+		self.advancedPresPenaltyLabel, self.advancedPresPenaltySpinCtrl = _labeled_control_row(
 			content_panel,
 			advancedSamplingSz,
 			# Translators: Label for presence penalty spin control.
 			_("&Presence penalty (−2..2, ×100):"),
-			self.advancedPresPenaltySpinCtrl,
+			lambda: wx.SpinCtrl(content_panel, min=-200, max=200, initial=0),
 		)
+		self.advancedPresPenaltySpinCtrl.Bind(wx.EVT_SPINCTRL, self._onConversationChromeEdited)
 		gen_sz.Add(advancedSamplingSz, 0, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.BOTTOM, UI_SECTION_SPACING_PX)
 
 		mainSizer.Add(gen_sz, 0, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.BOTTOM, UI_SECTION_SPACING_PX)
