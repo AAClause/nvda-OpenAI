@@ -156,16 +156,12 @@ class RecordThread(threading.Thread):
 			manager = apikeymanager.get(chat_provider)
 			if not self._transcriptionAccountId:
 				self._transcriptionAccountId = (conf or {}).get(account_key, "")
-				if not self._transcriptionAccountId and chat_provider == Provider.CustomOpenAI:
-					self._transcriptionAccountId = (conf or {}).get("customOpenAITranscriptionAccountId", "")
 			if self._transcriptionAccountId and not manager.isReady(account_id=self._transcriptionAccountId):
 				self._transcriptionAccountId = ""
 			if not self._transcriptionAccountId:
 				self._transcriptionAccountId = manager.get_active_account_id()
 			if not self._transcriptionModel:
 				self._transcriptionModel = (conf or {}).get(model_key, "")
-				if not self._transcriptionModel and chat_provider == Provider.CustomOpenAI:
-					self._transcriptionModel = (conf or {}).get("customOpenAITranscriptionModel", "")
 				self._transcriptionModel = self._transcriptionModel or default_model
 
 	def run(self):
@@ -446,7 +442,7 @@ class RecordThread(threading.Thread):
 			account_id=account_id,
 			clone=True,
 		)
-		model = self._transcriptionModel or (self.conf or {}).get("customOpenAITranscriptionModel", "") or (self.conf or {}).get("whisperModel", "whisper-1")
+		model = self._transcriptionModel or (self.conf or {}).get("customOpenaiTranscriptionModel", "") or (self.conf or {}).get("whisperModel", "whisper-1")
 		with open(filename, "rb") as audio_file:
 			return client.audio.transcriptions.create(
 				model=model,

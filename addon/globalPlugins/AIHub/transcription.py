@@ -92,14 +92,14 @@ def resolve_transcription_endpoint(conf: dict, provider: str | None = None) -> d
 
 	if resolved_provider == TranscriptionProvider.CUSTOM_OPENAI.value:
 		manager = apikeymanager.get(Provider.CustomOpenAI)
-		account_id = audio_conf.get("customOpenAITranscriptionAccountId", "").strip()
+		account_id = audio_conf.get("customOpenaiTranscriptionAccountId", "").strip()
 		if account_id and not manager.isReady(account_id=account_id):
 			account_id = ""
 		if not account_id:
 			account_id = manager.get_active_account_id() or ""
 		base_url = manager.get_base_url(account_id=account_id) if account_id else manager.get_base_url()
 		api_key = manager.get_api_key(account_id=account_id) if account_id else manager.get_api_key()
-		model = audio_conf.get("customOpenAITranscriptionModel", "").strip() or audio_conf.get("whisperModel", "whisper-1")
+		model = audio_conf.get("customOpenaiTranscriptionModel", "").strip() or audio_conf.get("whisperModel", "whisper-1")
 		return {
 			"provider": TranscriptionProvider.CUSTOM_OPENAI.value,
 			"api_provider": Provider.CustomOpenAI,

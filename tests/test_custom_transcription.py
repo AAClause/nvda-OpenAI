@@ -76,8 +76,8 @@ def test_resolve_custom_endpoint_mapped_account(keys):
 	acc2 = keys.add_account(name="OmniRoute", api_key="key-2", base_url="https://api.omniroute.ai/v1", set_active=False)
 	info = transcription.resolve_transcription_endpoint({"audio": {
 		"transcriptionProvider": CUSTOM,
-		"customOpenAITranscriptionAccountId": acc2,
-		"customOpenAITranscriptionModel": "custom-whisper-large",
+		"customOpenaiTranscriptionAccountId": acc2,
+		"customOpenaiTranscriptionModel": "custom-whisper-large",
 	}})
 	assert info["account_id"] == acc2
 	assert info["base_url"] == "https://api.omniroute.ai/v1"
@@ -124,7 +124,7 @@ def test_transcribe_audio_file_unsupported_extension_returns_none(tmp_path):
 
 def test_record_thread_falls_back_to_active_account(keys):
 	active_id = keys.add_account(name="Active", api_key="key", base_url="http://active:8000/v1", set_active=True)
-	conf = {"transcriptionProvider": CUSTOM, "customOpenAITranscriptionAccountId": "non_existent_id"}
+	conf = {"transcriptionProvider": CUSTOM, "customOpenaiTranscriptionAccountId": "non_existent_id"}
 	assert RecordThread(OpenAIClient(), conf=conf, transcriptionProvider=CUSTOM)._transcriptionAccountId == active_id
 
 
@@ -168,7 +168,7 @@ def test_conversation_dictation_uses_custom_transcription_settings():
 	dlg = ConversationDialog.__new__(ConversationDialog)
 	dlg.conf = {"audio": {
 		"transcriptionProvider": CUSTOM,
-		"customOpenAITranscriptionAccountId": "acc-123",
+		"customOpenaiTranscriptionAccountId": "acc-123",
 		"whisperModel": "whisper-1",
 	}}
 	model = MagicMock(audioInput=False, provider=Provider.CustomOpenAI, id="custom-whisper")

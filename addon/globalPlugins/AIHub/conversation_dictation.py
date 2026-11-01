@@ -56,10 +56,7 @@ class ConversationDictationMixin:
 				):
 					transcription_model = model_id
 			elif transcription_provider == TranscriptionProvider.CUSTOM_OPENAI:
-				transcription_account_id = (
-					self.conf["audio"].get("customOpenaiTranscriptionAccountId", "").strip()
-					or self.conf["audio"].get("customOpenAITranscriptionAccountId", "").strip()
-				)
+				transcription_account_id = self.conf["audio"].get("customOpenaiTranscriptionAccountId", "").strip()
 				if not transcription_account_id and account and account.get("provider") == Provider.CustomOpenAI:
 					transcription_account_id = account.get("id")
 				model_id = getattr(model, "id", "")

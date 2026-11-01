@@ -150,3 +150,37 @@ def test_every_tool_dialog_resolves():
 	for tool in TOOLS_REGISTRY:
 		cls = _resolve_dialog_cls(dict(tool))
 		assert cls.__name__ == tool["dialog_class"], tool["id"]
+
+
+def test_config_keys_exist_in_the_spec():
+	"""A misspelled config key reads the default and writes a key nobody reads."""
+	from AIHub.configspec import confSpecs
+
+	sections = {name for name, spec in confSpecs.items() if isinstance(spec, dict)}
+
+	def section_of(receiver):
+		if isinstance(receiver, ast.Subscript) and isinstance(receiver.slice, ast.Constant) and receiver.slice.value in sections:
+			return receiver.slice.value
+		if isinstance(receiver, ast.Name) and receiver.id == "audio_conf":
+			return "audio"
+		return None
+
+	wrong = []
+	for parts, tree in MODULES.items():
+		for node in ast.walk(tree):
+			if isinstance(node, ast.Subscript) and isinstance(node.slice, ast.Constant):
+				receiver, key = node.value, node.slice.value
+			elif (
+				isinstance(node, ast.Call)
+				and isinstance(node.func, ast.Attribute)
+				and node.func.attr == "get"
+				and node.args
+				and isinstance(node.args[0], ast.Constant)
+			):
+				receiver, key = node.func.value, node.args[0].value
+			else:
+				continue
+			section = section_of(receiver)
+			if section and key not in confSpecs[section]:
+				wrong.append(f"{'.'.join(parts)}:{node.lineno}: [{section!r}][{key!r}]")
+	assert wrong == []
