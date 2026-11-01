@@ -8,6 +8,7 @@ from __future__ import annotations
 import json
 import ssl
 import urllib.error
+import urllib.parse
 import urllib.request
 from typing import Any, Optional
 
@@ -34,10 +35,37 @@ _AUDIO_MIME = {
 }
 
 
+# Request headers that carry credentials (lower case).
+_CREDENTIAL_HEADERS = frozenset({"authorization", "x-api-key", "x-goog-api-key", "openai-organization"})
+_DEFAULT_PORTS = {"http": 80, "https": 443}
+
+
+def _origin(url: str) -> tuple:
+	parts = urllib.parse.urlsplit(url)
+	scheme = parts.scheme.lower()
+	return scheme, (parts.hostname or "").lower(), parts.port or _DEFAULT_PORTS.get(scheme)
+
+
+class _CredentialSafeRedirectHandler(urllib.request.HTTPRedirectHandler):
+	"""Follow redirects without sending credentials to another origin.
+
+	urllib copies every request header to the redirect target, so an endpoint
+	answering with a redirect to another host (or to plain http) would
+	otherwise receive the API key.
+	"""
+
+	def redirect_request(self, req, fp, code, msg, headers, newurl):
+		new = super().redirect_request(req, fp, code, msg, headers, newurl)
+		if new is not None and _origin(newurl) != _origin(req.full_url):
+			for name in [n for n in new.headers if n.lower() in _CREDENTIAL_HEADERS]:
+				del new.headers[name]
+		return new
+
+
 def _create_opener():
 	"""Create a urllib opener with default SSL context."""
 	ctx = ssl.create_default_context()
-	return urllib.request.build_opener(urllib.request.HTTPSHandler(context=ctx))
+	return urllib.request.build_opener(_CredentialSafeRedirectHandler, urllib.request.HTTPSHandler(context=ctx))
 
 
 def _build_headers(api_key: str, organization: Optional[str] = None) -> dict:
