@@ -5,6 +5,7 @@ from AIHub.anthropicthinking import (
 	anthropic_web_search_tool,
 )
 from AIHub.apiclient._client import build_multipart_body
+from AIHub.chatparams import _params_for_error_log
 from AIHub.model import ollama_catalog_fields
 from AIHub.providertools_helpers import parse_modelfile
 from AIHub.reasoningrequest import (
@@ -79,3 +80,11 @@ def test_ollama_show_metadata():
 	assert toggle["input_modalities"] == ["text", "image"]
 	assert toggle["reasoning"] == {"mandatory": False, "supports_max_tokens": False, "default_enabled": True}
 	assert ollama_catalog_fields({"capabilities": ["completion"], "thinking": {"values": [False]}}) == {}
+
+
+def test_error_log_parameters_never_contain_the_conversation():
+	params = {"model": "m", "temperature": 0.2, "messages": [{"role": "user", "content": "my secret diary"}]}
+	logged = _params_for_error_log(params)
+	assert "my secret diary" not in repr(logged)
+	assert logged == {"model": "m", "temperature": 0.2, "messages": "<1 message(s) omitted>"}
+	assert params["messages"][0]["content"] == "my secret diary"
