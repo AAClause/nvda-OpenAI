@@ -1,0 +1,40 @@
+name: tests
+
+"on":
+  push:
+    branches: ["**"]
+  # build_addon.yml calls this workflow for tags and pull requests.
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pytest:
+    name: pytest (Python ${{ matrix.python }}, ${{ matrix.nvda }})
+    # The add-on only runs on Windows, inside NVDA's own Python. The tests
+    # cover pure-Python logic, so the interpreter's bitness does not matter.
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Oldest supported runtime: catches syntax and APIs newer than 3.11.
+          - python: "3.11"
+            nvda: NVDA 2024.1–2025.x
+          # Catches standard library modules removed in 3.13.
+          - python: "3.13"
+            nvda: NVDA 2026.1+
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+
+      # Only the test group: the build and lint tools are not needed here.
+      - name: Unit tests
+        run: uv run --locked --python ${{ matrix.python }} --no-default-groups --group test pytest
