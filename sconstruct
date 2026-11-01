@@ -408,7 +408,7 @@ createAddonHelp("addon")
 for mdFile in env.Glob(os.path.join('addon', 'doc', '*', '*.md')):
 	htmlFile = env.markdown(mdFile)
 	try:  # It is possible that no moFile was set, because an add-on has no translations.
-		moFile
+		moFile  # noqa: B018 -- add-on template idiom: NameError when there is no translation
 	except NameError:  # Runs if there is no moFile
 		env.Depends(htmlFile, mdFile)
 	else:  # Runs if there is a moFile

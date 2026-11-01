@@ -11,10 +11,10 @@ hooks = [
   { id = "check-toml" },
 ]
 
-# Lint rules are in pyproject.toml ([tool.ruff]); ruff also reports syntax errors.
+# ruff comes from the uv environment (lint group), so uv.lock pins its version;
+# its rules are in pyproject.toml ([tool.ruff]). It also reports syntax errors.
 [[repos]]
-repo = "https://github.com/astral-sh/ruff-pre-commit"
-rev = "v0.17.3"
+repo = "local"
 hooks = [
-  { id = "ruff-check" },
+  { id = "ruff-check", name = "ruff check", entry = "uv run ruff check", language = "system", pass_filenames = false, files = '(\.py|^sconstruct)$' },
 ]

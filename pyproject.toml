@@ -1,5 +1,8 @@
 # Development environment only: the add-on itself is built with scons and
-# bundled with NVDA's own Python, not installed as a package.
+# bundled with NVDA's own Python, not installed as a package. Its runtime
+# libraries are vendored by sconstruct (see _VENDORED_WHEELS), so the project
+# has no dependencies of its own: every tool lives in a dependency group, and
+# uv.lock pins the exact versions.
 [project]
 name = "nvda-aihub"
 version = "0"
@@ -7,10 +10,12 @@ requires-python = ">=3.11"
 dependencies = []
 
 [dependency-groups]
-test = ["pytest>=8"]
-# sconstruct runs `python -m pip download` to vendor wheels into addon/.../libs.
-build = ["scons", "markdown", "pip"]
-lint = ["prek"]
+test = ["pytest>=9.2"]
+# markdown renders readme.md into the add-on's HTML help; sconstruct runs
+# `python -m pip download` to vendor wheels into addon/globalPlugins/AIHub/libs.
+build = ["scons>=4.11", "markdown>=3.11", "pip>=26"]
+# prek runs ruff from this environment (see prek.toml).
+lint = ["prek>=0.5.9", "ruff>=0.17.3"]
 
 [tool.uv]
 package = false
