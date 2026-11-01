@@ -36,7 +36,7 @@ Configure **one or more providers** in NVDA **Preferences → Settings → AI-Hu
 | [Google](https://ai.google.dev/) | Gemini; Lyria 3 Pro tool |
 | [Pangram](https://www.pangram.com/) | Tool only (no chat models): AI-generated text detection, bulk detection, document detection, and plagiarism check |
 
-The add-on can pick up API keys from **environment variables** when set (for example `OPENAI_API_KEY`, `DEEPSEEK_API_KEY`, `MISTRAL_API_KEY`, `OPENROUTER_API_KEY`, `ANTHROPIC_API_KEY`, `XAI_API_KEY`, `GEMINI_API_KEY` / `GOOGLE_API_KEY`, `PANGRAM_API_KEY`, and others). The settings UI remains the main place to manage accounts.
+The add-on can pick up API keys from **environment variables** when set (for example `OPENAI_API_KEY`, `DEEPSEEK_API_KEY`, `MISTRAL_API_KEY`, `OPENROUTER_API_KEY`, `ANTHROPIC_API_KEY`, `XAI_API_KEY`, `GEMINI_API_KEY` / `GOOGLE_API_KEY`, `PANGRAM_API_KEY`, and others). Custom OpenAI-compatible endpoints only use `OPENAI_COMPAT_API_KEY`, never `OPENAI_API_KEY`, so your OpenAI key is not sent to another server. The settings UI remains the main place to manage accounts.
 
 ### Speech-to-text (transcription) backends
 

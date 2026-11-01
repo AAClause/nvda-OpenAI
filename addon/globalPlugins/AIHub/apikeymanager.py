@@ -8,7 +8,8 @@ from logHandler import log
 _ENV_KEYS = {
 	Provider.OpenAI: ("OPENAI_API_KEY", "OPENAI_KEY"),
 	Provider.DeepSeek: ("DEEPSEEK_API_KEY",),
-	Provider.CustomOpenAI: ("OPENAI_COMPAT_API_KEY", "OPENAI_API_KEY", "OPENAI_KEY"),
+	# Never the OpenAI key: it would be sent to whatever server the endpoint points to.
+	Provider.CustomOpenAI: ("OPENAI_COMPAT_API_KEY",),
 	Provider.Ollama: ("OLLAMA_API_KEY",),
 	Provider.MistralAI: ("MISTRAL_API_KEY", "MISTRALAI_API_KEY"),
 	Provider.OpenRouter: ("OPENROUTER_API_KEY",),

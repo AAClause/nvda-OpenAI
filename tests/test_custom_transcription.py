@@ -19,14 +19,8 @@ CUSTOM = TranscriptionProvider.CUSTOM_OPENAI.value
 
 
 @pytest.fixture(autouse=True)
-def keys(tmp_path, monkeypatch):
-	"""Point the key manager at an empty store for every test."""
-	monkeypatch.setattr(apikeymanager, "_managers", {})
-	monkeypatch.setattr(apikeymanager, "_store_cache_by_dir", {})
-	monkeypatch.setattr(apikeymanager, "_migrated_dirs", set())
-	monkeypatch.setattr(apikeymanager, "_loaded_data_dir", None)
-	apikeymanager.load(str(tmp_path))
-	return apikeymanager.get(Provider.CustomOpenAI)
+def keys(key_store):
+	return key_store.get(Provider.CustomOpenAI)
 
 
 @pytest.fixture

@@ -14,6 +14,8 @@ import tempfile
 import types
 from unittest import mock
 
+import pytest
+
 # Keep __pycache__ folders out of the add-on tree, which scons bundles as is.
 sys.dont_write_bytecode = True
 
@@ -66,3 +68,16 @@ if "PIL" not in sys.modules:
 package = types.ModuleType("AIHub")
 package.__path__ = [os.path.abspath(ADDON_PACKAGE_DIR)]
 sys.modules.setdefault("AIHub", package)
+
+
+@pytest.fixture
+def key_store(tmp_path, monkeypatch):
+	"""The API key manager, pointed at an empty data folder."""
+	from AIHub import apikeymanager
+
+	monkeypatch.setattr(apikeymanager, "_managers", {})
+	monkeypatch.setattr(apikeymanager, "_store_cache_by_dir", {})
+	monkeypatch.setattr(apikeymanager, "_migrated_dirs", set())
+	monkeypatch.setattr(apikeymanager, "_loaded_data_dir", None)
+	apikeymanager.load(str(tmp_path))
+	return apikeymanager
