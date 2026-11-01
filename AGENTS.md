@@ -14,6 +14,7 @@ The development environment is managed with **uv** and the checks with **prek** 
 - `uv sync` — create or update `.venv` from `pyproject.toml` and `uv.lock`.
 - `uv run pytest` — unit tests.
 - `uv run prek run --all-files` — code checks (configured in `prek.toml`; `uv run prek install` to run them on every commit).
+  They include ruff with bug-finding rules only (`[tool.ruff]` in `pyproject.toml`): fix what it reports rather than silencing it, and use `# noqa: <code>` with a reason only for intentional cases.
 - `uv run scons` — build the `.nvda-addon` package; `uv run scons pot` — translation template.
 
 Add development dependencies with `uv add --group <test|build|lint> <package>` and commit the updated `uv.lock`. Never write a `requirements.txt` or call `pip install` directly. `pyproject.toml` only describes the dev environment: the add-on itself is not a Python package.
@@ -29,6 +30,7 @@ Add development dependencies with `uv add --group <test|build|lint> <package>` a
 ## Code style
 
 - Indent with **tabs** (spaces only inside the vendored libraries).
+- `_` is NVDA's gettext function: in a function that calls `_()`, never assign `_` as a throwaway variable (`x, _ = ...`, `for _ in ...`), which breaks every `_()` call in that function. Use another name such as `_unused`.
 - Follow the surrounding code: NVDA/wx names stay camelCase (`onCancel`, `getCurrentModel`, `scriptCategory`), new helpers are snake_case. Keep comments short and only where the code is not self-explanatory.
 - Every user-facing string goes through `_()` and is preceded by a `# Translators:` comment that tells where it appears, in the style already used, for example `# Translators: NVDA Preferences — AI-Hub category: ...`. Use named placeholders with `.format()` (`_("Remove account {name}?").format(name=name)`), never f-strings or concatenation inside `_()`.
 - A new subpackage with translatable strings must be added to `pythonSources` in `buildVars.py`, or its strings never reach the `.pot`.

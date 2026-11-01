@@ -11,10 +11,10 @@ hooks = [
   { id = "check-toml" },
 ]
 
-# check-ast has no built-in equivalent.
+# Lint rules are in pyproject.toml ([tool.ruff]); ruff also reports syntax errors.
 [[repos]]
-repo = "https://github.com/pre-commit/pre-commit-hooks"
-rev = "v6.0.0"
+repo = "https://github.com/astral-sh/ruff-pre-commit"
+rev = "v0.17.3"
 hooks = [
-  { id = "check-ast" },
+  { id = "ruff-check" },
 ]

@@ -16,6 +16,20 @@ lint = ["prek"]
 package = false
 default-groups = "all"
 
+[tool.ruff]
+target-version = "py311"
+line-length = 150
+extend-exclude = ["addon/globalPlugins/AIHub/libs"]
+extend-include = ["sconstruct"]
+# NVDA installs the gettext functions as builtins (addonHandler.initTranslation).
+builtins = ["_", "ngettext", "pgettext", "npgettext"]
+
+[tool.ruff.lint]
+# Bug finders only (pyflakes, syntax and runtime errors, bugbear); no style rules.
+select = ["F", "E9", "B", "PLE"]
+# Empty methods in ChromeSection are optional hooks, not missing abstract methods.
+ignore = ["B027"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = ["-q"]
