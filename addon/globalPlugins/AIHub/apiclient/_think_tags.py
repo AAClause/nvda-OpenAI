@@ -177,28 +177,26 @@ def _split_think_pair_stream(
 	carry = state.get("carry", "") or ""
 	in_think = bool(state.get("in_think", False))
 	buf = carry + (text or "")
-	if not buf:
-		return "", ""
-	target_tag = close_tag if in_think else open_tag
-	keep = _max_partial_suffix_match(buf, target_tag)
-	if keep >= len(buf):
-		state["carry"] = buf
-		state["in_think"] = in_think
-		return "", ""
-	if keep > 0:
-		process = buf[:-keep]
-		state["carry"] = buf[-keep:]
-	else:
-		process = buf
-		state["carry"] = ""
-	if not process:
-		state["in_think"] = in_think
-		return "", ""
-	resp, reasoning, in_think = _split_think_pair_inline(
-		process, in_think=in_think, open_tag=open_tag, close_tag=close_tag,
-	)
+	lower = buf.lower()
+	resp_parts: list[str] = []
+	reasoning_parts: list[str] = []
+	i = 0
+	while True:
+		# The tag to look for changes as soon as one is found, and so does
+		# the partial tag to hold back at the end of the chunk.
+		tag = close_tag if in_think else open_tag
+		out = reasoning_parts if in_think else resp_parts
+		j = lower.find(tag.lower(), i)
+		if j < 0:
+			end = len(buf) - _max_partial_suffix_match(buf[i:], tag)
+			out.append(buf[i:end])
+			state["carry"] = buf[end:]
+			break
+		out.append(buf[i:j])
+		i = j + len(tag)
+		in_think = not in_think
 	state["in_think"] = in_think
-	return resp, reasoning
+	return "".join(resp_parts), "".join(reasoning_parts)
 
 
 def _flush_think_chain(states: list) -> tuple[str, str]:
