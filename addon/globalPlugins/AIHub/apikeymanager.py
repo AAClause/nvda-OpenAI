@@ -2,8 +2,6 @@ import json
 import os
 import uuid
 from .consts import AVAILABLE_PROVIDERS, BASE_URLs, Provider
-# Re-exported: callers iterate apikeymanager.CHAT_PROVIDERS.
-from .consts import CHAT_PROVIDERS as CHAT_PROVIDERS
 from logHandler import log
 
 # Common environment variable names per provider (tried in order; first non-empty wins)

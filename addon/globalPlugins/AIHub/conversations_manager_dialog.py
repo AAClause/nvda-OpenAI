@@ -11,6 +11,7 @@ import wx
 import ui
 
 from . import conversations
+from .consts import NO_AUTHENTICATION_KEY_PROVIDED_MSG
 from .conversations import ConversationFormat, normalize_conversation_format
 from .list_dialog_utils import (
 	bind_dialog_char_hook_space_opens_menu,
@@ -908,12 +909,10 @@ class ConversationsManagerDialog(wx.Dialog):
 
 def show_conversations_manager(plugin):
 	"""Show the conversation management dialog."""
-	from . import __init__ as init_mod
 	client = plugin.getClient()
 	conf = config.conf.get("AIHub", {})
 	if not client or not conf:
-		# Translators: Fallback message when no API key is configured.
-		ui.message(getattr(init_mod, "NO_AUTHENTICATION_KEY_PROVIDED_MSG", _("No API key provided")))
+		ui.message(NO_AUTHENTICATION_KEY_PROVIDED_MSG)
 		return
 	gui.mainFrame.prePopup()
 	dlg = None

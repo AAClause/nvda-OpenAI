@@ -207,6 +207,11 @@ BASE_URLs = {
 	Provider.Google: "https://generativelanguage.googleapis.com/v1beta",
 	Provider.Pangram: "https://text.external-api.pangram.com",
 }
+# Translators: Text in AI-Hub menu items and script prompts.
+NO_AUTHENTICATION_KEY_PROVIDED_MSG = _(
+	"No API key provided for any provider, please provide at least one API key in the settings dialog"
+)
+
 # Translators: Default English system prompt text applied to new AI-Hub conversations until the user changes it.
 DEFAULT_SYSTEM_PROMPT = _(
 	"You are an accessibility assistant integrated in the NVDA screen reader that "

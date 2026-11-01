@@ -17,6 +17,7 @@ from . import apikeymanager
 from .apiclient import configure_client_for_provider, truncate_error_for_user
 from .consts import (
 	AUDIO_EXT_TO_FORMAT,
+	CHAT_PROVIDERS,
 	ContentType,
 	Role,
 	TEMP_DIR,
@@ -30,7 +31,7 @@ MCI_ALIAS_ASK = "ask_audio"
 
 def find_provider_for_ask(model_id: str, requires_audio_model: bool):
 	"""Find an eligible provider/model for ask-question flow."""
-	for provider in apikeymanager.CHAT_PROVIDERS:
+	for provider in CHAT_PROVIDERS:
 		if not apikeymanager.get(provider).isReady():
 			continue
 		try:
@@ -45,7 +46,7 @@ def find_provider_for_ask(model_id: str, requires_audio_model: bool):
 			log.debug("Ignored error", exc_info=True)
 			continue
 	if requires_audio_model:
-		for provider in apikeymanager.CHAT_PROVIDERS:
+		for provider in CHAT_PROVIDERS:
 			if not apikeymanager.get(provider).isReady():
 				continue
 			try:
@@ -55,7 +56,7 @@ def find_provider_for_ask(model_id: str, requires_audio_model: bool):
 			except Exception:
 				log.debug("Ignored error", exc_info=True)
 				continue
-	for provider in apikeymanager.CHAT_PROVIDERS:
+	for provider in CHAT_PROVIDERS:
 		if not apikeymanager.get(provider).isReady():
 			continue
 		try:

@@ -13,3 +13,4 @@ manifest.ini
 /[0-9]*.[0-9]*.[0-9]*.json
 .venv/
 .pytest_cache/
+.ruff_cache/

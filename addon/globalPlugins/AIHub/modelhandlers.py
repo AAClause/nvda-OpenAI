@@ -10,7 +10,7 @@ from logHandler import log
 
 from . import apikeymanager
 from .background import call_after_if_alive, start_background
-from .consts import Provider
+from .consts import CHAT_PROVIDERS, Provider
 from .modeldetailsutils import build_model_details_html
 from .model import clearModelCache, getCachedModels, getModels
 
@@ -70,7 +70,7 @@ class ModelHandlersMixin:
 
 	def _loadAccounts(self):
 		accounts = []
-		for provider in apikeymanager.CHAT_PROVIDERS:
+		for provider in CHAT_PROVIDERS:
 			manager = apikeymanager.get(provider)
 			for acc in manager.list_accounts(include_env=True):
 				if not manager.isReady(account_id=acc["id"]):

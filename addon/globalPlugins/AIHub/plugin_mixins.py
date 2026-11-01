@@ -17,17 +17,13 @@ import wx
 from logHandler import log
 
 from . import apikeymanager
-from .consts import ADDON_DIR, TEMP_DIR, ensure_temp_dir
+from .consts import ADDON_DIR, CHAT_PROVIDERS, NO_AUTHENTICATION_KEY_PROVIDED_MSG, TEMP_DIR, ensure_temp_dir
 from .thread_shutdown import stop_worker_thread
 
 addonHandler.initTranslation()
 
 ROOT_ADDON_DIR = "\\".join(ADDON_DIR.split(os.sep)[:-2])
 ADDON_INFO = addonHandler.Addon(ROOT_ADDON_DIR).manifest
-# Translators: Text in AI-Hub menu items and script prompts.
-NO_AUTHENTICATION_KEY_PROVIDED_MSG = _(
-	"No API key provided for any provider, please provide at least one API key in the settings dialog"
-)
 conf = config.conf["AIHub"]
 
 
@@ -406,7 +402,7 @@ class AskRecordingMixin:
 			self.askRecordThread.start()
 			return
 
-		for provider in apikeymanager.CHAT_PROVIDERS:
+		for provider in CHAT_PROVIDERS:
 			if not apikeymanager.get(provider).isReady():
 				continue
 			try:

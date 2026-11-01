@@ -8,7 +8,7 @@ from scriptHandler import script
 from . import apikeymanager
 from . import configspec  # noqa: F401 -- registers the config spec on import
 from .apiclient import OpenAIClient
-from .consts import ADDON_DIR, BASE_URLs, DATA_DIR, Provider
+from .consts import ADDON_DIR, BASE_URLs, CHAT_PROVIDERS, DATA_DIR, Provider
 from .plugin_mixins import AskRecordingMixin, DialogSessionMixin, MenuMixin
 from .thread_shutdown import stop_worker_thread
 from .settings_dialog import AIHubSettingsPanel
@@ -71,7 +71,7 @@ class GlobalPlugin(MenuMixin, DialogSessionMixin, AskRecordingMixin, globalPlugi
 	def getClient(self):
 		if conf["renewClient"]:
 			conf["renewClient"] = False
-		for provider in apikeymanager.CHAT_PROVIDERS:
+		for provider in CHAT_PROVIDERS:
 			manager = apikeymanager.get(provider)
 			if not manager.isReady():
 				continue

@@ -1,7 +1,7 @@
 """Conversation dialog controls while no model is available (issue #142)."""
 
 from AIHub.conversation_chrome.generation_panel import GenerationChromePanel
-from AIHub.modelhandlers_impl import ModelHandlersMixin
+from AIHub.modelhandlers import ModelHandlersMixin
 
 
 class FakeCtrl:

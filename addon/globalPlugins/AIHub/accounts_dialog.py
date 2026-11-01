@@ -8,7 +8,7 @@ import ui
 import wx
 
 from . import apikeymanager
-from .consts import BASE_URLs, Provider
+from .consts import AVAILABLE_PROVIDERS, BASE_URLs, Provider
 from .list_dialog_utils import (
 	bind_dialog_char_hook_space_opens_menu,
 	listctrl_apply_context_menu_hit_selection,
@@ -41,11 +41,11 @@ class AccountDialog(wx.Dialog):
 			formSizer,
 			# Translators: Label before the provider drop-down in the Add/Edit API account form.
 			_("&Provider:"),
-			lambda: wx.Choice(formPanel, choices=apikeymanager.AVAILABLE_PROVIDERS),
+			lambda: wx.Choice(formPanel, choices=AVAILABLE_PROVIDERS),
 		)
-		provider = self.account.get("provider", apikeymanager.AVAILABLE_PROVIDERS[0])
+		provider = self.account.get("provider", AVAILABLE_PROVIDERS[0])
 		self.providerChoice.SetSelection(
-			apikeymanager.AVAILABLE_PROVIDERS.index(provider) if provider in apikeymanager.AVAILABLE_PROVIDERS else 0
+			AVAILABLE_PROVIDERS.index(provider) if provider in AVAILABLE_PROVIDERS else 0
 		)
 		self.nameText = add_labeled_factory(
 			formPanel,
@@ -196,7 +196,7 @@ class AccountsManagementDialog(wx.Dialog):
 
 		self._account_entries = []
 		self.accounts_list.DeleteAllItems()
-		for provider in apikeymanager.AVAILABLE_PROVIDERS:
+		for provider in AVAILABLE_PROVIDERS:
 			manager = apikeymanager.get(provider)
 			active_id = manager.get_active_account_id()
 			for acc in manager.list_accounts(include_env=True):

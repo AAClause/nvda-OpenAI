@@ -23,7 +23,7 @@ from .audiohandlers import AudioHandlersMixin
 from .chatcompletion import CompletionThread
 from .historyhandlers import HistoryHandlersMixin
 from .filehandlers import FileHandlersMixin
-from .modelhandlers_core import ModelHandlersMixin
+from .modelhandlers import ModelHandlersMixin
 from .consts import (
 	LIBS_BASE,
 	cleanup_temp_dir,
