@@ -104,7 +104,7 @@ class ToolDialogBase(wx.Dialog):
 			return
 		try:
 			# Translators: Short status text repeatedly pulsed in the tool progress dialog while the background HTTP task is still running.
-			keep_going, _ = self._taskProgressDialog.Pulse(_("Task in progress..."))
+			keep_going, _skip = self._taskProgressDialog.Pulse(_("Task in progress..."))
 		except Exception:
 			log.debug("Ignored error", exc_info=True)
 			keep_going = True
