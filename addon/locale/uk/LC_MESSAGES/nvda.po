@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Open AI 24.03.30\n"
 "Report-Msgid-Bugs-To: 'nvda-translations@groups.io'\n"
-"POT-Creation-Date: 2026-10-31 09:11+0200\n"
-"PO-Revision-Date: 2026-11-01 09:55+0200\n"
+"POT-Creation-Date: 2026-11-02 07:23+0200\n"
+"PO-Revision-Date: 2026-11-02 08:29+0200\n"
 "Last-Translator: Volodymyr Pyrih <vp88.mobile@gmail.com>\n"
 "Language-Team: Heorhi Halas. https://www.nvdaukr.online/\n"
 "Language: uk\n"
@@ -17,42 +17,42 @@ msgstr ""
 "X-Poedit-SearchPath-0: .\n"
 
 #. Translators: AI-Hub Input Gestures (assignable scripts): description of an assignable NVDA script.
-#: addon\globalPlugins\AIHub\__init__.py:91
+#: addon\globalPlugins\AIHub\__init__.py:93
 #: addon\globalPlugins\AIHub\plugin_mixins.py:46
 msgid "Show or focus the AI-Hub conversation window"
 msgstr "Показати або сфокусувати діалог розмови AI-Hub"
 
 #. Translators: AI-Hub Input Gestures (assignable scripts): description of an assignable NVDA script.
-#: addon\globalPlugins\AIHub\__init__.py:100
+#: addon\globalPlugins\AIHub\__init__.py:102
 msgid "Take a screenshot and describe it"
 msgstr "Зробити знімок екрана і описати його"
 
 #. Translators: AI-Hub Input Gestures (assignable scripts): description of an assignable NVDA script.
-#: addon\globalPlugins\AIHub\__init__.py:109
+#: addon\globalPlugins\AIHub\__init__.py:111
 msgid "Grab the current navigator object and describe it"
 msgstr "Захопити поточний об’єкт навігатора й описати його"
 
 #. Translators: AI-Hub Input Gestures (assignable scripts): description of an assignable NVDA script.
-#: addon\globalPlugins\AIHub\__init__.py:117
+#: addon\globalPlugins\AIHub\__init__.py:119
 #: addon\globalPlugins\AIHub\plugin_mixins.py:48
 msgid "Manage saved conversations"
 msgstr "Керувати збереженими розмовами"
 
 #. Translators: AI-Hub Input Gestures (assignable scripts): description of an assignable NVDA script.
-#: addon\globalPlugins\AIHub\__init__.py:125
+#: addon\globalPlugins\AIHub\__init__.py:127
 msgid "Ask a question via voice: record, send to AI, and play the response"
 msgstr ""
 "Поставити питання голосом: записати його, надіслати ШІ та прослухати "
 "відповідь"
 
 #. Translators: AI-Hub Input Gestures (assignable scripts): description of an assignable NVDA script.
-#: addon\globalPlugins\AIHub\__init__.py:133
+#: addon\globalPlugins\AIHub\__init__.py:135
 msgid "Toggle the microphone recording and transcribe the audio from anywhere"
 msgstr ""
 "Перемкнути запис з мікрофона та транскрибувати аудіо з будь-якого місця"
 
 #. Translators: AI-Hub Input Gestures (assignable scripts): description of an assignable NVDA script.
-#: addon\globalPlugins\AIHub\__init__.py:141
+#: addon\globalPlugins\AIHub\__init__.py:143
 msgid ""
 "Check the selected text (or the clipboard) for AI-generated content with "
 "Pangram"
@@ -123,7 +123,7 @@ msgstr ""
 #: addon\globalPlugins\AIHub\accounts_dialog.py:417
 #: addon\globalPlugins\AIHub\modelhandlers_impl.py:65
 #: addon\globalPlugins\AIHub\modelhandlers_impl.py:82
-#: addon\globalPlugins\AIHub\settings_dialog.py:327
+#: addon\globalPlugins\AIHub\settings_dialog.py:331
 #: addon\globalPlugins\AIHub\tool_voxtral_tts_dialog.py:58
 msgid "Account"
 msgstr "Обліковий запис"
@@ -136,7 +136,7 @@ msgstr "&Додати..."
 #. Translators: Suffix in the combined provider/account list marking the account that is currently active for that provider.
 #. Translators: NVDA Preferences — AI-Hub category: Recording — suffix marking the provider’s active account in account lists.
 #: addon\globalPlugins\AIHub\accounts_dialog.py:219
-#: addon\globalPlugins\AIHub\settings_dialog.py:331
+#: addon\globalPlugins\AIHub\settings_dialog.py:335
 msgid "default"
 msgstr "початково"
 
@@ -265,7 +265,7 @@ msgstr "Сталася помилка. Більше інформації в жу
 #. Translators: AI-Hub — audio capture and playback: brief status feedback (speech/braille), not a full dialog.
 #. Translators: AI-Hub NVDA menu / global scripts: brief status feedback (speech/braille), not a full dialog.
 #: addon\globalPlugins\AIHub\audiohandlers.py:38
-#: addon\globalPlugins\AIHub\plugin_mixins.py:367
+#: addon\globalPlugins\AIHub\plugin_mixins.py:379
 msgid "Audio stopped"
 msgstr "Відтворення зупинено"
 
@@ -576,12 +576,12 @@ msgstr "{base} (+{n})"
 #: addon\globalPlugins\AIHub\conversation_tabs.py:21
 #: addon\globalPlugins\AIHub\conversation_tabs.py:148
 #: addon\globalPlugins\AIHub\conversation_tabs.py:221
-#: addon\globalPlugins\AIHub\conversations.py:340
-#: addon\globalPlugins\AIHub\conversations.py:766
-#: addon\globalPlugins\AIHub\conversations.py:894
-#: addon\globalPlugins\AIHub\conversations.py:1011
-#: addon\globalPlugins\AIHub\conversations.py:1049
-#: addon\globalPlugins\AIHub\conversations.py:1068
+#: addon\globalPlugins\AIHub\conversations.py:342
+#: addon\globalPlugins\AIHub\conversations.py:768
+#: addon\globalPlugins\AIHub\conversations.py:896
+#: addon\globalPlugins\AIHub\conversations.py:1013
+#: addon\globalPlugins\AIHub\conversations.py:1051
+#: addon\globalPlugins\AIHub\conversations.py:1070
 #: addon\globalPlugins\AIHub\conversations_manager_dialog.py:259
 #: addon\globalPlugins\AIHub\conversations_manager_dialog.py:487
 msgid "Untitled conversation"
@@ -882,7 +882,7 @@ msgstr "Перш ніж перейменовувати, збережіть ро�
 #. Translators: Prompt text in rename conversation dialog.
 #. Translators: Prompt in the rename conversation dialog.
 #: addon\globalPlugins\AIHub\conversation_persistence.py:350
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:804
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:805
 msgid "Enter new name for this conversation:"
 msgstr "Введіть нову назву для цієї розмови:"
 
@@ -890,7 +890,7 @@ msgstr "Введіть нову назву для цієї розмови:"
 #. Translators: Title of the rename conversation dialog.
 #. Translators: AI-Hub conversation — message history area: entry in a context menu or submenu.
 #: addon\globalPlugins\AIHub\conversation_persistence.py:352
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:806
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:807
 #: addon\globalPlugins\AIHub\historyhandlers.py:797
 msgid "Rename conversation"
 msgstr "Перейменувати розмову"
@@ -909,7 +909,7 @@ msgstr "Перейменувати розмову"
 #: addon\globalPlugins\AIHub\tool_mistral_ocr_dialog.py:92
 #: addon\globalPlugins\AIHub\tool_mistral_transcription_dialog.py:61
 #: addon\globalPlugins\AIHub\tool_ollama_models_dialog.py:68
-#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:71
+#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:79
 #: addon\globalPlugins\AIHub\tool_openai_tts_dialog.py:69
 #: addon\globalPlugins\AIHub\tool_pangram_dialog.py:299
 #: addon\globalPlugins\AIHub\tool_voxtral_tts_dialog.py:70
@@ -1004,9 +1004,9 @@ msgstr "Для цієї розмови увімкнено збереження."
 #. Translators: Text in attachment/file handling messages.
 #. Translators: AI-Hub conversation — message history area: brief status feedback (speech/braille), not a full dialog.
 #. Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
-#: addon\globalPlugins\AIHub\conversations.py:696
-#: addon\globalPlugins\AIHub\conversations.py:697
-#: addon\globalPlugins\AIHub\conversations.py:729
+#: addon\globalPlugins\AIHub\conversations.py:698
+#: addon\globalPlugins\AIHub\conversations.py:699
+#: addon\globalPlugins\AIHub\conversations.py:731
 #: addon\globalPlugins\AIHub\conversations_manager_dialog.py:46
 #: addon\globalPlugins\AIHub\conversations_manager_dialog.py:263
 #: addon\globalPlugins\AIHub\filehandlers.py:182
@@ -1050,11 +1050,11 @@ msgstr "То&кени (спочатку найнижчі)"
 
 #: addon\globalPlugins\AIHub\conversations_manager_dialog.py:81
 msgid "&Messages (most first)"
-msgstr "&Повідомлення (спочатку найбільше)"
+msgstr "&Повідомлення (спочатку найбільші)"
 
 #: addon\globalPlugins\AIHub\conversations_manager_dialog.py:82
 msgid "Mes&sages (fewest first)"
-msgstr "&Повідомлення (спочатку найменше)"
+msgstr "&Повідомлення (спочатку найменші)"
 
 #: addon\globalPlugins\AIHub\conversations_manager_dialog.py:83
 msgid "&Format (A to Z)"
@@ -1112,7 +1112,7 @@ msgstr "Вибрані властивості розмови:"
 #. Translators: Button that removes every saved conversation that has no messages and no draft text.
 #: addon\globalPlugins\AIHub\conversations_manager_dialog.py:151
 msgid "Delete &empty"
-msgstr "Видалити та очистити"
+msgstr "Видалити &та очистити"
 
 #. Translators: Button that deletes every conversation in the list after confirmation.
 #: addon\globalPlugins\AIHub\conversations_manager_dialog.py:154
@@ -1135,7 +1135,8 @@ msgid ""
 "If no key:value term is present, search is done in the conversation title "
 "only."
 msgstr ""
-"Якщо ключ:значення відсутні, пошук виконуватиметься лише в заголовках розмов."
+"Якщо пошуковий запит не містить параметрів у форматі ключ:значення, пошук "
+"виконується лише за назвою розмови."
 
 #. Translators: Label before the example filter queries in the F1 help text.
 #: addon\globalPlugins\AIHub\conversations_manager_dialog.py:336
@@ -1432,67 +1433,67 @@ msgid "Some conversations could not be loaded."
 msgstr "Деякі розмови не вдалося завантажити."
 
 #. Translators: Message shown when renaming requires exactly one selected conversation.
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:797
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:798
 msgid "Select only one conversation to rename."
 msgstr "Виберіть лише одну розмову для перейменування."
 
 #. Translators: Yes/No confirmation question before deleting exactly one saved conversation from the history list.
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:827
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:828
 msgid "Delete this conversation? This cannot be undone."
 msgstr "Видалити цю розмову? Це неможливо скасувати."
 
 #. Translators: Yes/No confirmation question before deleting several selected conversations; placeholder is the count.
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:830
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:831
 #, python-format
 msgid "Delete %d conversations? This cannot be undone."
 msgstr "Видалити %d розмов? Цю дію неможливо скасувати."
 
 #. Translators: Title of the Yes/No confirmation dialog for deleting one or more saved conversations.
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:836
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:837
 msgid "Delete conversation"
 msgstr "Видалити розмову"
 
 #. Translators: Yes/No confirmation question before wiping the entire saved-conversation list; placeholder is how many will be removed.
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:847
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:848
 #, python-format
 msgid "Delete all %d conversations? This cannot be undone."
 msgstr "Видалити всі розмови (%d)? Це неможливо скасувати."
 
 #. Translators: Title of the Yes/No confirmation dialog for deleting every saved conversation at once.
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:849
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:850
 msgid "Delete all conversations"
 msgstr "Видалити всі розмови"
 
 #. Translators: Spoken status after deleting one or many conversations.
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:873
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:874
 #, python-format
 msgid "Deleted %d conversation."
 msgstr "Видалено %d розмову."
 
 #. Translators: AI-Hub conversation history dialog: brief status feedback (speech/braille), not a full dialog.
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:876
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:877
 #, python-format
 msgid "Deleted %d conversations."
 msgstr "Видалено %d розмов."
 
 #. Translators: Spoken message when no empty conversations match delete-empty action.
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:886
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:887
 msgid "No empty conversations to delete."
 msgstr "Немає порожніх розмов для видалення."
 
 #. Translators: AI-Hub conversation history dialog: brief status feedback (speech/braille), not a full dialog.
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:892
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:893
 #, python-format
 msgid "Delete all %d empty conversations? This cannot be undone."
 msgstr "Видалити всі порожні розмови (%d)? Це неможливо скасувати."
 
 #. Translators: AI-Hub conversation history dialog: brief status feedback (speech/braille), not a full dialog.
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:894
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:895
 msgid "Delete empty conversations"
 msgstr "Видалити порожні розмови"
 
 #. Translators: Fallback message when no API key is configured.
-#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:915
+#: addon\globalPlugins\AIHub\conversations_manager_dialog.py:916
 msgid "No API key provided"
 msgstr "Ключ API не надано"
 
@@ -2205,7 +2206,7 @@ msgstr "%s токенів"
 #. Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
 #: addon\globalPlugins\AIHub\modeldetailsutils.py:357
 msgid "Max output tokens"
-msgstr "Максимум токенів виводу"
+msgstr "Максимальна кількість токенів у відповіді"
 
 #. Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
 #: addon\globalPlugins\AIHub\modeldetailsutils.py:360
@@ -2215,7 +2216,7 @@ msgstr "Створено"
 #. Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
 #: addon\globalPlugins\AIHub\modeldetailsutils.py:362
 msgid "Knowledge cutoff"
-msgstr "Дата завершення навчання моделі"
+msgstr "Дата зрізу знань"
 
 #. Translators: AI-Hub model details: appended to the retirement date once it has passed.
 #: addon\globalPlugins\AIHub\modeldetailsutils.py:368
@@ -2251,12 +2252,12 @@ msgstr "Введення зображення"
 #. Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
 #: addon\globalPlugins\AIHub\modeldetailsutils.py:384
 msgid "Audio input"
-msgstr "Аудіо вхід"
+msgstr "Аудіовведення"
 
 #. Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
 #: addon\globalPlugins\AIHub\modeldetailsutils.py:387
 msgid "Audio output"
-msgstr "Аудіовихід"
+msgstr "Аудіовиведення"
 
 #. Translators: AI-Hub model details (browseable HTML): label, section heading, capability tag, or table cell in the generated report.
 #: addon\globalPlugins\AIHub\modeldetailsutils.py:390
@@ -2604,14 +2605,14 @@ msgid "Navigator Object %s"
 msgstr "Об'єкт навігатора %s"
 
 #. Translators: AI-Hub NVDA menu / global scripts: brief status feedback (speech/braille), not a full dialog.
-#: addon\globalPlugins\AIHub\plugin_mixins.py:380
-#: addon\globalPlugins\AIHub\plugin_mixins.py:405
+#: addon\globalPlugins\AIHub\plugin_mixins.py:392
+#: addon\globalPlugins\AIHub\plugin_mixins.py:417
 msgid "Recording question (direct audio)"
 msgstr "Запитання у форматі аудіозапису (пряме аудіо)"
 
 #. Translators: AI-Hub NVDA menu / global scripts: brief status feedback (speech/braille), not a full dialog.
-#: addon\globalPlugins\AIHub\plugin_mixins.py:389
-#: addon\globalPlugins\AIHub\plugin_mixins.py:418
+#: addon\globalPlugins\AIHub\plugin_mixins.py:401
+#: addon\globalPlugins\AIHub\plugin_mixins.py:430
 msgid "Recording question"
 msgstr "Запис запитання"
 
@@ -2625,7 +2626,7 @@ msgstr "Токени введення: %d"
 #: addon\globalPlugins\AIHub\propertiesutils.py:91
 #, python-format
 msgid "Output tokens: %d"
-msgstr "Токени виводу: %d"
+msgstr "Токени виведення: %d"
 
 #. Translators: Text in message/conversation properties output.
 #: addon\globalPlugins\AIHub\propertiesutils.py:93
@@ -2686,7 +2687,7 @@ msgstr "Верхнє K"
 #. Translators: Text in message/conversation properties output.
 #: addon\globalPlugins\AIHub\propertiesutils.py:182
 msgid "Stop sequences"
-msgstr "Зупинити послідовності"
+msgstr "Послідовності зупинки"
 
 #. Translators: Text in message/conversation properties output.
 #: addon\globalPlugins\AIHub\propertiesutils.py:185
@@ -2751,32 +2752,39 @@ msgid "Reasoning text"
 msgstr "Текст міркування"
 
 #. Translators: Text in recording thread status and error messages.
-#: addon\globalPlugins\AIHub\recordthread.py:90
+#: addon\globalPlugins\AIHub\recordthread.py:94
 msgid "Transcription copied to clipboard"
 msgstr "Транскрипцію скопійовано в буфер обміну"
 
 #. Translators: Text in recording thread status and error messages.
-#: addon\globalPlugins\AIHub\recordthread.py:218
+#: addon\globalPlugins\AIHub\recordthread.py:227
 msgid "Transcribing..."
 msgstr "Транскрибування..."
 
 #. Translators: AI-Hub — global dictation recording: brief status feedback (speech/braille), not a full dialog.
-#: addon\globalPlugins\AIHub\recordthread.py:367
+#: addon\globalPlugins\AIHub\recordthread.py:376
 msgid "Audio file ready for direct input"
 msgstr "Аудіофайл готовий для прямого введення"
 
 #. Translators: Text in recording thread status and error messages.
-#: addon\globalPlugins\AIHub\recordthread.py:400
+#: addon\globalPlugins\AIHub\recordthread.py:409
 msgid "No Mistral API key configured. Please add one in AI-Hub settings."
 msgstr "Ключ Mistral API не налаштовано. Додайте його в налаштуваннях AI-Hub."
 
 #. Translators: Text in recording thread status and error messages.
-#: addon\globalPlugins\AIHub\recordthread.py:408
+#: addon\globalPlugins\AIHub\recordthread.py:417
 msgid "OpenAI client is not available for transcription."
 msgstr "Клієнт OpenAI недоступний для транскрипції."
 
+#. Translators: Text in recording thread status and error messages.
+#: addon\globalPlugins\AIHub\recordthread.py:444
+msgid ""
+"No Custom OpenAI endpoint URL configured. Please add one in AI-Hub settings."
+msgstr ""
+"Не налаштовано URL кінцевої точки OpenAI. Додайте її в налаштуваннях AI-Hub."
+
 #. Translators: Title of the error dialog when global dictation transcription fails; body text is a shortened technical error from the engine.
-#: addon\globalPlugins\AIHub\recordthread.py:451
+#: addon\globalPlugins\AIHub\recordthread.py:485
 msgid "Transcription Error"
 msgstr "Помилка транскрипції"
 
@@ -2871,7 +2879,7 @@ msgstr "&Голос:"
 #: addon\globalPlugins\AIHub\tool_lyria_dialog.py:86
 #: addon\globalPlugins\AIHub\tool_mistral_ocr_dialog.py:99
 #: addon\globalPlugins\AIHub\tool_mistral_transcription_dialog.py:89
-#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:115
+#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:123
 #: addon\globalPlugins\AIHub\tool_openai_tts_dialog.py:81
 #: addon\globalPlugins\AIHub\tool_pangram_dialog.py:315
 #: addon\globalPlugins\AIHub\tool_voxtral_tts_dialog.py:84
@@ -2920,7 +2928,7 @@ msgstr "&Початкова текстова підказка:"
 #. Translators: NVDA Preferences — AI-Hub category: title of a bordered settings group.
 #: addon\globalPlugins\AIHub\settings_dialog.py:176
 msgid "Chat feedback"
-msgstr "Зворотній зв'язок у чаті"
+msgstr "Відгук у чаті"
 
 #. Translators: NVDA Preferences — AI-Hub category: Chat feedback section — sound while a request runs.
 #: addon\globalPlugins\AIHub\settings_dialog.py:182
@@ -2962,16 +2970,19 @@ msgstr "Запис"
 
 #. Translators: NVDA Preferences — AI-Hub category: Recording — Transcription provider list — local whisper.cpp option.
 #: addon\globalPlugins\AIHub\settings_dialog.py:218
+#: addon\globalPlugins\AIHub\transcription.py:45
 msgid "whisper.cpp (local)"
 msgstr "whisper.cpp (локальний)"
 
 #. Translators: NVDA Preferences — AI-Hub category: Recording — Transcription provider list — OpenAI Whisper option.
 #: addon\globalPlugins\AIHub\settings_dialog.py:220
+#: addon\globalPlugins\AIHub\transcription.py:47
 msgid "OpenAI Whisper"
 msgstr "OpenAI Whisper"
 
 #. Translators: NVDA Preferences — AI-Hub category: Recording — Transcription provider list — Mistral Voxtral option.
 #: addon\globalPlugins\AIHub\settings_dialog.py:222
+#: addon\globalPlugins\AIHub\transcription.py:49
 msgid "Mistral Voxtral"
 msgstr "Mistral Voxtral"
 
@@ -3018,38 +3029,38 @@ msgid "Custom OpenAI-compatible transcription account:"
 msgstr "Користувацький обліковий запис транскрипції, сумісний з OpenAI:"
 
 #. Translators: NVDA Preferences — AI-Hub category: Recording — model id sent to the custom OpenAI-compatible transcription endpoint.
-#: addon\globalPlugins\AIHub\settings_dialog.py:279
+#: addon\globalPlugins\AIHub\settings_dialog.py:280
 msgid "Custom OpenAI-compatible transcription &model:"
 msgstr "Користувацька &модель транскрипції, сумісна з OpenAI:"
 
 #. Translators: NVDA Preferences — AI-Hub category: title of a bordered settings group.
-#: addon\globalPlugins\AIHub\settings_dialog.py:287
+#: addon\globalPlugins\AIHub\settings_dialog.py:291
 msgid "Audio preprocessing"
 msgstr "Попередня обробка аудіо"
 
 #. Translators: NVDA Preferences — AI-Hub category: Recording — Audio preprocessing — trim silence before transcription.
-#: addon\globalPlugins\AIHub\settings_dialog.py:293
+#: addon\globalPlugins\AIHub\settings_dialog.py:297
 msgid "&Trim silence (remove leading/trailing and silence > 2s)"
 msgstr ""
 "&Видалити тишу (видалити початок/кінець та тишу тривалістю понад 2 секунди)"
 
 #. Translators: NVDA Preferences — AI-Hub category: Recording — Audio preprocessing — minimum silence length spin box.
-#: addon\globalPlugins\AIHub\settings_dialog.py:300
+#: addon\globalPlugins\AIHub\settings_dialog.py:304
 msgid "Minimum silence &duration to remove (seconds):"
 msgstr "Мінімальна тривалість тиші для видалення (у секундах):"
 
 #. Translators: NVDA Preferences — AI-Hub category: Recording — first item in OpenAI/Mistral transcription account drop-downs.
-#: addon\globalPlugins\AIHub\settings_dialog.py:319
+#: addon\globalPlugins\AIHub\settings_dialog.py:323
 msgid "Use provider active account (default)"
 msgstr "Використовувати активний обліковий запис постачальника (початково)"
 
 #. Translators: NVDA Preferences — AI-Hub category: Conversation section — Anthropic/OpenRouter prompt-cache lifetime option.
-#: addon\globalPlugins\AIHub\settings_dialog.py:375
+#: addon\globalPlugins\AIHub\settings_dialog.py:382
 msgid "5 minutes"
 msgstr "5 хвилин"
 
 #. Translators: NVDA Preferences — AI-Hub category: Conversation section — Anthropic/OpenRouter prompt-cache lifetime option.
-#: addon\globalPlugins\AIHub\settings_dialog.py:377
+#: addon\globalPlugins\AIHub\settings_dialog.py:384
 msgid "1 hour"
 msgstr "1 година"
 
@@ -3070,6 +3081,7 @@ msgstr "Запит на скасування. Діалог закриється.
 
 #. Translators: Sole visible entry in the tool’s account drop-down when no accounts exist for this provider (control is disabled).
 #: addon\globalPlugins\AIHub\tool_dialog_base.py:163
+#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:219
 msgid "No account configured"
 msgstr "Обліковий запис не налаштовано"
 
@@ -3080,7 +3092,6 @@ msgstr "Для цього інструменту/постачальника не
 
 #. Translators: Internal error message when a tool tries to use the API client but the parent conversation has no active client (user should configure accounts).
 #: addon\globalPlugins\AIHub\tool_dialog_base.py:196
-#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:303
 msgid "No API client available. Configure at least one account first."
 msgstr ""
 "Клієнт API недоступний. Спочатку налаштуйте хоча б один обліковий запис."
@@ -3156,7 +3167,7 @@ msgstr "Частота &дискретизації (Гц, необов'язко�
 #. Translators: Label before the audio format drop-down (wav, mp3, opus) for generated Lyria audio.
 #: addon\globalPlugins\AIHub\tool_lyria_dialog.py:135
 msgid "Output f&ormat:"
-msgstr "Формат виведення:"
+msgstr "Формат &виведення:"
 
 #. Translators: Button that starts Lyria 3 Pro music generation with the current form settings.
 #: addon\globalPlugins\AIHub\tool_lyria_dialog.py:142
@@ -3236,7 +3247,7 @@ msgstr "Огляд джерела OCR..."
 #. Translators: Button that opens the current source path or URL in the default application.
 #: addon\globalPlugins\AIHub\tool_mistral_ocr_dialog.py:115
 msgid "Open source"
-msgstr "Відкритий код"
+msgstr "Відкрити джерело"
 
 #. Translators: Button that opens the plain-text OCR output file from the last successful run.
 #: addon\globalPlugins\AIHub\tool_mistral_ocr_dialog.py:119
@@ -3261,12 +3272,12 @@ msgstr "&Ліміт зображення:"
 #. Translators: Label before the optional minimum image dimension filter for OCR preprocessing.
 #: addon\globalPlugins\AIHub\tool_mistral_ocr_dialog.py:144
 msgid "Image min si&ze:"
-msgstr "Мінімальний розмір зображення:"
+msgstr "Мінімальний розмір &зображення:"
 
 #. Translators: Label before the table output format drop-down (markdown, html, or none) for Mistral OCR.
 #: addon\globalPlugins\AIHub\tool_mistral_ocr_dialog.py:151
 msgid "Table f&ormat:"
-msgstr "Формат таблиці:"
+msgstr "Формат &таблиці:"
 
 #. Translators: Label before the document-level annotation output format drop-down for Mistral OCR.
 #: addon\globalPlugins\AIHub\tool_mistral_ocr_dialog.py:158
@@ -3390,34 +3401,34 @@ msgstr "Інструмент: Mistral Мовлення в Текст"
 #. Translators: Label before the path field for the audio file to transcribe in the Mistral Speech-to-Text tool.
 #. Translators: Label before the path field for the audio file to transcribe or translate in this tool.
 #: addon\globalPlugins\AIHub\tool_mistral_transcription_dialog.py:65
-#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:93
+#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:101
 msgid "&Input audio file:"
 msgstr "&Аудіофайл введення:"
 
 #. Translators: Button that opens a file picker for the input recording in Mistral Speech-to-Text.
 #. Translators: Button that opens a file picker for the input audio file in the OpenAI Transcription tool.
 #: addon\globalPlugins\AIHub\tool_mistral_transcription_dialog.py:69
-#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:98
+#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:106
 msgid "Browse input audio..."
 msgstr "Обрати аудіо..."
 
 #. Translators: Button that opens the selected input audio file in the default application.
 #: addon\globalPlugins\AIHub\tool_mistral_transcription_dialog.py:73
-#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:102
+#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:110
 msgid "Open input audio"
-msgstr "Відкрити вхідне аудіо"
+msgstr "Відкрити аудіо"
 
 #. Translators: Button that opens the plain-text transcript file from the last Mistral Speech-to-Text run.
 #. Translators: Button that opens the plain-text transcript file from the last OpenAI audio run.
 #: addon\globalPlugins\AIHub\tool_mistral_transcription_dialog.py:77
-#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:106
+#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:114
 msgid "Open transcription text result"
 msgstr "Відкрити результат транскрипції тексту"
 
 #. Translators: Button that opens the raw JSON API dump from the last Mistral Speech-to-Text run.
 #. Translators: Button that opens the raw API response file (JSON or text) from the last OpenAI audio run.
 #: addon\globalPlugins\AIHub\tool_mistral_transcription_dialog.py:81
-#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:110
+#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:118
 msgid "Open raw transcription result"
 msgstr "Відкрити необроблений результат транскрипції"
 
@@ -3444,28 +3455,28 @@ msgstr "Рівень деталізації часових міток (сегм�
 #. Translators: Label before the optional sampling temperature text field for Mistral transcription.
 #. Translators: Label before the optional sampling temperature text field for the OpenAI transcription API.
 #: addon\globalPlugins\AIHub\tool_mistral_transcription_dialog.py:125
-#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:136
+#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:144
 msgid "&Temperature (optional):"
 msgstr "&Температура (необов'язково):"
 
 #. Translators: Button that starts the Mistral Speech-to-Text HTTP request with the current form settings.
 #. Translators: Button that starts the OpenAI audio transcription or translation request with the current form settings.
 #: addon\globalPlugins\AIHub\tool_mistral_transcription_dialog.py:131
-#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:161
+#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:169
 msgid "Run transcription"
 msgstr "Запустити транскрипцію"
 
 #. Translators: Title of the file picker for the input recording in the Mistral speech-to-text tool.
 #. Translators: Title of the file picker for the input recording in the OpenAI transcription/translation tool.
 #: addon\globalPlugins\AIHub\tool_mistral_transcription_dialog.py:180
-#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:220
+#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:287
 msgid "Select audio file"
 msgstr "Вибрати аудіофайл"
 
 #. Translators: File-type filter in the Mistral transcription tool’s input-audio picker.
 #. Translators: File-type filter in the OpenAI transcription tool’s input-audio picker.
 #: addon\globalPlugins\AIHub\tool_mistral_transcription_dialog.py:183
-#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:223
+#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:290
 msgid ""
 "Audio files (*.flac;*.mp3;*.mp4;*.mpeg;*.mpga;*.m4a;*.ogg;*.wav;*.webm)|"
 "*.flac;*.mp3;*.mp4;*.mpeg;*.mpga;*.m4a;*.ogg;*.wav;*.webm"
@@ -3489,7 +3500,7 @@ msgstr ""
 #. Translators: Error body when saving Mistral transcript or JSON dump fails; placeholder is the OS error (title is «OpenAI»).
 #. Translators: Error body when writing the transcript or raw API dump to disk fails; placeholder is the OS error (title is «OpenAI»).
 #: addon\globalPlugins\AIHub\tool_mistral_transcription_dialog.py:257
-#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:382
+#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:439
 #, python-format
 msgid "Unable to save transcription outputs: %s"
 msgstr "Неможливо зберегти результати транскрипції: %s"
@@ -3497,7 +3508,7 @@ msgstr "Неможливо зберегти результати транскр�
 #. Translators: Short completion line stored with the tool run when Mistral transcription returns no text body.
 #. Translators: Short completion line stored with the tool run when OpenAI transcription returns no text body.
 #: addon\globalPlugins\AIHub\tool_mistral_transcription_dialog.py:267
-#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:396
+#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:453
 msgid "Transcription completed."
 msgstr "Транскрипцію завершено."
 
@@ -3509,7 +3520,7 @@ msgstr "Інструмент виводу: Mistral Мовлення в Текс�
 #. Translators: Error body when Run is pressed without a valid on-disk audio file in the Mistral Speech-to-Text tool (title is «OpenAI»).
 #. Translators: Error body when Run is pressed without a real on-disk audio path in the OpenAI transcription tool (title is «OpenAI»).
 #: addon\globalPlugins\AIHub\tool_mistral_transcription_dialog.py:339
-#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:510
+#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:567
 msgid "Please select a valid audio file."
 msgstr "Виберіть дійсний аудіофайл."
 
@@ -3525,19 +3536,19 @@ msgid ""
 "'segment'."
 msgstr ""
 "Коли розпізнавання мовлення увімкнено, деталізація часових міток повинна "
-"бути саме 'segment'."
+"бути саме 'сегмент'."
 
 #. Translators: Error body when the optional temperature field is not a valid decimal number in Mistral Speech-to-Text (title is «OpenAI»).
 #. Translators: Validation error raised (and shown) when the optional temperature field is not numeric in the OpenAI transcription tool.
 #: addon\globalPlugins\AIHub\tool_mistral_transcription_dialog.py:372
-#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:252
+#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:319
 msgid "Temperature must be a valid number."
 msgstr "Температура має бути дійсним числом."
 
 #. Translators: Status line on the modal progress window while Mistral is transcribing the selected audio file.
 #. Translators: Status line on the modal progress window while OpenAI is transcribing or translating the selected audio file.
 #: addon\globalPlugins\AIHub\tool_mistral_transcription_dialog.py:378
-#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:524
+#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:581
 msgid "Transcription in progress..."
 msgstr "Перебіг виконання транскрипції..."
 
@@ -3559,12 +3570,12 @@ msgstr "Показати деталі моделі"
 #. Translators: Ollama model manager — label in the Action drop-down for downloading a model from a registry into Ollama.
 #: addon\globalPlugins\AIHub\tool_ollama_models_dialog.py:38
 msgid "Pull model (add)"
-msgstr "Модель отримання (додати)"
+msgstr "Завантажити модель (додати)"
 
 #. Translators: Ollama model manager — label in the Action drop-down for uploading a local model to a registry.
 #: addon\globalPlugins\AIHub\tool_ollama_models_dialog.py:40
 msgid "Push model"
-msgstr "Модель відправлення"
+msgstr "Вивантажити модель"
 
 #. Translators: Ollama model manager — label in the Action drop-down for duplicating a model under a new name on the same machine.
 #: addon\globalPlugins\AIHub\tool_ollama_models_dialog.py:42
@@ -3609,7 +3620,7 @@ msgstr "&Файл моделі (для створення):"
 #. Translators: Checkbox allowing non-TLS or otherwise insecure registry connections when pulling or pushing models.
 #: addon\globalPlugins\AIHub\tool_ollama_models_dialog.py:102
 msgid "Allow insecure registry (pull/push)"
-msgstr "Дозволити незахищений реєстр (отримання/відправка)."
+msgstr "Дозволити незахищений реєстр (завантаження/вивантаження)."
 
 #. Translators: Label before the read-only multiline area showing formatted command output from Ollama.
 #: addon\globalPlugins\AIHub\tool_ollama_models_dialog.py:109
@@ -3694,124 +3705,127 @@ msgstr "Необроблених результатів ще немає."
 msgid "Raw result"
 msgstr "Необроблений результат"
 
-#. Translators: Window title of the AI-Hub OpenAI Transcription / Translation tool dialog.
-#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:55
+#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:59
+msgid "Tool: Custom OpenAI Transcription"
+msgstr "Інструмент: Налаштовувана транскрипція OpenAI"
+
+#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:59
 msgid "Tool: OpenAI Transcription"
 msgstr "Інструмент: транскрипція OpenAI"
 
 #. Translators: OpenAI Transcription tool — Task drop-down entry: transcribe audio in the original language.
-#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:79
+#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:87
 msgid "Transcription"
 msgstr "Транскрипція"
 
 #. Translators: OpenAI Transcription tool — Task drop-down entry: translate speech into English text.
-#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:81
+#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:89
 msgid "Translation to English"
 msgstr "Переклад на англійську мову"
 
 #. Translators: Label before the Task drop-down selecting transcription versus translation to English.
-#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:87
+#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:95
 msgid "Task:"
 msgstr "Завдання:"
 
 #. Translators: Label before the optional language hint(s) used for transcription (not for translation task); gpt-transcribe accepts several comma-separated codes.
-#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:119
+#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:127
 msgid "&Language codes (comma-separated, optional):"
 msgstr "&Коди мов (розділені комами, необов'язково):"
 
 #. Translators: Label before the optional comma-separated keyword hints (names, product codes...) for gpt-transcribe.
-#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:123
+#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:131
 msgid "&Keywords (comma-separated, optional):"
 msgstr "&Ключові слова (розділені комами, необов'язково):"
 
 #. Translators: Label before the optional vocabulary or style hint multiline field passed to the transcription API.
-#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:127
+#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:135
 msgid "&Prompt (optional):"
 msgstr "&Підказка (необов'язково):"
 
 #. Translators: Label before the API response format drop-down (json, srt, diarized_json, etc.) in this tool.
 #. Translators: Label before the audio container format drop-down (mp3, wav, etc.) in the OpenAI TTS tool.
-#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:131
+#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:139
 #: addon\globalPlugins\AIHub\tool_openai_tts_dialog.py:93
 msgid "Response &format:"
 msgstr "&Формат відповіді:"
 
 #. Translators: Label before the optional comma-separated timestamp granularity tokens for verbose transcripts.
-#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:140
+#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:148
 msgid "Timestamp granularities (comma-separated, optional):"
 msgstr "Деталізація часових позначок (розділені комами, необов’язково):"
 
 #. Translators: Label before the optional comma-separated list of extra response segments to request from the API.
-#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:144
+#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:152
 msgid "Include fields (comma-separated, optional):"
 msgstr "Вкажіть поля (розділені комами, необов’язково):"
 
 #. Translators: Label before the optional multiline JSON for the audio chunking strategy sent to the API.
-#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:148
+#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:156
 msgid "Chunking strategy JSON (optional):"
 msgstr "Стратегія поділу на частини JSON (необов'язково):"
 
 #. Translators: Label before the optional comma-separated known speaker names for diarized transcription.
-#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:152
+#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:160
 msgid "Known speaker names (comma-separated, optional):"
 msgstr "Відомі імена голосів (розділені комами, необов’язково):"
 
 #. Translators: Label before the optional comma-separated speaker reference ids for diarized transcription.
-#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:156
+#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:164
 msgid "Known speaker references (comma-separated, optional):"
 msgstr "Посилання на відомі голоси (через кому, необов’язково):"
 
 #. Translators: Validation error when the optional chunking-strategy field is not valid JSON in the OpenAI transcription tool.
-#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:270
+#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:337
 msgid "Chunking strategy must be valid JSON."
 msgstr "Стратегія фрагментації має бути дійсним JSON."
 
 #. Translators: Account drop-down entry in the OpenAI Transcription tool for a custom OpenAI-compatible endpoint account (placeholder is the account name).
-#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:292
+#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:359
 #, python-brace-format
 msgid "{name} (custom OpenAI-compatible)"
 msgstr "{name} (користувацький, сумісний з OpenAI)"
 
 #. Translators: Lowercase noun inserted into the OpenAI audio error sentence when the tool ran in translation mode.
-#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:345
+#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:402
 msgid "translation"
 msgstr "переклад"
 
 #. Translators: Lowercase noun inserted into the OpenAI audio error sentence when the tool ran in transcription mode.
-#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:348
+#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:405
 msgid "transcription"
 msgstr "транскрипція"
 
 #. Translators: Error dialog when OpenAI translation/transcription fails with a connection or HTTP status error.
-#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:351
+#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:408
 #, python-brace-format
 msgid "OpenAI {action} failed: {error}"
 msgstr "OpenAI {action} не вдалася: {error}"
 
 #. Translators: Error body for an unexpected failure during OpenAI transcription or translation (title is «OpenAI»; details in the log).
-#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:361
+#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:418
 msgid "OpenAI audio task failed. See NVDA log for details."
 msgstr ""
 "Завдання OpenAI з обробки аудіо не виконано. Дивіться журнал NVDA для "
 "деталей."
 
 #. Translators: Error body when the API response could not be interpreted as a transcription/translation result object (title is «OpenAI»).
-#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:365
+#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:422
 msgid "Invalid transcription result."
 msgstr "Недійсний результат транскрипції."
 
 #. Translators: Short completion line stored with the tool run when OpenAI translation returns no text body.
-#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:393
+#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:450
 msgid "Translation completed."
 msgstr "Переклад завершено."
 
 #. Translators: Title stored on the synthetic «tool output» tab after OpenAI speech-to-English translation finishes.
-#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:399
+#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:456
 msgid "Tool output: OpenAI translation"
 msgstr "Інструмент виводу: переклад OpenAI"
 
 #. Translators: Title stored on the synthetic «tool output» tab after OpenAI speech-to-text transcription finishes.
-#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:402
+#: addon\globalPlugins\AIHub\tool_openai_transcription_dialog.py:459
 msgid "Tool output: OpenAI transcription"
 msgstr "Інструмент виводу: транскрипція OpenAI"
 
@@ -4375,47 +4389,48 @@ msgid "Could not read reference audio: %s"
 msgstr "Не вдалося прочитати еталонний аудіофайл: %s"
 
 #. Translators: AI-Hub Tools menu: label for a submenu or action that opens a provider tool.
-#: addon\globalPlugins\AIHub\toolsmenu.py:38
+#: addon\globalPlugins\AIHub\toolsmenu.py:39
 msgid "Voxtral TTS..."
 msgstr "Voxtral TTS..."
 
 #. Translators: AI-Hub Tools menu: label for a submenu or action that opens a provider tool.
-#: addon\globalPlugins\AIHub\toolsmenu.py:47
+#: addon\globalPlugins\AIHub\toolsmenu.py:48
 msgid "OCR..."
 msgstr "OCR..."
 
 #. Translators: AI-Hub Tools menu: label for a submenu or action that opens a provider tool.
-#: addon\globalPlugins\AIHub\toolsmenu.py:56
+#: addon\globalPlugins\AIHub\toolsmenu.py:57
 msgid "Speech to Text..."
 msgstr "Мовлення в Текст..."
 
 #. Translators: AI-Hub Tools menu: label for a submenu or action that opens a provider tool.
-#: addon\globalPlugins\AIHub\toolsmenu.py:65
+#: addon\globalPlugins\AIHub\toolsmenu.py:66
 msgid "Lyria 3 Pro..."
 msgstr "Lyria 3 Pro..."
 
 #. Translators: AI-Hub Tools menu: label for a submenu or action that opens a provider tool.
-#: addon\globalPlugins\AIHub\toolsmenu.py:74
+#: addon\globalPlugins\AIHub\toolsmenu.py:75
 msgid "TTS..."
 msgstr "TTS..."
 
 #. Translators: AI-Hub Tools menu: label for a submenu or action that opens a provider tool.
-#: addon\globalPlugins\AIHub\toolsmenu.py:83
+#: addon\globalPlugins\AIHub\toolsmenu.py:84
+#: addon\globalPlugins\AIHub\toolsmenu.py:95
 msgid "Transcription / Translation..."
 msgstr "Транскрипція / Переклад..."
 
 #. Translators: AI-Hub Tools menu: label for a submenu or action that opens a provider tool.
-#: addon\globalPlugins\AIHub\toolsmenu.py:94
+#: addon\globalPlugins\AIHub\toolsmenu.py:104
 msgid "Model manager..."
 msgstr "Менеджер моделей..."
 
 #. Translators: AI-Hub Tools menu: label for a submenu or action that opens a provider tool.
-#: addon\globalPlugins\AIHub\toolsmenu.py:103
+#: addon\globalPlugins\AIHub\toolsmenu.py:113
 msgid "AI detection and plagiarism check..."
 msgstr "Виявлення ШІ та перевірка на плагіат..."
 
 #. Translators: AI-Hub Tools menu: label for a submenu or action that opens a provider tool.
-#: addon\globalPlugins\AIHub\toolsmenu.py:175
+#: addon\globalPlugins\AIHub\toolsmenu.py:185
 #, python-format
 msgid ""
 "No account configured for %s. Please add an account for this provider in AI-"
@@ -4425,9 +4440,14 @@ msgstr ""
 "постачальника в налаштуваннях AI-Hub."
 
 #. Translators: AI-Hub main window — Tools menu: entry in a context menu or submenu.
-#: addon\globalPlugins\AIHub\toolsmenu.py:232
+#: addon\globalPlugins\AIHub\toolsmenu.py:242
 msgid "&Tools"
 msgstr "&Інструменти"
+
+#. Translators: NVDA Preferences — AI-Hub category: Recording — Transcription provider list — Custom OpenAI option.
+#: addon\globalPlugins\AIHub\transcription.py:51
+msgid "Custom OpenAI"
+msgstr "Користувацький OpenAI"
 
 #. Translators: Outer section title wrapping reasoning and tool groups.
 #: addon\globalPlugins\AIHub\conversation_chrome\generation_panel.py:31
@@ -4463,7 +4483,7 @@ msgstr "Інструменти"
 #. Translators: Label for the combo box choosing how long and detailed model answers are.
 #: addon\globalPlugins\AIHub\conversation_chrome\verbosity_section.py:45
 msgid "&Verbosity:"
-msgstr "&Докладність:"
+msgstr "&Рівень докладності:"
 
 #. Translators: Verbosity combo entry: do not send the parameter (API default).
 #: addon\globalPlugins\AIHub\conversation_chrome\verbosity_section.py:50
